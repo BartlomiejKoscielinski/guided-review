@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pipeline – MR !482</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button,input{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+@keyframes gr-spin{to{transform:rotate(360deg)}}
+@keyframes gr-blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="flex: 0 0 auto; color: #8C8C87">mobile-app</span>
+<span style="flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #F7CF3D">!482</span>
+<span style="color: #F4F4F2; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0">Offline queue for delivery photos</span>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 100%">
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Sonnet 5.5 · medium</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #F7CF3D; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<main style="flex: 1 1 auto; min-width: 0; overflow: auto; display: flex; flex-direction: column">
+
+<section style="flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; padding: 26px 32px 18px">
+<div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<a href="Review.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87; text-decoration: none"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"></path></svg>Back to review</a>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 48px; line-height: 0.95; font-weight: 800; text-transform: uppercase">Pipeline</h1>
+<span style="{{head.statusStyle}}">{{head.statusLabel}}</span>
+<sc-if value="{{head.hasAllowed}}" hint-placeholder-val="{{ true }}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 9px; color: #EF6E2E; box-shadow: inset 0 0 0 2px #EF6E2E">{{head.allowedLabel}}</span></sc-if>
+</div>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 13.5px; color: #B3B3AE"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F4F4F2">{{head.num}}</span><span>{{head.kind}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #F7CF3D">{{head.sha}}</span><span>{{head.meta}}</span></span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase">
+<sc-if value="{{head.canRetryAll}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{head.onRetryAll}}" style="height: 40px; padding: 0 16px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Retry failed jobs</button></sc-if>
+<sc-if value="{{head.isRunning}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{head.onCancelAll}}" style="height: 40px; padding: 0 16px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Cancel pipeline</button></sc-if>
+<a href="#" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; color: #B3B3AE; font-weight: 700; text-decoration: none">Open in GitLab</a>
+<button type="button" onClick="{{head.onAskRun}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 0; background: #F7CF3D; color: #101010; font: inherit; font-weight: 800; letter-spacing: inherit; text-transform: inherit; cursor: pointer"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"></path></svg>Run new pipeline</button>
+</div>
+</section>
+
+<sc-if value="{{confirmRun}}" hint-placeholder-val="{{ false }}">
+<div role="alertdialog" aria-label="Run new pipeline" style="flex: 0 0 auto; margin: 0 32px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 14px 18px; background: #F7CF3D; color: #101010">
+<span style="font-size: 15px; font-weight: 600">Run a new merge request pipeline on <span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px">a3f9c12</span>?</span>
+<span style="font-size: 13.5px">Uses the MR’s latest commit. Manual jobs stay manual.</span>
+<span style="margin-left: auto; display: flex; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase">
+<button type="button" onClick="{{onRun}}" style="height: 36px; padding: 0 16px; border: 0; background: #101010; color: #F7CF3D; font: inherit; font-weight: 800; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Run pipeline</button>
+<button type="button" onClick="{{onCancelRun}}" style="height: 36px; padding: 0 14px; border: 0; background: transparent; color: #101010; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer; box-shadow: inset 0 0 0 2px #101010">Cancel</button>
+</span>
+</div>
+</sc-if>
+
+<div role="tablist" aria-label="Pipelines for this MR" style="flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 4px; padding: 0 32px 18px">
+<sc-for list="{{pipes}}" as="p" hint-placeholder-count="3">
+<button type="button" role="tab" aria-selected="{{p.on}}" onClick="{{p.pick}}" style="{{p.style}}"><span style="{{p.dot}}"></span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600">{{p.num}}</span><span style="{{p.subStyle}}">{{p.sub}}</span></button>
+</sc-for>
+</div>
+
+<div style="flex: 0 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px; padding: 0 32px">
+<sc-for list="{{stages}}" as="s" hint-placeholder-count="4">
+<section aria-label="{{s.name}}" style="display: flex; flex-direction: column; gap: 2px; padding: 12px; background: #141414">
+<div style="display: flex; align-items: center; gap: 8px; padding: 0 4px 8px">
+<span style="{{s.dot}}"></span>
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">{{s.name}}</h2>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">{{s.count}}</span>
+</div>
+<sc-for list="{{s.jobs}}" as="j" hint-placeholder-count="3">
+<div style="{{j.rowStyle}}">
+<button type="button" onClick="{{j.pick}}" aria-pressed="{{j.on}}" aria-label="{{j.aria}}" style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 4px 0 10px; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer">
+<span style="{{j.sq}}">
+<sc-if value="{{j.iCheck}}" hint-placeholder-val="{{ true }}"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></sc-if>
+<sc-if value="{{j.iX}}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"></path></svg></sc-if>
+<sc-if value="{{j.iWarn}}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M8 2.5v7M8 12.5v1"></path></svg></sc-if>
+<sc-if value="{{j.iSpin}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true" style="animation: gr-spin 0.9s linear infinite"><path d="M8 2a6 6 0 1 1-6 6"></path></svg></sc-if>
+<sc-if value="{{j.iPlay}}" hint-placeholder-val="{{ false }}"><svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"></path></svg></sc-if>
+<sc-if value="{{j.iSlash}}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 13 13 3"></path></svg></sc-if>
+</span>
+<span style="{{j.nameStyle}}">{{j.name}}</span>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87; white-space: nowrap">{{j.right}}</span>
+</button>
+<sc-if value="{{j.hasAction}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{j.onAction}}" aria-label="{{j.actionLabel}}" title="{{j.actionLabel}}" style="{{j.actionStyle}}">
+<sc-if value="{{j.aRetry}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7"></path><path d="M13 2.5V5h-2.5"></path></svg></sc-if>
+<sc-if value="{{j.aPlay}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"></path></svg></sc-if>
+<sc-if value="{{j.aCancel}}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="10" height="10"></rect></svg></sc-if>
+</button>
+</sc-if>
+</div>
+</sc-for>
+</section>
+</sc-for>
+</div>
+
+<section aria-label="Job details" style="flex: 1 0 auto; margin: 4px 32px 28px; display: flex; flex-direction: column; background: #141414">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 18px; background: #1A1A1A">
+<span style="{{d.sq}}"></span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600">{{d.name}}</span>
+<span style="{{d.tagStyle}}">{{d.statusLabel}}</span>
+<span style="font-size: 13px; color: #8C8C87">{{d.meta}}</span>
+<span style="margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase">
+<sc-if value="{{d.canRetry}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{d.onRetry}}" style="height: 32px; padding: 0 14px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Retry job</button></sc-if>
+<sc-if value="{{d.canCancel}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{d.onCancel}}" style="height: 32px; padding: 0 14px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Cancel job</button></sc-if>
+<a href="#" style="display: inline-flex; align-items: center; height: 32px; padding: 0 10px; color: #B3B3AE; font-weight: 700; text-decoration: none">Full log</a>
+</span>
+</div>
+
+<sc-if value="{{d.isManual}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 720px; padding: 22px 22px 26px">
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #E8E8E4">{{d.about}}</p>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Variables for this run</span>
+<sc-for list="{{d.vars}}" as="v" hint-placeholder-count="1">
+<div style="display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 4px">
+<input type="text" aria-label="Variable name" value="{{v.key}}" style="height: 38px; padding: 0 12px; border: 0; background: #0D0D0D; color: #F4F4F2; font-family: 'JetBrains Mono', monospace; font-size: 13px">
+<input type="text" aria-label="Variable value" value="{{v.value}}" style="height: 38px; padding: 0 12px; border: 0; background: #0D0D0D; color: #F4F4F2; font-family: 'JetBrains Mono', monospace; font-size: 13px">
+</div>
+</sc-for>
+<button type="button" style="align-self: flex-start; height: 30px; padding: 0; border: 0; background: transparent; color: #B3B3AE; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">+ Add variable</button>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+<button type="button" onClick="{{d.onPlay}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 0; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M4 2.5v11l9.5-5.5z"></path></svg>{{d.playLabel}}</button>
+<span style="font-size: 13px; color: #8C8C87">Runs on <span style="font-family: 'JetBrains Mono', monospace; color: #D6D6D1">a3f9c12</span> as you.</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{d.hasLog}}" hint-placeholder-val="{{ true }}">
+<div style="flex: 1 1 auto; display: flex; flex-wrap: wrap; min-height: 0">
+<div role="log" aria-label="Job log" style="flex: 1.4 1 520px; min-width: 0; padding: 16px 18px; background: #0A0A0A; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; line-height: 20px; overflow: auto">
+<sc-for list="{{d.log}}" as="ln" hint-placeholder-count="10"><div style="{{ln.s}}">{{ln.t}}</div></sc-for>
+<sc-if value="{{d.isRunning}}" hint-placeholder-val="{{ false }}"><span style="display: inline-block; width: 8px; height: 15px; background: #3F7CF2; vertical-align: -3px; animation: gr-blink 1s steps(1) infinite"></span></sc-if>
+</div>
+
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 22px">
+<sc-if value="{{d.isFailed}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="width: 14px; height: 14px; background: #B93CF6"></span>
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; text-transform: uppercase">Why it failed</span>
+</div>
+<sc-if value="{{d.failedAgain}}" hint-placeholder-val="{{ false }}"><span role="status" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #F6A983"><span style="width: 9px; height: 9px; background: #EF6E2E"></span>Retried: failed again on the same test.</span></sc-if>
+<sc-if value="{{d.exIdle}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start">
+<span style="font-size: 14px; color: #B3B3AE">Claude reads this log and the MR diff. Nothing is posted.</span>
+<button type="button" onClick="{{d.onExplain}}" style="height: 38px; padding: 0 16px; border: 0; background: #B93CF6; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Explain failure</button>
+</div>
+</sc-if>
+<sc-if value="{{d.exLoading}}" hint-placeholder-val="{{ false }}">
+<span role="status" style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #D3A2FA"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" aria-hidden="true" style="animation: gr-spin 0.9s linear infinite"><path d="M8 2a6 6 0 1 1-6 6"></path></svg>Reading the log and the diff…</span>
+</sc-if>
+<sc-if value="{{d.exDone}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<span style="{{d.ex.verdictStyle}}">{{d.ex.verdict}}</span>
+<span style="font-size: 16px; font-weight: 600; line-height: 1.35; color: #F4F4F2">{{d.ex.title}}</span>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #C9C9C4">{{d.ex.body}}</p>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{d.ex.evidence}}" as="e" hint-placeholder-count="2"><a href="Review.dc.html" style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #F4F4F2; background: #262626; padding: 2px 7px; text-decoration: none">{{e}}</a></sc-for>
+</div>
+<sc-if value="{{d.ex.hasComment}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; background: #101010">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Suggested comment</span>
+<span style="font-size: 14px; line-height: 1.5; color: #E8E8E4">{{d.ex.comment}}</span>
+<sc-if value="{{d.notDrafted}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{d.onDraft}}" style="align-self: flex-start; height: 34px; padding: 0 14px; border: 0; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Add to drafts</button></sc-if>
+<sc-if value="{{d.drafted}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: #F7CF3D"><span style="width: 9px; height: 9px; background: #F7CF3D"></span>In drafts. Publish it with the rest from Summary.</span></sc-if>
+</div>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{d.isOk}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Artifacts</span>
+<sc-for list="{{d.artifacts}}" as="a" hint-placeholder-count="1">
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #1C1C1C"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #F4F4F2">{{a.name}}</span><span style="font-size: 12.5px; color: #8C8C87">{{a.size}}</span><a href="#" style="margin-left: auto; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Download</a></div>
+</sc-for>
+<sc-if value="{{d.noArtifacts}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #8C8C87">No artifacts.</span></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{d.isRunning}}" hint-placeholder-val="{{ false }}">
+<span role="status" style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #9DBBF8"><span style="width: 9px; height: 9px; background: #3F7CF2"></span>Running. The log streams on the left.</span>
+</sc-if>
+<sc-if value="{{d.isIdle}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; color: #8C8C87">{{d.idleNote}}</span>
+</sc-if>
+</div>
+</div>
+</sc-if>
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({ pipe: 'p342', job: 'ui-tests:android', over: {}, confirm: false, hasNew: false, tick: 0, ex: { 'p342:ui-tests:android': 'done' }, drafted: false }, this.state || {});
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const mono = 'font-family: JetBrains Mono, ui-monospace, monospace; ';
+    const STAGES = [
+      { id: 'build', name: 'Build' },
+      { id: 'test', name: 'Test' },
+      { id: 'quality', name: 'Quality' },
+      { id: 'distribute', name: 'Distribute' }
+    ];
+    const JOBS = [
+      { id: 'restore', stage: 'build', dur: '0:48' },
+      { id: 'build:android', stage: 'build', dur: '6:12' },
+      { id: 'build:ios', stage: 'build', dur: '7:40' },
+      { id: 'unit-tests', stage: 'test', dur: '1:52' },
+      { id: 'ui-tests:android', stage: 'test', dur: '3:05', allow: true },
+      { id: 'ui-tests:ios-device', stage: 'test', manual: true },
+      { id: 'dotnet-format', stage: 'quality', dur: '0:22' },
+      { id: 'sonar', stage: 'quality', dur: '2:10' },
+      { id: 'distribute:qa', stage: 'distribute', manual: true }
+    ];
+    const BASE = {
+      p342: { 'ui-tests:android': 'failed', 'ui-tests:ios-device': 'manual', 'distribute:qa': 'manual' },
+      p321: { 'unit-tests': 'failed', 'ui-tests:ios-device': 'skipped', 'dotnet-format': 'skipped', 'sonar': 'skipped', 'distribute:qa': 'skipped' },
+      p320: { 'build:android': 'canceled', 'build:ios': 'canceled', 'unit-tests': 'canceled', 'ui-tests:android': 'canceled', 'ui-tests:ios-device': 'canceled', 'dotnet-format': 'canceled', 'sonar': 'canceled', 'distribute:qa': 'canceled' }
+    };
+    const PIPES = [
+      { id: 'p351', num: '#18351', sha: 'a3f9c12', kind: 'Merge request pipeline', ver: 'version 3', meta: 'started by you · just now', isNew: true },
+      { id: 'p342', num: '#18342', sha: 'a3f9c12', kind: 'Merge request pipeline', ver: 'version 3', meta: 'Marta K. · 2 h ago · 14 min' },
+      { id: 'p321', num: '#18321', sha: '6a02f9e', kind: 'Merge request pipeline', ver: 'version 2', meta: 'Marta K. · 3 h ago · 9 min' },
+      { id: 'p320', num: '#18320', sha: '6a02f9e', kind: 'Merge request pipeline', ver: 'version 2', meta: 'canceled by a newer push · 3 h ago' }
+    ].filter((p) => !p.isNew || st.hasNew);
+
+    const stageIdx = {};
+    STAGES.forEach((s, i) => { stageIdx[s.id] = i; });
+    const statusOf = (pid, j) => {
+      const o = st.over[pid + ':' + j.id];
+      if (o) return o;
+      if (pid === 'p351') {
+        if (j.manual) return 'manual';
+        const i = stageIdx[j.stage];
+        if (i < st.tick) return j.allow ? 'failed' : 'success';
+        if (i === st.tick) return 'running';
+        return 'created';
+      }
+      return (BASE[pid] && BASE[pid][j.id]) || 'success';
+    };
+
+    const VIS = {
+      success: { label: 'Passed', bg: '#63D676', ink: '#101010', ring: null },
+      failed: { label: 'Failed', bg: '#EF6E2E', ink: '#101010', ring: null },
+      allowed: { label: 'Failed · allowed', bg: 'transparent', ink: '#EF6E2E', ring: '#EF6E2E' },
+      running: { label: 'Running', bg: '#3F7CF2', ink: '#101010', ring: null },
+      created: { label: 'Waiting', bg: 'transparent', ink: '#8C8C87', ring: '#4A4A47' },
+      manual: { label: 'Manual', bg: 'transparent', ink: '#F4F4F2', ring: '#F4F4F2' },
+      canceled: { label: 'Canceled', bg: '#3A3A38', ink: '#B3B3AE', ring: null },
+      skipped: { label: 'Skipped', bg: 'transparent', ink: '#7E7E79', ring: '#3A3A38' }
+    };
+    const visKey = (s, j) => (s === 'failed' && j.allow ? 'allowed' : s);
+    const sqStyle = (v, size) => 'flex: 0 0 auto; width: ' + size + 'px; height: ' + size + 'px; display: inline-flex; align-items: center; justify-content: center; background: ' + v.bg + '; color: ' + v.ink + (v.ring ? '; box-shadow: inset 0 0 0 2px ' + v.ring : '');
+
+    const setOver = (pid, jid, s) => {
+      const cur = (this.state && this.state.over) || {};
+      this.setState({ over: Object.assign({}, cur, { [pid + ':' + jid]: s }) });
+    };
+    const startJob = (pid, j, finalStatus, delay) => {
+      setOver(pid, j.id, 'running');
+      this.setState({ job: j.id, pipe: pid });
+      setTimeout(() => setOver(pid, j.id, finalStatus), delay);
+    };
+    const retryResult = (pid, j) => (j.id === 'ui-tests:android' ? 'failed' : 'success');
+
+    const pipeStatus = (pid) => {
+      const ss = JOBS.map((j) => ({ j: j, s: statusOf(pid, j) }));
+      if (ss.some((x) => x.s === 'running' || x.s === 'created')) return 'running';
+      if (ss.some((x) => x.s === 'failed' && !x.j.allow)) return 'failed';
+      if (ss.some((x) => x.s === 'canceled')) return 'canceled';
+      return 'success';
+    };
+
+    const pipes = PIPES.map((p) => {
+      const s = pipeStatus(p.id);
+      const v = VIS[s];
+      const on = p.id === st.pipe;
+      return {
+        num: p.num,
+        sub: p.ver + (p.id === PIPES[0].id ? ' · latest' : ''),
+        on: on,
+        pick: () => this.setState({ pipe: p.id, job: p.id === 'p321' ? 'unit-tests' : (p.id === 'p342' ? 'ui-tests:android' : 'build:android') }),
+        dot: 'width: 10px; height: 10px; background: ' + (v.bg === 'transparent' ? '#4A4A47' : v.bg),
+        subStyle: 'font-size: 12.5px; color: ' + (on ? '#101010' : '#8C8C87'),
+        style: 'display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 0; cursor: pointer; background: ' + (on ? '#F4F4F2' : '#1A1A1A') + '; color: ' + (on ? '#101010' : '#F4F4F2')
+      };
+    });
+
+    const pipe = PIPES.find((p) => p.id === st.pipe) || PIPES[0];
+    const pStatus = pipeStatus(pipe.id);
+    const pv = VIS[pStatus];
+    const allowedFails = JOBS.filter((j) => j.allow && statusOf(pipe.id, j) === 'failed').length;
+    const failedJobs = JOBS.filter((j) => statusOf(pipe.id, j) === 'failed');
+
+    const stages = STAGES.map((sg) => {
+      const js = JOBS.filter((j) => j.stage === sg.id);
+      const sts = js.map((j) => statusOf(pipe.id, j));
+      let sk = 'success';
+      if (sts.some((s) => s === 'running')) sk = 'running';
+      else if (js.some((j, i) => sts[i] === 'failed' && !j.allow)) sk = 'failed';
+      else if (sts.every((s) => s === 'manual')) sk = 'manual';
+      else if (sts.every((s) => s === 'skipped' || s === 'manual')) sk = 'skipped';
+      else if (sts.every((s) => s === 'canceled' || s === 'success') && sts.some((s) => s === 'canceled')) sk = 'canceled';
+      else if (sts.every((s) => s === 'created' || s === 'manual')) sk = 'created';
+      const sv = VIS[sk];
+      return {
+        name: sg.name,
+        count: js.length + (js.length === 1 ? ' job' : ' jobs'),
+        dot: 'width: 10px; height: 10px; background: ' + (sv.bg === 'transparent' ? 'transparent' : sv.bg) + (sv.ring ? '; box-shadow: inset 0 0 0 2px ' + sv.ring : ''),
+        jobs: js.map((j) => {
+          const s = statusOf(pipe.id, j);
+          const vk = visKey(s, j);
+          const v = VIS[vk];
+          const on = j.id === st.job;
+          const canRetry = s === 'failed' || s === 'canceled' || (s === 'success' && pipe.id !== 'p320');
+          const action = s === 'manual' ? 'play' : (s === 'running' ? 'cancel' : (s === 'failed' || s === 'canceled' ? 'retry' : null));
+          return {
+            name: j.id,
+            on: on,
+            aria: j.id + ', ' + v.label,
+            right: s === 'running' ? 'running' : (s === 'manual' ? 'manual' : (s === 'created' ? '' : (s === 'skipped' ? 'skipped' : (s === 'canceled' ? '' : j.dur || '')))),
+            sq: sqStyle(v, 20),
+            iCheck: vk === 'success', iX: vk === 'failed' || vk === 'canceled', iWarn: vk === 'allowed', iSpin: vk === 'running', iPlay: vk === 'manual', iSlash: vk === 'skipped',
+            nameStyle: mono + 'min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: ' + (on ? '600' : '500') + '; color: ' + (s === 'skipped' || s === 'created' ? '#8C8C87' : '#F4F4F2'),
+            rowStyle: 'display: flex; align-items: center; gap: 2px; padding-right: 6px; background: ' + (on ? '#262626' : '#1C1C1C') + (on ? '; box-shadow: inset 0 0 0 2px #F7CF3D' : ''),
+            pick: () => this.setState({ job: j.id }),
+            hasAction: !!action,
+            aRetry: action === 'retry', aPlay: action === 'play', aCancel: action === 'cancel',
+            actionLabel: action === 'play' ? 'Run ' + j.id : (action === 'cancel' ? 'Cancel ' + j.id : 'Retry ' + j.id),
+            actionStyle: 'flex: 0 0 auto; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 0; cursor: pointer; background: ' + (action === 'play' ? '#F4F4F2' : '#333331') + '; color: ' + (action === 'play' ? '#101010' : '#F4F4F2'),
+            onAction: () => {
+              if (action === 'play') this.setState({ job: j.id });
+              else if (action === 'cancel') setOver(pipe.id, j.id, 'canceled');
+              else startJob(pipe.id, j, retryResult(pipe.id, j), 2600);
+            },
+            canRetry: canRetry
+          };
+        })
+      };
+    });
+
+    const LOGS = {
+      'ui-tests:android': [
+        ['$ emulator -avd pixel_7_api_34 -no-window', 'cmd'],
+        ['emulator: boot completed after 88 s', ''],
+        ['$ dotnet test tests/App.UITests -f net9.0-android --logger junit', 'cmd'],
+        ['  Passed  LoginPageTests.Login_WithValidUser_ShowsDeliveries [12 s]', 'ok'],
+        ['  Passed  DeliveryListTests.PullToRefresh_ReloadsList [8 s]', 'ok'],
+        ['  Failed  DeliveryPhotoPageTests.SendPhoto_Offline_ShowsBanner [30 s]', 'err'],
+        ['    Timed out after 30 s waiting for element "OfflineBanner"', 'err'],
+        ['  Passed  SignatureTests.Clear_ResetsCanvas [6 s]', 'ok'],
+        ['Total tests: 18. Passed: 17. Failed: 1.', ''],
+        ['ERROR: Job failed: exit code 1 (allowed to fail)', 'err']
+      ],
+      'unit-tests:p321': [
+        ['$ dotnet test tests/App.Tests -c Release --logger junit', 'cmd'],
+        ['  App.Tests -> tests/App.Tests/bin/Release/net9.0/App.Tests.dll', ''],
+        ['  Failed  SqliteUploadQueueTests.Dequeue_ReturnsOldestFirst [41 ms]', 'err'],
+        ['    Expected: "photo-1"  But was: "photo-3"', 'err'],
+        ['  Failed  SqliteUploadQueueTests.Dequeue_AfterRestart_KeepsOrder [55 ms]', 'err'],
+        ['Failed!  Failed: 2, Passed: 210, Skipped: 0, Total: 212', 'err'],
+        ['ERROR: Job failed: exit code 1', 'err']
+      ],
+      'distribute:qa': [
+        ['$ firebase appdistribution:distribute app-release.apk --groups qa', 'cmd'],
+        ['i  uploading binary...', ''],
+        ['✔  uploaded new release 1.8.0 (482) successfully', 'ok'],
+        ['✔  distributed to testers/groups successfully', 'ok'],
+        ['Job succeeded', 'ok']
+      ],
+      'ui-tests:ios-device': [
+        ['$ device-lab run --device "iPhone 15" --suite App.UITests', 'cmd'],
+        ['  reserved iPhone 15 (iOS 19.1) in the device lab', ''],
+        ['Total tests: 18. Passed: 18.', 'ok'],
+        ['Job succeeded', 'ok']
+      ]
+    };
+    const genericLog = (j) => {
+      if (j.stage === 'build') return [['$ dotnet build src/App -c Release' + (j.id === 'build:ios' ? ' -f net9.0-ios' : (j.id === 'build:android' ? ' -f net9.0-android' : '')), 'cmd'], ['  App -> src/App/bin/Release/App.dll', ''], ['Build succeeded. 0 Warning(s) 0 Error(s)', 'ok'], ['Job succeeded', 'ok']];
+      if (j.id === 'unit-tests') return [['$ dotnet test tests/App.Tests -c Release --logger junit', 'cmd'], ['Passed!  Failed: 0, Passed: 214, Skipped: 0, Total: 214', 'ok'], ['Job succeeded', 'ok']];
+      return [['$ ' + (j.id === 'sonar' ? 'dotnet sonarscanner end' : (j.id === 'lint' ? 'dotnet format --verify-no-changes' : 'dotnet format --verify-no-changes')), 'cmd'], ['No issues found.', 'ok'], ['Job succeeded', 'ok']];
+    };
+    const LOGC = { cmd: '#9DBBF8', ok: '#93E3A0', err: '#F6A983', '': '#C9C9C4' };
+
+    const EX = {
+      'p342:ui-tests:android': {
+        verdict: 'Caused by this MR', vColor: '#EF6E2E',
+        title: 'The test looks for “OfflineBanner”, the page now calls it “OfflineStatusBanner”',
+        body: 'Step 5 renamed the banner’s AutomationId. The UI test still waits for the old id, so it times out every time. A retry won’t help. The job is allowed to fail, which is why the pipeline still shows as passed.',
+        evidence: ['DeliveryPhotoPage.xaml:14', 'DeliveryPhotoPageTests.cs:41'],
+        comment: 'ui-tests:android fails because the banner’s AutomationId changed to OfflineStatusBanner. Could you update DeliveryPhotoPageTests (L41) in this MR?'
+      },
+      'p321:unit-tests': {
+        verdict: 'Already fixed in version 3', vColor: '#63D676',
+        title: 'Queue returned items by Id instead of CreatedAt',
+        body: 'Both failing tests check the queue order. Commit a3f9c12 (version 3) sorts by CreatedAt, and the same tests pass in pipeline #18342.',
+        evidence: ['SqliteUploadQueue.cs:88', 'pipeline #18342'],
+        comment: ''
+      }
+    };
+
+    const jdef = JOBS.find((j) => j.id === st.job) || JOBS[0];
+    const js = statusOf(pipe.id, jdef);
+    const jvk = visKey(js, jdef);
+    const jv = VIS[jvk];
+    const exKey = pipe.id + ':' + jdef.id;
+    const exData = EX[exKey];
+    const exState = st.ex[exKey] || 'idle';
+    let logSrc = LOGS[jdef.id + ':' + pipe.id] || LOGS[jdef.id] || genericLog(jdef);
+    if (js === 'running') logSrc = logSrc.slice(0, 2);
+    const log = logSrc.map((l) => ({ t: l[0], s: 'white-space: pre-wrap; overflow-wrap: anywhere; color: ' + LOGC[l[1]] }));
+    const isFailed = js === 'failed';
+    const showLog = js !== 'manual' && js !== 'created' && js !== 'skipped';
+    const ABOUT = {
+      'ui-tests:ios-device': 'Runs the UI tests on a physical iPhone in the device lab. Manual because it takes about 20 minutes and blocks a device.',
+      'distribute:qa': 'Sends this Android build to the QA group in Firebase App Distribution.'
+    };
+    const VARS = {
+      'ui-tests:ios-device': [{ key: 'DEVICE', value: 'iPhone 15' }],
+      'distribute:qa': [{ key: 'RELEASE_NOTES', value: 'MR !482 · offline queue for delivery photos' }]
+    };
+    const ARTS = {
+      'build:android': [{ name: 'app-release.apk', size: '48 MB' }],
+      'build:ios': [{ name: 'App.ipa', size: '61 MB' }],
+      'unit-tests': [{ name: 'report.xml', size: '212 KB' }]
+    };
+    const setEx = (v) => {
+      const cur = (this.state && this.state.ex) || {};
+      this.setState({ ex: Object.assign({}, cur, { [exKey]: v }) });
+    };
+    const d = {
+      name: jdef.id,
+      sq: sqStyle(jv, 14),
+      statusLabel: jv.label,
+      tagStyle: cond + 'font-size: 13px; font-weight: 800; letter-spacing: 0.04em; padding: 1px 8px; background: ' + (jv.bg === 'transparent' ? 'transparent' : jv.bg) + '; color: ' + (jv.bg === 'transparent' ? jv.ink : '#101010') + (jv.ring ? '; box-shadow: inset 0 0 0 2px ' + jv.ring : ''),
+      meta: STAGES[stageIdx[jdef.stage]].name + ' stage' + (js === 'manual' ? '' : (jdef.dur && js !== 'running' && js !== 'created' && js !== 'skipped' ? ' · ' + jdef.dur : '')) + (js === 'running' ? ' · started just now' : '') + (jdef.allow ? ' · allowed to fail' : ''),
+      canRetry: (js === 'failed' || js === 'canceled' || js === 'success') && !jdef.manual,
+      canCancel: js === 'running',
+      onRetry: () => startJob(pipe.id, jdef, retryResult(pipe.id, jdef), 2600),
+      onCancel: () => setOver(pipe.id, jdef.id, 'canceled'),
+      isManual: js === 'manual',
+      about: ABOUT[jdef.id] || '',
+      vars: VARS[jdef.id] || [],
+      playLabel: 'Run ' + jdef.id,
+      onPlay: () => startJob(pipe.id, jdef, 'success', 2400),
+      hasLog: showLog,
+      log: log,
+      isRunning: js === 'running',
+      isFailed: isFailed && !!exData,
+      isOk: js === 'success',
+      isIdle: (isFailed && !exData) || js === 'canceled',
+      idleNote: js === 'canceled' ? 'Canceled before it finished.' : 'Same failure as in #18342. The explanation is there.',
+      failedAgain: st.over[exKey] === 'failed',
+      artifacts: ARTS[jdef.id] || [],
+      noArtifacts: !ARTS[jdef.id],
+      exIdle: exState === 'idle',
+      exLoading: exState === 'loading',
+      exDone: exState === 'done',
+      onExplain: () => { setEx('loading'); setTimeout(() => setEx('done'), 1300); },
+      ex: exData ? {
+        verdict: exData.verdict,
+        verdictStyle: cond + 'align-self: flex-start; font-size: 13px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 8px; color: #101010; background: ' + exData.vColor,
+        title: exData.title,
+        body: exData.body,
+        evidence: exData.evidence,
+        comment: exData.comment,
+        hasComment: !!exData.comment
+      } : { evidence: [] },
+      drafted: !!st.drafted,
+      notDrafted: !st.drafted,
+      onDraft: () => this.setState({ drafted: true })
+    };
+
+    const head = {
+      statusLabel: pv.label,
+      statusStyle: cond + 'font-size: 18px; font-weight: 800; letter-spacing: 0.04em; padding: 4px 12px; color: #101010; background: ' + (pv.bg === 'transparent' ? '#3A3A38' : pv.bg),
+      hasAllowed: allowedFails > 0 && pStatus === 'success',
+      allowedLabel: allowedFails + ' allowed failure',
+      num: pipe.num,
+      kind: pipe.kind,
+      sha: pipe.sha,
+      meta: pipe.ver + ' · ' + pipe.meta,
+      canRetryAll: failedJobs.length > 0 && pStatus !== 'running',
+      isRunning: pStatus === 'running',
+      onRetryAll: () => failedJobs.forEach((j) => startJob(pipe.id, j, retryResult(pipe.id, j), 2600)),
+      onCancelAll: () => {
+        const cur = Object.assign({}, (this.state && this.state.over) || {});
+        JOBS.forEach((j) => { const s = statusOf(pipe.id, j); if (s === 'running' || s === 'created') cur[pipe.id + ':' + j.id] = 'canceled'; });
+        this.setState({ over: cur, tick: 99 });
+      },
+      onAskRun: () => this.setState({ confirm: true })
+    };
+
+    const advance = () => {
+      const t = ((this.state && this.state.tick) || 0);
+      if (t >= 3) return;
+      this.setState({ tick: t + 1 });
+      if (t + 1 < 3) setTimeout(advance, 1600);
+    };
+    return {
+      head: head,
+      pipes: pipes,
+      stages: stages,
+      d: d,
+      confirmRun: !!st.confirm,
+      onCancelRun: () => this.setState({ confirm: false }),
+      onRun: () => {
+        this.setState({ confirm: false, hasNew: true, pipe: 'p351', job: 'build:android', tick: 0 });
+        setTimeout(advance, 1600);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

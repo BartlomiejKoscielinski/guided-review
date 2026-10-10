@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Code navigation in the diff</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+kbd{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;line-height:1;padding:2px 5px;border-radius:3px;background:#2A2A2A;color:#D6D6D1}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="flex: 0 0 auto; color: #8C8C87">mobile-app</span>
+<span style="flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #F7CF3D">!482</span>
+<span style="color: #F4F4F2; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0">Offline queue for delivery photos</span>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 100%">
+<div role="group" aria-label="Mode" style="display: flex; background: #1A1A1A; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">
+<span aria-current="true" style="height: 28px; display: inline-flex; align-items: center; padding: 0 12px; background: #F4F4F2; color: #101010">Focus</span>
+<a href="Main.dc.html" style="height: 28px; display: inline-flex; align-items: center; padding: 0 12px; color: #B3B3AE; text-decoration: none">Detailed</a>
+</div>
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Sonnet 5.5 · medium</a>
+<a href="SummaryDesk.dc.html" style="height: 28px; display: inline-flex; align-items: center; padding: 0 12px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Finish review</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #F7CF3D; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; overflow: auto">
+
+<main style="flex: 999 1 640px; min-width: 0; overflow: auto">
+<section style="padding: 22px 28px 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #F7CF3D">Step 3 / 8</span>
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; line-height: 1.02; font-weight: 800; text-transform: uppercase">UploadWorker sends queued photos</h1>
+<span style="font-size: 13.5px; color: #8C8C87">Click any underlined name to see what it is. <kbd>F12</kbd> definition · <kbd>Shift</kbd> <kbd>F12</kbd> usages · <kbd>Esc</kbd> close</span>
+</section>
+
+<div style="position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 8px 28px; background: #1A1A1A">
+<div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #8C8C87; white-space: nowrap">src/App/Workers/<b style="color: #F4F4F2; font-weight: 600">UploadWorker.cs</b></span>
+<span style="padding: 1px 7px; background: #3F7CF2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase">New file</span>
+</div>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #B3B3AE"><span style="width: 8px; height: 8px; background: #63D676"></span>Code index ready · csharp-ls</span>
+</div>
+
+<div style="background: #141414; font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 21px">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="24">
+<sc-if value="{{row.isMoved}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 9px 16px 9px 62px; background: #1F1F1F; font-family: 'Barlow', 'Segoe UI', sans-serif; font-size: 13.5px; line-height: 1.4">
+<span style="padding: 1px 7px; background: #F4F4F2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase">Moved</span>
+<span style="color: #E8E8E4">16 lines from <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px">ViewModels/DeliveryPhotoViewModel.cs</span> L88–103</span>
+<span style="padding: 1px 7px; background: #EF6E2E; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase">1 line changed</span>
+<span style="margin-left: auto; display: flex; gap: 4px">
+<button type="button" onClick="{{row.x.toggleMoved}}" aria-expanded="{{row.x.movedOpen}}" style="height: 28px; padding: 0 12px; border: 0; background: #F4F4F2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">{{row.x.movedBtn}}</button>
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Go to origin</a>
+</span>
+</div>
+</sc-if>
+<sc-if value="{{row.isLine}}" hint-placeholder-val="{{ true }}">
+<div style="{{row.style}}">
+<span style="{{row.lnStyle}}">{{row.n}}</span>
+<span style="{{row.codeStyle}}"><span style="{{row.signStyle}}">{{row.sign}}</span><sc-for list="{{row.toks}}" as="tk"><span style="{{tk.s}}" onClick="{{tk.on}}" title="{{tk.title}}">{{tk.t}}</span></sc-for></span>
+</div>
+</sc-if>
+<sc-if value="{{row.hasHover}}" hint-placeholder-val="{{ false }}">
+<div style="position: relative; height: 0; z-index: 5">
+<div role="dialog" aria-label="{{row.hv.name}}" style="{{row.hv.boxStyle}}">
+<div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px 0">
+<span style="{{row.hv.kindStyle}}">{{row.hv.kind}}</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8C8C87; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{row.hv.where}}</span>
+<button type="button" onClick="{{row.x.closeHover}}" aria-label="Close" style="margin-left: auto; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #B3B3AE; cursor: pointer"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+<div style="padding: 8px 14px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.55; color: #F4F4F2; white-space: pre-wrap">{{row.hv.sig}}</div>
+<div style="padding: 0 14px 12px; font-family: 'Barlow', sans-serif; font-size: 13.5px; line-height: 1.5; color: #C9C9C4">{{row.hv.doc}}</div>
+<sc-if value="{{row.hv.hasMr}}" hint-placeholder-val="{{ false }}"><div style="margin: 0 14px 12px; display: inline-flex; align-items: center; gap: 8px; font-family: 'Barlow', sans-serif; font-size: 12.5px; color: #F7CF3D"><span style="width: 8px; height: 8px; background: #F7CF3D"></span>{{row.hv.mr}}</div></sc-if>
+<div style="display: flex; flex-wrap: wrap; gap: 2px; padding: 8px; background: #141414; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase">
+<button type="button" onClick="{{row.x.peek}}" style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Definition <kbd>F12</kbd></button>
+<button type="button" onClick="{{row.x.findUsages}}" style="display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Usages <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px">{{row.hv.count}}</span></button>
+<button type="button" style="height: 30px; padding: 0 10px; border: 0; background: transparent; color: #B3B3AE; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Open in Rider</button>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{row.hasPeek}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 8px 16px 12px 62px; background: #101010">
+<div role="region" aria-label="Definition" style="max-width: 860px; background: #1C1C1C; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5)">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 9px 14px; background: #262626; font-family: 'Barlow', sans-serif">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #F4F4F2">{{row.pk.file}}</span>
+<span style="{{row.pk.tagStyle}}">{{row.pk.tag}}</span>
+<button type="button" onClick="{{row.x.closePeek}}" style="margin-left: auto; height: 26px; padding: 0 10px; border: 0; background: transparent; color: #B3B3AE; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Close <kbd>Esc</kbd></button>
+</div>
+<div style="padding: 8px 0">
+<sc-for list="{{row.pk.lines}}" as="pl" hint-placeholder-count="5"><div style="display: flex"><span style="flex: 0 0 48px; padding: 0 8px; font-size: 11px; text-align: right; color: #7E7E79">{{pl.n}}</span><span style="{{pl.style}}"><sc-for list="{{pl.toks}}" as="tk"><span style="{{tk.s}}">{{tk.t}}</span></sc-for></span></div></sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</sc-for>
+</div>
+<div style="height: 40px"></div>
+</main>
+
+<aside aria-label="Usages" style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 22px 18px 24px; background: #141414; overflow: auto">
+<sc-if value="{{hasUsages}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Usages</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; overflow-wrap: anywhere">{{us.name}}</span>
+</div>
+<button type="button" onClick="{{closeUsages}}" aria-label="Close usages" style="flex: 0 0 auto; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 0; background: #262626; color: #F4F4F2; cursor: pointer"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+<sc-for list="{{us.groups}}" as="g" hint-placeholder-count="2">
+<section style="display: flex; flex-direction: column; gap: 2px">
+<div style="display: flex; align-items: center; gap: 8px; padding: 0 2px 6px">
+<span style="{{g.sq}}"></span>
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">{{g.title}}</h2>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">{{g.count}}</span>
+</div>
+<sc-for list="{{g.items}}" as="u" hint-placeholder-count="2">
+<a href="{{u.href}}" style="display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; background: #1C1C1C; color: #F4F4F2; text-decoration: none">
+<span style="display: flex; align-items: baseline; gap: 8px; min-width: 0"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{u.file}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">{{u.line}}</span><span style="margin-left: auto; font-size: 12px; color: #8C8C87; white-space: nowrap">{{u.note}}</span></span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #B3B3AE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{u.code}}</span>
+</a>
+</sc-for>
+</section>
+</sc-for>
+<sc-if value="{{us.hasClaude}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #1C1C1C">
+<span style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #D3A2FA"><span style="width: 9px; height: 9px; background: #B93CF6"></span>Claude</span>
+<span style="font-size: 14px; line-height: 1.5; color: #E8E8E4">{{us.claude}}</span>
+<sc-if value="{{notAsked}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{askQ}}" style="align-self: flex-start; height: 32px; padding: 0 12px; border: 0; background: #3F7CF2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Add as a question</button></sc-if>
+<sc-if value="{{asked}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #F7CF3D"><span style="width: 8px; height: 8px; background: #F7CF3D"></span>Question added to drafts.</span></sc-if>
+</div>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{noUsages}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 4px 2px">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Usages</span>
+<span style="font-size: 14px; line-height: 1.5; color: #B3B3AE">Pick a name in the code and choose Usages. Calls outside this MR show up separately, so you see what the change can break.</span>
+</div>
+</sc-if>
+</aside>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({ sym: 'UploadPhotoAsync', symLine: 37, hover: true, peek: false, usages: 'UploadPhotoAsync', moved: false, asked: false }, this.state || {});
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const C = { kw: '#D3A2FA', type: '#93E3A0', str: '#F6DC80', com: '#8C8C87', num: '#F6A983', plain: '#E8E8E4', punct: '#A3A39E' };
+    const KW = new Set(['public', 'private', 'static', 'readonly', 'sealed', 'class', 'interface', 'async', 'await', 'var', 'new', 'while', 'if', 'is', 'null', 'continue', 'return', 'using', 'void', 'byte', 'int', 'float', 'namespace']);
+    const TYPES = new Set(['Task', 'CancellationToken', 'SemaphoreSlim', 'SKBitmap', 'SKData', 'SKImage', 'SKSamplingOptions', 'SKEncodedImageFormat', 'Math', 'Guid', 'UploadWorker', 'PendingUpload']);
+    const SYM = {
+      IUploadQueue: { kind: 'interface', where: 'Core/IUploadQueue.cs:5', sig: 'public interface IUploadQueue', doc: 'Persistent queue of photos waiting for upload.', mr: 'Added in this MR · step 1', peekFile: 'src/App/Core/IUploadQueue.cs', peek: [[5, 'public interface IUploadQueue'], [6, '{'], [7, '    Task EnqueueAsync(PendingUpload item, CancellationToken ct = default);'], [8, '    Task<PendingUpload?> PeekAsync(CancellationToken ct = default);'], [9, '    Task RemoveAsync(Guid id, CancellationToken ct = default);'], [10, '}']], hl: 5 },
+      IPhotoApi: { kind: 'interface', where: 'Services/IPhotoApi.cs:3', sig: 'public interface IPhotoApi', doc: 'HTTP client for the delivery photo endpoints.', mr: '', peekFile: 'src/App/Services/IPhotoApi.cs', peek: [[3, 'public interface IPhotoApi'], [4, '{'], [5, '    Task UploadPhotoAsync(Guid deliveryId, byte[] jpeg, CancellationToken ct = default);'], [6, '}']], hl: 3 },
+      PeekAsync: { kind: 'method', where: 'Core/IUploadQueue.cs:8', sig: 'Task<PendingUpload?> PeekAsync(CancellationToken ct = default)', doc: 'Returns the oldest item without removing it, or null when the queue is empty.', mr: 'Added in this MR · step 1', peekFile: 'src/App/Core/IUploadQueue.cs', peek: [[7, '    Task EnqueueAsync(PendingUpload item, CancellationToken ct = default);'], [8, '    Task<PendingUpload?> PeekAsync(CancellationToken ct = default);'], [9, '    Task RemoveAsync(Guid id, CancellationToken ct = default);']], hl: 8 },
+      RemoveAsync: { kind: 'method', where: 'Core/IUploadQueue.cs:9', sig: 'Task RemoveAsync(Guid id, CancellationToken ct = default)', doc: 'Deletes the item after a successful upload.', mr: 'Added in this MR · step 1', peekFile: 'src/App/Core/IUploadQueue.cs', peek: [[8, '    Task<PendingUpload?> PeekAsync(CancellationToken ct = default);'], [9, '    Task RemoveAsync(Guid id, CancellationToken ct = default);'], [10, '}']], hl: 9 },
+      UploadPhotoAsync: { kind: 'method', where: 'Services/IPhotoApi.cs:5', sig: 'Task UploadPhotoAsync(Guid deliveryId, byte[] jpeg,\n                      CancellationToken ct = default)', doc: 'Uploads a JPEG for the delivery. Throws HttpRequestException on network errors.', mr: '', peekFile: 'src/App/Services/IPhotoApi.cs', peek: [[3, 'public interface IPhotoApi'], [4, '{'], [5, '    Task UploadPhotoAsync(Guid deliveryId, byte[] jpeg, CancellationToken ct = default);'], [6, '}']], hl: 5 },
+      ResizeForUpload: { kind: 'method', where: 'UploadWorker.cs:44 · this file', sig: 'private static byte[] ResizeForUpload(byte[] jpeg, int maxSide)', doc: 'Scales the photo so its longer side is at most maxSide and re-encodes it as JPEG.', mr: 'Moved here in this MR from DeliveryPhotoViewModel', peekFile: 'src/App/Workers/UploadWorker.cs', peek: [[44, 'private static byte[] ResizeForUpload(byte[] jpeg, int maxSide)'], [45, '{'], [46, '    using var bmp = SKBitmap.Decode(jpeg);']], hl: 44 },
+      Kick: { kind: 'method', where: 'UploadWorker.cs:42 · this file', sig: 'public void Kick()', doc: 'Wakes the worker when a new item is queued.', mr: 'Added in this MR · step 3', peekFile: 'src/App/Workers/UploadWorker.cs', peek: [[42, 'public void Kick() => _signal.Release();']], hl: 42 }
+    };
+    const USAGES = {
+      UploadPhotoAsync: {
+        groups: [
+          { title: 'In this MR', col: '#F7CF3D', items: [
+            { file: 'UploadWorker.cs', line: ':37', note: 'step 3', code: 'await _api.UploadPhotoAsync(item.DeliveryId, bytes, ct);', href: 'Navigate.dc.html' },
+            { file: 'DeliveryPhotoViewModel.cs', line: ':37', note: 'removed · step 4', code: '− await _api.UploadPhotoAsync(DeliveryId, bytes);', href: 'Main.dc.html' }
+          ] },
+          { title: 'Outside this MR', col: '#EF6E2E', items: [
+            { file: 'SignatureUploadService.cs', line: ':52', note: 'not changed', code: 'await _api.UploadPhotoAsync(deliveryId, png, ct);', href: '#' },
+            { file: 'ProofOfDeliveryService.cs', line: ':88', note: 'not changed', code: 'await _photoApi.UploadPhotoAsync(id, jpeg);', href: '#' }
+          ] }
+        ],
+        claude: 'Signatures and proof-of-delivery photos still upload directly. They don’t go through the new queue, so they are still lost without network. Intended for a later MR?'
+      },
+      PeekAsync: { groups: [{ title: 'In this MR', col: '#F7CF3D', items: [
+        { file: 'UploadWorker.cs', line: ':34', note: 'step 3', code: 'var item = await _queue.PeekAsync(ct);', href: 'Navigate.dc.html' },
+        { file: 'SqliteUploadQueue.cs', line: ':41', note: 'implements · step 2', code: 'public async Task<PendingUpload?> PeekAsync(…)', href: 'Main.dc.html' },
+        { file: 'UploadQueueTests.cs', line: ':22', note: 'step 8', code: 'var first = await queue.PeekAsync();', href: 'Main.dc.html' }
+      ] }], claude: '' },
+      RemoveAsync: { groups: [{ title: 'In this MR', col: '#F7CF3D', items: [
+        { file: 'UploadWorker.cs', line: ':38', note: 'step 3', code: 'await _queue.RemoveAsync(item.Id, ct);', href: 'Navigate.dc.html' },
+        { file: 'SqliteUploadQueue.cs', line: ':57', note: 'implements · step 2', code: 'public Task RemoveAsync(Guid id, …)', href: 'Main.dc.html' }
+      ] }], claude: '' },
+      IUploadQueue: { groups: [{ title: 'In this MR', col: '#F7CF3D', items: [
+        { file: 'SqliteUploadQueue.cs', line: ':9', note: 'implements', code: 'public sealed class SqliteUploadQueue : IUploadQueue', href: 'Main.dc.html' },
+        { file: 'UploadWorker.cs', line: ':22', note: 'field', code: 'private readonly IUploadQueue _queue;', href: 'Navigate.dc.html' },
+        { file: 'DeliveryPhotoViewModel.cs', line: ':17', note: 'field', code: 'private readonly IUploadQueue _queue;', href: 'Main.dc.html' },
+        { file: 'MauiProgram.cs', line: ':41', note: 'registration', code: 'services.AddSingleton<IUploadQueue, SqliteUploadQueue>();', href: 'Main.dc.html' }
+      ] }], claude: '' },
+      IPhotoApi: { groups: [{ title: 'In this MR', col: '#F7CF3D', items: [
+        { file: 'UploadWorker.cs', line: ':23', note: 'field', code: 'private readonly IPhotoApi _api;', href: 'Navigate.dc.html' }
+      ] }, { title: 'Outside this MR', col: '#EF6E2E', items: [
+        { file: 'SignatureUploadService.cs', line: ':14', note: 'not changed', code: 'private readonly IPhotoApi _api;', href: '#' },
+        { file: 'ProofOfDeliveryService.cs', line: ':12', note: 'not changed', code: 'private readonly IPhotoApi _photoApi;', href: '#' }
+      ] }], claude: '' },
+      ResizeForUpload: { groups: [{ title: 'In this MR', col: '#F7CF3D', items: [
+        { file: 'UploadWorker.cs', line: ':36', note: 'only caller', code: 'var bytes = ResizeForUpload(item.Bytes, MaxSide);', href: 'Navigate.dc.html' }
+      ] }], claude: '' },
+      Kick: { groups: [{ title: 'In this MR', col: '#F7CF3D', items: [
+        { file: 'DeliveryPhotoViewModel.cs', line: ':48', note: 'step 4', code: '_worker.Kick();', href: 'Main.dc.html' },
+        { file: 'App.xaml.cs', line: ':31', note: 'step 6', code: 'worker.Kick(); // drain queue on start', href: 'Main.dc.html' }
+      ] }], claude: '' }
+    };
+
+    const tok = (text, line) => {
+      const out = [];
+      if (!text) return out;
+      const re = /("(?:[^"\\]|\\.)*")|(\/\/.*$)|([A-Za-z_][A-Za-z0-9_]*)|(\d+(?:\.\d+)?f?)|(\s+)|([^\sA-Za-z0-9_"]+)/g;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const t = m[0];
+        let c = C.plain;
+        if (m[1]) c = C.str; else if (m[2]) c = C.com;
+        else if (m[3]) c = KW.has(t) ? C.kw : (TYPES.has(t) || SYM[t] && SYM[t].kind === 'interface' ? C.type : C.plain);
+        else if (m[4]) c = C.num; else if (m[6]) c = C.punct;
+        const isSym = !!(m[3] && SYM[t]);
+        const active = isSym && st.hover && st.sym === t && st.symLine === line;
+        out.push({
+          t: t,
+          s: 'color: ' + c + (isSym ? '; cursor: pointer; text-decoration: underline dotted rgba(244, 244, 242, 0.4); text-underline-offset: 3px' : '') + (active ? '; background: rgba(247, 207, 61, 0.28); outline: 1px solid #F7CF3D' : ''),
+          title: isSym ? 'Show ' + t : '',
+          on: isSym ? () => this.setState({ sym: t, symLine: line, hover: true, peek: false }) : () => {}
+        });
+      }
+      return out;
+    };
+
+    const FILE = [
+      [20, 'public sealed class UploadWorker'],
+      [21, '{'],
+      [22, '    private readonly IUploadQueue _queue;'],
+      [23, '    private readonly IPhotoApi _api;'],
+      [24, '    private readonly SemaphoreSlim _signal = new(0);'],
+      [25, '    private const int MaxSide = 1600;'],
+      [26, ''],
+      [30, '    public async Task RunAsync(CancellationToken ct)'],
+      [31, '    {'],
+      [32, '        while (!ct.IsCancellationRequested)'],
+      [33, '        {'],
+      [34, '            var item = await _queue.PeekAsync(ct);'],
+      [35, '            if (item is null) { await _signal.WaitAsync(ct); continue; }'],
+      [36, '            var bytes = ResizeForUpload(item.Bytes, MaxSide);'],
+      [37, '            await _api.UploadPhotoAsync(item.DeliveryId, bytes, ct);'],
+      [38, '            await _queue.RemoveAsync(item.Id, ct);'],
+      [39, '        }'],
+      [40, '    }'],
+      [41, ''],
+      [42, '    public void Kick() => _signal.Release();'],
+      [43, ''],
+      ['moved'],
+      [60, '}']
+    ];
+    const MOVED = [
+      [44, '    private static byte[] ResizeForUpload(byte[] jpeg, int maxSide)', 'm'],
+      [45, '    {', 'm'],
+      [46, '        using var bmp = SKBitmap.Decode(jpeg);', 'm'],
+      [47, '        var scale = Math.Min(1f, maxSide / (float)Math.Max(bmp.Width, bmp.Height));', 'm'],
+      [48, '        if (scale >= 1f) return jpeg;', 'm'],
+      ['…', '        // 8 more unchanged lines', 'fold'],
+      ['', '        using var data = img.Encode(SKEncodedImageFormat.Jpeg, 80);', 'd'],
+      [57, '        using var data = img.Encode(SKEncodedImageFormat.Jpeg, 85);', 'a'],
+      [58, '        return data.ToArray();', 'm'],
+      [59, '    }', 'm']
+    ];
+
+    const lnBase = 'flex: 0 0 48px; padding: 0 8px; font-size: 11px; text-align: right; user-select: none; ';
+    const codeBase = 'flex: 1 1 auto; min-width: 0; padding: 0 14px 0 4px; white-space: pre-wrap; overflow-wrap: anywhere; ';
+    const signBase = 'display: inline-block; width: 1.6ch; user-select: none; ';
+    const symDef = SYM[st.sym];
+    const mkLine = (n, text, kind) => {
+      const isAdd = kind === 'new' || kind === 'a';
+      let bg = 'transparent'; let lnCol = '#9DBBF8'; let lnBg = 'rgba(63, 124, 242, 0.08)'; let sign = '+'; let signCol = '#9DBBF8';
+      if (kind === 'm') { bg = 'rgba(244, 244, 242, 0.035)'; lnBg = 'rgba(244, 244, 242, 0.05)'; lnCol = '#8C8C87'; sign = ' '; }
+      if (kind === 'fold') { bg = 'rgba(244, 244, 242, 0.035)'; lnBg = 'rgba(244, 244, 242, 0.05)'; lnCol = '#8C8C87'; sign = ' '; }
+      if (kind === 'a') { bg = 'rgba(63, 124, 242, 0.16)'; lnBg = 'rgba(63, 124, 242, 0.10)'; }
+      if (kind === 'd') { bg = 'rgba(239, 110, 46, 0.14)'; lnBg = 'rgba(239, 110, 46, 0.09)'; lnCol = '#F6A983'; sign = '−'; signCol = '#F6A983'; }
+      const hasHover = st.hover && symDef && st.symLine === n;
+      const toks = kind === 'fold' ? [{ t: text, s: 'color: #8C8C87; font-style: italic', title: '', on: () => {} }] : tok(text, n);
+      let col = 0;
+      if (hasHover) { const i = text.indexOf(st.sym); col = i < 0 ? 0 : i; }
+      return {
+        isMoved: false, isLine: true,
+        n: n,
+        style: 'display: flex; min-height: 21px' + (kind === 'm' || kind === 'fold' ? '; opacity: 0.85' : ''),
+        lnStyle: lnBase + 'background: ' + lnBg + '; color: ' + lnCol,
+        codeStyle: codeBase + 'background: ' + bg,
+        sign: sign,
+        signStyle: signBase + 'color: ' + signCol,
+        toks: toks,
+        hasHover: hasHover,
+        hoverLeft: 62 + Math.round((col + 1.6) * 7.5),
+        hasPeek: hasHover && st.peek,
+        isAdd: isAdd
+      };
+    };
+    const rows = [];
+    FILE.forEach((f) => {
+      if (f[0] === 'moved') {
+        rows.push({ isMoved: true, isLine: false, hasHover: false, hasPeek: false });
+        if (st.moved) MOVED.forEach((m) => rows.push(mkLine(m[0], m[1], m[2])));
+        return;
+      }
+      rows.push(mkLine(f[0], f[1], 'new'));
+    });
+    const hoverRow = rows.find((r) => r.hasHover);
+    const hv = symDef ? {
+      name: st.sym,
+      kind: symDef.kind,
+      where: symDef.where,
+      sig: symDef.sig,
+      doc: symDef.doc,
+      hasMr: !!symDef.mr,
+      mr: symDef.mr,
+      count: (USAGES[st.sym] ? USAGES[st.sym].groups.reduce((a, g) => a + g.items.length, 0) : 0),
+      kindStyle: cond + 'font-size: 12px; font-weight: 800; letter-spacing: 0.05em; padding: 1px 7px; color: #101010; background: ' + (symDef.kind === 'interface' ? '#63D676' : '#3F7CF2'),
+      boxStyle: 'position: absolute; bottom: 23px; left: ' + Math.min(hoverRow ? hoverRow.hoverLeft : 80, 520) + 'px; width: 470px; max-width: calc(100% - 80px); background: #262626; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6); font-family: Barlow, Segoe UI, sans-serif; line-height: 1.45'
+    } : {};
+    if (st.peek && hoverRow) hoverRow.hasHover = false;
+    const pkTok = (t) => tok(t, -1).map((x) => ({ t: x.t, s: x.s }));
+    const pk = symDef ? {
+      file: symDef.peekFile,
+      tag: symDef.mr ? 'In this MR' : 'Not changed in this MR',
+      tagStyle: cond + 'font-size: 12px; font-weight: 800; letter-spacing: 0.05em; padding: 1px 7px; color: #101010; background: ' + (symDef.mr ? '#F7CF3D' : '#B3B3AE'),
+      lines: symDef.peek.map((p) => ({ n: p[0], toks: pkTok(p[1]), style: 'flex: 1 1 auto; min-width: 0; padding: 0 14px 0 4px; white-space: pre-wrap; overflow-wrap: anywhere' + (p[0] === symDef.hl ? '; background: rgba(247, 207, 61, 0.14)' : '') }))
+    } : { lines: [] };
+
+    const U = st.usages && USAGES[st.usages];
+    const us = U ? {
+      name: (SYM[st.usages].kind === 'method' ? (st.usages === 'UploadPhotoAsync' ? 'IPhotoApi.' : (st.usages === 'Kick' || st.usages === 'ResizeForUpload' ? 'UploadWorker.' : 'IUploadQueue.')) : '') + st.usages,
+      groups: U.groups.map((g) => ({ title: g.title, count: String(g.items.length), sq: 'width: 10px; height: 10px; background: ' + g.col, items: g.items })),
+      hasClaude: !!U.claude,
+      claude: U.claude
+    } : { groups: [] };
+
+    const x = {
+      movedOpen: st.moved,
+      movedBtn: st.moved ? 'Hide' : 'Show',
+      toggleMoved: () => this.setState({ moved: !st.moved }),
+      closeHover: () => this.setState({ hover: false, peek: false }),
+      peek: () => this.setState({ peek: true }),
+      closePeek: () => this.setState({ peek: false, hover: false }),
+      findUsages: () => this.setState({ usages: st.sym })
+    };
+    rows.forEach((r) => { r.hv = hv; r.pk = pk; r.x = x; });
+    return {
+      rows: rows,
+      hv: hv,
+      pk: pk,
+      us: us,
+      hasUsages: !!U,
+      noUsages: !U,
+      movedOpen: st.moved,
+      movedBtn: st.moved ? 'Hide' : 'Show',
+      toggleMoved: () => this.setState({ moved: !st.moved }),
+      closeHover: () => this.setState({ hover: false, peek: false }),
+      peek: () => this.setState({ peek: true }),
+      closePeek: () => this.setState({ peek: false, hover: false }),
+      findUsages: () => this.setState({ usages: st.sym }),
+      closeUsages: () => this.setState({ usages: null }),
+      notAsked: !st.asked,
+      asked: st.asked,
+      askQ: () => this.setState({ asked: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

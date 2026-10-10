@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Since your last review – MR !471</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+kbd{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;line-height:1;padding:2px 5px;border-radius:3px;background:#2A2A2A;color:#D6D6D1}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="flex: 0 0 auto; color: #8C8C87">mobile-app</span>
+<span style="flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #F7CF3D">!471</span>
+<span style="color: #F4F4F2; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0">Signature screen: field validation</span>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 100%">
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Sonnet 5.5 · medium</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #F7CF3D; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; overflow: auto">
+
+<aside aria-label="What changed" style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 22px; padding: 26px 18px 24px; background: #141414; overflow: auto">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 6px">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #EF6E2E">Since your last review</span>
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 46px; line-height: 0.95; font-weight: 800; text-transform: uppercase">{{toCheck}}</h1>
+<span style="font-size: 13.5px; color: #B3B3AE">Ola M. force-pushed 40 min ago and rebased onto develop.</span>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase">
+<a href="Review.dc.html" style="display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px; background: #F7CF3D; color: #101010; font-weight: 800; text-decoration: none">{{ctaBtn}} <kbd style="background: rgba(16, 16, 16, 0.15); color: #101010">Enter</kbd></a>
+<a href="Review.dc.html" style="font-size: 14px; font-weight: 700; color: #B3B3AE; text-decoration: none">Review everything again</a>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 0 6px">
+<span id="cmp-l" style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Compare</span>
+<div style="display: flex; align-items: center; gap: 8px">
+<div role="radiogroup" aria-labelledby="cmp-l" style="display: flex; background: #0D0D0D">
+<sc-for list="{{froms}}" as="v" hint-placeholder-count="2">
+<button type="button" role="radio" aria-checked="{{v.on}}" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}<sc-if value="{{v.isYou}}" hint-placeholder-val="{{ false }}"><span style="{{v.youStyle}}">you</span></sc-if></button>
+</sc-for>
+</div>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8C8C87" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M2 8h11M9.5 4.5 13 8l-3.5 3.5"></path></svg>
+<span style="display: inline-flex; align-items: center; height: 34px; padding: 0 12px; background: #F4F4F2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">v3 · latest</span>
+</div>
+</div>
+
+<section aria-labelledby="h-commits" style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="h-commits" style="margin: 0 6px 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Commits in this MR</h2>
+<sc-for list="{{commits}}" as="c" hint-placeholder-count="5">
+<button type="button" onClick="{{c.pick}}" aria-pressed="{{c.on}}" style="{{c.style}}">
+<span style="{{c.tagStyle}}">{{c.tag}}</span>
+<span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+<span style="{{c.titleStyle}}">{{c.title}}</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">{{c.meta}}</span>
+</span>
+</button>
+</sc-for>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 6px; padding: 10px 12px; background: #1A1A1A; font-size: 13px; color: #B3B3AE">
+<span>{{rebaseNote}}</span>
+<button type="button" onClick="{{toggleRebase}}" aria-pressed="{{showRebase}}" style="margin-left: auto; height: 28px; padding: 0 10px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">{{rebaseBtn}}</button>
+</div>
+</section>
+
+</aside>
+
+<main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; overflow: auto">
+<section style="padding: 26px 28px 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
+<span style="{{sel.tagStyle}}">{{sel.tag}}</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8C8C87">{{sel.shas}}</span>
+</div>
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; line-height: 1.02; font-weight: 800; text-transform: uppercase; text-wrap: balance">{{sel.title}}</h2>
+<sc-if value="{{sel.hasSummary}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 12px; align-items: flex-start; max-width: 860px; padding: 14px 16px; background: #1C1C1C">
+<span style="flex: 0 0 auto; width: 12px; height: 12px; margin-top: 5px; background: #B93CF6"></span>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #E8E8E4; text-wrap: pretty">{{sel.summary}}</p>
+</div>
+</sc-if>
+</section>
+
+<sc-if value="{{sel.hasDiff}}" hint-placeholder-val="{{ true }}">
+<div style="margin: 0 28px; display: flex; flex-direction: column">
+<div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px minmax(0, 1fr); background: #1A1A1A; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<span></span><span style="padding: 8px 4px; color: #B3B3AE">{{fromLabel}}</span><span></span><span style="padding: 8px 4px; color: #F4F4F2">Version 3 · now</span>
+</div>
+<sc-for list="{{sel.files}}" as="fl" hint-placeholder-count="1">
+<div style="padding: 8px 14px; background: #1F1F1F; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #8C8C87">{{fl.dir}}<b style="color: #F4F4F2; font-weight: 600">{{fl.name}}</b></div>
+<div style="background: #141414; font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 21px">
+<sc-for list="{{fl.rows}}" as="row" hint-placeholder-count="10">
+<sc-if value="{{row.isHunk}}" hint-placeholder-val="{{ false }}"><div style="padding: 5px 16px; background: #191919; color: #A3A39E; font-size: 12px; white-space: pre; overflow: hidden; text-overflow: ellipsis">{{row.text}}</div></sc-if>
+<sc-if value="{{row.isLine}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px minmax(0, 1fr)">
+<div style="{{row.lnL}}">{{row.ln}}</div>
+<div style="{{row.codeL}}"><span style="{{row.signSL}}">{{row.signL}}</span><sc-for list="{{row.lt}}" as="tk"><span style="{{tk.s}}">{{tk.t}}</span></sc-for></div>
+<div style="{{row.lnR}}">{{row.rn}}</div>
+<div style="{{row.codeR}}"><span style="{{row.signSR}}">{{row.signR}}</span><sc-for list="{{row.rt}}" as="tk"><span style="{{tk.s}}">{{tk.t}}</span></sc-for></div>
+</div>
+</sc-if>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{sel.hasEmpty}}" hint-placeholder-val="{{ false }}">
+<div style="margin: 4px 28px 0; display: flex; align-items: center; gap: 14px; padding: 22px; background: #141414">
+<span style="{{sel.emptySq}}"></span>
+<span style="font-size: 15px; color: #E8E8E4">{{sel.empty}}</span>
+</div>
+</sc-if>
+
+<section aria-labelledby="h-yours" style="margin: 28px 28px 28px; display: flex; flex-direction: column; gap: 10px">
+<h2 id="h-yours" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Your review so far</h2>
+<div style="display: grid; grid-template-columns: 160px 160px minmax(0, 1fr); gap: 4px">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 14px; background: #141414"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 30px; line-height: 1; font-weight: 800; color: #63D676">4</span><span style="font-size: 13px; color: #B3B3AE">steps still valid</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 14px; background: #141414"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 30px; line-height: 1; font-weight: 800; color: #EF6E2E">1</span><span style="font-size: 13px; color: #B3B3AE">step to look at again</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; background: #141414">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px"><span style="width: 10px; height: 10px; background: #F7CF3D"></span><span style="font-size: 13.5px; color: #E8E8E4">Draft on code that changed:</span><span style="font-size: 13.5px; color: #C9C9C4">“The error text is hardcoded, use AppResources.”</span></div>
+<sc-if value="{{draftOpen}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #D3A2FA"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Claude: fixed in v3, the text now comes from AppResources.</span>
+<span style="margin-left: auto; display: flex; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase">
+<button type="button" onClick="{{dropDraft}}" style="height: 30px; padding: 0 12px; border: 0; background: #F7CF3D; color: #101010; font: inherit; font-weight: 800; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Drop draft</button>
+<button type="button" onClick="{{keepDraft}}" style="height: 30px; padding: 0 12px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Keep</button>
+</span>
+</div>
+</sc-if>
+<sc-if value="{{draftDone}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #B3B3AE"><span>{{draftDoneLabel}}</span><button type="button" onClick="{{undoDraft}}" style="height: 26px; padding: 0 10px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Undo</button></div>
+</sc-if>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({ from: 'v2', sel: 'c2', draft: 'open', showRebase: false }, this.state || {});
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const S = { kw: '#D3A2FA', type: '#93E3A0', str: '#F6DC80', com: '#8C8C87', attr: '#B8C7E8', num: '#F6A983', plain: '#E8E8E4', punct: '#A3A39E' };
+    const KW = new Set(['public', 'private', 'static', 'readonly', 'partial', 'class', 'async', 'await', 'var', 'new', 'return', 'string', 'int', 'bool', 'void', 'null', 'true', 'false', 'if', 'is', 'nameof', 'this', 'char']);
+    const TYPES = new Set(['AppResources', 'Task', 'RelayCommand', 'ObservableProperty', 'NotifyCanExecuteChangedFor', 'SignatureFormViewModel']);
+    const P = { addBg: 'rgba(63, 124, 242, 0.16)', addEm: 'rgba(63, 124, 242, 0.42)', addLn: 'rgba(63, 124, 242, 0.10)', addText: '#9DBBF8', delBg: 'rgba(239, 110, 46, 0.14)', delEm: 'rgba(239, 110, 46, 0.40)', delLn: 'rgba(239, 110, 46, 0.09)', delText: '#F6A983' };
+    const tok = (text, emph, emBg) => {
+      const out = [];
+      if (!text) return out;
+      let es = -1; let ee = -1;
+      if (emph) { es = text.indexOf(emph); ee = es + emph.length; }
+      const re = /("(?:[^"\\]|\\.)*")|(\/\/.*$)|(\[[A-Z][A-Za-z(=. )]*\])|([A-Za-z_][A-Za-z0-9_]*)|(\d+)|(\s+)|([^\sA-Za-z0-9_"]+)/g;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const t = m[0]; const p = m.index;
+        let c = S.plain;
+        if (m[1]) c = S.str; else if (m[2]) c = S.com; else if (m[3]) c = S.attr;
+        else if (m[4]) c = KW.has(t) ? S.kw : (TYPES.has(t) ? S.type : S.plain);
+        else if (m[5]) c = S.num; else if (m[7]) c = S.punct;
+        let s = 'color: ' + c;
+        if (es >= 0 && p >= es && p + t.length <= ee) s += '; background: ' + emBg;
+        out.push({ t: t, s: s });
+      }
+      return out;
+    };
+    const codeBase = 'padding: 0 14px 0 4px; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 21px; ';
+    const lnBase = 'padding: 0 8px; font-size: 11px; text-align: right; user-select: none; min-height: 21px; ';
+    const signBase = 'display: inline-block; width: 1.6ch; user-select: none; ';
+    const side = (s) => {
+      if (!s) return { code: codeBase + 'background: #0D0D0D', ln: lnBase + 'background: #0D0D0D; color: #7E7E79', sign: '', signStyle: signBase, toks: [] };
+      if (s.k === 'a') return { code: codeBase + 'background: ' + P.addBg, ln: lnBase + 'background: ' + P.addLn + '; color: ' + P.addText, sign: '+', signStyle: signBase + 'color: ' + P.addText, toks: tok(s.t, s.e, P.addEm) };
+      if (s.k === 'd') return { code: codeBase + 'background: ' + P.delBg, ln: lnBase + 'background: ' + P.delLn + '; color: ' + P.delText, sign: '−', signStyle: signBase + 'color: ' + P.delText, toks: tok(s.t, s.e, P.delEm) };
+      return { code: codeBase, ln: lnBase + 'color: #7E7E79', sign: ' ', signStyle: signBase, toks: tok(s.t, null, null) };
+    };
+    const toRows = (D) => D.map((d) => {
+      if (d[0] === 'h') return { isHunk: true, isLine: false, text: d[1] };
+      let L = null; let R = null;
+      if (d[0] === 'c') { L = { n: d[1], t: d[3], k: 'c' }; R = { n: d[2], t: d[3], k: 'c' }; }
+      else if (d[0] === 'a') { R = { n: d[1], t: d[2], k: 'a' }; }
+      else if (d[0] === 'd') { L = { n: d[1], t: d[2], k: 'd' }; }
+      else { L = { n: d[1], t: d[2], k: 'd', e: d[5] }; R = { n: d[3], t: d[4], k: 'a', e: d[6] }; }
+      const ls = side(L); const rs = side(R);
+      return { isHunk: false, isLine: true, ln: L ? L.n : '', rn: R ? R.n : '', lnL: ls.ln, codeL: ls.code + '; border-right: 2px solid #101010', signL: ls.sign, signSL: ls.signStyle, lt: ls.toks, lnR: rs.ln, codeR: rs.code, signR: rs.sign, signSR: rs.signStyle, rt: rs.toks };
+    });
+
+    const TAGS = {
+      same: { label: 'Same', bg: '#63D676', ink: '#101010' },
+      changed: { label: 'Changed', bg: '#EF6E2E', ink: '#101010' },
+      added: { label: 'New', bg: '#3F7CF2', ink: '#101010' },
+      dropped: { label: 'Dropped', bg: '#3A3A38', ink: '#D6D6D1' }
+    };
+    const fromV1 = st.from === 'v1';
+    const C = [
+      { id: 'c1', title: 'Validation rules for the signature form', status: fromV1 ? 'changed' : 'same', meta: fromV1 ? '1 hunk changed' : 'patch identical after rebase', shas: '5d21a0c → e81b7f4',
+        summary: 'Since v1: the NIP field became optional for private customers. The rest of the rules are unchanged.',
+        files: [{ dir: 'src/App/ViewModels/', name: 'SignatureFormViewModel.cs', D: [
+          ['h', '@@ -21,5 +21,6 @@ public partial class SignatureFormViewModel'],
+          ['c', 21, 21, '[ObservableProperty] private string? _name;'],
+          ['c', 22, 22, '[ObservableProperty] private string? _nip;'],
+          ['a', 23, '[ObservableProperty] private bool _isCompany;'],
+          ['m', 23, 'public string? NipError => IsValidNip(Nip) ? null : "Błędny NIP";', 24, 'public string? NipError => !IsCompany || IsValidNip(Nip) ? null : "Błędny NIP";', '', '!IsCompany || ']
+        ] }] },
+      { id: 'c2', title: 'Show errors under fields', status: 'changed', meta: '2 hunks changed', shas: 'a90c2e1 → 3fd6b08',
+        summary: 'The name error now appears only after the first edit, not on an empty form. Its text comes from AppResources, which answers your draft.',
+        files: [{ dir: 'src/App/ViewModels/', name: 'SignatureFormViewModel.cs', D: [
+          ['h', '@@ -25,6 +26,9 @@ public partial class SignatureFormViewModel'],
+          ['a', 26, 'private bool _nameTouched;'],
+          ['a', 27, ''],
+          ['m', 25, 'public string? NameError => string.IsNullOrWhiteSpace(Name)', 28, 'public string? NameError => _nameTouched && string.IsNullOrWhiteSpace(Name)', '', '_nameTouched && '],
+          ['m', 26, '    ? "Podaj imię i nazwisko"', 29, '    ? AppResources.Signature_NameRequired', '"Podaj imię i nazwisko"', 'AppResources.Signature_NameRequired'],
+          ['c', 27, 30, '    : null;'],
+          ['c', 28, 31, ''],
+          ['a', 32, 'partial void OnNameChanged(string? value) => _nameTouched = true;']
+        ] }] },
+      { id: 'c3', title: 'Disable Save until the form is valid', status: 'changed', meta: '1 hunk changed', shas: 'c77e410 → 0b9a3d2',
+        summary: 'Save is now disabled until both fields are valid. CanSave is refreshed when Name or Nip changes.',
+        files: [{ dir: 'src/App/ViewModels/', name: 'SignatureFormViewModel.cs', D: [
+          ['h', '@@ -40,4 +44,6 @@ public partial class SignatureFormViewModel'],
+          ['m', 40, '[RelayCommand]', 44, '[RelayCommand(CanExecute = nameof(CanSave))]', '', '(CanExecute = nameof(CanSave))'],
+          ['c', 41, 45, 'private async Task SaveAsync()'],
+          ['c', 42, 46, '{'],
+          ['a', 47, '    if (!CanSave()) return;'],
+          ['a', 48, '']
+        ] }] },
+      { id: 'c4', title: 'Fix: NIP checksum', status: 'added', meta: 'new commit · +9', shas: '— → 7e5c19a',
+        summary: 'New since your review. Checks the 10-digit NIP with weights 6-5-7-2-3-4-5-6-7. Hyphens are stripped first, so “123-456-32-18” passes.',
+        files: [{ dir: 'src/App/ViewModels/', name: 'SignatureFormViewModel.cs', D: [
+          ['h', '@@ -0,0 +58,9 @@ public partial class SignatureFormViewModel'],
+          ['a', 58, 'private static bool IsValidNip(string? nip)'],
+          ['a', 59, '{'],
+          ['a', 60, '    int[] w = { 6, 5, 7, 2, 3, 4, 5, 6, 7 };'],
+          ['a', 61, '    var d = (nip ?? "").Where(char.IsDigit).Select(c => c - \'0\').ToArray();'],
+          ['a', 62, '    if (d.Length != 10) return false;'],
+          ['a', 63, '    var sum = w.Select((x, i) => x * d[i]).Sum();'],
+          ['a', 64, '    return sum % 11 == d[9];'],
+          ['a', 65, '}']
+        ] }] },
+      { id: 'c5', title: 'Debug logging in SignaturePage', status: 'dropped', meta: 'removed from the branch', shas: '4c0e9aa → —',
+        summary: '', files: [], empty: 'Removed from the branch. Nothing to review.' }
+    ];
+    if (fromV1) C.splice(4, 1);
+
+    const commits = C.map((c) => {
+      const t = TAGS[c.status];
+      const on = c.id === st.sel;
+      return {
+        title: c.title,
+        meta: c.meta,
+        tag: t.label,
+        on: on,
+        pick: () => this.setState({ sel: c.id }),
+        tagStyle: cond + 'flex: 0 0 auto; width: 72px; text-align: center; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 0; color: ' + t.ink + '; background: ' + t.bg,
+        titleStyle: 'font-size: 14px; line-height: 1.35; font-weight: ' + (on ? '600' : '500') + '; color: ' + (c.status === 'same' || c.status === 'dropped' ? '#B3B3AE' : '#F4F4F2') + (c.status === 'dropped' ? '; text-decoration: line-through' : ''),
+        style: 'display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 10px 12px; border: 0; text-align: left; cursor: pointer; color: inherit; background: ' + (on ? '#262626' : '#1A1A1A') + (on ? '; box-shadow: inset 0 0 0 2px #F7CF3D' : '')
+      };
+    });
+
+    const c = C.find((x) => x.id === st.sel) || C[1];
+    const t = TAGS[c.status];
+    const sel = {
+      title: c.title,
+      tag: t.label,
+      tagStyle: cond + 'font-size: 13.5px; font-weight: 800; letter-spacing: 0.05em; padding: 2px 9px; color: ' + t.ink + '; background: ' + t.bg,
+      shas: c.shas,
+      hasSummary: !!c.summary && c.status !== 'same',
+      summary: c.summary,
+      hasDiff: c.status !== 'same' && c.status !== 'dropped',
+      files: (c.status !== 'same' && c.status !== 'dropped') ? c.files.map((f) => ({ dir: f.dir, name: f.name, rows: toRows(f.D) })) : [],
+      hasEmpty: c.status === 'same' || c.status === 'dropped',
+      empty: c.status === 'same' ? 'Same patch as in ' + (fromV1 ? 'v1' : 'v2') + ', only rebased. Your review of it still holds.' : (c.empty || ''),
+      emptySq: 'flex: 0 0 auto; width: 14px; height: 14px; background: ' + t.bg
+    };
+
+    const changed = C.filter((x) => x.status === 'changed' || x.status === 'added').length;
+    const FROMS = [{ id: 'v1', label: 'v1' }, { id: 'v2', label: 'v2', you: true }];
+    const froms = FROMS.map((v) => {
+      const on = v.id === st.from;
+      return {
+        label: v.label,
+        on: on,
+        isYou: !!v.you,
+        pick: () => this.setState({ from: v.id, sel: 'c2' }),
+        youStyle: 'margin-left: 6px; font-size: 12px; padding: 0 5px; background: ' + (on ? '#101010' : '#F7CF3D') + '; color: ' + (on ? '#F7CF3D' : '#101010'),
+        style: cond + 'display: inline-flex; align-items: center; height: 34px; padding: 0 12px; border: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; background: ' + (on ? '#F7CF3D' : 'transparent') + '; color: ' + (on ? '#101010' : '#B3B3AE')
+      };
+    });
+    return {
+      toCheck: changed + ' changes to check',
+      froms: froms,
+      fromLabel: fromV1 ? 'Version 1' : 'Version 2 · your review',
+      commits: commits,
+      sel: sel,
+      showRebase: !!st.showRebase,
+      rebaseNote: st.showRebase ? 'Rebase brought 14 commits from develop (31 files). Shown greyed out in the diff.' : 'Rebase brought 14 commits from develop. Hidden: they aren’t part of this MR.',
+      rebaseBtn: st.showRebase ? 'Hide' : 'Show',
+      toggleRebase: () => this.setState({ showRebase: !st.showRebase }),
+      draftOpen: st.draft === 'open',
+      draftDone: st.draft !== 'open',
+      draftDoneLabel: st.draft === 'dropped' ? 'Draft dropped.' : 'Kept. It moves to the new line.',
+      dropDraft: () => this.setState({ draft: 'dropped' }),
+      keepDraft: () => this.setState({ draft: 'kept' }),
+      undoDraft: () => this.setState({ draft: 'open' }),
+      ctaBtn: 'Review ' + changed + ' changes'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PipelineExplanation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verdict", "title", "explanation", "evidence", "retry_recommended", "suggested_comment"],
+  "properties": {
+    "verdict": { "type": "string", "enum": ["caused_by_mr", "already_fixed", "unrelated", "flaky", "unknown"] },
+    "fixed_in_version": { "type": "integer", "minimum": 1, "description": "Only for already_fixed." },
+    "title": { "type": "string", "maxLength": 120 },
+    "explanation": { "type": "string", "maxLength": 600 },
+    "evidence": { "type": "array", "maxItems": 4, "items": { "type": "string", "maxLength": 80, "description": "file:line or 'pipeline #123'" } },
+    "retry_recommended": { "type": "boolean" },
+    "suggested_comment": { "type": "string", "maxLength": 500, "description": "Empty string when no comment is needed." }
+  }
+}

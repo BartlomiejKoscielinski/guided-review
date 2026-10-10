@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Merge requests and sources</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button,input{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+kbd{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;line-height:1;padding:2px 5px;border-radius:3px;background:#2A2A2A;color:#D6D6D1}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<button type="button" style="display: inline-flex; align-items: center; gap: 10px; height: 30px; padding: 0 10px; border: 0; background: #1A1A1A; color: #F4F4F2; font-size: 13.5px; cursor: pointer">
+<span style="font-weight: 600">mobile-app</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">C:\src\mobile-app</span>
+<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="#B3B3AE" stroke-width="2.4" stroke-linecap="square" aria-hidden="true"><path d="M4 6l4 4 4-4"></path></svg>
+</button>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 14px; height: 100%; font-size: 13px; color: #B3B3AE">
+<span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; background: #63D676"></span>GitLab connected</span>
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Claude Code signed in</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #3F7CF2; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<main style="flex: 1 1 auto; min-width: 0; overflow: auto">
+<div style="max-width: 1440px; margin: 0 auto; padding: 40px 40px 56px; display: flex; flex-direction: column; gap: 32px">
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 56px; line-height: 0.95; font-weight: 800; text-transform: uppercase">What are we reviewing?</h1>
+<label for="source" style="font-size: 15px; color: #B3B3AE">Paste a merge request link, a commit SHA or a branch name. The type is detected for you.</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; background: #1A1A1A">
+<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#B3B3AE" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.5 10.5l3.5 3.5"></path></svg>
+<input id="source" type="text" value="{{sourceValue}}" onChange="{{onSource}}" style="flex: 1 1 360px; min-width: 0; height: 40px; border: 0; background: transparent; color: #F4F4F2; font-family: 'JetBrains Mono', monospace; font-size: 14px">
+<span style="padding: 4px 10px; background: #3F7CF2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap">Merge request !482</span>
+<a href="Overview.dc.html" style="display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 20px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Start <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">↵</span></a>
+</div>
+<span style="font-size: 13px; color: #8C8C87"><kbd>Ctrl</kbd> <kbd>K</kbd> opens this field from any screen.</span>
+</section>
+
+<section aria-labelledby="h-resume" style="display: flex; flex-direction: column; gap: 10px">
+<h2 id="h-resume" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Pick up where you left off</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: 4px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 16px 18px; background: #141414">
+<div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #F7CF3D">!471</span><span style="font-size: 15.5px; font-weight: 600">Signature screen: field validation</span></span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: #B3B3AE"><span>5 of 9 steps · 3 drafts</span><span style="padding: 1px 7px; background: #EF6E2E; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">2 new commits</span></span>
+</div>
+<div style="display: flex; gap: 6px">
+<a href="Rereview.dc.html" style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Only new changes</a>
+<a href="Review.dc.html" style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Continue</a>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 16px 18px; background: #141414">
+<div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<span style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #63D676">local</span><span style="font-size: 15.5px; font-weight: 600">chore/compiled-bindings</span></span>
+<span style="font-size: 13px; color: #B3B3AE">Self-review · 2 of 6 steps · saved yesterday 18:40</span>
+</div>
+<a href="Review.dc.html" style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Continue</a>
+</div>
+</div>
+</section>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 16px; align-items: start">
+
+<section aria-labelledby="h-mr" style="display: flex; flex-direction: column; background: #141414">
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #3F7CF2; color: #101010">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>
+<h2 id="h-mr" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase">Merge requests</h2>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 16px">
+<div role="tablist" aria-label="Merge request filter" style="display: flex; flex-wrap: wrap; background: #0D0D0D">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+<button type="button" role="tab" aria-selected="{{tb.on}}" onClick="{{tb.pick}}" style="{{tb.style}}">{{tb.label}} <span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500">{{tb.count}}</span></button>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<sc-for list="{{mrs}}" as="mr" hint-placeholder-count="3">
+<a href="{{mr.href}}" style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; background: #1C1C1C; color: #F4F4F2; text-decoration: none">
+<span style="display: flex; align-items: baseline; gap: 8px; min-width: 0"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #9DBBF8">{{mr.iid}}</span><span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600">{{mr.title}}</span></span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12.5px; color: #B3B3AE"><span>{{mr.author}} · {{mr.age}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px"><span style="color: #9DBBF8">{{mr.add}}</span> <span style="color: #F6A983">{{mr.del}}</span> · {{mr.files}}</span><span style="display: inline-flex; align-items: center; gap: 6px"><span style="{{mr.pipeDot}}"></span>{{mr.pipeline}}</span></span>
+<sc-if value="{{mr.hasNote}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12.5px; color: #E8E8E4">{{mr.note}}</span></sc-if>
+</a>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="h-commit" style="display: flex; flex-direction: column; background: #141414">
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #F4F4F2; color: #101010">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>
+<h2 id="h-commit" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase">Commits</h2>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600">develop</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 16px">
+<label for="commit-search" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Search commits</label>
+<input id="commit-search" type="text" placeholder="Message, author or SHA" style="height: 36px; padding: 0 12px; border: 0; background: #0D0D0D; color: #F4F4F2; font-size: 14px">
+<div role="listbox" aria-label="Recent commits" style="display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{commits}}" as="cm" hint-placeholder-count="5">
+<button type="button" role="option" aria-selected="{{cm.on}}" onClick="{{cm.pick}}" style="{{cm.style}}">
+<span style="{{cm.shaStyle}}">{{cm.sha}}</span>
+<span style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px">{{cm.msg}}</span>
+<span style="font-size: 12px; opacity: 0.75; white-space: nowrap">{{cm.meta}}</span>
+</button>
+</sc-for>
+</div>
+<span style="font-size: 12.5px; color: #8C8C87">Shift + click selects a range.</span>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<a href="Review.dc.html" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Review <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; text-transform: none">{{selectedSha}}</span></a>
+<a href="Changes.dc.html" style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Browse files</a>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="h-local" style="display: flex; flex-direction: column; background: #141414">
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #63D676; color: #101010">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="12"></rect><path d="M8 20h8"></path></svg>
+<h2 id="h-local" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase">My changes</h2>
+<span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600">chore/compiled-bindings</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 16px">
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 4px">
+<legend style="padding: 0; margin-bottom: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Scope</legend>
+<sc-for list="{{localOptions}}" as="o" hint-placeholder-count="3">
+<label style="{{o.style}}">
+<input type="radio" name="local-scope" checked="{{o.on}}" onChange="{{o.pick}}" style="margin: 3px 0 0; width: 16px; height: 16px; accent-color: #63D676">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14.5px; font-weight: 500">{{o.label}}</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; opacity: 0.8">{{o.meta}}</span></span>
+</label>
+</sc-for>
+</fieldset>
+<p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #B3B3AE">Self-review never publishes anything. You end with a list of fixes before pushing and a draft MR description.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<a href="Review.dc.html" style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Review before push</a>
+<a href="Changes.dc.html" style="display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Browse and commit</a>
+</div>
+</div>
+</section>
+
+</div>
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({ scope: 'uncommitted', commit: 'a3f9c12', tab: 'review', source: 'https://gitlab.local/mobile/mobile-app/-/merge_requests/482' }, this.state || {});
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const LO = [
+      { id: 'uncommitted', label: 'Uncommitted changes', meta: '100 files · +318 −142' },
+      { id: 'staged', label: 'Staged only', meta: '12 files · +41 −9' },
+      { id: 'branch', label: 'Whole branch vs develop', meta: '3 commits · 104 files' }
+    ];
+    const localOptions = LO.map((o) => {
+      const on = o.id === st.scope;
+      return Object.assign({}, o, {
+        on: on,
+        pick: () => this.setState({ scope: o.id }),
+        style: 'display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; cursor: pointer; background: ' + (on ? '#1F2A20' : '#1C1C1C') + '; color: #F4F4F2' + (on ? '; box-shadow: inset 0 0 0 2px #63D676' : '')
+      });
+    });
+    const CM = [
+      { sha: 'a3f9c12', msg: 'UploadWorker: jittered backoff', meta: 'Marta K. · 2 h' },
+      { sha: '9be0d47', msg: 'Offline queue: SqliteUploadQueue', meta: 'Marta K. · 3 h' },
+      { sha: '51c2e8a', msg: 'Fix: double tap in SendPhoto', meta: 'You · yesterday' },
+      { sha: 'e07d3f1', msg: 'Update CommunityToolkit.Mvvm', meta: 'Paweł S. · yesterday' },
+      { sha: 'c4a19b0', msg: 'Strings.resx: offline messages', meta: 'Marta K. · 2 d' }
+    ];
+    const commits = CM.map((c) => {
+      const on = c.sha === st.commit;
+      return Object.assign({}, c, {
+        on: on,
+        pick: () => this.setState({ commit: c.sha }),
+        shaStyle: 'font-family: JetBrains Mono, monospace; font-size: 12px; font-weight: 600; color: ' + (on ? '#101010' : '#F7CF3D'),
+        style: 'display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 9px 10px; border: 0; text-align: left; cursor: pointer; background: ' + (on ? '#F4F4F2' : '#1C1C1C') + '; color: ' + (on ? '#101010' : '#F4F4F2')
+      });
+    });
+    const LISTS = {
+      review: [
+        { iid: '!482', title: 'Offline queue for delivery photos', author: 'Marta K.', age: '2 h', add: '+462', del: '−61', files: '16 files', ok: true, note: 'You\u2019re a reviewer · plan is ready' },
+        { iid: '!479', title: 'Crash when rotating the signature screen', author: 'Paweł S.', age: '5 h', add: '+34', del: '−20', files: '3 files', ok: true, note: '' },
+        { iid: '!475', title: 'Migrate to .NET 10', author: 'Kuba W.', age: '1 d', add: '+1204', del: '−987', files: '61 files', ok: false, note: 'Large: the plan splits it by layer' }
+      ],
+      mine: [
+        { iid: '!480', title: 'Retry in UploadWorker after network loss', author: 'You', age: '1 d', add: '+77', del: '−15', files: '4 files', ok: true, note: '2 unresolved threads from reviewers' }
+      ],
+      all: [
+        { iid: '!482', title: 'Offline queue for delivery photos', author: 'Marta K.', age: '2 h', add: '+462', del: '−61', files: '16 files', ok: true, note: '' },
+        { iid: '!481', title: 'Dark theme: button colors', author: 'Ola M.', age: '4 h', add: '+58', del: '−40', files: '6 files', ok: true, note: '' },
+        { iid: '!480', title: 'Retry in UploadWorker after network loss', author: 'You', age: '1 d', add: '+77', del: '−15', files: '4 files', ok: true, note: '' }
+      ]
+    };
+    const TABS = [
+      { id: 'review', label: 'Waiting for me', count: '3' },
+      { id: 'mine', label: 'Mine', count: '1' },
+      { id: 'all', label: 'All open', count: '12' }
+    ];
+    const tabs = TABS.map((t) => {
+      const on = t.id === st.tab;
+      return Object.assign({}, t, {
+        on: on,
+        pick: () => this.setState({ tab: t.id }),
+        style: cond + 'display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; background: ' + (on ? '#3F7CF2' : 'transparent') + '; color: ' + (on ? '#101010' : '#B3B3AE')
+      });
+    });
+    const mrs = LISTS[st.tab].map((m) => Object.assign({}, m, {
+      hasNote: !!m.note,
+      href: m.author === 'You' ? 'Author.dc.html' : 'Overview.dc.html',
+      pipeline: m.ok ? 'pipeline passed' : 'pipeline failed',
+      pipeDot: 'width: 9px; height: 9px; background: ' + (m.ok ? '#63D676' : '#EF6E2E')
+    }));
+    return {
+      localOptions: localOptions,
+      commits: commits,
+      selectedSha: st.commit,
+      tabs: tabs,
+      mrs: mrs,
+      sourceValue: st.source,
+      onSource: (e) => this.setState({ source: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

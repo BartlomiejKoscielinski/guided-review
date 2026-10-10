@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New merge request</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button,input,textarea,select{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+@keyframes gr-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.45">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="flex: 0 0 auto; color: #8C8C87">mobile-app</span>
+<span style="flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: #101010; background: #63D676; padding: 2px 8px">chore/compiled-bindings</span>
+<span style="color: #F4F4F2; font-weight: 500">New merge request</span>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 100%">
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Sonnet 5.5 · low</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #63D676; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; overflow: auto">
+
+<main style="flex: 999 1 620px; min-width: 0; overflow: auto">
+
+<sc-if value="{{created}}" hint-placeholder-val="{{ false }}">
+<div style="max-width: 900px; padding: 44px 48px 56px; display: flex; flex-direction: column; gap: 26px">
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; background: #63D676; color: #101010">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase">Merge request created</span>
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 64px; line-height: 0.9; font-weight: 800; text-transform: uppercase">!483</span>
+<span style="font-size: 17px; font-weight: 600">{{title}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 4px">
+<a href="Pipeline.dc.html" style="display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; background: #141414; color: #F4F4F2; text-decoration: none"><span style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9DBBF8"><span style="width: 9px; height: 9px; background: #3F7CF2"></span>Pipeline</span><span style="font-size: 15px">#18361 running</span></a>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; background: #141414"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Reviewers notified</span><span style="font-size: 15px">{{reviewerNames}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; background: #141414"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">You’ll hear about</span><span style="font-size: 15px">comments and pipeline, in the tray</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase">
+<a href="Author.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; background: #F7CF3D; color: #101010; font-weight: 800; text-decoration: none">Go to your MR</a>
+<button type="button" style="height: 40px; padding: 0 14px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Copy link</button>
+<a href="#" style="display: inline-flex; align-items: center; height: 40px; padding: 0 14px; color: #B3B3AE; font-weight: 700; text-decoration: none">Open in GitLab</a>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{notCreated}}" hint-placeholder-val="{{ true }}">
+<div style="max-width: 900px; padding: 34px 48px 40px; display: flex; flex-direction: column; gap: 26px">
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">New merge request</h1>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: #101010; background: #63D676; padding: 5px 10px">chore/compiled-bindings</span>
+<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#8C8C87" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M2 8h11M9.5 4.5 13 8l-3.5 3.5"></path></svg>
+<label for="target" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Target branch</label>
+<select id="target" value="{{target}}" onChange="{{onTarget}}" style="height: 32px; padding: 0 10px; border: 0; background: #1F1F1F; color: #F4F4F2; font-family: 'JetBrains Mono', monospace; font-size: 13px">
+<option value="develop">develop</option>
+<option value="release/1.8">release/1.8</option>
+<option value="main">main</option>
+</select>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #B3B3AE">3 commits · 12 files · <span style="color: #9DBBF8">+84</span> <span style="color: #F6A983">−40</span></span>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<label for="title" style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Title</label>
+<input id="title" type="text" value="{{title}}" onChange="{{onTitle}}" style="height: 46px; padding: 0 14px; border: 0; background: #1A1A1A; color: #F4F4F2; font-size: 17px; font-weight: 600">
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
+<label for="desc" style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Description</label>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: #8C8C87"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Drafted by Claude from 3 commits and the diff</span>
+<button type="button" onClick="{{regen}}" style="margin-left: auto; display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border: 0; background: #B93CF6; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer"><sc-if value="{{regenBusy}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true" style="animation: gr-spin 0.9s linear infinite"><path d="M8 2a6 6 0 1 1-6 6"></path></svg></sc-if>{{regenLabel}}</button>
+</div>
+<textarea id="desc" rows="15" value="{{desc}}" onChange="{{onDesc}}" style="width: 100%; padding: 14px 16px; border: 0; background: #1A1A1A; color: #E8E8E4; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.65; resize: vertical"></textarea>
+</section>
+
+<section aria-label="Options" style="display: flex; flex-wrap: wrap; gap: 4px">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+<button type="button" role="switch" aria-checked="{{o.on}}" onClick="{{o.toggle}}" style="{{o.style}}"><span style="{{o.box}}"><sc-if value="{{o.on}}" hint-placeholder-val="{{ true }}"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></sc-if></span>{{o.label}}</button>
+</sc-for>
+</section>
+</div>
+</sc-if>
+</main>
+
+<aside aria-label="Reviewers and checks" style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 26px; padding: 34px 24px 28px; background: #141414; overflow: auto">
+<section aria-labelledby="h-rev" style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 id="h-rev" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">Reviewers</h2>
+<span style="font-size: 12.5px; color: #8C8C87">from CODEOWNERS and blame</span>
+</div>
+<sc-for list="{{reviewers}}" as="r" hint-placeholder-count="3">
+<div style="{{r.rowStyle}}">
+<span style="{{r.avatar}}">{{r.initials}}</span>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 14.5px; font-weight: 600">{{r.name}}</span>
+<span style="font-size: 12.5px; line-height: 1.4; color: #B3B3AE">{{r.why}}</span>
+</span>
+<button type="button" onClick="{{r.toggle}}" aria-pressed="{{r.on}}" aria-label="{{r.aria}}" style="{{r.btnStyle}}">{{r.btn}}</button>
+</div>
+</sc-for>
+<input type="text" aria-label="Add another reviewer" placeholder="Add someone else…" style="height: 38px; padding: 0 12px; border: 0; background: #0D0D0D; color: #F4F4F2; font-size: 14px">
+</section>
+
+<section aria-labelledby="h-chk" style="display: flex; flex-direction: column; gap: 8px">
+<h2 id="h-chk" style="margin: 0 0 2px; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">Before you create</h2>
+<sc-for list="{{checks}}" as="c" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #1A1A1A">
+<span style="{{c.sq}}"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></span>
+<span style="display: flex; flex-direction: column; min-width: 0"><span style="font-size: 14px; color: #F4F4F2">{{c.label}}</span><span style="font-size: 12.5px; color: #8C8C87">{{c.note}}</span></span>
+</div>
+</sc-for>
+</section>
+
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+<sc-if value="{{notCreated}}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{create}}" style="height: 50px; border: 0; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">{{createLabel}}</button>
+<span style="font-size: 12.5px; text-align: center; color: #8C8C87">{{createNote}}</span>
+</sc-if>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const D1 = '## What\nAdds x:DataType to 12 pages and their DataTemplates, so XAML bindings are compiled.\n\n## Why\nCompiled bindings fail at build time instead of silently at runtime, and they are faster. Two broken bindings showed up and are fixed here: DeliveryListPage (Adress → Address) and ScannerPage.\n\n## How to test\n1. Build Release for Android and iOS.\n2. Open Deliveries, Scanner and Account. Lists and labels show data.\n3. Rotate the device on Deliveries. Nothing goes blank.';
+    const D2 = '## What\nTurns on compiled bindings (x:DataType) in all 12 app pages.\n\n## Why\nTypos in bindings now break the build. This MR already fixes the two it found.\n\n## How to test\n1. Release build on a device.\n2. Click through Deliveries, Scanner, Account.\n3. Rotate on Deliveries.';
+    const st = Object.assign({ target: 'develop', title: 'Enable compiled bindings in app pages', desc: D1, alt: false, busy: false, revs: { mk: true, ow: true, ps: false }, opts: { draft: false, del: true, squash: false }, created: false }, this.state || {});
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const R = [
+      { id: 'mk', initials: 'MK', name: 'Marta K.', why: 'Code owner of src/App/Views/', col: '#63D676' },
+      { id: 'ow', initials: 'OM', name: 'Ola M.', why: 'Wrote 58% of the changed lines', col: '#3F7CF2' },
+      { id: 'ps', initials: 'PS', name: 'Piotr S.', why: 'Reviewed 4 MRs in Views this month', col: '#EF6E2E' }
+    ];
+    const reviewers = R.map((r) => {
+      const on = !!st.revs[r.id];
+      return {
+        initials: r.initials,
+        name: r.name,
+        why: r.why,
+        on: on,
+        aria: (on ? 'Remove ' : 'Add ') + r.name,
+        btn: on ? 'Added' : 'Add',
+        toggle: () => this.setState({ revs: Object.assign({}, st.revs, { [r.id]: !on }) }),
+        avatar: 'flex: 0 0 auto; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: ' + r.col + '; color: #101010; font-family: Barlow Condensed, sans-serif; font-size: 14px; font-weight: 800',
+        rowStyle: 'display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; background: ' + (on ? '#1F1F1F' : '#1A1A1A'),
+        btnStyle: cond + 'height: 30px; min-width: 70px; padding: 0 12px; border: 0; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; background: ' + (on ? '#63D676' : '#262626') + '; color: ' + (on ? '#101010' : '#F4F4F2')
+      };
+    });
+    const O = [
+      { id: 'draft', label: 'Mark as draft' },
+      { id: 'del', label: 'Delete branch after merge' },
+      { id: 'squash', label: 'Squash commits' }
+    ];
+    const opts = O.map((o) => {
+      const on = !!st.opts[o.id];
+      return {
+        label: o.label,
+        on: on,
+        toggle: () => this.setState({ opts: Object.assign({}, st.opts, { [o.id]: !on }) }),
+        box: 'flex: 0 0 auto; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; color: #101010; background: ' + (on ? '#63D676' : 'transparent') + '; box-shadow: inset 0 0 0 2px ' + (on ? '#63D676' : '#4A4A47'),
+        style: 'display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; border: 0; background: #1A1A1A; color: #F4F4F2; font-size: 14px; cursor: pointer'
+      };
+    });
+    const conflicts = st.target === 'main';
+    const checks = [
+      { label: 'Branch pushed', note: 'origin/chore/compiled-bindings is up to date', ok: true },
+      { label: conflicts ? 'Conflicts with main' : 'No conflicts with ' + st.target, note: conflicts ? '2 files: MauiProgram.cs, App.xaml' : 'checked locally with git merge-tree', ok: !conflicts },
+      { label: 'Self-review done', note: '6 of 6 steps · 0 open notes', ok: true }
+    ].map((c) => Object.assign({}, c, {
+      sq: 'flex: 0 0 auto; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; color: #101010; background: ' + (c.ok ? '#63D676' : '#EF6E2E')
+    }));
+    const names = R.filter((r) => st.revs[r.id]).map((r) => r.name);
+    return {
+      created: st.created,
+      notCreated: !st.created,
+      target: st.target,
+      onTarget: (e) => this.setState({ target: e.target.value }),
+      title: st.title,
+      onTitle: (e) => this.setState({ title: e.target.value }),
+      desc: st.desc,
+      onDesc: (e) => this.setState({ desc: e.target.value }),
+      regenBusy: st.busy,
+      regenLabel: st.busy ? 'Writing…' : (st.alt ? 'Longer version' : 'Shorter version'),
+      regen: () => {
+        const toAlt = !st.alt;
+        this.setState({ busy: true });
+        setTimeout(() => this.setState({ busy: false, alt: toAlt, desc: toAlt ? D2 : D1 }), 1100);
+      },
+      opts: opts,
+      reviewers: reviewers,
+      checks: checks,
+      reviewerNames: names.length ? names.join(', ') : 'nobody yet',
+      createLabel: st.opts.draft ? 'Create draft MR' : 'Create merge request',
+      createNote: names.length ? names.join(' and ') + (names.length > 1 ? ' get' : ' gets') + ' notified. A pipeline starts right away.' : 'No reviewers yet. A pipeline starts right away.',
+      create: () => this.setState({ created: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

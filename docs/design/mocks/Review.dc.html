@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Step review – focus mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button,input{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+kbd{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10.5px;line-height:1;padding:2px 5px;border-radius:3px;background:#2A2A2A;color:#D6D6D1}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5">
+
+<div style="flex: 0 0 auto; height: 44px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="flex: 0 0 auto; color: #8C8C87">mobile-app</span>
+<span style="flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #F7CF3D">!482</span>
+<span style="color: #F4F4F2; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0">Offline queue for delivery photos</span>
+</div>
+<div style="display: flex; align-items: center; justify-content: center">
+<sc-if value="{{isB}}" hint-placeholder-val="{{ false }}">
+<button type="button" aria-label="Review plan: step 4 of 8" style="display: flex; align-items: center; gap: 4px; height: 30px; padding: 0 10px; border: 0; background: transparent; cursor: pointer">
+<span style="width: 18px; height: 6px; background: #63D676"></span>
+<span style="width: 18px; height: 6px; background: #63D676"></span>
+<span style="width: 18px; height: 6px; background: #63D676"></span>
+<span style="width: 18px; height: 6px; background: #F7CF3D"></span>
+<span style="width: 18px; height: 6px; background: #2A2A2A"></span>
+<span style="width: 18px; height: 6px; background: #2A2A2A"></span>
+<span style="width: 18px; height: 6px; background: #2A2A2A"></span>
+<span style="width: 18px; height: 6px; background: #2A2A2A"></span>
+</button>
+</sc-if>
+</div>
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; height: 100%">
+<div role="group" aria-label="Mode" style="display: flex; background: #1A1A1A; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">
+<span aria-current="true" style="height: 28px; display: inline-flex; align-items: center; padding: 0 12px; background: #F4F4F2; color: #101010">Focus</span>
+<a href="Main.dc.html" style="height: 28px; display: inline-flex; align-items: center; padding: 0 12px; color: #B3B3AE; text-decoration: none">Detailed</a>
+</div>
+<div role="group" aria-label="Layout" style="display: flex; background: #1A1A1A">
+<button type="button" onClick="{{setA}}" aria-pressed="{{isA}}" aria-label="Sidebar layout (Ctrl+1)" title="Sidebar · Ctrl+1" style="{{swA}}"><svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="0.8" y="0.8" width="14.4" height="12.4"></rect><path d="M5.5 0.8v12.4"></path></svg></button>
+<button type="button" onClick="{{setB}}" aria-pressed="{{isB}}" aria-label="Minimal layout (Ctrl+2)" title="Minimal · Ctrl+2" style="{{swB}}"><svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="0.8" y="0.8" width="14.4" height="12.4"></rect><path d="M5 10h6"></path></svg></button>
+<button type="button" onClick="{{setC}}" aria-pressed="{{isC}}" aria-label="Guide layout (Ctrl+3)" title="Guide · Ctrl+3" style="{{swC}}"><svg width="16" height="14" viewBox="0 0 16 14" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="0.8" y="0.8" width="14.4" height="12.4"></rect><path d="M10.5 0.8v12.4"></path></svg></button>
+</div>
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Sonnet 5.5 · medium</a>
+<a href="SummaryDesk.dc.html" style="height: 28px; display: inline-flex; align-items: center; padding: 0 12px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Finish</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #F7CF3D; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<div style="flex: 1 1 auto; min-width: 0; position: relative">
+<div style="height: 100%; display: flex; flex-wrap: wrap; overflow: auto">
+
+<sc-if value="{{isA}}" hint-placeholder-val="{{ true }}">
+<nav aria-label="Steps" style="flex: 1 1 236px; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 18px 12px; background: #141414; overflow: auto">
+<div style="display: flex; justify-content: space-between; align-items: baseline; padding: 0 8px 10px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87"><span>Steps</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; font-weight: 500; letter-spacing: 0">3/8</span></div>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #8C8C87; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; background: #63D676; color: #101010; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></span>Queue contract</button>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #8C8C87; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; background: #63D676; color: #101010; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></span>SqliteUploadQueue</button>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #8C8C87; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; background: #63D676; color: #101010; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></span>UploadWorker</button>
+<button type="button" aria-current="step" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: #F7CF3D; color: #101010; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; background: #101010; color: #F7CF3D; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600">4</span>ViewModel</button>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #D6D6D1; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; border: 1.5px solid #3A3A38; color: #8C8C87; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px">5</span>Offline banner</button>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #D6D6D1; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; border: 1.5px solid #3A3A38; color: #8C8C87; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px">6</span>DI and worker start</button>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #D6D6D1; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; border: 1.5px solid #3A3A38; color: #8C8C87; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px">7</span>Android</button>
+<button type="button" style="display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #D6D6D1; font-size: 14px; text-align: left; cursor: pointer"><span style="flex: 0 0 auto; width: 18px; height: 18px; border: 1.5px solid #3A3A38; color: #8C8C87; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 11px">8</span>Tests</button>
+<button type="button" style="margin-top: auto; display: flex; align-items: center; gap: 12px; height: 36px; padding: 0 10px; border: 0; background: transparent; color: #8C8C87; font-size: 13.5px; text-align: left; cursor: pointer"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M4 6l4-3 4 3M4 10l4 3 4-3"></path></svg>Skim · 5 files</button>
+</nav>
+</sc-if>
+
+<main style="{{mainStyle}}">
+<sc-if value="{{showHeader}}" hint-placeholder-val="{{ true }}">
+<section style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; margin-bottom: 26px">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0; flex: 1 1 480px">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #F7CF3D">Step 4 of 8</span>
+<h1 style="{{h1Style}}">ViewModel puts the photo in a queue</h1>
+<p style="margin: 0; font-size: 15px; color: #B3B3AE">Instead of uploading right away, it stores the photo and wakes the worker from step 3.</p>
+</div>
+<sc-if value="{{isA}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 6px">
+<button type="button" onClick="{{toggleReviewed}}" aria-pressed="{{reviewed}}" style="{{reviewBtnStyle}}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg>{{reviewLabel}}</button>
+<button type="button" aria-label="Next step" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 0; background: #1F1F1F; color: #F4F4F2; cursor: pointer"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"></path></svg></button>
+</div>
+</sc-if>
+</section>
+</sc-if>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px">
+<span style="display: flex; align-items: baseline; gap: 12px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #D6D6D1">DeliveryPhotoViewModel.cs</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px"><span style="color: #9DBBF8">+18</span> <span style="color: #F6A983">−9</span></span></span>
+<sc-if value="{{isA}}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #B3B3AE"><span style="width: 9px; height: 9px; background: #EF6E2E"></span>{{openLabel}}</span></sc-if>
+</div>
+
+<div style="background: #141414; font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 22px">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="24">
+<sc-if value="{{row.isFold}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 12px; padding: 9px 16px 9px 56px; background: #1A1A1A; font-family: 'Barlow', 'Segoe UI', sans-serif; font-size: 13.5px; color: #B3B3AE">
+<span>{{row.text}}</span>
+<button type="button" style="border: 0; background: transparent; color: #F7CF3D; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; padding: 0">Show</button>
+</div>
+</sc-if>
+<sc-if value="{{row.isLine}}" hint-placeholder-val="{{ true }}">
+<div style="{{row.rowStyle}}">
+<div style="{{row.lnL}}">{{row.ln}}</div>
+<div style="{{row.codeL}}"><sc-for list="{{row.lt}}" as="tk"><span style="{{tk.s}}">{{tk.t}}</span></sc-for></div>
+<div style="{{row.lnR}}"><sc-if value="{{row.hasMark}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{row.f.onFocus}}" aria-label="{{row.f.markLabel}}" style="{{row.markStyle}}">{{row.markText}}</button></sc-if><sc-if value="{{row.hasThread}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{row.th.toggle}}" aria-label="{{row.th.label}}" aria-expanded="{{row.th.open}}" title="Thread" style="{{row.th.markStyle}}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="miter" aria-hidden="true"><path d="M2.5 3h11v7.5h-6L4.5 13v-2.5h-2z"></path></svg></button></sc-if><span>{{row.rn}}</span></div>
+<div style="{{row.codeR}}"><sc-for list="{{row.rt}}" as="tk"><span style="{{tk.s}}">{{tk.t}}</span></sc-for></div>
+</div>
+</sc-if>
+<sc-if value="{{row.hasNote}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 10px 24px 16px 56px; background: #101010; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; line-height: 1.5">
+<div style="max-width: 640px; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: #1C1C1C; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5)">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
+<span style="{{row.f.tag}}">{{row.f.tagText}}</span>
+<span style="{{row.f.titleStyle}}">{{row.f.title}}</span>
+<span style="margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #8C8C87"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Claude</span>
+</div>
+<p style="margin: 0; font-size: 14px; color: #C9C9C4">{{row.f.text}}</p>
+<sc-if value="{{row.f.isOpen}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<button type="button" onClick="{{row.f.onDraft}}" style="height: 34px; padding: 0 14px; border: 0; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Add to drafts</button>
+<button type="button" onClick="{{row.f.onDismiss}}" style="height: 34px; padding: 0 14px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Dismiss</button>
+<button type="button" style="height: 34px; padding: 0 12px; border: 0; background: transparent; color: #B3B3AE; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">More</button>
+</div>
+</sc-if>
+<sc-if value="{{row.f.isDecided}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: #B3B3AE">
+<span>{{row.f.statusLabel}}</span>
+<button type="button" onClick="{{row.f.onUndo}}" style="height: 30px; padding: 0 12px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Undo</button>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{row.showThread}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 10px 24px 16px 56px; background: #101010; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; line-height: 1.5">
+<div role="region" aria-label="Thread at line 48" style="max-width: 640px; display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; background: #181818">
+<div style="display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; align-items: start">
+<span style="width: 26px; height: 26px; background: #EF6E2E; color: #101010; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800">PS</span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12.5px; color: #8C8C87"><b style="font-weight: 600; color: #E8E8E4">Paweł S.</b> · yesterday</span><span style="font-size: 14px; color: #F4F4F2">Kick() is called on the UI thread. Does the worker block anything here?</span></span>
+</div>
+<div style="display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; align-items: start">
+<span style="width: 26px; height: 26px; background: #63D676; color: #101010; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800">MK</span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12.5px; color: #8C8C87"><b style="font-weight: 600; color: #E8E8E4">Marta K.</b> · 3 h ago</span><span style="font-size: 14px; color: #D6D6D1">Kick only releases a semaphore, the upload runs in the background.</span></span>
+</div>
+<sc-if value="{{row.th.notResolved}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 6px; padding-left: 38px">
+<button type="button" onClick="{{row.th.resolve}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border: 0; background: #63D676; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg>Resolve</button>
+<button type="button" style="height: 32px; padding: 0 12px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Reply</button>
+</div>
+</sc-if>
+<sc-if value="{{row.th.isResolved}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-left: 38px">
+<span style="padding: 2px 8px; background: #63D676; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase">Resolved</span>
+<button type="button" onClick="{{row.th.unresolve}}" style="height: 30px; padding: 0 12px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Reopen</button>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+</sc-for>
+</div>
+</main>
+
+<sc-if value="{{isC}}" hint-placeholder-val="{{ false }}">
+<aside aria-label="Guide" style="flex: 1 1 384px; min-width: 0; display: flex; flex-direction: column; gap: 28px; padding: 30px 28px 24px; background: #141414; overflow: auto">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<div role="img" aria-label="Step 4 of 8" style="display: flex; align-items: center; gap: 4px">
+<span style="width: 10px; height: 10px; background: #63D676"></span>
+<span style="width: 10px; height: 10px; background: #63D676"></span>
+<span style="width: 10px; height: 10px; background: #63D676"></span>
+<span style="width: 10px; height: 10px; background: #F7CF3D"></span>
+<span style="width: 10px; height: 10px; background: #2A2A2A"></span>
+<span style="width: 10px; height: 10px; background: #2A2A2A"></span>
+<span style="width: 10px; height: 10px; background: #2A2A2A"></span>
+<span style="width: 10px; height: 10px; background: #2A2A2A"></span>
+</div>
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #F7CF3D">Step 4 of 8</span>
+</div>
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 30px; line-height: 1.02; font-weight: 800; letter-spacing: 0.005em; text-transform: uppercase">ViewModel puts the photo in a queue</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9C9C4">The command no longer uploads the photo. It stores it in a queue and wakes the worker from step 3, which sends it once the network is back.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0 0 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #8C8C87">Worth a look</h2>
+<sc-for list="{{findings}}" as="f" hint-placeholder-count="3">
+<sc-if value="{{f.notFocus}}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{f.onFocus}}" style="display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer">
+<span style="{{f.badge}}">{{f.num}}</span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="{{f.titleStyle}}">{{f.title}}</span><span style="font-size: 12.5px; color: #8C8C87">{{f.subLabel}}</span></span>
+</button>
+</sc-if>
+<sc-if value="{{f.isFocus}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; align-items: start; padding: 14px 12px; background: #1F1F1F">
+<span style="{{f.badge}}">{{f.num}}</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="{{f.titleStyle}}">{{f.title}}</span><span style="font-size: 12.5px; color: #8C8C87">{{f.subLabel}}</span></span>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #C9C9C4">{{f.text}}</p>
+<sc-if value="{{f.isOpen}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 6px">
+<button type="button" onClick="{{f.onDraft}}" style="height: 32px; padding: 0 12px; border: 0; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Add to drafts</button>
+<button type="button" onClick="{{f.onDismiss}}" style="height: 32px; padding: 0 12px; border: 0; background: #2A2A2A; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Dismiss</button>
+</div>
+</sc-if>
+<sc-if value="{{f.isDecided}}" hint-placeholder-val="{{ false }}">
+<button type="button" onClick="{{f.onUndo}}" style="align-self: flex-start; height: 30px; padding: 0 12px; border: 0; background: #2A2A2A; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Undo</button>
+</sc-if>
+</div>
+</div>
+</sc-if>
+</sc-for>
+<button type="button" style="align-self: flex-start; margin-left: 46px; padding: 4px 0; border: 0; background: transparent; color: #8C8C87; font-size: 13px; cursor: pointer">+ 1 minor</button>
+</div>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+<button type="button" onClick="{{toggleReviewed}}" aria-pressed="{{reviewed}}" style="{{reviewWideStyle}}"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg>{{reviewLabel}}</button>
+<label for="ask-r" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Ask Claude about this step</label>
+<input id="ask-r" type="text" placeholder="Ask Claude about this step…" style="height: 40px; padding: 0 12px; border: 0; background: #0D0D0D; color: #F4F4F2; font-size: 14px">
+</div>
+</aside>
+</sc-if>
+</div>
+
+<sc-if value="{{isB}}" hint-placeholder-val="{{ false }}">
+<div role="toolbar" aria-label="Step navigation" style="position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; padding: 6px; background: #1F1F1F; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6); white-space: nowrap">
+<button type="button" aria-label="Previous step" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #F4F4F2; cursor: pointer"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"></path></svg></button>
+<span style="padding: 0 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #B3B3AE">Step <span style="color: #F7CF3D">4</span> of 8</span>
+<button type="button" aria-label="Next step" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #F4F4F2; cursor: pointer"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"></path></svg></button>
+<span style="width: 2px; height: 24px; background: #333333; margin: 0 6px"></span>
+<button type="button" onClick="{{toggleReviewed}}" aria-pressed="{{reviewed}}" style="{{reviewPillStyle}}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg>{{reviewLabel}}</button>
+<button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 0; background: #B93CF6; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Ask Claude</button>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startLayout":{"editor":"enum","options":["A","B","C"],"default":"A"},"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({ focus: 'f2', decisions: {}, reviewed: false }, this.state || {});
+    const layout = st.layout ?? (this.props.startLayout ?? 'A');
+    const isA = layout === 'A';
+    const isB = layout === 'B';
+    const isC = layout === 'C';
+    const Y = '#F7CF3D';
+    const G = '#63D676';
+    const O = '#EF6E2E';
+    const B = '#3F7CF2';
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const S = { kw: '#D3A2FA', type: '#93E3A0', str: '#F6DC80', com: '#8C8C87', attr: '#B8C7E8', num: '#F6A983', plain: '#E8E8E4', punct: '#A3A39E' };
+    const KW = new Set(['public', 'private', 'readonly', 'partial', 'class', 'async', 'await', 'var', 'new', 'try', 'catch', 'return', 'string', 'int', 'bool', 'void', 'null', 'true', 'false', 'if', 'else', 'this']);
+    const TYPES = new Set(['IUploadQueue', 'UploadWorker', 'PendingUpload', 'DateTimeOffset', 'NetworkAccess', 'Task', 'Exception', 'HttpRequestException', 'Shell']);
+    const tok = (text, emph, emBg) => {
+      const out = [];
+      if (!text) return out;
+      let es = -1;
+      let ee = -1;
+      if (emph) { es = text.indexOf(emph); ee = es + emph.length; }
+      const re = /("(?:[^"\\]|\\.)*")|(\/\/.*$)|(\[[A-Za-z]+\])|([A-Za-z_][A-Za-z0-9_]*)|(\d+)|(\s+)|([^\sA-Za-z0-9_"]+)/g;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const t = m[0];
+        const p = m.index;
+        let c = S.plain;
+        if (m[1]) c = S.str;
+        else if (m[2]) c = S.com;
+        else if (m[3]) c = S.attr;
+        else if (m[4]) c = KW.has(t) ? S.kw : (TYPES.has(t) ? S.type : S.plain);
+        else if (m[5]) c = S.num;
+        else if (m[7]) c = S.punct;
+        let s = 'color: ' + c;
+        if (es >= 0 && p >= es && p + t.length <= ee) s += '; background: ' + emBg;
+        out.push({ t: t, s: s });
+      }
+      return out;
+    };
+    const P = { addBg: 'rgba(63, 124, 242, 0.16)', addEm: 'rgba(63, 124, 242, 0.42)', addLn: '#9DBBF8', delBg: 'rgba(239, 110, 46, 0.14)', delEm: 'rgba(239, 110, 46, 0.40)', delLn: '#F6A983' };
+    const D = [
+      ['f', 'Fields and constructor: 3 new dependencies'],
+      ['c', 30, 39, '[RelayCommand]'],
+      ['c', 31, 40, 'private async Task SendPhotoAsync()'],
+      ['c', 32, 41, '{'],
+      ['c', 33, 42, '    IsBusy = true;'],
+      ['c', 34, 43, '    try'],
+      ['c', 35, 44, '    {'],
+      ['c', 36, 45, '        var bytes = await _camera.CaptureAsync();'],
+      ['m', 37, '        await _api.UploadPhotoAsync(DeliveryId, bytes);', 46, '        var upload = new PendingUpload(DeliveryId, bytes, DateTimeOffset.UtcNow);'],
+      ['m', 38, '        await Shell.Current.DisplayAlert("Wysłano", "Zdjęcie zostało wysłane.", "OK");', 47, '        await _queue.EnqueueAsync(upload);'],
+      ['a', 48, '        _worker.Kick();'],
+      ['a', 49, '        PendingCount = await _queue.CountAsync();'],
+      ['a', 50, '        StatusText = _connectivity.NetworkAccess == NetworkAccess.Internet'],
+      ['a', 51, '            ? "Wysyłanie…"'],
+      ['a', 52, '            : "Zapisano offline – wyślemy po odzyskaniu sieci";'],
+      ['c', 39, 53, '    }'],
+      ['m', 40, '    catch (HttpRequestException ex)', 54, '    catch (Exception ex)', 'HttpRequestException', 'Exception'],
+      ['c', 41, 55, '    {'],
+      ['m', 42, '        _logger.LogError(ex, "Upload failed");', 56, '        _logger.LogError(ex, "Enqueue failed");', '"Upload failed"', '"Enqueue failed"'],
+      ['m', 43, '        await Shell.Current.DisplayAlert("Błąd", "Nie udało się wysłać zdjęcia.", "OK");', 57, '        StatusText = "Nie udało się zapisać zdjęcia";'],
+      ['c', 44, 58, '    }'],
+      ['c', 45, 59, '    IsBusy = false;'],
+      ['c', 46, 60, '}']
+    ];
+    const F = [
+      { id: 'f1', line: 46, sev: 'q', num: 1, title: 'The whole photo is stored in SQLite', text: 'During a long offline period the database grows fast.' },
+      { id: 'f2', line: 49, sev: 'fix', num: 2, title: 'Counter won’t refresh after upload', text: 'The worker removes items from the queue, but the ViewModel never hears about it.' },
+      { id: 'f3', line: 54, sev: 'fix', num: 3, title: 'Cancelling the camera shows an error', text: 'catch (Exception) also catches OperationCanceledException.' }
+    ];
+    const setDec = (id, v) => this.setState({ decisions: Object.assign({}, st.decisions, { [id]: v }), focus: id });
+    const look = (f, dec) => {
+      if (dec === 'draft') return { fill: Y, border: Y, ink: '#101010' };
+      if (dec === 'dismissed') return { fill: 'transparent', border: '#4A4A47', ink: '#8C8C87' };
+      const col = f.sev === 'fix' ? O : B;
+      return { fill: col, border: col, ink: '#101010' };
+    };
+    const ring = '; outline: 2px solid ' + Y + '; outline-offset: 2px';
+    const findings = F.map((f) => {
+      const dec = st.decisions[f.id] || 'open';
+      const isFocus = f.id === st.focus;
+      const lk = look(f, dec);
+      const sevCol = f.sev === 'fix' ? O : B;
+      const sq = (size) => 'flex: 0 0 auto; width: ' + size + 'px; height: ' + size + 'px; display: inline-flex; align-items: center; justify-content: center; font-family: JetBrains Mono, monospace; font-size: 11px; font-weight: 600; line-height: 1; background: ' + lk.fill + '; color: ' + lk.ink + '; border: 2px solid ' + lk.border;
+      return Object.assign({}, f, {
+        isFocus: isFocus,
+        notFocus: !isFocus,
+        isOpen: dec === 'open',
+        isDecided: dec !== 'open',
+        statusLabel: dec === 'draft' ? 'Added to drafts.' : 'Dismissed.',
+        subLabel: dec === 'draft' ? 'in drafts' : (dec === 'dismissed' ? 'dismissed' : (f.sev === 'fix' ? 'should fix' : 'question')),
+        markLabel: 'Note ' + f.num + ': ' + f.title,
+        tagText: f.sev === 'fix' ? 'Should fix' : 'Question',
+        tag: cond + 'padding: 2px 8px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; color: #101010; background: ' + sevCol,
+        badge: sq(24),
+        dotGutter: 'margin-right: auto; padding: 0; cursor: pointer; ' + sq(12).replace('border: 2px', 'border: 0px') + (isFocus ? ring : ''),
+        badgeGutter: 'margin-right: auto; padding: 0; cursor: pointer; ' + sq(19) + (isFocus ? ring : ''),
+        titleStyle: 'font-size: 15px; color: ' + (dec === 'dismissed' ? '#8C8C87' : '#F4F4F2') + '; font-weight: ' + (isFocus ? '600' : '500') + (dec === 'dismissed' ? '; text-decoration: line-through' : ''),
+        onFocus: () => this.setState({ focus: f.id }),
+        onDraft: () => setDec(f.id, 'draft'),
+        onDismiss: () => setDec(f.id, 'dismissed'),
+        onUndo: () => setDec(f.id, 'open')
+      });
+    });
+    const byLine = {};
+    findings.forEach((f) => { byLine[f.line] = f; });
+    const codeBase = 'padding: 0 16px 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 22px; ';
+    const lnBase = 'padding: 0 10px; font-size: 11px; text-align: right; user-select: none; min-height: 22px; color: #7E7E79; ';
+    const side = (s) => {
+      if (!s) return { code: codeBase + 'background: #0D0D0D', ln: lnBase + 'background: #0D0D0D', toks: [] };
+      if (s.k === 'a') return { code: codeBase + 'background: ' + P.addBg, ln: lnBase + 'background: ' + P.addBg + '; color: ' + P.addLn, toks: tok(s.t, s.e, P.addEm) };
+      if (s.k === 'd') return { code: codeBase + 'background: ' + P.delBg, ln: lnBase + 'background: ' + P.delBg + '; color: ' + P.delLn, toks: tok(s.t, s.e, P.delEm) };
+      return { code: codeBase, ln: lnBase, toks: tok(s.t, null, null) };
+    };
+    const thOpen = st.threadOpen ?? true;
+    const thRes = !!st.threadResolved;
+    const th = {
+      open: thOpen,
+      isResolved: thRes,
+      notResolved: !thRes,
+      label: 'Thread by Paweł S. at line 48' + (thRes ? ', resolved' : ''),
+      toggle: () => this.setState({ threadOpen: !thOpen }),
+      resolve: () => this.setState({ threadResolved: true }),
+      unresolve: () => this.setState({ threadResolved: false }),
+      markStyle: 'margin-right: auto; width: 20px; height: 20px; padding: 0; border: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; background: ' + (thRes ? 'transparent' : '#2A2A2A') + '; color: ' + (thRes ? '#5E5E5A' : '#F4F4F2')
+    };
+    const rows = D.map((d) => {
+      if (d[0] === 'f') return { isFold: true, isLine: false, hasNote: false, showThread: false, text: d[1] };
+      let L = null;
+      let R = null;
+      if (d[0] === 'c') { L = { n: d[1], t: d[3], k: 'c' }; R = { n: d[2], t: d[3], k: 'c' }; }
+      else if (d[0] === 'a') { R = { n: d[1], t: d[2], k: 'a' }; }
+      else { L = { n: d[1], t: d[2], k: 'd', e: d[5] }; R = { n: d[3], t: d[4], k: 'a', e: d[6] }; }
+      const ls = side(L);
+      const rs = side(R);
+      const f = (R && R.k === 'a') ? byLine[R.n] : null;
+      const focus = !!(f && f.isFocus);
+      const isTh = !!(R && R.k === 'a' && R.n === 48);
+      return {
+        isFold: false,
+        isLine: true,
+        rowStyle: 'display: grid; grid-template-columns: 48px minmax(0, 1fr) 60px minmax(0, 1fr)' + (focus && isC ? '; box-shadow: inset 0 0 0 2px ' + Y : ''),
+        ln: L ? L.n : '',
+        rn: R ? R.n : '',
+        lnL: ls.ln,
+        codeL: ls.code + '; border-right: 2px solid #101010',
+        lt: ls.toks,
+        lnR: rs.ln + '; display: flex; justify-content: flex-end; align-items: center; gap: 6px; padding-left: 8px',
+        codeR: rs.code,
+        rt: rs.toks,
+        hasMark: !!f,
+        f: f || {},
+        markText: f && isC ? String(f.num) : '',
+        markStyle: f ? (isC ? f.badgeGutter : f.dotGutter) : '',
+        hasNote: focus && !isC,
+        hasThread: isTh,
+        th: th,
+        showThread: isTh && thOpen
+      };
+    });
+    const sw = (on) => 'width: 34px; height: 28px; display: flex; align-items: center; justify-content: center; border: 0; cursor: pointer; background: ' + (on ? '#F4F4F2' : 'transparent') + '; color: ' + (on ? '#101010' : '#8C8C87');
+    const mainPad = isA ? '32px 36px 40px' : (isB ? '44px 56px 120px' : '28px 28px 40px 32px');
+    const rv = st.reviewed;
+    const open = findings.filter((f) => f.isOpen).length;
+    const btn = cond + 'display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; ';
+    return {
+      isA: isA,
+      isB: isB,
+      isC: isC,
+      setA: () => this.setState({ layout: 'A' }),
+      setB: () => this.setState({ layout: 'B' }),
+      setC: () => this.setState({ layout: 'C' }),
+      swA: sw(isA),
+      swB: sw(isB),
+      swC: sw(isC),
+      showHeader: !isC,
+      mainStyle: 'flex: 999 1 640px; min-width: 0; height: 100%; overflow: auto; padding: ' + mainPad,
+      h1Style: 'margin: 0; font-family: Barlow Condensed, sans-serif; font-weight: 800; line-height: 1.02; letter-spacing: 0.005em; text-transform: uppercase; font-size: ' + (isB ? '44px' : '36px'),
+      rows: rows,
+      findings: findings,
+      openLabel: open === 1 ? '1 note' : open + ' notes',
+      reviewed: rv,
+      reviewLabel: rv ? 'Reviewed' : 'Mark reviewed',
+      toggleReviewed: () => this.setState({ reviewed: !rv }),
+      reviewBtnStyle: btn + 'height: 38px; padding: 0 16px; font-size: 15px; ' + (rv ? 'background: ' + G + '; color: #101010' : 'background: #1F1F1F; color: #F4F4F2'),
+      reviewPillStyle: btn + 'height: 38px; padding: 0 16px; font-size: 15px; ' + (rv ? 'background: ' + G + '; color: #101010' : 'background: ' + Y + '; color: #101010'),
+      reviewWideStyle: btn + 'height: 44px; font-size: 16px; ' + (rv ? 'background: ' + G + '; color: #101010' : 'background: ' + Y + '; color: #101010')
+    };
+  }
+}
+</script>
+</body>
+</html>

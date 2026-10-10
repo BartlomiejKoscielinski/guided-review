@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Changes and commit</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button,input,textarea{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; color-scheme: dark">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="color: #8C8C87">mobile-app</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #101010; background: #63D676; padding: 2px 8px; font-weight: 600">{{branch}}</span>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 100%">
+<a href="Settings.dc.html" title="Claude model and effort · Ctrl+," style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: #1A1A1A; color: #E8E8E4; font-size: 12.5px; text-decoration: none"><span style="width: 8px; height: 8px; background: #B93CF6"></span>Haiku 5.5 · low</a>
+<div style="display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" aria-current="page" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #63D676; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; overflow: auto">
+
+<nav aria-label="Changed files" style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; background: #141414; overflow: hidden">
+<div style="flex: 0 0 auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 10px 8px">
+<div role="group" aria-label="Source" style="display: flex; background: #0D0D0D">
+<button type="button" aria-pressed="{{isLocal}}" onClick="{{toLocal}}" style="{{srcLocal}}">Local changes</button>
+<button type="button" aria-pressed="{{isCommit}}" onClick="{{toCommit}}" style="{{srcCommit}}">Commit a3f9c12</button>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; background: #0D0D0D">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#8C8C87" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.5 10.5l3.5 3.5"></path></svg>
+<label for="file-filter" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Filter files</label>
+<input id="file-filter" type="text" value="{{q}}" onChange="{{onQ}}" placeholder="Filter files" style="flex: 1 1 auto; min-width: 0; border: 0; background: transparent; color: #F4F4F2; font-size: 14px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">{{fileCount}}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 8px">
+<sc-if value="{{isLocal}}" hint-placeholder-val="{{ true }}">
+<button type="button" role="checkbox" aria-checked="{{master.aria}}" aria-label="Include all files" onClick="{{master.toggle}}" style="{{master.style}}"><sc-if value="{{master.on}}" hint-placeholder-val="{{ true }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></sc-if><sc-if value="{{master.mixed}}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3.5 8h9"></path></svg></sc-if></button>
+</sc-if>
+<span style="flex: 1 1 auto; font-size: 13px; color: #B3B3AE">{{countLabel}}</span>
+<button type="button" onClick="{{collapseAll}}" aria-label="Collapse all folders" title="Collapse all" style="width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #8C8C87; cursor: pointer"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" aria-hidden="true"><path d="M4 3l4 3 4-3M4 13l4-3 4 3"></path></svg></button>
+</div>
+</div>
+<div role="tree" aria-label="Files" style="flex: 1 1 auto; min-height: 0; overflow: auto; padding: 0 6px 16px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="28">
+<sc-if value="{{r.isFolder}}" hint-placeholder-val="{{ false }}">
+<div role="treeitem" aria-expanded="{{r.open}}" style="display: grid; grid-template-columns: 18px 16px minmax(0, 1fr) auto; gap: 6px; align-items: center; height: 28px; padding: 0 8px 0 4px; margin-top: 2px">
+<button type="button" onClick="{{r.toggleOpen}}" aria-label="{{r.openLabel}}" style="width: 18px; height: 18px; padding: 0; border: 0; background: transparent; color: #8C8C87; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square" aria-hidden="true" style="{{r.chevron}}"><path d="M6 3.5 10.5 8 6 12.5"></path></svg></button>
+<sc-if value="{{r.isLocal}}" hint-placeholder-val="{{ true }}"><button type="button" role="checkbox" aria-checked="{{r.cb.aria}}" aria-label="{{r.cbLabel}}" onClick="{{r.cb.toggle}}" style="{{r.cb.style}}"><sc-if value="{{r.cb.on}}" hint-placeholder-val="{{ true }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></sc-if><sc-if value="{{r.cb.mixed}}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3.5 8h9"></path></svg></sc-if></button></sc-if>
+<sc-if value="{{r.isCommit}}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+<span style="font-size: 13px; font-weight: 600; color: #B3B3AE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis" title="{{r.path}}">{{r.path}}</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8C8C87">{{r.count}}</span>
+</div>
+</sc-if>
+<sc-if value="{{r.isFile}}" hint-placeholder-val="{{ true }}">
+<div role="treeitem" aria-selected="{{r.current}}" style="{{r.rowStyle}}">
+<sc-if value="{{r.isLocal}}" hint-placeholder-val="{{ true }}"><button type="button" role="checkbox" aria-checked="{{r.cb.aria}}" aria-label="{{r.cbLabel}}" onClick="{{r.cb.toggle}}" style="{{r.cb.style}}"><sc-if value="{{r.cb.on}}" hint-placeholder-val="{{ true }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></sc-if><sc-if value="{{r.cb.mixed}}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3.5 8h9"></path></svg></sc-if></button></sc-if>
+<button type="button" onClick="{{r.select}}" title="{{r.title}}" style="display: flex; align-items: center; gap: 8px; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer">
+<span style="{{r.nameStyle}}">{{r.name}}</span>
+<sc-if value="{{r.hasTag}}" hint-placeholder-val="{{ false }}"><span style="{{r.tagStyle}}">{{r.tag}}</span></sc-if>
+</button>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; white-space: nowrap"><span style="color: #9DBBF8">{{r.addLabel}}</span> <span style="color: #F6A983">{{r.delLabel}}</span></span>
+</div>
+</sc-if>
+</sc-for>
+<sc-if value="{{noMatch}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 20px 12px; font-size: 13.5px; color: #8C8C87">No files match.</div>
+</sc-if>
+</div>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; overflow: auto; padding: 20px 26px 40px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px">
+<span style="display: flex; align-items: center; gap: 10px; min-width: 0"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #8C8C87; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{selDir}}/<b style="font-weight: 600; color: #F4F4F2">{{selName}}</b></span><sc-if value="{{selHasTag}}" hint-placeholder-val="{{ false }}"><span style="{{selTagStyle}}">{{selTag}}</span></sc-if></span>
+<div style="display: flex; align-items: center; gap: 8px">
+<div role="group" aria-label="Diff layout" style="display: flex; background: #1A1A1A; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">
+<button type="button" aria-pressed="true" style="height: 30px; padding: 0 12px; border: 0; background: #F4F4F2; color: #101010; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Unified</button>
+<button type="button" aria-pressed="false" style="height: 30px; padding: 0 12px; border: 0; background: transparent; color: #B3B3AE; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Split</button>
+</div>
+<button type="button" style="height: 30px; padding: 0 12px; border: 0; background: #1F1F1F; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Open in Rider</button>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px">
+<sc-for list="{{hunks}}" as="h" hint-placeholder-count="2">
+<div style="background: #141414">
+<div style="display: flex; align-items: center; gap: 14px; padding: 7px 12px; background: #1A1A1A; font-size: 12.5px; color: #B3B3AE">
+<sc-if value="{{h.isLocal}}" hint-placeholder-val="{{ true }}">
+<button type="button" role="checkbox" aria-checked="{{h.cb.aria}}" onClick="{{h.cb.toggle}}" style="display: flex; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer"><span style="{{h.cb.style}}"><sc-if value="{{h.cb.on}}" hint-placeholder-val="{{ true }}"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="3.2" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg></sc-if></span>In commit</button>
+</sc-if>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #8C8C87">{{h.label}}</span>
+</div>
+<div style="{{h.bodyStyle}}">
+<sc-for list="{{h.rows}}" as="ln" hint-placeholder-count="6">
+<sc-if value="{{ln.isMore}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 7px 12px 7px 112px; background: #1A1A1A; font-family: 'Barlow', 'Segoe UI', sans-serif; font-size: 13px; color: #B3B3AE">{{ln.text}}</div>
+</sc-if>
+<sc-if value="{{ln.isLine}}" hint-placeholder-val="{{ true }}">
+<div style="{{ln.rowStyle}}">
+<div style="{{ln.lnStyle}}">{{ln.o}}</div>
+<div style="{{ln.lnStyle}}">{{ln.n}}</div>
+<div style="{{ln.signStyle}}">{{ln.sign}}</div>
+<div style="padding: 0 16px 0 2px; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 22px"><sc-for list="{{ln.toks}}" as="tk"><span style="{{tk.s}}">{{tk.t}}</span></sc-for></div>
+</div>
+</sc-if>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{isLocal}}" hint-placeholder-val="{{ true }}">
+<p style="margin: 14px 0 0; font-size: 13px; color: #8C8C87">Shift + click line numbers to pick single lines.</p>
+</sc-if>
+</main>
+
+<aside style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 24px 22px; background: #141414; overflow: auto">
+<sc-if value="{{isLocal}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; text-transform: uppercase">Commit</h2>
+<sc-if value="{{committed}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #63D676; color: #101010">
+<span style="display: flex; align-items: center; gap: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; text-transform: uppercase"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"></path></svg>Created <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; text-transform: none">7c1e2a9</span></span>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<a href="CreateMR.dc.html" style="display: inline-flex; align-items: center; height: 32px; padding: 0 14px; background: #101010; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Push and create MR</a>
+<button type="button" style="height: 32px; padding: 0 12px; border: 0; background: transparent; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; box-shadow: inset 0 0 0 2px #101010">Push only</button>
+<button type="button" onClick="{{newCommit}}" style="height: 32px; padding: 0 12px; border: 0; background: transparent; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">New commit</button>
+</div>
+</div>
+</sc-if>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<label for="msg" style="font-size: 13px; color: #B3B3AE">Message</label>
+<button type="button" onClick="{{suggest}}" disabled="{{suggesting}}" style="{{suggestStyle}}"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5"></rect><rect x="9" y="9" width="5" height="5"></rect><rect x="9" y="2" width="5" height="5" opacity="0.45"></rect></svg>{{suggestLabel}}</button>
+</div>
+<textarea id="msg" rows="8" value="{{message}}" onChange="{{onMessage}}" placeholder="Describe the change or ask Claude for a suggestion" style="width: 100%; resize: vertical; padding: 12px 14px; border: 0; background: #0D0D0D; color: #F4F4F2; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6"></textarea>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; color: #8C8C87">
+<span>Summary line</span>
+<span style="{{counterStyle}}">{{counter}}</span>
+</div>
+<label style="display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 14px; color: #D6D6D1">
+<input type="checkbox" checked="{{amend}}" onChange="{{toggleAmend}}" style="width: 16px; height: 16px; margin: 0; accent-color: #63D676">
+<span>Amend previous commit</span>
+</label>
+<button type="button" onClick="{{commit}}" disabled="{{cannotCommit}}" style="{{commitStyle}}">{{commitLabel}}</button>
+<a href="Review.dc.html" style="align-self: center; font-size: 13.5px; color: #B3B3AE; text-decoration: underline; text-underline-offset: 3px">Review with Claude first</a>
+</div>
+</sc-if>
+<sc-if value="{{isCommit}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<span style="align-self: flex-start; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; color: #101010; background: #F7CF3D; padding: 2px 8px">a3f9c12</span>
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1.02; font-weight: 800; text-transform: uppercase">UploadWorker: jittered backoff</h2>
+<p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #C9C9C4">The delay between retries grows exponentially. Random jitter spreads retries from many devices over time.</p>
+<div style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #8C8C87">
+<span>Marta K. · 2 h ago</span>
+<span>Parent <span style="font-family: 'JetBrains Mono', monospace; color: #D6D6D1">9be0d47</span></span>
+</div>
+<a href="Review.dc.html" style="display: inline-flex; align-items: center; justify-content: center; height: 44px; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Review step by step</a>
+</div>
+</sc-if>
+</aside>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({
+      source: 'local',
+      selLocal: 'src/App/Views/Deliveries/DeliveryPhotoPage.xaml',
+      selCommit: 'src/Infrastructure/Workers/UploadWorker.cs',
+      q: '',
+      ov: {},
+      hoff: {},
+      open: { 'src/App/Views/Deliveries': true, 'src/App/Views/Scanner': true },
+      message: '',
+      suggesting: false,
+      amend: false,
+      committed: false
+    }, this.state || {});
+    const isLocal = st.source === 'local';
+    const G = '#63D676';
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+
+    const S = { kw: '#D3A2FA', type: '#93E3A0', str: '#F6DC80', num: '#F6A983', plain: '#E8E8E4', punct: '#A3A39E' };
+    const KW = new Set(['public', 'private', 'static', 'readonly', 'const', 'int', 'var', 'new', 'await', 'async', 'try', 'catch', 'when', 'foreach', 'in', 'namespace', 'enum', 'class', 'object', 'string', 'void', 'true', 'false']);
+    const TYPES = new Set(['ContentPage', 'ContentView', 'Grid', 'Label', 'Image', 'ObservableObject', 'IValueConverter', 'CultureInfo', 'Type', 'Fact', 'Assert', 'PropertyGroup', 'TimeSpan', 'Task', 'HttpRequestException', 'IUploadQueue', 'IPhotoApi', 'Math', 'Random', 'QueueItemStatus', 'FailingPhotoApi', 'InMemoryUploadQueue', 'Setter']);
+    const tok = (text) => {
+      const out = [];
+      if (!text) return out;
+      const re = /("(?:[^"\\]|\\.)*")|([A-Za-z_][A-Za-z0-9_]*)|(\d+)|(\s+)|([^\sA-Za-z0-9_"]+)/g;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const t = m[0];
+        let c = S.plain;
+        if (m[1]) c = S.str;
+        else if (m[2]) c = KW.has(t) ? S.kw : (TYPES.has(t) ? S.type : S.plain);
+        else if (m[3]) c = S.num;
+        else if (m[5]) c = S.punct;
+        out.push({ t: t, s: 'color: ' + c });
+      }
+      return out;
+    };
+
+    const LOCAL = [
+      { dir: 'docs', files: ['compiled-bindings.md'] },
+      { dir: 'src/App', files: ['App.csproj', 'App.xaml', 'AppShell.xaml', 'MauiProgram.cs'] },
+      { dir: 'src/App/Converters', files: ['BoolToVisibilityConverter.cs', 'DateToRelativeConverter.cs', 'DistanceConverter.cs', 'InverseBoolConverter.cs', 'StatusToColorConverter.cs', 'StatusToIconConverter.cs', 'StringNotEmptyConverter.cs', 'WeightConverter.cs'] },
+      { dir: 'src/App/Resources/Styles', files: ['Colors.xaml', 'Styles.xaml'] },
+      { dir: 'src/App/ViewModels', files: ['AboutViewModel.cs', 'BarcodeOverlayViewModel.cs', 'BaseViewModel.cs', 'DeliveryDetailsViewModel.cs', 'DeliveryFilterViewModel.cs', 'DeliveryHistoryViewModel.cs', 'DeliveryIssueViewModel.cs', 'DeliveryListViewModel.cs', 'DeliveryMapViewModel.cs', 'DeliveryNotesViewModel.cs', 'DeliveryPhotoViewModel.cs', 'DeliveryReturnViewModel.cs', 'DeliverySignatureViewModel.cs', 'DeliverySummaryViewModel.cs', 'DeliveryTimelineViewModel.cs', 'LanguageViewModel.cs', 'LoginViewModel.cs', 'ManualEntryViewModel.cs', 'MultiScanViewModel.cs', 'PrivacyViewModel.cs', 'ProfileViewModel.cs', 'ScanHistoryViewModel.cs', 'ScanResultViewModel.cs', 'ScanSettingsViewModel.cs', 'ScannerViewModel.cs', 'SettingsViewModel.cs', 'ShiftViewModel.cs', 'StatusChipViewModel.cs', 'ToastViewModel.cs', 'ViewModelLocator.cs'] },
+      { dir: 'src/App/Views/Account', files: ['AboutPage.xaml', 'LanguagePage.xaml', 'LoginPage.xaml', 'PrivacyPage.xaml', 'ProfilePage.xaml', 'SettingsPage.xaml', 'ShiftPage.xaml'] },
+      { dir: 'src/App/Views/Deliveries', files: ['DeliveryDetailsPage.xaml', 'DeliveryFilterPopup.xaml', 'DeliveryHistoryPage.xaml', 'DeliveryIssuePage.xaml', 'DeliveryListPage.xaml', 'DeliveryMapPage.xaml', 'DeliveryNotesPage.xaml', 'DeliveryPhotoPage.xaml', 'DeliveryReturnPage.xaml', 'DeliverySignaturePage.xaml', 'DeliverySummaryPage.xaml', 'DeliveryTimelineView.xaml'] },
+      { dir: 'src/App/Views/Scanner', files: ['BarcodeOverlayView.xaml', 'ManualEntryPage.xaml', 'MultiScanPage.xaml', 'ScanHistoryPage.xaml', 'ScanResultPage.xaml', 'ScanSettingsPage.xaml', 'ScannerPage.xaml', 'TorchToggleView.xaml'] },
+      { dir: 'src/App/Views/Shared', files: ['AvatarView.xaml', 'EmptyStateView.xaml', 'ErrorView.xaml', 'LoadingView.xaml', 'OfflineBanner.xaml', 'PrimaryButton.xaml', 'SectionHeader.xaml', 'StatusChip.xaml', 'ToastView.xaml'] },
+      { dir: 'tests/App.Tests/ViewModels', files: ['AboutViewModelTests.cs', 'DeliveryDetailsViewModelTests.cs', 'DeliveryFilterViewModelTests.cs', 'DeliveryHistoryViewModelTests.cs', 'DeliveryIssueViewModelTests.cs', 'DeliveryListViewModelTests.cs', 'DeliveryMapViewModelTests.cs', 'DeliveryNotesViewModelTests.cs', 'DeliveryPhotoViewModelTests.cs', 'DeliveryReturnViewModelTests.cs', 'DeliverySignatureViewModelTests.cs', 'LoginViewModelTests.cs', 'ManualEntryViewModelTests.cs', 'MultiScanViewModelTests.cs', 'ProfileViewModelTests.cs', 'ScanHistoryViewModelTests.cs', 'ScanResultViewModelTests.cs', 'ScannerViewModelTests.cs', 'SettingsViewModelTests.cs'] }
+    ];
+    const COMMIT = [
+      { dir: 'src/Core', files: ['QueueItemStatus.cs'] },
+      { dir: 'src/Infrastructure/Workers', files: ['UploadWorker.cs'] },
+      { dir: 'tests/Infrastructure.Tests', files: ['UploadWorkerTests.cs'] }
+    ];
+    const STATUS = {
+      'docs/compiled-bindings.md': { tag: 'new', add: 64, del: 0 },
+      'src/App/ViewModels/ViewModelLocator.cs': { tag: 'deleted', add: 0, del: 48 },
+      'src/App/Views/Deliveries/DeliveryFilterPopup.xaml': { tag: 'renamed', from: 'DeliveryFilterPage.xaml' },
+      'src/Core/QueueItemStatus.cs': { tag: 'new' }
+    };
+    const TAGCOL = { 'new': '#63D676', 'deleted': '#EF6E2E', 'renamed': '#3F7CF2' };
+    const base = (n) => n.replace(/\.[^.]+$/, '');
+
+    const hunksFor = (path) => {
+      const name = path.split('/').pop();
+      const b = base(name);
+      if (path === 'src/Infrastructure/Workers/UploadWorker.cs') return [
+        { id: 'h1', label: 'lines 12–16', rows: [['c', 12, 12, 'private readonly IUploadQueue _queue;'], ['c', 13, 13, 'private readonly IPhotoApi _api;'], ['a', 14, 'private const int MaxAttempts = 5;'], ['a', 15, 'private static readonly TimeSpan BaseDelay = TimeSpan.FromSeconds(2);'], ['c', 14, 16, '']] },
+        { id: 'h2', label: 'lines 57–61 · ProcessAsync', rows: [['c', 54, 56, '        }'], ['d', 55, '        catch (HttpRequestException ex)'], ['a', 57, '        catch (HttpRequestException ex) when (item.Attempts < MaxAttempts)'], ['c', 56, 58, '        {'], ['a', 59, '            await _queue.MarkAttemptAsync(item.Id, ct);'], ['a', 60, '            await Task.Delay(Backoff(item.Attempts), ct);'], ['c', 57, 61, '        }']] },
+        { id: 'h3', label: 'lines 79–83', rows: [['c', 70, 79, '}'], ['a', 80, ''], ['a', 81, 'private static TimeSpan Backoff(int attempt) =>'], ['a', 82, '    BaseDelay * Math.Pow(2, attempt) + TimeSpan.FromMilliseconds(Random.Shared.Next(0, 500));'], ['c', 71, 83, '}']] }
+      ];
+      if (path === 'src/Core/QueueItemStatus.cs') return [
+        { id: 'h1', label: 'new file', rows: [['a', 1, 'namespace Mobile.Core;'], ['a', 2, ''], ['a', 3, 'public enum QueueItemStatus'], ['a', 4, '{'], ['a', 5, '    Pending,'], ['a', 6, '    Failed'], ['a', 7, '}']] }
+      ];
+      if (path === 'tests/Infrastructure.Tests/UploadWorkerTests.cs') return [
+        { id: 'h1', label: 'lines 40–100', rows: [['c', 40, 40, '}'], ['a', 41, ''], ['a', 42, '[Fact]'], ['a', 43, 'public async Task Marks_item_failed_after_max_attempts()'], ['a', 44, '{'], ['a', 45, '    var api = new FailingPhotoApi(new HttpRequestException("500"));'], ['x', '54 more lines']] }
+      ];
+      if (path === 'docs/compiled-bindings.md') return [
+        { id: 'h1', label: 'new file', rows: [['a', 1, '# Compiled bindings'], ['a', 2, ''], ['a', 3, 'Every page and view declares x:DataType, so bindings are checked at build time.'], ['x', '61 more lines']] }
+      ];
+      if (path === 'src/App/ViewModels/ViewModelLocator.cs') return [
+        { id: 'h1', label: 'deleted file', rows: [['d', 1, 'namespace Mobile.App.ViewModels;'], ['d', 2, ''], ['d', 3, 'public static class ViewModelLocator'], ['d', 4, '{'], ['d', 5, '    public static DeliveryListViewModel DeliveryList =>'], ['x', '43 more lines']] }
+      ];
+      if (path === 'src/App/App.csproj') return [
+        { id: 'h1', label: 'lines 8–10', rows: [['c', 8, 8, '<PropertyGroup>'], ['a', 9, '  <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>'], ['c', 9, 10, '  <Nullable>enable</Nullable>']] }
+      ];
+      if (path === 'src/App/MauiProgram.cs') return [
+        { id: 'h1', label: 'lines 24–25', rows: [['c', 24, 24, 'builder.Services.AddTransient<DeliveryPhotoViewModel>();'], ['d', 25, 'builder.Services.AddSingleton<ViewModelLocator>();'], ['c', 26, 25, 'builder.Services.AddTransient<DeliveryListViewModel>();']] }
+      ];
+      if (path === 'src/App/Views/Deliveries/DeliveryPhotoPage.xaml') return [
+        { id: 'h1', label: 'lines 1–6', rows: [['c', 1, 1, '<?xml version="1.0" encoding="utf-8" ?>'], ['c', 2, 2, '<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"'], ['c', 3, 3, '             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"'], ['a', 4, '             xmlns:vm="clr-namespace:Mobile.App.ViewModels"'], ['a', 5, '             x:DataType="vm:DeliveryPhotoViewModel"'], ['c', 4, 6, '             x:Class="Mobile.App.Views.DeliveryPhotoPage">']] },
+        { id: 'h2', label: 'lines 22–25', rows: [['c', 20, 22, '    <Grid RowDefinitions="Auto,*,Auto">'], ['d', 21, '        <Label Text="{Binding StatusText}" IsVisible="{Binding HasStatus}" />'], ['a', 23, '        <Label Text="{Binding StatusText}"'], ['a', 24, '               IsVisible="{Binding StatusText, Converter={StaticResource StringNotEmptyConverter}}" />'], ['c', 22, 25, '        <Image Source="{Binding Preview}" Grid.Row="1" />']] }
+      ];
+      if (path.startsWith('src/App/Resources') || name === 'App.xaml' || name === 'AppShell.xaml') return [
+        { id: 'h1', label: 'lines 12–13 · whitespace only', rows: [['d', 12, '    <Setter Property="FontSize" Value="14"/>'], ['a', 12, '    <Setter Property="FontSize" Value="14" />'], ['c', 13, 13, '</Style>']] }
+      ];
+      if (path.endsWith('.xaml')) {
+        const root = /(View|Banner|Button|Header|Chip)$/.test(b) ? 'ContentView' : 'ContentPage';
+        const vm = b.replace(/(Page|View|Popup)$/, '') + 'ViewModel';
+        return [{ id: 'h1', label: 'lines 1–6', rows: [['c', 1, 1, '<?xml version="1.0" encoding="utf-8" ?>'], ['c', 2, 2, '<' + root + ' xmlns="http://schemas.microsoft.com/dotnet/2021/maui"'], ['c', 3, 3, '             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"'], ['a', 4, '             xmlns:vm="clr-namespace:Mobile.App.ViewModels"'], ['a', 5, '             x:DataType="vm:' + vm + '"'], ['c', 4, 6, '             x:Class="Mobile.App.Views.' + b + '">']] }];
+      }
+      if (path.indexOf('/Converters/') >= 0) return [
+        { id: 'h1', label: 'lines 8–11', rows: [['c', 8, 8, 'public class ' + b + ' : IValueConverter'], ['c', 9, 9, '{'], ['d', 10, '    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)'], ['a', 10, '    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)'], ['c', 11, 11, '    {']] }
+      ];
+      if (path.startsWith('tests/')) {
+        const target = b.replace(/Tests$/, '');
+        return [{ id: 'h1', label: 'lines 14–18', rows: [['c', 14, 14, '[Fact]'], ['d', 15, 'public void Binds_title()'], ['a', 15, 'public void Title_is_never_null()'], ['c', 16, 16, '{'], ['a', 17, '    Assert.NotNull(new ' + target + '().Title);']] }];
+      }
+      return [{ id: 'h1', label: 'lines 9–12', rows: [['c', 9, 9, 'public partial class ' + b + ' : ObservableObject'], ['c', 10, 10, '{'], ['d', 11, '    [ObservableProperty] private string _title;'], ['a', 11, '    [ObservableProperty] private string _title = string.Empty;'], ['c', 12, 12, '']] }];
+    };
+    const statOf = (path) => {
+      const s = STATUS[path];
+      if (s && s.add !== undefined) return { add: s.add, del: s.del };
+      let a = 0;
+      let d = 0;
+      hunksFor(path).forEach((h) => h.rows.forEach((r) => { if (r[0] === 'a') a += 1; if (r[0] === 'd') d += 1; }));
+      return { add: a, del: d };
+    };
+
+    const groups = isLocal ? LOCAL : COMMIT;
+    const all = [];
+    groups.forEach((g) => g.files.forEach((f) => all.push({ dir: g.dir, name: f, path: g.dir + '/' + f })));
+    const sel = isLocal ? st.selLocal : st.selCommit;
+
+    const defIn = (path) => !(path.startsWith('docs/') || path.startsWith('tests/'));
+    const included = (p) => (st.ov[p] !== undefined ? st.ov[p] : defIn(p));
+    const offMap = (p) => st.hoff[p] || {};
+    const fileState = (p) => {
+      if (!included(p)) return 'off';
+      const off = offMap(p);
+      return Object.keys(off).some((k) => off[k]) ? 'mixed' : 'on';
+    };
+    const cbStyle = (state) => 'flex: 0 0 auto; width: 16px; height: 16px; padding: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; ' + (state === 'off' ? 'background: transparent; border: 2px solid #4A4A47' : 'background: ' + G + '; border: 2px solid ' + G);
+    const cbFor = (state, toggle) => ({ aria: state === 'on' ? 'true' : (state === 'off' ? 'false' : 'mixed'), on: state === 'on', mixed: state === 'mixed', style: cbStyle(state), toggle: toggle });
+    const withOv = (paths, v) => {
+      const ov = Object.assign({}, st.ov);
+      const hoff = Object.assign({}, st.hoff);
+      paths.forEach((p) => { ov[p] = v; delete hoff[p]; });
+      this.setState({ ov: ov, hoff: hoff });
+    };
+    const groupState = (paths) => {
+      const s = paths.map(fileState);
+      if (s.every((x) => x === 'on')) return 'on';
+      if (s.every((x) => x === 'off')) return 'off';
+      return 'mixed';
+    };
+
+    const q = (st.q || '').trim().toLowerCase();
+    const rows = [];
+    groups.forEach((g) => {
+      const files = g.files.filter((f) => !q || f.toLowerCase().indexOf(q) >= 0 || (g.dir + '/' + f).toLowerCase().indexOf(q) >= 0);
+      if (!files.length) return;
+      const paths = g.files.map((f) => g.dir + '/' + f);
+      const open = !isLocal || !!q || !!st.open[g.dir];
+      const gs = groupState(paths);
+      rows.push({
+        isFolder: true, isFile: false, isLocal: isLocal, isCommit: !isLocal,
+        path: g.dir,
+        count: q ? files.length + '/' + g.files.length : String(g.files.length),
+        open: open,
+        openLabel: (open ? 'Collapse ' : 'Expand ') + g.dir,
+        chevron: open ? 'transform: rotate(90deg)' : '',
+        toggleOpen: () => this.setState({ open: Object.assign({}, st.open, { [g.dir]: !open }) }),
+        cbLabel: 'Include folder ' + g.dir,
+        cb: cbFor(gs, () => withOv(paths, gs !== 'on'))
+      });
+      if (!open) return;
+      files.forEach((f) => {
+        const p = g.dir + '/' + f;
+        const s = STATUS[p] || {};
+        const fs = fileState(p);
+        const stt = statOf(p);
+        const cur = p === sel;
+        const dim = isLocal && fs === 'off';
+        rows.push({
+          isFolder: false, isFile: true, isLocal: isLocal,
+          name: f,
+          hasTag: !!s.tag,
+          tag: s.tag || '',
+          tagStyle: cond + 'flex: 0 0 auto; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; line-height: 16px; padding: 0 5px; color: #101010; background: ' + (TAGCOL[s.tag] || '#8C8C87'),
+          title: (s.tag === 'renamed' ? 'Renamed from ' + s.from : (s.tag === 'new' ? 'New file' : (s.tag === 'deleted' ? 'Deleted file' : 'Modified'))) + ' · ' + p,
+          addLabel: stt.add ? '+' + stt.add : '',
+          delLabel: stt.del ? '−' + stt.del : '',
+          current: cur,
+          cbLabel: 'Include ' + f,
+          cb: cbFor(fs, () => withOv([p], fs !== 'on')),
+          select: () => this.setState(isLocal ? { selLocal: p } : { selCommit: p }),
+          rowStyle: 'display: grid; grid-template-columns: ' + (isLocal ? '16px minmax(0, 1fr) auto' : 'minmax(0, 1fr) auto') + '; gap: 8px; align-items: center; height: 26px; padding: 0 8px 0 ' + (isLocal ? '32px' : '30px') + '; background: ' + (cur ? '#262626' : 'transparent'),
+          nameStyle: 'font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ' + (dim ? '#7E7E79' : (cur ? '#FFFFFF' : '#D6D6D1')) + (cur ? '; font-weight: 600' : '') + (s.tag === 'deleted' ? '; text-decoration: line-through' : '')
+        });
+      });
+    });
+
+    const P = { addBg: 'rgba(63, 124, 242, 0.16)', addLn: '#9DBBF8', delBg: 'rgba(239, 110, 46, 0.14)', delLn: '#F6A983' };
+    const lnBase = 'padding: 0 8px; font-size: 11px; text-align: right; user-select: none; min-height: 22px; ';
+    const buildRow = (r) => {
+      if (r[0] === 'x') return { isMore: true, isLine: false, text: r[1] };
+      let o = '';
+      let n = '';
+      let text = '';
+      if (r[0] === 'c') { o = r[1]; n = r[2]; text = r[3]; }
+      else if (r[0] === 'a') { n = r[1]; text = r[2]; }
+      else { o = r[1]; text = r[2]; }
+      const k = r[0];
+      const lc = k === 'a' ? P.addLn : (k === 'd' ? P.delLn : '#7E7E79');
+      return {
+        isMore: false, isLine: true, o: o, n: n,
+        sign: k === 'a' ? '+' : (k === 'd' ? '−' : ''),
+        toks: tok(text),
+        rowStyle: 'display: grid; grid-template-columns: 44px 44px 16px minmax(0, 1fr); background: ' + (k === 'a' ? P.addBg : (k === 'd' ? P.delBg : 'transparent')),
+        lnStyle: lnBase + 'color: ' + lc,
+        signStyle: 'min-height: 22px; user-select: none; color: ' + lc
+      };
+    };
+    const selHunks = hunksFor(sel);
+    const toggleHunk = (hid, on) => {
+      const ov = Object.assign({}, st.ov);
+      const hoff = Object.assign({}, st.hoff);
+      const off = Object.assign({}, hoff[sel] || {});
+      if (on) {
+        off[hid] = true;
+        if (selHunks.every((h) => off[h.id])) { ov[sel] = false; delete hoff[sel]; this.setState({ ov: ov, hoff: hoff }); return; }
+        hoff[sel] = off;
+      } else if (!included(sel)) {
+        ov[sel] = true;
+        const o2 = {};
+        selHunks.forEach((h) => { if (h.id !== hid) o2[h.id] = true; });
+        hoff[sel] = o2;
+      } else {
+        delete off[hid];
+        hoff[sel] = off;
+      }
+      this.setState({ ov: ov, hoff: hoff });
+    };
+    const hunks = selHunks.map((h) => {
+      const on = isLocal ? (included(sel) && !offMap(sel)[h.id]) : true;
+      return {
+        isLocal: isLocal,
+        label: h.label,
+        cb: cbFor(on ? 'on' : 'off', () => toggleHunk(h.id, on)),
+        bodyStyle: 'font-family: JetBrains Mono, ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 22px' + (on ? '' : '; opacity: 0.4'),
+        rows: h.rows.map(buildRow)
+      };
+    });
+
+    const allPaths = all.map((f) => f.path);
+    const incCount = allPaths.filter((p) => fileState(p) !== 'off').length;
+    const ms = groupState(allPaths);
+    const selStatus = STATUS[sel] || {};
+    const SUGGESTION = 'Enable compiled bindings in app pages\n\n- Add x:DataType to pages and views\n- Initialize string properties for nullable bindings\n- Replace ViewModelLocator with DI registrations\n- Update converters to nullable signatures';
+    const first = (st.message || '').split('\n')[0];
+    const cannot = !st.message.trim() || incCount === 0 || st.committed;
+    const seg = (on) => cond + 'flex: 1 1 0; height: 32px; border: 0; font-size: 13.5px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; background: ' + (on ? '#F4F4F2' : 'transparent') + '; color: ' + (on ? '#101010' : '#B3B3AE');
+    return {
+      branch: isLocal ? 'chore/compiled-bindings' : 'develop',
+      isLocal: isLocal,
+      isCommit: !isLocal,
+      toLocal: () => this.setState({ source: 'local' }),
+      toCommit: () => this.setState({ source: 'commit' }),
+      srcLocal: seg(isLocal),
+      srcCommit: seg(!isLocal),
+      q: st.q,
+      onQ: (e) => this.setState({ q: e.target.value }),
+      fileCount: String(all.length),
+      master: cbFor(ms, () => withOv(allPaths, ms !== 'on')),
+      countLabel: isLocal ? incCount + ' of ' + all.length + ' in commit' : all.length + ' files · Marta K. · 2 h ago',
+      collapseAll: () => this.setState({ open: {} }),
+      rows: rows,
+      noMatch: rows.length === 0,
+      selName: sel.split('/').pop(),
+      selDir: sel.split('/').slice(0, -1).join('/'),
+      selHasTag: !!selStatus.tag,
+      selTag: selStatus.tag === 'renamed' ? 'renamed from ' + selStatus.from : (selStatus.tag || ''),
+      selTagStyle: cond + 'font-size: 11.5px; font-weight: 800; letter-spacing: 0.05em; padding: 1px 6px; color: #101010; background: ' + (TAGCOL[selStatus.tag] || '#8C8C87'),
+      hunks: hunks,
+      message: st.message,
+      onMessage: (e) => this.setState({ message: e.target.value }),
+      suggesting: st.suggesting,
+      suggestLabel: st.suggesting ? 'Claude is writing…' : 'Suggest',
+      suggestStyle: cond + 'display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border: 0; background: #B93CF6; color: #101010; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; cursor: pointer' + (st.suggesting ? '; opacity: 0.6' : ''),
+      suggest: () => {
+        if (st.suggesting) return;
+        this.setState({ suggesting: true });
+        setTimeout(() => this.setState({ suggesting: false, message: SUGGESTION }), 1100);
+      },
+      counter: first.length + '/72',
+      counterStyle: 'font-family: JetBrains Mono, monospace; color: ' + (first.length > 72 ? '#EF6E2E' : '#8C8C87'),
+      amend: st.amend,
+      toggleAmend: () => this.setState({ amend: !st.amend }),
+      committed: st.committed,
+      cannotCommit: cannot,
+      commitLabel: (st.amend ? 'Amend · ' : 'Commit · ') + incCount + (incCount === 1 ? ' file' : ' files'),
+      commitStyle: cond + 'height: 48px; border: 0; font-size: 18px; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; ' + (cannot ? 'background: #262626; color: #7E7E79' : 'background: #F7CF3D; color: #101010'),
+      commit: () => { if (!cannot) this.setState({ committed: true }); },
+      newCommit: () => this.setState({ committed: false, message: '' })
+    };
+  }
+}
+</script>
+</body>
+</html>

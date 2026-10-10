@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&amp;family=Barlow+Condensed:wght@600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#101010}
+*{box-sizing:border-box}
+a{color:#F7CF3D}a:hover{color:#FFE27A}
+button,select,input{font-family:inherit}
+:focus-visible{outline:2px solid #F7CF3D;outline-offset:2px}
+kbd{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;line-height:1;padding:3px 6px;border-radius:3px;background:#2A2A2A;color:#D6D6D1}
+</style>
+</helmet>
+<div style="height: 100vh; display: flex; flex-direction: column; background: #101010; color: #F4F4F2; font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.5; color-scheme: dark">
+
+<div style="flex: 0 0 auto; height: 44px; display: flex; align-items: center; gap: 12px; padding-left: 16px; background: #0A0A0A; font-size: 13.5px">
+<span style="flex: 0 0 auto; width: 26px; height: 26px; background: #F7CF3D; display: flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#101010" stroke-width="2.2" stroke-linecap="square" aria-hidden="true"><path d="M4 2v12M12 2v12M4 8h8"></path></svg></span>
+<span style="color: #8C8C87">mobile-app</span>
+<span style="color: #F4F4F2; font-weight: 500">Settings</span>
+<div style="margin-left: auto; display: flex; height: 100%">
+<button type="button" aria-label="Minimize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 5h10"></path></svg></button>
+<button type="button" aria-label="Maximize" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="0.5" y="0.5" width="9" height="9"></rect></svg></button>
+<button type="button" aria-label="Close" style="width: 46px; height: 100%; border: 0; background: transparent; color: #B3B3AE; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><path d="M0 0l10 10M10 0 0 10"></path></svg></button>
+</div>
+</div>
+
+<div style="flex: 1 1 auto; min-height: 0; display: flex">
+
+<nav aria-label="App" style="flex: 0 0 72px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 14px; background: #0A0A0A; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="Start.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="6" cy="5" r="2.5"></circle><circle cx="6" cy="19" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M6 7.5v9M18 16.5V10a4 4 0 0 0-4-4h-4"></path><path d="M12 4l-2 2 2 2"></path></svg>MRs</a>
+<a href="Review.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 21s-6.5-5.8-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.2 12 21 12 21z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>Review</a>
+<a href="Changes.dc.html" style="width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; color: #8C8C87; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M2 12h6.5M15.5 12H22"></path></svg>Changes</a>
+<a href="Settings.dc.html" aria-current="page" title="Settings · Ctrl+," style="margin-top: auto; width: 58px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 0 7px; background: #B93CF6; color: #101010; text-decoration: none; outline: 2px solid #F4F4F2; outline-offset: 2px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg>Settings</a>
+</nav>
+
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; overflow: auto">
+<nav aria-label="Settings sections" style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 22px 12px; background: #141414; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase">
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="7">
+<button type="button" onClick="{{s.pick}}" aria-current="{{s.current}}" style="{{s.style}}"><span>{{s.label}}</span><sc-if value="{{s.hasBadge}}" hint-placeholder-val="{{ false }}"><span style="{{s.badgeStyle}}">{{s.badge}}</span></sc-if></button>
+</sc-for>
+</nav>
+
+<main style="flex: 999 1 560px; min-width: 0; overflow: auto">
+<div style="max-width: 900px; padding: 44px 48px 56px; display: flex; flex-direction: column; gap: 36px">
+
+<sc-if value="{{is.general}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 36px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">General</h1>
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 18px 24px; align-items: center; padding: 22px; background: #141414">
+<span style="font-size: 14px; color: #B3B3AE">Start in</span>
+<div role="radiogroup" aria-label="Start in" style="justify-self: start; display: flex; background: #1F1F1F"><sc-for list="{{gen.modes}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<span style="font-size: 14px; color: #B3B3AE">Focus layout</span>
+<div role="radiogroup" aria-label="Focus layout" style="justify-self: start; display: flex; background: #1F1F1F"><sc-for list="{{gen.layouts}}" as="o" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<span style="font-size: 14px; color: #B3B3AE">Diff colors</span>
+<div role="radiogroup" aria-label="Diff colors" style="justify-self: start; display: flex; background: #1F1F1F"><sc-for list="{{gen.colors}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<span style="font-size: 14px; color: #B3B3AE">Start with Windows</span>
+<button type="button" role="switch" aria-checked="{{gen.autostart}}" onClick="{{gen.toggleAuto}}" style="{{gen.autoStyle}}"><span style="{{gen.autoKnob}}"></span></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{is.claude}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 38px">
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">Claude</h1>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #B3B3AE"><span style="width: 9px; height: 9px; background: #63D676"></span>Claude Code: signed in</span>
+</section>
+<section aria-labelledby="h-default" style="display: flex; flex-direction: column; gap: 18px">
+<h2 id="h-default" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase">Defaults</h2>
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px 24px; align-items: center; padding: 22px; background: #141414">
+<label for="def-model" style="font-size: 14px; color: #B3B3AE">Model</label>
+<select id="def-model" value="{{defModel}}" onChange="{{onDefModel}}" style="justify-self: start; min-width: 280px; height: 40px; padding: 0 12px; border: 0; background: #1F1F1F; color: #F4F4F2; font-size: 14.5px">
+<option value="inherit">Same as Claude Code</option>
+<option value="opus">Opus 5.5</option>
+<option value="sonnet">Sonnet 5.5</option>
+<option value="haiku">Haiku 5.5</option>
+<option value="fable">Fable 5.1</option>
+</select>
+<span id="def-effort-l" style="font-size: 14px; color: #B3B3AE">Effort</span>
+<div role="radiogroup" aria-labelledby="def-effort-l" style="justify-self: start; display: flex; background: #1F1F1F">
+<sc-for list="{{efforts}}" as="e" hint-placeholder-count="5">
+<button type="button" role="radio" aria-checked="{{e.on}}" onClick="{{e.pick}}" style="{{e.style}}">{{e.label}}</button>
+</sc-for>
+</div>
+<label for="def-lang" style="font-size: 14px; color: #B3B3AE">Writes in</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<select id="def-lang" value="{{lang}}" onChange="{{onLang}}" style="min-width: 280px; height: 40px; padding: 0 12px; border: 0; background: #1F1F1F; color: #F4F4F2; font-size: 14.5px">
+<option value="en">English</option>
+<option value="pl">Polish</option>
+</select>
+<span style="font-size: 13px; color: #8C8C87">Notes, suggested comments, commit messages</span>
+</div>
+</div>
+</section>
+<section aria-labelledby="h-tasks" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<h2 id="h-tasks" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase">Per task</h2>
+<span style="font-size: 14px; color: #8C8C87">Overrides the defaults.</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{tasks}}" as="t" hint-placeholder-count="6">
+<div style="display: grid; grid-template-columns: 12px minmax(0, 1fr) 190px 150px; gap: 16px; align-items: center; padding: 16px 18px; background: #141414">
+<span style="{{t.swatch}}"></span>
+<span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-size: 15px; font-weight: 600; color: #F4F4F2">{{t.label}}</span><span style="font-size: 13px; color: #8C8C87">{{t.hint}}</span></span>
+<select value="{{t.model}}" onChange="{{t.onModel}}" aria-label="{{t.modelLabel}}" style="height: 38px; padding: 0 10px; border: 0; background: #1F1F1F; color: #F4F4F2; font-size: 14px">
+<option value="default">Default</option>
+<option value="opus">Opus 5.5</option>
+<option value="sonnet">Sonnet 5.5</option>
+<option value="haiku">Haiku 5.5</option>
+<option value="fable">Fable 5.1</option>
+</select>
+<select value="{{t.effort}}" onChange="{{t.onEffort}}" aria-label="{{t.effortLabel}}" style="height: 38px; padding: 0 10px; border: 0; background: #1F1F1F; color: #F4F4F2; font-size: 14px">
+<option value="default">Default</option>
+<option value="low">low</option>
+<option value="medium">medium</option>
+<option value="high">high</option>
+<option value="xhigh">xhigh</option>
+<option value="max">max</option>
+</select>
+</div>
+</sc-for>
+</div>
+<span style="font-size: 13px; line-height: 1.5; color: #8C8C87">Passed to <span style="font-family: 'JetBrains Mono', monospace; color: #D6D6D1">claude -p</span> as <span style="font-family: 'JetBrains Mono', monospace; color: #D6D6D1">--model</span> and <span style="font-family: 'JetBrains Mono', monospace; color: #D6D6D1">--effort</span>. Available effort levels depend on the model.</span>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{is.gitlab}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 36px">
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">GitLab</h1>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #B3B3AE"><span style="width: 9px; height: 9px; background: #63D676"></span>Signed in as bartek.k on gitlab.local</span>
+</section>
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 16px 24px; align-items: center; padding: 22px; background: #141414">
+<span style="font-size: 14px; color: #B3B3AE">Server</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px">https://gitlab.local</span>
+<span style="font-size: 14px; color: #B3B3AE">Access token</span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px">glpat-••••••••••3f9a</span><span style="font-size: 13px; color: #8C8C87">scope api · expires in 41 days · stored in Windows Credential Manager</span></span>
+</div>
+<section aria-labelledby="h-repos" style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="h-repos" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">Repositories</h2>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 18px; background: #141414"><span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">mobile/mobile-app</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8C8C87">C:\src\mobile-app · review worktrees in C:\src\.review</span></span><span style="padding: 1px 8px; background: #F4F4F2; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">Default</span></div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 18px; background: #141414"><span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 600">mobile/mobile-backend</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8C8C87">C:\src\mobile-backend</span></span><span></span></div>
+</div>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{is.integrations}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 36px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">Integrations</h1>
+
+<section aria-labelledby="h-rider" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<h2 id="h-rider" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">JetBrains Rider</h2>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: #B3B3AE"><span style="width: 9px; height: 9px; background: #63D676"></span>Found 2026.2</span>
+</div>
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px 24px; align-items: center; padding: 22px; background: #141414">
+<span style="font-size: 14px; color: #B3B3AE">Path</span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; overflow-wrap: anywhere">C:\Program Files\JetBrains\JetBrains Rider 2026.2\bin\rider64.exe</span><button type="button" style="height: 28px; padding: 0 10px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Change</button></span>
+<label for="rider-open" style="font-size: 14px; color: #B3B3AE">Teammates’ MRs open from</label>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<select id="rider-open" value="{{int.openFrom}}" onChange="{{int.onOpenFrom}}" style="min-width: 260px; height: 40px; padding: 0 12px; border: 0; background: #1F1F1F; color: #F4F4F2; font-size: 14.5px">
+<option value="worktree">The review worktree</option>
+<option value="checkout">My checkout</option>
+</select>
+<span style="font-size: 13px; color: #8C8C87">{{int.openNote}}</span>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 22px; background: #141414">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">From Rider to this app</span>
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px 24px; align-items: center">
+<span style="font-size: 14px; color: #B3B3AE">Links</span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 9px; height: 9px; background: #63D676"></span>guidedreview:// is registered</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #8C8C87">e.g. guidedreview://mr/482</span></span>
+<span style="font-size: 14px; color: #B3B3AE">External tools</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 14px; color: #E8E8E4">Adds “Review this branch” and “Review this commit” to Rider’s Tools menu.</span>
+<sc-if value="{{int.notAdded}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{int.add}}" style="align-self: flex-start; height: 36px; padding: 0 16px; border: 0; background: #F7CF3D; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Add to Rider</button></sc-if>
+<sc-if value="{{int.added}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #93E3A0"><span style="width: 9px; height: 9px; background: #63D676"></span>Added. Give them a shortcut in Rider › Keymap › External Tools.</span></sc-if>
+<div style="display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 2px 8px; padding: 12px 14px; background: #0D0D0D; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.7; color: #C9C9C4; overflow-wrap: anywhere"><span style="color: #8C8C87">Program</span><span>GuidedReview.exe</span><span style="color: #8C8C87">Arguments</span><span>review --repo "$ProjectFileDir$" --branch current</span></div>
+</div>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="h-nav" style="display: flex; flex-direction: column; gap: 14px">
+<h2 id="h-nav" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">Code navigation</h2>
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 16px 24px; align-items: center; padding: 22px; background: #141414">
+<span id="eng-l" style="font-size: 14px; color: #B3B3AE">Engine</span>
+<div role="radiogroup" aria-labelledby="eng-l" style="justify-self: start; display: flex; background: #1F1F1F"><sc-for list="{{int.engines}}" as="o" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<span style="font-size: 14px; color: #B3B3AE">Status</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 9px; height: 9px; background: #63D676"></span>{{int.engineStatus}}</span>
+<span></span>
+<span style="font-size: 13px; line-height: 1.5; color: #8C8C87">{{int.engineNote}}</span>
+</div>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{is.notifications}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 36px">
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">Notifications</h1>
+<span style="font-size: 14px; color: #B3B3AE">The app sits in the tray and checks GitLab with your token.</span>
+</section>
+<section aria-labelledby="h-about" style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="h-about" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">Tell me about</h2>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{ntf.items}}" as="n" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 18px; background: #141414">
+<span style="{{n.sq}}"></span>
+<span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 15px; font-weight: 600">{{n.label}}</span><span style="font-size: 13px; color: #8C8C87">{{n.hint}}</span></span>
+<button type="button" role="switch" aria-checked="{{n.on}}" aria-label="{{n.label}}" onClick="{{n.toggle}}" style="{{n.sw}}"><span style="{{n.knob}}"></span></button>
+</div>
+</sc-for>
+</div>
+</section>
+<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px 24px; align-items: center; padding: 22px; background: #141414">
+<span id="every-l" style="font-size: 14px; color: #B3B3AE">Check every</span>
+<div role="radiogroup" aria-labelledby="every-l" style="justify-self: start; display: flex; background: #1F1F1F"><sc-for list="{{ntf.every}}" as="o" hint-placeholder-count="5"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<span style="font-size: 14px; color: #B3B3AE">Quiet hours</span>
+<span style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px"><button type="button" role="switch" aria-checked="{{ntf.quiet}}" aria-label="Quiet hours" onClick="{{ntf.toggleQuiet}}" style="{{ntf.quietSw}}"><span style="{{ntf.quietKnob}}"></span></button><span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #E8E8E4">18:00 – 08:00 and weekends</span></span>
+</div>
+<a href="Tray.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; height: 38px; padding: 0 14px; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">See how they look</a>
+</div>
+</sc-if>
+
+<sc-if value="{{is.rules}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 34px">
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">Team rules</h1>
+<span style="font-size: 14px; color: #B3B3AE">Claude reads <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F4F4F2">.review/rules.md</span> from mobile-app before every review. The file changes only through a merge request.</span>
+</section>
+
+<sc-if value="{{rl.showProposal}}" hint-placeholder-val="{{ true }}">
+<section aria-labelledby="h-prop" style="display: flex; flex-direction: column; gap: 14px; padding: 22px; background: #1C1C1C">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="width: 14px; height: 14px; background: #B93CF6"></span>
+<h2 id="h-prop" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">Suggested rule</h2>
+</div>
+<span style="font-size: 14.5px; line-height: 1.55; color: #E8E8E4">You dismissed “Use ILogger instead of Debug.WriteLine” 4 times in 3 weeks, every time inside <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">#if DEBUG</span>.</span>
+<div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{rl.seen}}" as="m" hint-placeholder-count="4"><span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #F4F4F2; background: #262626; padding: 2px 7px">{{m}}</span></sc-for></div>
+<div style="padding: 10px 14px; background: rgba(99, 214, 118, 0.12); font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; color: #E8E8E4"><span style="color: #93E3A0">+ </span>{{rl.line}}</div>
+<sc-if value="{{rl.isOpen}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase">
+<button type="button" onClick="{{rl.propose}}" style="height: 38px; padding: 0 16px; border: 0; background: #F7CF3D; color: #101010; font: inherit; font-weight: 800; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Propose in an MR</button>
+<button type="button" style="height: 38px; padding: 0 14px; border: 0; background: #262626; color: #F4F4F2; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Edit</button>
+<button type="button" onClick="{{rl.later}}" style="height: 38px; padding: 0 14px; border: 0; background: transparent; color: #B3B3AE; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Not now</button>
+<button type="button" onClick="{{rl.never}}" style="height: 38px; padding: 0 14px; border: 0; background: transparent; color: #8C8C87; font: inherit; font-weight: 700; letter-spacing: inherit; text-transform: inherit; cursor: pointer">Don’t suggest this</button>
+</div>
+</sc-if>
+<sc-if value="{{rl.isProposed}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; background: #3F7CF2; color: #101010">
+<span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; text-transform: uppercase">MR !486 opened</span>
+<span style="font-size: 14px">Review rules: allow Debug.WriteLine in DEBUG blocks · reviewer Marta K.</span>
+<a href="Author.dc.html" style="margin-left: auto; color: #101010; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">Open</a>
+</div>
+<span style="font-size: 13px; color: #8C8C87">Takes effect for everyone once it’s merged.</span>
+</sc-if>
+</section>
+</sc-if>
+<sc-if value="{{rl.isHidden}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #141414; font-size: 14px; color: #B3B3AE"><span>{{rl.hiddenText}}</span><button type="button" onClick="{{rl.undo}}" style="height: 28px; padding: 0 10px; border: 0; background: #262626; color: #F4F4F2; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer">Undo</button></div>
+</sc-if>
+
+<section aria-labelledby="h-rules" style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+<h2 id="h-rules" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; text-transform: uppercase">In the file now</h2>
+<a href="#" style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none">Open in Rider</a>
+</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{rl.rules}}" as="r" hint-placeholder-count="5">
+<li style="display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; padding: 13px 16px; background: #141414">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8C8C87; padding-top: 2px">{{r.n}}</span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14.5px; line-height: 1.5; color: #F4F4F2">{{r.text}}</span><span style="font-size: 12.5px; color: #8C8C87">{{r.meta}}</span></span>
+</li>
+</sc-for>
+</ol>
+<span style="font-size: 13px; color: #8C8C87">Dismissals are counted only on your machine.</span>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{is.shortcuts}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 30px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 52px; line-height: 0.95; font-weight: 800; text-transform: uppercase">Shortcuts</h1>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="10">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #141414"><span style="font-size: 14.5px">{{k.label}}</span><span style="display: flex; gap: 4px"><sc-for list="{{k.keys}}" as="x"><kbd>{{x}}</kbd></sc-for></span></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startSection":{"editor":"enum","options":["general","claude","gitlab","integrations","notifications","rules","shortcuts"],"default":"claude"},"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = Object.assign({
+      section: this.props.startSection ?? 'claude',
+      defModel: 'inherit',
+      defEffort: 'medium',
+      lang: 'en',
+      tasks: {
+        plan: { model: 'opus', effort: 'high' },
+        step: { model: 'sonnet', effort: 'medium' },
+        ask: { model: 'default', effort: 'low' },
+        fix: { model: 'sonnet', effort: 'medium' },
+        mr: { model: 'sonnet', effort: 'low' },
+        commit: { model: 'haiku', effort: 'low' }
+      },
+      mode: 'focus', layout: 'A', colors: 'bo', autostart: true,
+      openFrom: 'worktree', riderAdded: false, engine: 'csharp-ls',
+      ntf: { req: true, commits: true, comments: true, pipe: true, approvals: false },
+      every: 3, quiet: true,
+      rule: 'open'
+    }, this.state || {});
+    const cond = 'font-family: Barlow Condensed, sans-serif; text-transform: uppercase; ';
+    const seg = (on, purple) => cond + 'height: 40px; padding: 0 16px; border: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; background: ' + (on ? (purple ? '#B93CF6' : '#F4F4F2') : 'transparent') + '; color: ' + (on ? '#101010' : '#B3B3AE');
+    const sw = (on) => 'flex: 0 0 auto; position: relative; width: 46px; height: 26px; padding: 0; border: 0; cursor: pointer; background: ' + (on ? '#63D676' : '#333331');
+    const knob = (on) => 'position: absolute; top: 4px; left: ' + (on ? '24px' : '4px') + '; width: 18px; height: 18px; background: ' + (on ? '#101010' : '#8C8C87');
+
+    const SECTIONS = [
+      { id: 'general', label: 'General' },
+      { id: 'claude', label: 'Claude' },
+      { id: 'gitlab', label: 'GitLab' },
+      { id: 'integrations', label: 'Integrations' },
+      { id: 'notifications', label: 'Notifications' },
+      { id: 'rules', label: 'Team rules', badge: st.rule === 'open' ? '1' : '' },
+      { id: 'shortcuts', label: 'Shortcuts' }
+    ];
+    const sections = SECTIONS.map((s) => {
+      const on = s.id === st.section;
+      return {
+        label: s.label,
+        current: on ? 'page' : 'false',
+        pick: () => this.setState({ section: s.id }),
+        hasBadge: !!s.badge,
+        badge: s.badge,
+        badgeStyle: 'margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; font-family: JetBrains Mono, monospace; font-size: 11px; font-weight: 600; background: ' + (on ? '#101010' : '#B93CF6') + '; color: ' + (on ? '#D3A2FA' : '#101010'),
+        style: 'display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; text-align: left; cursor: pointer; background: ' + (on ? '#B93CF6' : 'transparent') + '; color: ' + (on ? '#101010' : '#B3B3AE')
+      };
+    });
+    const is = {};
+    SECTIONS.forEach((s) => { is[s.id] = s.id === st.section; });
+
+    const LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'];
+    const efforts = LEVELS.map((l) => {
+      const on = l === st.defEffort;
+      return {
+        label: l, on: on,
+        pick: () => this.setState({ defEffort: l }),
+        style: 'height: 40px; padding: 0 16px; border: 0; font-family: JetBrains Mono, monospace; font-size: 13px; font-weight: 600; cursor: pointer; background: ' + (on ? '#B93CF6' : 'transparent') + '; color: ' + (on ? '#101010' : '#B3B3AE')
+      };
+    });
+    const T = [
+      { id: 'plan', label: 'Review plan', hint: 'Once per MR: step order and risks', col: '#F7CF3D' },
+      { id: 'step', label: 'Step analysis', hint: 'For every step, runs in the background', col: '#EF6E2E' },
+      { id: 'ask', label: 'Questions', hint: 'On demand, in the same session', col: '#3F7CF2' },
+      { id: 'fix', label: 'Fixes on your code', hint: 'Fix with Claude, edits one file', col: '#B93CF6' },
+      { id: 'mr', label: 'MR description and pipeline', hint: 'New MR text, explaining failed jobs', col: '#F4F4F2' },
+      { id: 'commit', label: 'Commit message', hint: 'When you click Suggest', col: '#63D676' }
+    ];
+    const setTask = (id, key, v) => {
+      const c = {};
+      Object.keys(st.tasks).forEach((k) => { c[k] = Object.assign({}, st.tasks[k]); });
+      c[id][key] = v;
+      this.setState({ tasks: c });
+    };
+    const tasks = T.map((t) => ({
+      label: t.label, hint: t.hint,
+      swatch: 'width: 12px; height: 12px; background: ' + t.col,
+      model: st.tasks[t.id].model, effort: st.tasks[t.id].effort,
+      modelLabel: 'Model for ' + t.label, effortLabel: 'Effort for ' + t.label,
+      onModel: (e) => setTask(t.id, 'model', e.target.value),
+      onEffort: (e) => setTask(t.id, 'effort', e.target.value)
+    }));
+
+    const opt = (list, cur, key) => list.map((o) => ({ label: o.label, on: o.id === cur, pick: () => this.setState({ [key]: o.id }), style: seg(o.id === cur, false) }));
+    const gen = {
+      modes: opt([{ id: 'focus', label: 'Focus' }, { id: 'detailed', label: 'Detailed' }], st.mode, 'mode'),
+      layouts: opt([{ id: 'A', label: 'A' }, { id: 'B', label: 'B' }, { id: 'C', label: 'C' }], st.layout, 'layout'),
+      colors: opt([{ id: 'bo', label: 'Blue · orange' }, { id: 'gr', label: 'Green · red' }], st.colors, 'colors'),
+      autostart: st.autostart,
+      toggleAuto: () => this.setState({ autostart: !st.autostart }),
+      autoStyle: sw(st.autostart),
+      autoKnob: knob(st.autostart)
+    };
+
+    const ENG = { 'csharp-ls': 'mobile-app indexed · 1,284 files · 38 s', roslyn: 'mobile-app indexed · 1,284 files · 52 s', symbols: 'mobile-app indexed · 1,284 files · 3 s' };
+    const ENGN = {
+      'csharp-ls': 'Hover, definition and usages, based on the compiler. Needs the solution to restore once.',
+      roslyn: 'Same as Rider’s analysis, slower to start. Needs the solution to restore once.',
+      symbols: 'Instant and needs no build, but usages are matched by name, not by meaning.'
+    };
+    const int = {
+      openFrom: st.openFrom,
+      onOpenFrom: (e) => this.setState({ openFrom: e.target.value }),
+      openNote: st.openFrom === 'worktree' ? 'Your own branch stays untouched.' : 'Only when that branch is checked out.',
+      added: st.riderAdded,
+      notAdded: !st.riderAdded,
+      add: () => this.setState({ riderAdded: true }),
+      engines: opt([{ id: 'csharp-ls', label: 'csharp-ls' }, { id: 'roslyn', label: 'Roslyn LSP' }, { id: 'symbols', label: 'Symbols only' }], st.engine, 'engine'),
+      engineStatus: ENG[st.engine],
+      engineNote: ENGN[st.engine]
+    };
+
+    const N = [
+      { id: 'req', label: 'Review requests', hint: 'Someone adds you as a reviewer', col: '#3F7CF2' },
+      { id: 'commits', label: 'New commits on MRs you reviewed', hint: 'Including force-pushes and rebases', col: '#EF6E2E' },
+      { id: 'comments', label: 'Comments on your MRs', hint: 'New threads and replies', col: '#63D676' },
+      { id: 'pipe', label: 'Pipeline results on your MRs', hint: 'Failed or passed', col: '#F7CF3D' },
+      { id: 'approvals', label: 'Approvals on your MRs', hint: 'When someone approves', col: '#F4F4F2' }
+    ];
+    const ntf = {
+      items: N.map((n) => {
+        const on = !!st.ntf[n.id];
+        return { label: n.label, hint: n.hint, on: on, sq: 'width: 12px; height: 12px; background: ' + n.col, sw: sw(on), knob: knob(on), toggle: () => this.setState({ ntf: Object.assign({}, st.ntf, { [n.id]: !on }) }) };
+      }),
+      every: [1, 3, 5, 10, 15].map((m) => ({ label: m + ' min', on: m === st.every, pick: () => this.setState({ every: m }), style: seg(m === st.every, false) })),
+      quiet: st.quiet,
+      toggleQuiet: () => this.setState({ quiet: !st.quiet }),
+      quietSw: sw(st.quiet),
+      quietKnob: knob(st.quiet)
+    };
+
+    const RULES = [
+      { text: 'User-facing texts come from AppResources. Flag hardcoded strings in XAML and ViewModels.', meta: 'Marta K. · !431' },
+      { text: 'Don’t flag a missing ConfigureAwait(false) in ViewModels and pages.', meta: 'You · !455' },
+      { text: 'Commands that call the API handle OperationCanceledException without an error dialog.', meta: 'Piotr S. · !462' },
+      { text: 'Prefer WeakReferenceMessenger over static events.', meta: 'Ola M. · !466' },
+      { text: 'Every SQLite schema change needs a migration in Data/Migrations.', meta: 'Marta K. · !470' }
+    ];
+    const rl = {
+      showProposal: st.rule === 'open' || st.rule === 'proposed',
+      isOpen: st.rule === 'open',
+      isProposed: st.rule === 'proposed',
+      isHidden: st.rule === 'later' || st.rule === 'never',
+      hiddenText: st.rule === 'later' ? 'Suggestion hidden for now. It comes back after the next dismissal.' : 'Claude won’t suggest this rule again.',
+      seen: ['!471', '!476', '!479', '!482'],
+      line: 'Debug.WriteLine inside #if DEBUG is fine. Don’t flag it.',
+      propose: () => this.setState({ rule: 'proposed' }),
+      later: () => this.setState({ rule: 'later' }),
+      never: () => this.setState({ rule: 'never' }),
+      undo: () => this.setState({ rule: 'open' }),
+      rules: RULES.map((r, i) => ({ n: String(i + 1).padStart(2, '0'), text: r.text, meta: r.meta }))
+    };
+
+    const KEYS = [
+      ['Next step', [']']], ['Previous step', ['[']], ['Mark step reviewed', ['Space']], ['Next note', ['N']],
+      ['Add to drafts', ['D']], ['Dismiss note', ['X']], ['Go to definition', ['F12']], ['Find usages', ['Shift', 'F12']],
+      ['Open in Rider', ['Ctrl', 'Shift', 'O']], ['Open anything', ['Ctrl', 'K']], ['Settings', ['Ctrl', ',']], ['Switch Focus / Detailed', ['Ctrl', 'D']]
+    ];
+    return {
+      sections: sections,
+      is: is,
+      defModel: st.defModel,
+      onDefModel: (e) => this.setState({ defModel: e.target.value }),
+      lang: st.lang,
+      onLang: (e) => this.setState({ lang: e.target.value }),
+      efforts: efforts,
+      tasks: tasks,
+      gen: gen,
+      int: int,
+      ntf: ntf,
+      rl: rl,
+      keys: KEYS.map((k) => ({ label: k[0], keys: k[1] }))
+    };
+  }
+}
+</script>
+</body>
+</html>
