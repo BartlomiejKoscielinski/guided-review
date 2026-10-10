@@ -95,7 +95,7 @@ kbd{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;line-heig
 <option value="en">English</option>
 <option value="pl">Polish</option>
 </select>
-<span style="font-size: 13px; color: #8C8C87">Notes, suggested comments, commit messages</span>
+<span style="font-size: 13px; color: #8C8C87">Notes, suggested comments, commit messages, MR descriptions</span>
 </div>
 </div>
 </section>
@@ -461,9 +461,12 @@ class Component extends DCLogic {
     };
 
     const KEYS = [
-      ['Next step', [']']], ['Previous step', ['[']], ['Mark step reviewed', ['Space']], ['Next note', ['N']],
-      ['Add to drafts', ['D']], ['Dismiss note', ['X']], ['Go to definition', ['F12']], ['Find usages', ['Shift', 'F12']],
-      ['Open in Rider', ['Ctrl', 'Shift', 'O']], ['Open anything', ['Ctrl', 'K']], ['Settings', ['Ctrl', ',']], ['Switch Focus / Detailed', ['Ctrl', 'D']]
+      ['Next step', [']']], ['Previous step', ['[']], ['Mark step reviewed', ['Space']], ['Next hunk', ['J']],
+      ['Previous hunk', ['K']], ['Next note', ['N']], ['Add to drafts', ['D']], ['Dismiss note', ['X']],
+      ['Comment on line', ['C']], ['Ask Claude', ['A']], ['Primary action (plan, re-review)', ['Enter']], ['Go to definition', ['F12']],
+      ['Find usages', ['Shift', 'F12']], ['Open in Rider', ['Ctrl', 'Shift', 'O']], ['Close popover', ['Esc']], ['Open anything', ['Ctrl', 'K']],
+      ['Settings', ['Ctrl', ',']], ['Switch Focus / Detailed', ['Ctrl', 'D']], ['Sidebar layout', ['Ctrl', '1']], ['Minimal layout', ['Ctrl', '2']],
+      ['Guide layout', ['Ctrl', '3']], ['All shortcuts', ['?']]
     ];
     return {
       sections: sections,

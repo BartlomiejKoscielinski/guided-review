@@ -152,7 +152,7 @@ button,input,textarea{font-family:inherit}
 </div>
 </sc-if>
 <sc-if value="{{row.c.qSent}}" hint-placeholder-val="{{ false }}">
-<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #9DBBF8"><span style="width: 9px; height: 9px; background: #3F7CF2"></span>Answered. Piotr resolves it when he’s happy.</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #9DBBF8"><span style="width: 9px; height: 9px; background: #3F7CF2"></span>Answered. The thread stays open until Piotr resolves it.</span>
 </sc-if>
 </div>
 </sc-if>
@@ -284,7 +284,7 @@ class Component extends DCLogic {
         return { tag: 'Change requested', bg: '#EF6E2E' };
       }
       if (st.q === 'sent') return { tag: 'Answered', bg: '#3F7CF2' };
-      return { tag: 'Question', bg: '#EF6E2E' };
+      return { tag: 'Question', bg: '#3F7CF2' };
     };
     const threads = T.map((t) => {
       const on = t.id === st.sel;
@@ -388,12 +388,12 @@ class Component extends DCLogic {
       onMsg: (e) => this.setState({ msg: e.target.value }),
       fixup: st.fixup,
       toggleFixup: () => this.setState({ fixup: !st.fixup }),
-      fixupNote: st.fixup ? 'Squashed into b71e3a0 when you merge with autosquash.' : 'Stays a separate commit.',
+      fixupNote: st.fixup ? 'Marked as a fixup of b71e3a0. Fold it in with git rebase --autosquash before merging, or merge with Squash commits.' : 'Stays a separate commit.',
       commit: () => this.setState({ fix: 'committed' }),
       resolveOnPush: st.resolveOnPush,
       toggleResolve: () => this.setState({ resolveOnPush: !st.resolveOnPush }),
       push: () => { this.setState({ fix: 'pushing' }); setTimeout(() => this.setState({ fix: 'pushed' }), 1100); },
-      doneText: st.resolveOnPush ? 'Replied to Marta and resolved her thread.' : 'Replied to Marta. The thread stays open.'
+      doneText: st.resolveOnPush ? 'Replied to Marta and resolved the thread.' : 'Replied to Marta. The thread stays open.'
     };
   }
 }

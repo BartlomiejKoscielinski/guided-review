@@ -6,7 +6,7 @@ This package contains everything Claude Code needs to build Guided Review exactl
 
 - `CLAUDE.md`: standing instructions for Claude Code, loaded in every session.
 - `docs/`: the specification.
-  - `01-product.md`: 30 features and 172 acceptance criteria, each with an ID.
+  - `01-product.md`: 30 features and 183 acceptance criteria (175 `F-xx.n` + 8 NFR), each with an ID.
   - `02-screens.md`: screens.
   - `03-design-system.md`: tokens and components.
   - `04`–`06`: architecture, integrations and security.
@@ -28,9 +28,11 @@ This package contains everything Claude Code needs to build Guided Review exactl
 - Rust via `rustup` (MSVC toolchain) and Visual Studio Build Tools with "Desktop development with C++".
 - WebView2. It is built into Windows 11.
 - Git 2.40 or newer: `git --version`.
-- Claude Code signed in with your company account. `claude auth status` must show that you are signed in.
+- Claude Code from the **native installer** (not the npm package), signed in. `claude auth status` must show that you are signed in.
 - A GitLab token (personal access token, scope `api`). Needed from M2.
 - From M9: the .NET SDK and `dotnet tool install --global csharp-ls`.
+
+**Two machines** (ADR-019): development happens on a PC without VPN, with a personal Claude account, a stand-in GitLab on gitlab.com (a private sandbox project with synthetic code; its token is stored by you) and Rider installed as on the laptop. The company laptop (VPN, on-prem GitLab, Claude Enterprise, Rider, the MAUI solution) clones the repo for short **field visits** (`field/RUNBOOK-<n>.md` + `gr-probe.exe`); only a sanitized report comes back. No company code or data on the PC.
 
 ## 2. Create the repository
 

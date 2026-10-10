@@ -13,10 +13,11 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "title", "reason", "description", "layer", "hunk_ids", "builds_on"],
+        "required": ["id", "title", "short_title", "reason", "description", "layer", "hunk_ids", "builds_on"],
         "properties": {
           "id": { "type": "string", "pattern": "^s[0-9]+$" },
           "title": { "type": "string", "maxLength": 60, "description": "Short title, e.g. 'ViewModel: queue instead of upload'." },
+          "short_title": { "type": "string", "maxLength": 24, "description": "Label for the step list, e.g. 'ViewModel'." },
           "reason": { "type": "string", "maxLength": 110, "description": "Why the step is here in the order, e.g. 'Everything else builds on this.'" },
           "description": { "type": "string", "maxLength": 300, "description": "1-2 sentences shown under the step title." },
           "layer": { "type": "string", "enum": ["Core", "Infrastructure", "App", "XAML", "Platforms", "Tests", "Resources", "Build", "Other"] },

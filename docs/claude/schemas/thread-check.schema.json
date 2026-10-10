@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ThreadCheck",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["threads"],
+  "properties": {
+    "threads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["discussion_id", "addressed", "commit", "hint"],
+        "properties": {
+          "discussion_id": { "type": "string" },
+          "addressed": { "type": "boolean" },
+          "commit": { "type": "string", "pattern": "^([0-9a-f]{7,40})?$" },
+          "hint": { "type": "string", "maxLength": 60, "description": "Shown as 'Claude: <hint>' on S-05 (F-13.3)." }
+        }
+      }
+    }
+  }
+}

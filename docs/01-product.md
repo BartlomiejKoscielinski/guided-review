@@ -56,7 +56,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-01.3** Enter or **Start** opens the source: MR → plan (S-02); commit → step review of that commit; branch or local path → self-review.
 - **F-01.4** `Ctrl+K` opens S-01 with the input focused, from any screen.
 - **F-01.5** Unknown or unreachable input shows an inline error under the input and stays on S-01 (e.g. "No merge request !999 in mobile/mobile-app").
-- **F-01.6** The header shows the repository name and path, "GitLab connected" and "Claude Code signed in" with green squares; a failing check turns orange and offers the fixing action ("Add token", "Sign in to Claude Code").
+- **F-01.6** The title bar shows the repository switcher (name and path, F-30.7), "GitLab connected" with a green square, and "Claude Code signed in" as a chip with a purple square that opens Settings › Claude (on S-01 it takes the model chip's place); a failing check turns orange and offers the fixing action ("Add token", "Sign in to Claude Code").
 
 ### F-02 Start: merge request lists · S-01
 - **F-02.1** Tabs **Waiting for me** (I am a reviewer and have not approved), **Mine** (I am the author), **All open** (project). Each tab shows a count.
@@ -74,15 +74,16 @@ This file is the source of truth for **what** the app does. Every feature has an
 ### F-04 Resume sessions · S-01
 - **F-04.1** "Pick up where you left off" lists unfinished sessions with progress ("5 of 9 steps · 3 drafts", "Self-review · 2 of 6 steps · saved yesterday 18:40").
 - **F-04.2** If the MR head moved since the session started, the card shows an orange tag "N NEW COMMITS", a primary **Only new changes** (S-09) and a secondary **Continue**.
-- **F-04.3** Session state (reviewed steps, note decisions, drafts, layout, scroll position per step) survives app restarts.
+- **F-04.3** Session state (reviewed steps, note decisions, drafts, layout, scroll position per step, "For you to judge" ticks) survives app restarts.
 
 ### F-05 Preparation (deterministic, no AI)
 - **F-05.1** For an MR, the app fetches `refs/merge-requests/<iid>/head` and creates (or reuses) a worktree at the head SHA in the review worktree folder. The user's own checkout is never modified.
 - **F-05.2** The diff is computed between the MR's merge base and head with rename detection; binary files are listed but not rendered.
 - **F-05.3** Every hunk gets a stable ID (same content → same ID across sessions).
-- **F-05.4** Files are pre-grouped by MAUI layer from their path (Core, Infrastructure, App/ViewModels, Views/XAML, Platforms, Tests, Resources, Build) to help the plan and the "File order" strategy.
+- **F-05.4** Files are pre-grouped by MAUI layer from their path to help the plan and the "File order" strategy: Core, Infrastructure, App (ViewModels, services, app logic), XAML (views), Platforms, Tests, Resources, Build; anything else is Other. The plan and the UI tags use the same names.
 - **F-05.5** Mechanical hunks are detected without AI where possible (whitespace-only, `.csproj` package bumps, `.resx` key additions, generated files) and proposed for Skim.
 - **F-05.6** Preparation progress is visible ("Fetching", "Creating worktree", "Computing diff") and can be cancelled.
+- **F-05.7** Changes without text hunks (rename-only, mode-only, binary, empty file added or deleted) get one file-level hunk with a stable ID, so every changed file belongs to exactly one step or skim group.
 
 ### F-06 Review plan · S-02
 - **F-06.1** Header: MR title as the page heading, author · age, branch block (`source → target`), `N files +add −del · N commits`, pipeline status (links to S-08).
@@ -97,10 +98,11 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-06.10** Aside **Coverage**: `N/N files · N/N hunks` with a bar. If Claude's plan misses hunks, the app adds them to an "Other" step automatically; the plan can never drop a hunk.
 - **F-06.11** Actions: **Browse files instead** (S-06-like browse of the MR), **Start step 1** (Enter).
 - **F-06.12** While steps are being analyzed, the title bar shows status ("Plan ready · Claude is analyzing step 1"). The plan is usable before step analyses finish.
+- **F-06.13** If the change touches review or Claude configuration (`CLAUDE.md`, `AGENTS.md`, `.claude/`, `.mcp.json`, `.review/`), the app adds a risk at the top of Risks to check without AI: orange square, "This MR changes review or Claude configuration: <paths>". It is shown even when Claude isn't available.
 
 ### F-07 Step review: Focus mode and layouts · S-03
-- **F-07.1** Three layouts switchable in the title bar and with `Ctrl+1/2/3`, sharing all state: **A Sidebar** (steps list left), **B Minimal** (progress segments in title bar, floating toolbar at the bottom), **C Guide** (guide panel on the right).
-- **F-07.2** Step header: "STEP 4 OF 8", title, one-sentence description; **Mark reviewed** (Space) and next.
+- **F-07.1** Three layouts switchable in the title bar and with `Ctrl+1/2/3`, sharing all state: **A Sidebar** (steps list left, with each step's short title), **B Minimal** (progress segments in title bar, floating toolbar at the bottom), **C Guide** (guide panel on the right).
+- **F-07.2** Step header: "STEP 4 OF 8", title, a one- or two-sentence description; **Mark reviewed** (Space) and next.
 - **F-07.3** File header: path, `+add −del`, number of notes in this file ("3 notes").
 - **F-07.4** Split diff with old/new line numbers, intraline emphasis and syntax highlighting. Mechanical regions inside a step are collapsed to a fold row ("Fields and constructor: 3 new dependencies" · **Show**).
 - **F-07.5** Gutter markers: in A and B a 12px square colored by severity; in C a numbered square. A thread icon marks lines with existing threads.
@@ -112,11 +114,11 @@ This file is the source of truth for **what** the app does. Every feature has an
 ### F-08 Step review: Detailed mode · S-04
 - **F-08.1** Mode toggle Focus | Detailed in the title bar (`Ctrl+D`); both modes show the same session state.
 - **F-08.2** Info header: branch block, author · age, `N files +add −del`, step progress segments with `done/total`, drafts count, pipeline status (links to S-08).
-- **F-08.3** Rail: plan steps with state (done = green check, current = yellow, upcoming = number) and per-step draft count; Skim list; "Change coverage" with bar and the rule text.
+- **F-08.3** Rail: a first item "Change overview" (intent, risks, plan; links to S-02, done once the plan was opened), plan steps with state (done = green check, current = yellow, upcoming = number) and per-step draft count; Skim list; "Change coverage" with bar and the rule text.
 - **F-08.4** Step header: "Step 4 / 8", "builds on" chips (click jumps to that step), previous, **Mark reviewed** (Space), **Next step** (`]`).
 - **F-08.5** Sticky file bar: path, `+/−`, Split | Unified, Ignore whitespace, Open in Rider.
 - **F-08.6** Full note callout: tag, title, Claude label, body, "Checked in" evidence chips, Suggested comment, **Add to drafts** (D), **Edit and add**, **Ask Claude**, **Dismiss** (X).
-- **F-08.7** Guide aside: Code notes in line order (`N` cycles), "For you to judge" checklist with progress (`1/3`), Analysis context (files Claude read and why), Ask box with the current context ("step 4 · L46–L57") and `Ctrl+↵`.
+- **F-08.7** Guide aside: Code notes in line order (`N` cycles), "For you to judge" checklist with progress (`1/3`), Analysis context (files Claude read, each with its place: "step N", "outside MR" or "skim"; Claude's reason as a tooltip), Ask box with the current context ("step 4 · L46–L57") and `Ctrl+↵`.
 - **F-08.8** Footer: shortcut hints (J K hunk, [ ] step, N note, C comment, A ask, Space reviewed, ? all) and Claude status ("Claude: steps 5–6 ready, analyzing 7", "worktree @ a3f9c12").
 - **F-08.9** End-of-step card: "End of step 4", next step title with stats, **Next step**.
 
@@ -124,9 +126,10 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-09.1** Each note has severity, title, body, line (file, side, line), evidence (`file:line` list) and a suggested comment.
 - **F-09.2** Decisions: **Add to drafts** (creates a draft from the suggested comment), **Edit and add** (opens the text for editing first), **Dismiss**. Each decision can be undone.
 - **F-09.3** After Add to drafts the card says "Added to drafts. It reaches GitLab only when you publish." After Dismiss: "Dismissed. Claude won't raise it again for this commit."
-- **F-09.4** Dismissed notes are fingerprinted (rule + file + normalized code) and not raised again for the same head; dismissals also feed F-29.
+- **F-09.4** Dismissed notes are fingerprinted (rule = the note's `kind` + file + normalized code: the line with whitespace collapsed plus one line of context on each side) and not raised again for the same head; dismissals also feed F-29.
 - **F-09.5** Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as context).
 - **F-09.6** Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the user reads the current one.
+- **F-09.7** `C` (or the comment action on a selected line) opens an inline composer under the line in the note-card style: text area, **Add to drafts** (`Ctrl+↵`), **Cancel** (Esc). It creates a draft with the line's position.
 
 ### F-10 Ask Claude
 - **F-10.1** Questions are asked in the context of the current step and, if any, the selected lines.
@@ -136,7 +139,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 ### F-11 Existing GitLab threads in the diff
 - **F-11.1** Threads on lines in the current step show inline (avatars, author · age, text, replies).
 - **F-11.2** Actions: **Resolve** (green), **Reply**, **Reopen** on resolved threads. Resolve/unresolve are sent immediately and are independent from drafts and approval.
-- **F-11.3** Threads on outdated lines (from an older version) are shown on the closest matching line with an "outdated" tag.
+- **F-11.3** Threads on outdated lines (from an older version) are shown on the closest matching line (same line text within ±20 lines, mapped through the interdiff) with an "outdated" tag; without a match they show on the file header.
 
 ### F-12 Summary: drafts and publishing · S-05
 - **F-12.1** "SUMMARY" with "All N steps reviewed." (or "N of M steps reviewed.") and **Back to steps**.
@@ -145,6 +148,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-12.4** "Add a summary comment" checkbox reveals a text area prefilled by Claude with a short overall summary.
 - **F-12.5** **Publish (N)** publishes the selected drafts (and summary comment) in one batch so the author gets a single notification; afterwards a blue banner "Published N comments. The author got a single notification." and each item is marked "published".
 - **F-12.6** Publishing never approves the MR.
+- **F-12.7** Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a question on S-12) join the latest session of that MR or create a "drafts only" session that S-05 opens.
 
 ### F-13 Summary: threads · S-05
 - **F-13.1** Filters All / Open N / Resolved N.
@@ -154,7 +158,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 ### F-14 Approval · S-05
 - **F-14.1** Approval tile: state ("NOT APPROVED YET" with dashed square / approved in solid green), "Approvals: X of Y".
 - **F-14.2** **Approve MR** / **Revoke approval**. Approval is sent with the head SHA that was reviewed; if the MR changed meanwhile the app says so and offers S-09.
-- **F-14.3** The tile states "Approving doesn't publish comments." and the number of open threads.
+- **F-14.3** The tile states "Approving doesn't publish comments." and the number of open threads ("Open threads: 3." or "All threads resolved."). Once approved with unpublished drafts it says "Approved without comments. Your drafts are waiting, publish them whenever you like."
 
 ### F-15 Changes browser · S-06
 - **F-15.1** Source toggle **Local changes** / **Commit `<sha>`**.
@@ -175,27 +179,32 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-17.1** Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working tree).
 - **F-17.2** No publish, approve or thread actions are shown. Notes can be turned into a "fix list" and into Fix with Claude (F-25).
 - **F-17.3** At the end it offers a draft MR description (F-27.2) and **Browse and commit**.
+- **F-17.4** The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes kept "to fix" (with Fix with Claude per item once F-25 exists) and **Copy as checklist**.
 
 ### F-18 Settings: Claude · S-07
 - **F-18.1** Status "Claude Code: signed in" (from `claude auth status`), or an action to sign in.
-- **F-18.2** Defaults: Model (Same as Claude Code, Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1), Effort (low, medium, high, xhigh, max), "Writes in" (English, Polish) for notes, suggested comments, commit messages and descriptions.
+- **F-18.2** Defaults: Model (Same as Claude Code, Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1), Effort (low, medium, high, xhigh, max; default medium), "Writes in" (English, Polish) for notes, suggested comments, commit messages and descriptions.
 - **F-18.3** Per task overrides (model + effort): Review plan, Step analysis, Questions, Fixes on your code, MR description and pipeline, Commit message. Defaults: plan opus/high, step sonnet/medium, questions default/low, fixes sonnet/medium, MR & pipeline sonnet/low, commit haiku/low.
-- **F-18.4** Effort levels not supported by the chosen model are disabled with a tooltip.
+- **F-18.4** Effort levels not supported by the chosen model are disabled with a tooltip ("<Model> doesn't support <effort>.").
 - **F-18.5** The model chip in the title bar shows the model · effort of the task relevant to the screen and opens this section.
+- **F-18.6** The section shows the Claude Code executable the app uses (path and version, **Change**) and "Run at most N Claude tasks at once" (1–4, default 2).
+- **F-18.7** When Claude reports a usage limit, background analysis pauses and the UI says "Claude usage limit reached" (with the reset time when Claude gives one); nothing is lost and the task can be retried later.
 
 ### F-19 Settings: General, GitLab, Shortcuts · S-07
-- **F-19.1** General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start with Windows.
-- **F-19.2** GitLab: server URL, signed-in user, personal access token (masked, scope `api`, expiry date), stored in Windows Credential Manager; list of repositories with local paths, review worktree folder, default repository.
-- **F-19.3** Shortcuts: list of all shortcuts (see F-30.6).
+- **F-19.1** General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start with Windows (default off).
+- **F-19.2** GitLab: server URL, signed-in user, personal access token (masked, scope `api`, expiry date), stored in Windows Credential Manager; list of repositories with local paths, review worktree folder per repository, default repository.
+- **F-19.3** Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App).
+- **F-19.5** Token setup: without a token, Server URL and a masked token input with **Check and save** (the app checks the user, scope and expiry, then stores it); with a token, **Replace token** and **Remove**. The UI only ever sees the token masked as prefix + last 4 characters (`glpat-…3f9a`), computed in the core.
+- **F-19.6** Repositories: **Add repository** (folder dialog; the GitLab project is detected from the `origin` remote), **Set as default**, **Remove**, and the review worktree folder per repository (default `<repo parent>\.review`).
 - **F-19.4** Settings opens with `Ctrl+,` and from the always-visible purple Settings tile in the dock.
 
 ### F-20 Pipelines · S-08
 - **F-20.1** Shows the MR's pipelines as tabs (newest first, "version N · latest"), the selected pipeline's status block (Passed / Failed / Running / Canceled), "N allowed failure" tag, number, type ("Merge request pipeline"), SHA, version, author · age · duration.
-- **F-20.2** Stages as columns with job rows: status square (passed ✓, failed ✕, failed-allowed !, running spinner, waiting, manual ▶, canceled, skipped), job name, duration or state, one action button (Retry / Run / Cancel).
+- **F-20.2** Stages as columns with job rows: status square (passed ✓, failed ✕, failed-allowed !, running spinner, waiting, manual ▶, canceled, skipped), job name, duration or state, one action button (Retry / Run / Cancel). Retry and Cancel act at once; a manual job's Run only selects the job and opens its form (F-20.6).
 - **F-20.3** **Run new pipeline** asks for confirmation ("Run a new merge request pipeline on `<sha>`? Uses the MR's latest commit. Manual jobs stay manual.") and then shows the new pipeline live.
 - **F-20.4** **Retry failed jobs** (pipeline), **Cancel pipeline** (while running), **Open in GitLab**.
 - **F-20.5** Selecting a job shows details: name, status, stage, duration, Retry/Cancel, Full log; the log tail with colored command, pass and error lines; streaming while running.
-- **F-20.6** Manual jobs show their description and editable variables ("Variables for this run", "+ Add variable") and **Run `<job>`**; "Runs on `<sha>` as you."
+- **F-20.6** Manual jobs show their description (when GitLab provides one) and editable variables ("Variables for this run", "+ Add variable"; empty at first, then the last values used for that job name on this machine) and **Run `<job>`**; "Runs on `<sha>` as you." Only **Run `<job>`** plays the job.
 - **F-20.7** Failed jobs offer **Explain failure**: Claude reads the log and the MR diff and returns a verdict (Caused by this MR / Already fixed in version N / Unrelated / Flaky / Unknown), title, explanation, evidence chips and, if relevant, a suggested comment with **Add to drafts**.
 - **F-20.8** Successful jobs list artifacts with **Download**.
 - **F-20.9** A retry that fails the same way says "Retried: failed again on the same test."
@@ -225,24 +234,25 @@ This file is the source of truth for **what** the app does. Every feature has an
 
 ### F-24 Rider integration (both ways)
 - **F-24.1** **Open in Rider** opens the file at the line (`rider64.exe --line N <file>`). Files of a teammate's MR open from the review worktree by default (setting).
-- **F-24.2** The app registers the `guidedreview://` protocol; `guidedreview://mr/<iid>` opens the MR plan, `guidedreview://commit/<sha>` and `guidedreview://branch/<name>?repo=<path>` open those sources. A running instance receives the link (single instance).
+- **F-24.2** The app registers the `guidedreview://` protocol; `guidedreview://mr/<iid>[?project=<path>]` opens the MR plan (default repository when `project` is missing), `guidedreview://commit/<sha>` and `guidedreview://branch/<name>?repo=<path>` open those sources. A running instance receives the link (single instance).
 - **F-24.3** Settings › Integrations › **Add to Rider** creates External Tools "Review this branch" and "Review this commit" (program `GuidedReview.exe`, arguments using `$ProjectFileDir$`).
 - **F-24.4** Rider path is detected automatically and can be changed.
 
 ### F-25 Fix with Claude (own code only)
 - **F-25.1** Available in self-review notes and author-mode threads. Never offered on a teammate's MR.
-- **F-25.2** Claude may edit only the one file the note or thread points at. After the run the app verifies that no other file changed; otherwise it discards the run and reports it.
+- **F-25.2** Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may edit only the one file the note or thread points at. After the run the app verifies that no other file changed; otherwise it discards the run and reports it.
 - **F-25.3** The proposal shows as a diff card "Proposed change · Edited 1 file: <name>" with a one-sentence explanation, **Accept** (green) and **Discard**.
-- **F-25.4** Accept applies the change to the working copy (unstaged); Discard restores the file exactly.
+- **F-25.4** Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run started; otherwise it says "The file changed while Claude worked. Run it again." Discard drops the proposal; the working copy was never touched.
 
 ### F-26 Author mode · S-10
 - **F-26.1** Title bar shows "You're the author" (blue) and pipeline status. Left panel: "FEEDBACK ON YOUR MR", "N THREADS TO ANSWER", branch, thread list with avatar, author, `file:line`, two-line excerpt and a status tag (Change requested, Question, Fix proposed, Fixed locally · not pushed, Replied, Answered, Resolved); "1 resolved earlier" summary; a note "Fixes stay on your branch…".
 - **F-26.2** The selected thread opens in the code at its line with the conversation and actions **Fix with Claude**, **Fix in Rider**, **Reply**.
 - **F-26.3** **Fix in Rider** opens the file at the line and watches the working tree; a detected change continues the flow ("Change detected from Rider. Commit it below.").
-- **F-26.4** After a fix: commit panel with a suggested message, "As a fixup of `<sha>` "<subject>"" (default on; explains autosquash), **Commit**.
+- **F-26.4** After a fix: commit panel with a suggested message, "As a fixup of `<sha>` "<subject>"" (default on) with the note "Marked as a fixup of `<sha>`. Fold it in with git rebase --autosquash before merging, or merge with Squash commits." (off: "Stays a separate commit."), **Commit**.
 - **F-26.5** After commit: "Committed `<sha>` · not pushed yet", the reply to be sent ("Fixed in `<sha>`. <one sentence>."), "Resolve the thread" (default on), **Push and reply**. The reply is queued and sent only after a successful push.
-- **F-26.6** After push: "Pushed · Replied to <name> and resolved her thread." and a link to the new pipeline.
-- **F-26.7** Question threads: reply text area, **Draft with Claude** (fills a proposed answer), **Send reply** (immediate). After sending: "Answered. <reviewer> resolves it when he's happy."
+- **F-26.6** After push: "Pushed · Replied to <name> and resolved the thread." and a link to the new pipeline.
+- **F-26.7** Question threads: reply text area, **Draft with Claude** (fills a proposed answer), **Send reply** (immediate). After sending: "Answered. The thread stays open until <reviewer> resolves it."
+- **F-26.8** If the user's checkout isn't on the MR's source branch, author mode is read-only with "Check out <branch> to fix here. The app never switches your branch." and **Open in Rider**; Fix, Commit and Push are hidden.
 
 ### F-27 Create merge request · S-11
 - **F-27.1** Opened from "Push and create MR" (S-06), self-review end, or Rider. Branch block `source → target` (target selectable), `N commits · N files · +/−`.
@@ -253,11 +263,11 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-27.6** **Create merge request** / **Create draft MR**; note who gets notified. Success screen: "!483" big green block, pipeline link, reviewers notified, **Go to your MR**, **Copy link**, **Open in GitLab**.
 
 ### F-28 Tray and notifications · S-13
-- **F-28.1** The app keeps a tray icon (yellow mark with an orange count badge; grey when paused). Closing the window keeps it in the tray (setting).
+- **F-28.1** The app keeps a tray icon (yellow mark with an orange count badge; grey when paused). Closing the window keeps it in the tray (Settings › General › "Keep running in the tray when closed", default on).
 - **F-28.2** Polling GitLab every N minutes (1, 3, 5, 10, 15; default 3) for: review requests, new commits on MRs I reviewed (incl. force-push), comments on my MRs, pipeline results on my MRs, approvals on my MRs (off by default). Each type can be switched off.
 - **F-28.3** Windows toast per event with title, body and two buttons (e.g. **Start review** / **Later**, **Re-review** / **Later**). Later snoozes for 30 minutes.
 - **F-28.4** Tray menu: "GUIDED REVIEW", "Checked 1 min ago", settings shortcut; groups Waiting for you, Changed since your review, Your MRs; each row opens the right screen; **Open app**, **Pause 1 h** / **Resume** ("Paused until 15:32").
-- **F-28.5** Quiet hours (default 18:00–08:00 and weekends) suppress toasts but keep the badge.
+- **F-28.5** Quiet hours (default 18:00–08:00 and weekends; from, to and weekends editable) suppress toasts but keep the badge.
 
 ### F-29 Team rules learning · S-07 › Team rules
 - **F-29.1** Claude reads `.review/rules.md` before every plan and step analysis, taken from the **target branch** (`git show <base>:.review/rules.md`), so an MR cannot change the rules it is reviewed with.
@@ -267,12 +277,13 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-29.5** Dismissal statistics stay on the user's machine.
 
 ### F-30 App shell, navigation and keyboard
-- **F-30.1** Custom title bar (44px): logo, repository, context (e.g. `!482` + title), screen-specific controls (mode toggle, layout switcher, status, model chip, primary action such as **Finish**), Windows caption buttons; the bar is draggable.
-- **F-30.2** Dock (72px) with tiles **MRs** (blue when active), **Review** (yellow), **Changes** (green), and **Settings** (always purple, at the bottom; white outline when active).
-- **F-30.3** **Finish** (review screens) opens S-05.
-- **F-30.4** Window size, position and last screen are restored on start.
+- **F-30.1** Custom title bar (44px): logo, repository, context (e.g. `!482` + title), screen-specific controls (mode toggle, layout switcher, status, model chip, primary action such as **Finish review**), Windows caption buttons; the bar is draggable and a double-click maximizes.
+- **F-30.2** Dock (72px) with tiles **MRs** (blue when active), **Review** (yellow), **Changes** (green), and **Settings** (always purple, at the bottom; white outline when active). Review opens the most recent unfinished session at its last screen; without one it is dimmed with the tooltip "No review open. Pick one in MRs."
+- **F-30.3** **Finish review** (review screens) opens S-05.
+- **F-30.4** Window size, position, maximized state and last screen are restored on start. The last screen is restored only if its session still exists (otherwise S-01), and restoring never starts Claude or GitLab work. First start: 1600×1000 fitted to the work area; minimum 1280×800; off-screen positions are pulled back onto a monitor.
 - **F-30.5** All UI text is English. Claude output language follows F-18.2.
-- **F-30.6** Shortcuts: `]` next step, `[` previous step, `Space` mark reviewed, `J`/`K` next/previous hunk, `N` next note, `D` add to drafts, `X` dismiss, `C` comment on line, `A` ask, `F12` definition, `Shift+F12` usages, `Ctrl+Shift+O` open in Rider, `Ctrl+K` open anything, `Ctrl+,` settings, `Ctrl+D` Focus/Detailed, `Ctrl+1/2/3` layouts, `Enter` primary action on S-02/S-09, `Esc` close popovers, `?` all shortcuts.
+- **F-30.6** Shortcuts: `]` next step, `[` previous step, `Space` mark reviewed, `J`/`K` next/previous hunk, `N` next note, `D` add to drafts, `X` dismiss, `C` comment on line, `A` ask, `F12` definition, `Shift+F12` usages, `Ctrl+Shift+O` open in Rider, `Ctrl+K` open anything, `Ctrl+,` settings, `Ctrl+D` Focus/Detailed, `Ctrl+1/2/3` layouts, `Enter` primary action on S-02/S-09, `Esc` close popovers, `?` all shortcuts (opens Settings › Shortcuts).
+- **F-30.7** The repository switcher in the title bar lists the configured repositories and "Add repository…" (folder dialog); switching changes the active repository of S-01 and S-06. On review screens it shows the session's repository as plain text.
 
 ---
 
@@ -285,4 +296,4 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **NFR-05 Offline.** Without network the app opens cached sessions read-only and says so; local self-review and commit keep working.
 - **NFR-06 Accessibility.** Keyboard reachable everything, visible focus (2px yellow outline), ARIA roles on tabs/radios/switches, text contrast ≥ 4.5:1 for body text, `prefers-reduced-motion` respected.
 - **NFR-07 Platform.** Windows 10 22H2+ and Windows 11, x64. Code should stay portable (macOS/Linux later), so no Windows-only API without an abstraction.
-- **NFR-08 Privacy.** No telemetry. Logs are local, rotate at 10 MB, and never contain tokens or file contents.
+- **NFR-08 Privacy.** No telemetry. Logs are local, info level by default, rotate at 10 MB and keep 5 files, and never contain tokens (`glpat-`, `gloas-`, `glptt-`, `glrt-`, `PRIVATE-TOKEN` and `Authorization` values are redacted), prompts, Claude output, diffs or file contents.

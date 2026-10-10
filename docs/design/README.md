@@ -35,3 +35,18 @@ node tools/mock-preview/render-mock.mjs Review.dc.html --state '{"layout":"C"}' 
 | Architecture (doc, PL) | `Architecture.dc.html` (1440×900) | — |
 
 State keys are whatever the mock's `renderVals()` reads from `this.state`; open the script block of a mock to see all of them.
+
+## Pending re-renders
+
+Kickoff (2026-10-10) changed copy and colors in these mocks; their PNGs are stale until re-rendered in M0 (once Playwright is installed). Until then the mock wins over the PNG.
+
+| Mock | Change | PNGs to re-render |
+| - | - | - |
+| `Review.dc.html` | "Finish" → "Finish review" | `S03-focus-layout-A/B/C.png` |
+| `SummaryDesk.dc.html` | model chip "Sonnet 5.5 · low" | `S05-summary-*.png` |
+| `Pipeline.dc.html` | model chip "Sonnet 5.5 · low" | `S08-pipeline*.png` |
+| `Author.dc.html` | Question tag blue; fixup note; neutral "resolved the thread" and "Answered…" copy | `S10-author*.png` |
+| `Settings.dc.html` | "Writes in" hint; complete shortcut list | `S07-settings-claude.png`, `S07-settings-shortcuts.png` |
+| `Architecture.dc.html` | moved-code text (own detection, not `--color-moved`) | `D02-architecture.png` |
+
+Settings rows that exist only in `02-screens.md` › S-07 (tray on close, Claude executable and task limit, GitLab token setup and repositories, quiet hours editing) have no mock; they reuse the existing row styles.

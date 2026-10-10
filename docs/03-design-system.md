@@ -78,6 +78,7 @@ Paste into `src/styles/tokens.css` and use only these variables in components.
   --shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.5);
   --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.6);
   --kbd-bg: #2A2A2A;
+  --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
 
   --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
@@ -103,11 +104,11 @@ Global: `body { background: var(--bg); color: var(--text); font: 14px/1.45 var(-
 
 | Color | Means | Examples |
 | - | - | - |
-| Yellow | Primary action, current position, Review area | Start, Next step, Mark reviewed, Commit, current step row, Review dock tile, drafts badge |
+| Yellow | Primary action, current position, Review area | Start, Next step, Mark reviewed (except Focus layout A, where Finish review is the region's yellow action and Mark reviewed is neutral), Commit, current step row, Review dock tile, drafts badge |
 | Green | Done, approved, resolved, Changes area, included | reviewed step check, Approve MR, Resolve, Accept, NEW tag, staging checkboxes, Changes tile, passed job |
 | Purple | Claude and Settings | Claude labels/squares, Suggest, Ask Claude, Fix with Claude, model chip square, Settings tile, settings nav selection |
 | Orange | Should fix, deletions, warnings | Should fix tag, DELETED tag, failed job, "2 new commits", conflicts |
-| Blue | Questions, additions, GitLab sends, MRs area | Question tag, added lines, Publish, Send reply, RENAMED tag, MRs tile, New commit (range-diff), running job |
+| Blue | Questions, additions, GitLab sends, MRs area | Question tag (also as a thread status in author mode), added lines, Publish and its draft checkboxes, Send reply, RENAMED tag, MRs tile, New commit (range-diff), running job |
 | White block | Neutral selection, moved code, commits | selected segmented option, MOVED tag, Commits column header, manual job ring |
 
 ## Typography
@@ -140,7 +141,7 @@ Fonts are bundled (offline desktop app) with `@fontsource/barlow` (400, 500, 600
 
 | Component | Spec (see mocks for exact styles) |
 | - | - |
-| **TitleBar** | 44px, `--bg-chrome`, drag region, logo square 26px yellow with black mark, caption buttons 46px. |
+| **TitleBar** | 44px, `--bg-chrome`, drag region (double-click maximizes), logo square 26px yellow with the black "H" mark (`M4 2v12M12 2v12M4 8h8`, also the app icon, ADR-020), caption buttons 46px, close hover `--caption-close-hover`. |
 | **Dock / DockTile** | 72px column; tile 58px wide, icon 22px stroke 2 square caps, label 11px condensed 700 uppercase. Active: fill with area color, ink text. |
 | **Button** | Variants: `primary` (yellow), `approve` (green), `send` (blue), `claude` (purple), `neutral` (`--raised-2`), `ghost` (transparent, `--text-secondary`). Sizes: 28/30 (S), 34/36 (M), 40/42 (L), 50 (XL). Can include a `<Kbd>`; on filled buttons kbd uses `rgba(16,16,16,0.15)` background and ink text. Disabled: `--raised-2` background, `--text-muted`. |
 | **Tag** | Word tag, condensed 800 uppercase, padding 1–3px × 7–12px. Variants: filled color, or ring (`box-shadow: inset 0 0 0 2px <color>`, colored text) for "allowed failure", "manual". |
@@ -150,7 +151,7 @@ Fonts are bundled (offline desktop app) with `@fontsource/barlow` (400, 500, 600
 | **Segmented** | Background `--bg-sunken` or `--raised`; selected item filled (white block, yellow, purple or green depending on context). |
 | **Tabs** | Same as Segmented, with counts in mono. |
 | **Switch** | 46×26 square track (`#333331` off, green on), 18px square knob (ink on, `--text-muted` off). |
-| **Checkbox** | 17px, accent green; tri-state for directories. Large staging checkboxes in S-06 are 18px green squares with black check. |
+| **Checkbox** | 17px, accent green; tri-state for directories. Large staging checkboxes in S-06 are 18px green squares with black check. Draft checkboxes in S-05 are blue (they select what gets published). |
 | **RadioCard** | Card with radio; selected = green tint `#1F2A20` + 2px green ring. |
 | **Input / Select / TextArea** | 36–46px height, no border, `--bg-sunken` or `--panel-2`, text `--text`; mono for commit messages and descriptions. |
 | **ProgressSegments** | 8 segments 12×6px: done green, current yellow (or white in title bar), upcoming `--line`. |

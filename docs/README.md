@@ -10,8 +10,9 @@
 | `06-security.md` | Threats and mitigations. |
 | `07-roadmap.md` | Milestones M0–M11, each a usable increment, with the features it delivers. |
 | `08-decisions.md` | Decisions already made (ADRs) and the spike table for M0. |
-| `09-testing.md` | Test layers, naming with AC IDs, fixtures, fake `claude`, manual checklist. |
+| `09-testing.md` | Test layers, environments (development PC, stand-in GitLab, field visits on the company laptop), field kit, naming with AC IDs, fixtures, fake `claude`, manual checklist. |
 | `PROGRESS.md` | Every acceptance criterion by milestone, ticked with commit SHAs, plus the session log. |
+| `questions.md` | Kickoff questions (2026-10-10) and the answers that shaped the current docs. History, not a contract. |
 | `claude/` | Prompts and JSON Schemas for the Claude tasks inside the app. |
 | `design/` | Interactive mocks (`mocks/`), rendered screenshots (`screens/`), how to render states. |
 
@@ -19,7 +20,7 @@
 `PROGRESS.md` → the current milestone in `07-roadmap.md` → its features in `01-product.md` → its screens in `02-screens.md` + PNGs → the technical files you need.
 
 ## IDs
-- `F-xx` feature, `F-xx.n` acceptance criterion, `NFR-xx` non-functional requirement, `S-xx` screen, `M-x` milestone, `ADR-xxx` decision, `S1…S9` spikes, `T1…T10` threats.
+- `F-xx` feature, `F-xx.n` acceptance criterion, `NFR-xx` non-functional requirement, `S-xx` screen, `M-x` milestone, `ADR-xxx` decision, `S1…S9` spikes, `T1…T12` threats.
 - Tests, commits and PROGRESS refer to these IDs. `node tools/audit.mjs` checks the links.
 
 ## Changing the spec

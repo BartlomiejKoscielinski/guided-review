@@ -15,7 +15,7 @@
 │   notifications, credentials, autostart)                                                 │
 └──────────┬──────────────────────┬─────────────────────────┬─────────────────┬────────────┘
            │ child process        │ child process           │ HTTPS           │ child process
-        git ≥ 2.38            claude -p (Claude Code,     on-prem GitLab     csharp-ls
+        git ≥ 2.40            claude -p (Claude Code,     on-prem GitLab     csharp-ls
         worktrees             user's Enterprise login)    API v4 (PAT)       (LSP, stdio)
 ```
 
@@ -39,7 +39,8 @@ Principle: **all logic lives in the Rust core** and is testable without Tauri; T
 | FS watch | `notify` | Working tree changes (staging sync, Fix in Rider) |
 | Intraline diff | `similar` | Word/char emphasis computed in Rust |
 | Types | `ts-rs` generates TS types from Rust structs into `src/ipc/types/` | Never hand-write IPC types twice |
-| Logging | `tracing` + rolling file appender | Local only; no tokens, no file contents |
+| Logging | `tracing` + `tracing-subscriber` with an own size-rotating writer (10 MB × 5 files) and a redaction layer | Local only; no tokens, prompts, Claude output or file contents (NFR-08). `tracing-appender` rotates by time only |
+| Lint / format | ESLint (typescript-eslint, react-hooks) + Prettier; `cargo fmt` + `cargo clippy -D warnings` | All part of `npm run verify` |
 | Code nav | LSP client over stdio to `csharp-ls`; fallback `tree-sitter` + `tree-sitter-c-sharp` | See `05-integrations.md` |
 | Tauri plugins | single-instance (with deep-link), deep-link, notification, autostart, window-state, dialog, opener | Check each plugin's current docs before use |
 | Tests | `cargo test` (fixture git repos), Vitest + Testing Library, Playwright (UI against the mock backend) | See `09-testing.md` |
@@ -72,11 +73,13 @@ guided-review/
 │  │  ├─ nav/                    lsp client, tree-sitter index, membership (in MR / outside)
 │  │  ├─ store/                  db, migrations, repositories (one per table group)
 │  │  ├─ os/                     credentials, rider, deep_link, notifications, autostart, process
+│  │  ├─ bin/gr-probe.rs         field kit probe (ADR-019); reuses os/, claude/, gitlab/
 │  │  └─ error.rs                AppError
 │  ├─ resources/prompts/*.md, resources/schemas/*.json   (copied from docs/claude/)
 │  └─ tests/                     integration tests with fixture repos
 ├─ tests/e2e/                    Playwright specs against the mock backend
 ├─ tools/mock-preview/           mock renderer for design checks
+├─ field/                        runbooks for field visits and their sanitized reports (09 › Field kit)
 └─ fixtures/                     scripts that build fixture git repos (incl. a rebased MR)
 ```
 
@@ -90,7 +93,7 @@ type AppError = { code: ErrorCode; message: string; detail?: string; retryable: 
 type ErrorCode =
   | 'GIT_NOT_FOUND' | 'GIT_TOO_OLD' | 'GIT_FAILED' | 'WORKTREE_FAILED'
   | 'GITLAB_UNAUTHORIZED' | 'GITLAB_FORBIDDEN' | 'GITLAB_NOT_FOUND' | 'GITLAB_RATE_LIMITED' | 'GITLAB_UNREACHABLE'
-  | 'CLAUDE_NOT_FOUND' | 'CLAUDE_NOT_SIGNED_IN' | 'CLAUDE_FAILED' | 'CLAUDE_SCHEMA' | 'CLAUDE_GUARD_VIOLATION'
+  | 'CLAUDE_NOT_FOUND' | 'CLAUDE_NOT_SIGNED_IN' | 'CLAUDE_FAILED' | 'CLAUDE_SCHEMA' | 'CLAUDE_GUARD_VIOLATION' | 'CLAUDE_LIMITED'
   | 'NAV_UNAVAILABLE' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
 ```
 
@@ -124,7 +127,7 @@ enum LocalScope { Uncommitted, Staged, BranchVsTarget { target: String } }
 struct Session { id: Uuid, source: Source, repo_path: PathBuf, worktree: Option<PathBuf>,
                  base_sha: Sha, head_sha: Sha, start_sha: Option<Sha>, mr_version_id: Option<u64>,
                  mode: Mode /*Focus|Detailed*/, layout: Layout /*A|B|C*/, strategy: Strategy,
-                 created_at, updated_at, status: SessionStatus /*Preparing|Planning|Reviewing|Done*/ }
+                 created_at, updated_at, status: SessionStatus /*Preparing|Planning|Reviewing|Done|DraftsOnly*/ }
 
 struct FileDiff { old_path: Option<String>, new_path: Option<String>, status: FileStatus /*Added|Deleted|Renamed|Modified|Binary*/,
                   additions: u32, deletions: u32, layer: Layer, hunks: Vec<Hunk> }
@@ -135,10 +138,11 @@ struct Line { kind: LineKind /*Ctx|Add|Del*/, old_no: Option<u32>, new_no: Optio
 
 struct Plan { intent: String, steps: Vec<Step>, orders: HashMap<Strategy, Vec<StepId>>, skim: Vec<SkimGroup>,
               risks: Vec<Risk>, description_check: Vec<Claim>, already_discussed: String, coverage: Coverage }
-struct Step { id: StepId, title: String, reason: String, layer: Layer, hunk_ids: Vec<HunkId>,
-              builds_on: Vec<StepId>, reviewed: bool }
+struct Step { id: StepId, title: String, short_title: String, reason: String, description: String, layer: Layer,
+              hunk_ids: Vec<HunkId>, builds_on: Vec<StepId>, reviewed: bool }
+enum Layer { Core, Infrastructure, App, Xaml, Platforms, Tests, Resources, Build, Other }
 
-struct Finding { id: Uuid, step_id: StepId, severity: Severity /*Fix|Q|Nit*/, title: String, body: String,
+struct Finding { id: Uuid, step_id: StepId, severity: Severity /*Fix|Q|Nit*/, kind: String, title: String, body: String,
                  file: String, side: Side, line: u32, evidence: Vec<Evidence>, suggested_comment: String,
                  fingerprint: String, decision: Decision /*Open|Draft|Dismissed*/ }
 
@@ -146,7 +150,7 @@ struct Draft { id: Uuid, session_id: Uuid, finding_id: Option<Uuid>, body: Strin
                severity: Option<Severity>, include: bool, published_note_id: Option<u64>, error: Option<String> }
 ```
 
-**Hunk ID** = first 16 hex chars of SHA-256 over `new_path || old_path`, the hunk's removed lines and added lines (without line numbers). Same content → same ID, so cached plans and decisions survive unrelated rebases. Collisions inside one diff get a `-2`, `-3` suffix.
+**Hunk ID** = first 16 hex chars of SHA-256 over `new_path \0 old_path \0 removed lines \0 added lines` (fields separated by `\0`, lines without line numbers). Same content → same ID, so cached plans and decisions survive unrelated rebases. Collisions inside one diff get a `-2`, `-3` suffix in file order. Changes without text hunks (rename-only, mode-only, binary, empty file) get one **file-level hunk** (F-05.7) with ID over `file \0 old_path \0 new_path \0 status \0 old_blob \0 new_blob`; it counts in coverage and is proposed for Skim.
 
 **Coverage invariant** (enforced in `review/coverage.rs`, unit-tested): after any plan change, every hunk ID of the session belongs to exactly one step or one skim group. Unknown IDs from Claude are dropped; missing IDs go to an "Other" step appended at the end.
 
@@ -154,13 +158,17 @@ struct Draft { id: Uuid, session_id: Uuid, finding_id: Option<Uuid>, body: Strin
 
 ```sql
 CREATE TABLE settings      (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-CREATE TABLE repos         (id INTEGER PRIMARY KEY, name TEXT, path TEXT UNIQUE, gitlab_project TEXT, is_default INTEGER DEFAULT 0);
+CREATE TABLE repos         (id INTEGER PRIMARY KEY, name TEXT, path TEXT UNIQUE, gitlab_project TEXT, is_default INTEGER DEFAULT 0,
+                            worktree_root TEXT);
+CREATE TABLE worktrees     (path TEXT PRIMARY KEY, repo_id INTEGER, kind TEXT /*review|fix*/, project TEXT, iid INTEGER,
+                            head_sha TEXT, created_at TEXT, last_used_at TEXT);
 CREATE TABLE sessions      (id TEXT PRIMARY KEY, repo_id INTEGER, source_json TEXT, base_sha TEXT, head_sha TEXT, start_sha TEXT,
                             mr_version_id INTEGER, worktree TEXT, mode TEXT, layout TEXT, strategy TEXT, status TEXT,
                             current_step TEXT, created_at TEXT, updated_at TEXT);
 CREATE TABLE plans         (session_id TEXT PRIMARY KEY, plan_json TEXT, custom_order_json TEXT);
-CREATE TABLE steps_state   (session_id TEXT, step_id TEXT, reviewed INTEGER, scroll INTEGER, PRIMARY KEY (session_id, step_id));
-CREATE TABLE findings      (id TEXT PRIMARY KEY, session_id TEXT, step_id TEXT, json TEXT, decision TEXT, fingerprint TEXT);
+CREATE TABLE steps_state   (session_id TEXT, step_id TEXT, reviewed INTEGER, scroll INTEGER, checklist_json TEXT,
+                            PRIMARY KEY (session_id, step_id));
+CREATE TABLE findings      (id TEXT PRIMARY KEY, session_id TEXT, step_id TEXT, json TEXT, kind TEXT, decision TEXT, fingerprint TEXT);
 CREATE TABLE drafts        (id TEXT PRIMARY KEY, session_id TEXT, finding_id TEXT, body TEXT, position_json TEXT, severity TEXT,
                             include INTEGER, published_note_id INTEGER, error TEXT, created_at TEXT, updated_at TEXT);
 CREATE TABLE claude_cache  (key TEXT PRIMARY KEY, task TEXT, result_json TEXT, session_ref TEXT, created_at TEXT);
@@ -170,17 +178,47 @@ CREATE TABLE rule_suggestions (id TEXT PRIMARY KEY, kind TEXT, line TEXT, eviden
 CREATE TABLE poll_state    (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT);
 CREATE TABLE queued_replies(id TEXT PRIMARY KEY, project TEXT, iid INTEGER, discussion_id TEXT, body TEXT, resolve INTEGER,
                             after_sha TEXT, state TEXT, error TEXT);
+CREATE TABLE job_variables (project TEXT, job_name TEXT, vars_json TEXT, updated_at TEXT, PRIMARY KEY (project, job_name));
 ```
+
+Drafts belong to the MR (F-12.7): `drafts.session_id` points at the user's latest session for that MR, or at a session with status `DraftsOnly`.
+
+## Settings (keys and defaults)
+
+Stored in `settings` as JSON values; read through one typed struct in the core with these defaults. Unknown keys are ignored; invalid values fall back to the default and are logged.
+
+| Key | Default | Spec |
+| - | - | - |
+| `ui.startIn` | `focus` | F-19.1 |
+| `ui.focusLayout` | `A` | F-19.1, F-07.9 |
+| `ui.diffColors` | `blue-orange` | F-19.1 |
+| `ui.lastRoute` | S-01 | F-30.4 (window geometry itself is kept by the window-state plugin) |
+| `os.startWithWindows` | `false` | F-19.1 |
+| `os.closeToTray` | `true` | F-28.1 |
+| `claude.path` | auto (ADR-021) | F-18.6 |
+| `claude.maxConcurrent` | `2` (1–4) | F-18.6 |
+| `claude.model` / `claude.effort` / `claude.lang` | `inherit` / `medium` / `en` | F-18.2 |
+| `claude.tasks.<group>` | per F-18.3 | F-18.3 |
+| `git.path` | auto | Processes |
+| `gitlab.server` | none | F-19.2, F-19.5 |
+| `rider.path` / `rider.openFrom` | auto / `worktree` | F-24.1, F-24.4 |
+| `nav.engine` | `csharp-ls` | F-23.5 |
+| `notify.reviewRequests`, `notify.newCommits`, `notify.comments`, `notify.pipelines` / `notify.approvals` | `true` / `false` | F-28.2 |
+| `poll.minutes` | `3` | F-28.2 |
+| `quiet.enabled`, `quiet.from`, `quiet.to`, `quiet.weekends` | `true`, `18:00`, `08:00`, `true` | F-28.5 |
+
+Repositories and their worktree folders live in `repos`, not in `settings`.
 
 **Claude cache key** = SHA-256 of `task || repo || base_sha || head_sha || step_hunk_ids_sorted || prompt_version || model || effort || rules_hash || output_language`. A new prompt version invalidates naturally.
 
 ## Background work
 
-- **Claude queue** (`claude/queue.rs`): max 2 concurrent `claude` processes (setting). Priority: interactive (ask, fix, commit message) > current step > plan > next-step prefetch > other steps. Each task is cancellable; cancel kills the whole process tree.
-- **Prefetch**: when the user opens step N, the queue schedules N+1 and N+2.
+- **Claude queue** (`claude/queue.rs`): max 2 concurrent `claude` processes (setting, F-18.6). Priority: interactive (ask, fix, commit message) > current step > plan > next-step prefetch > other steps. Each task is cancellable; cancel kills the whole process tree. On `CLAUDE_LIMITED` the queue pauses all background tasks until the user retries (F-18.7).
+- **Prefetch**: when the user opens step N, the queue schedules N+1 only (saves the user's Claude usage; other steps run when opened).
 - **Poller** (`gitlab/poller.rs`): runs every N minutes (F-28), uses `updated_after`, stores last-seen state in `poll_state`, emits events for the tray and toasts; pauses on quiet hours/pause; backs off on errors.
 - **Watcher**: `notify` on the active repository's working tree and `.git/index` to refresh S-06 and author-mode fix detection (debounce 300ms).
-- **Worktree janitor**: on start and daily, removes review worktrees of closed/merged MRs older than 7 days and keeps at most 10 (`git worktree remove --force`, then `git worktree prune`).
+- **Worktrees**: one review worktree per MR (registered in `worktrees`); a new MR version moves it with `git -C <worktree> checkout --detach <sha>` (allowed: it's app-managed, never the user's checkout). Fix runs use short-lived scratch worktrees (ADR-018).
+- **Worktree janitor**: on start and daily, removes review worktrees of closed/merged MRs older than 7 days and keeps at most 10, and removes leftover scratch worktrees (`git worktree remove --force`, then `git worktree prune`). Only paths registered in `worktrees` are ever removed (T8).
 
 ## Processes on Windows
 
@@ -190,12 +228,13 @@ All child processes go through `os/process.rs`:
 - Each process is assigned to a **Job Object** with kill-on-close, so cancelling or quitting kills the whole tree.
 - Prompts go to `claude` through **stdin**, never as a long argument (Windows command line limit ~32k chars).
 - git runs with `-c core.quotepath=off -c core.longpaths=true -c color.ui=false` (except where colors are parsed, see moved code) and `LC_ALL=C` for stable messages; output is UTF-8; `\r` at line ends is stripped for display but preserved for patches.
-- Executable discovery: `git` and `claude` from PATH (`where`), overridable in Settings; `claude` may be `claude.exe` (native installer) or `claude.cmd` (npm).
+- Executable discovery: `git` from PATH, overridable in Settings. `claude` per ADR-021: Settings value → `%USERPROFILE%\.local\bin\claude.exe` → `claude.exe` on PATH → npm install run as `node …\@anthropic-ai\claude-code\cli.js`. Never `claude.cmd` through `cmd.exe`.
 
 ## Files and folders
 
-- App data: `%APPDATA%\GuidedReview\` → `guided-review.db`, `logs\`, `tmp\` (prompt inputs, patches).
-- Review worktrees: configurable, default `<repo parent>\.review\<repo>\<iid>-<shortsha>`.
+- App identity (ADR-020): product "Guided Review", `GuidedReview.exe`, Tauri identifier `com.inpost.guidedreview`.
+- App data: `%APPDATA%\GuidedReview\` (resolved by the core, not Tauri's `app_data_dir`) → `guided-review.db`, `logs\`, `tmp\` (prompt inputs, patches). `tmp\<task-id>\` is deleted when the task ends, and `tmp\` is swept on start; these files contain source code. The window-state plugin keeps its own file in `%APPDATA%\com.inpost.guidedreview\`.
+- Review worktrees: per repository (`repos.worktree_root`), default `<repo parent>\.review\<repo>\<iid>`.
 - Repo-level config read by the app: `.review/rules.md` (team rules), `CODEOWNERS` (`.gitlab/CODEOWNERS`, `CODEOWNERS`, `docs/CODEOWNERS`).
 
 ## Performance notes
