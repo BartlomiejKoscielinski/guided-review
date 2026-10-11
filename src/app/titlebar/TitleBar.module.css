@@ -1,0 +1,84 @@
+/* docs/02 › Shell, docs/03 › TitleBar; exact styles from Start.dc.html and Review.dc.html. */
+.bar {
+  flex: 0 0 auto;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 16px;
+  background: var(--bg-chrome);
+  font-size: 13.5px;
+  user-select: none;
+}
+
+/* With a centered control (progress segments, layout B) the bar is a three-column grid. */
+.withCenter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  height: 100%;
+}
+
+/* S-01: status and chip sit 14px apart, also from the caption buttons (Start.dc.html). */
+.rightWide {
+  gap: 14px;
+}
+
+.logo {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.captions {
+  display: flex;
+  height: 100%;
+}
+
+.caption {
+  width: 46px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: background-color 100ms linear;
+}
+
+.caption:hover {
+  background: var(--raised-2);
+  color: var(--text);
+}
+
+.close:hover {
+  background: var(--caption-close-hover);
+  color: var(--text);
+}

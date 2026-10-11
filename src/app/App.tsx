@@ -1,18 +1,11 @@
-import { useAppHealth } from '../ipc/hooks/useAppHealth';
+import { RouterProvider } from 'react-router/dom';
+import type { createAppRouter } from './router';
 
-/** Placeholder until the shell (TitleBar, Dock, routes) lands in M0 session 2. */
-export function App() {
-  const health = useAppHealth();
-  return (
-    <main>
-      <h1>Guided Review</h1>
-      <p data-testid="app-health">
-        {health.data
-          ? `Version ${health.data.version}`
-          : health.error
-            ? health.error.message
-            : 'Loading'}
-      </p>
-    </main>
-  );
+export interface AppProps {
+  router: ReturnType<typeof createAppRouter>;
+}
+
+/** The app: shell and screens on a memory router created once at start (main.tsx). */
+export function App({ router }: AppProps) {
+  return <RouterProvider router={router} />;
 }

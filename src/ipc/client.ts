@@ -19,6 +19,16 @@ export interface IpcClient {
   appStartRoute(): Promise<Route>;
   /** Unfinished review sessions, most recent first (F-30.2). */
   sessionsListUnfinished(): Promise<UnfinishedSession[]>;
+
+  // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
+  windowMinimize(): Promise<void>;
+  windowToggleMaximize(): Promise<void>;
+  windowClose(): Promise<void>;
+  /** Starts a native window move (drag on the title bar, Snap included). */
+  windowStartDragging(): Promise<void>;
+  windowIsMaximized(): Promise<boolean>;
+  /** Calls `listener` when the window is maximized or restored; resolves to an unsubscribe. */
+  onWindowMaximizedChange(listener: (maximized: boolean) => void): Promise<() => void>;
 }
 
 /** Picks the implementation: the mock backend in `npm run dev:mock`, the Rust core otherwise. */
