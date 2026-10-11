@@ -38,7 +38,7 @@ State keys are whatever the mock's `renderVals()` reads from `this.state`; open 
 
 ## Pending re-renders
 
-Kickoff (2026-10-10) changed copy and colors in these mocks; their PNGs are stale until re-rendered in M0 (once Playwright is installed). Until then the mock wins over the PNG.
+None pending. Kickoff (2026-10-10) changed copy and colors in these mocks; their PNGs were re-rendered in M0 on 2026-10-11 with the presets above (Playwright 1.64.0, @fontsource 5.3.0, the fonts the app bundles). If a PNG and its mock ever disagree, the mock wins.
 
 | Mock | Change | PNGs to re-render |
 | - | - | - |
