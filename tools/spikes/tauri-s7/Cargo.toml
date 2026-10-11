@@ -1,0 +1,22 @@
+# S7 spike (M0, docs/08 spike table): deep link + single instance, toasts with action buttons
+# and the AppUserModelID of a dev build, tray window positioning. Throwaway, not part of the app.
+[package]
+name = "gr-s7-spike"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[build-dependencies]
+tauri-build = { version = "2.7.2", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.3", features = ["tray-icon", "image-png"] }
+tauri-plugin-deep-link = "2.6.1"
+tauri-plugin-single-instance = { version = "2.5.3", features = ["deep-link"] }
+tauri-plugin-notification = "2.6.0"
+tauri-plugin-positioner = { version = "2.4.0", features = ["tray-icon"] }
+tauri-winrt-notification = "0.8.1"
+windows = { version = "0.62.2", features = ["Data_Xml_Dom", "UI_Notifications", "Foundation", "Win32_UI_Shell"] }
+serde_json = "1"

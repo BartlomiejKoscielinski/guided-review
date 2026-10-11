@@ -1,0 +1,14 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>S7 spike</title>
+<style>body{font:14px system-ui;background:#101010;color:#eee;padding:16px}button{margin:4px;padding:8px 12px}</style></head>
+<body>
+<h3>S7 spike</h3>
+<button onclick="call('toast_plugin')">Toast: notification plugin</button>
+<button onclick="call('toast_winrt')">Toast: tauri-winrt-notification (AUMID)</button>
+<button onclick="call('toast_xml')">Toast: XML, protocol buttons (AUMID)</button>
+<pre id="log"></pre>
+<script>
+const log = (t) => document.getElementById('log').textContent += t + '\n';
+async function call(cmd) { try { log(cmd + ': ' + await window.__TAURI__.core.invoke(cmd)); } catch (e) { log(cmd + ' failed: ' + e); } }
+</script>
+</body></html>

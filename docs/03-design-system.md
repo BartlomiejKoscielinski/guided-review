@@ -79,6 +79,7 @@ Paste into `src/styles/tokens.css` and use only these variables in components.
   --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.6);
   --kbd-bg: #2A2A2A;
   --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
+  --switch-off: #333331;            /* Switch track when off (Settings mock) */
 
   --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
@@ -150,7 +151,7 @@ Fonts are bundled (offline desktop app) with `@fontsource/barlow` (400, 500, 600
 | **Avatar** | Initials square 26–32px, condensed 800, color per person (stable hash into green/orange/blue/yellow/purple). |
 | **Segmented** | Background `--bg-sunken` or `--raised`; selected item filled (white block, yellow, purple or green depending on context). |
 | **Tabs** | Same as Segmented, with counts in mono. |
-| **Switch** | 46×26 square track (`#333331` off, green on), 18px square knob (ink on, `--text-muted` off). |
+| **Switch** | 46×26 square track (`--switch-off` off, green on), 18px square knob (ink on, `--text-muted` off). |
 | **Checkbox** | 17px, accent green; tri-state for directories. Large staging checkboxes in S-06 are 18px green squares with black check. Draft checkboxes in S-05 are blue (they select what gets published). |
 | **RadioCard** | Card with radio; selected = green tint `#1F2A20` + 2px green ring. |
 | **Input / Select / TextArea** | 36–46px height, no border, `--bg-sunken` or `--panel-2`, text `--text`; mono for commit messages and descriptions. |

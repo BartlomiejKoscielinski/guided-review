@@ -62,6 +62,7 @@
   --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.6);
   --kbd-bg: #2A2A2A;
   --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
+  --switch-off: #333331;            /* Switch track when off (Settings mock) */
 
   --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
@@ -78,9 +79,4 @@
   --diff-del-em: rgba(240, 80, 70, 0.40);
   --diff-del-ln: rgba(240, 80, 70, 0.09);
   --diff-del-text: #FF968C;
-}
-
-/* Not in 03 yet (proposed doc change): Switch track when off, from Settings.dc.html. */
-:root {
-  --switch-off: #333331;
 }
