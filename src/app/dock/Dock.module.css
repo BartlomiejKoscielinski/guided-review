@@ -1,0 +1,66 @@
+/* docs/02 › Shell, docs/03 › Dock / DockTile; exact styles from Start.dc.html and Settings.dc.html. */
+.dock {
+  flex: 0 0 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0 14px;
+  background: var(--bg-chrome);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tile {
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 0 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.tile[aria-current='page'],
+.settings {
+  color: var(--ink);
+}
+
+.mrs[aria-current='page'] {
+  background: var(--blue);
+}
+.review[aria-current='page'] {
+  background: var(--yellow);
+}
+.changes[aria-current='page'] {
+  background: var(--green);
+}
+
+/* Settings is always purple; when active it gets a 2px white outline. */
+.settings {
+  margin-top: auto;
+  background: var(--purple);
+}
+.settings[aria-current='page'] {
+  outline: 2px solid var(--white-block);
+  outline-offset: 2px;
+}
+.settings[aria-current='page']:focus-visible {
+  outline-color: var(--focus);
+}
+
+/* Review without an unfinished session (not in the mocks; agreed in M0 session 2). */
+.tile[aria-disabled='true'] {
+  color: var(--ring);
+  cursor: default;
+}

@@ -1,0 +1,91 @@
+[package]
+name = "guided-review"
+version = "0.1.0"
+description = "Guided Review: step-by-step code review with Claude Code"
+edition = "2024"
+rust-version = "1.95"
+publish = false
+default-run = "GuidedReview"
+
+[lib]
+name = "guided_review_lib"
+crate-type = ["rlib"]
+
+# ADR-020: the executable is GuidedReview.exe.
+[[bin]]
+name = "GuidedReview"
+path = "src/main.rs"
+
+# Field kit probe (ADR-019, docs/09 › Field kit): `npm run build:probe`.
+[[bin]]
+name = "gr-probe"
+path = "src/bin/gr-probe/main.rs"
+required-features = ["field-probe"]
+
+# Scripted child process for tests/process.rs (not bundled; Tauri bundles GuidedReview only).
+[[bin]]
+name = "gr-test-child"
+path = "tests/bin/gr_test_child.rs"
+test = false
+doc = false
+
+[build-dependencies]
+tauri-build = { version = "2.7.2", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.3", features = [] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.152"
+thiserror = "2.0.21"
+ts-rs = "12.0.1"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+rusqlite_migration = "2.6.0"
+tauri-plugin-window-state = "2.5.0"
+dirs = "7.0.0"
+tracing = "0.1.44"
+# NFR-08: fmt layer + Targets filter; the size-rotating, redacting writer is our own (logging/).
+tracing-subscriber = { version = "0.3.23", default-features = false, features = ["fmt", "std", "registry"] }
+regex = "1.13.1"
+# Async child processes and timeouts (os/process.rs); already in the tree through Tauri.
+tokio = { version = "1.53.2", features = ["process", "time", "io-util", "sync", "macros", "rt-multi-thread"] }
+
+# GitLab client (gitlab/); the default TLS is rustls with rustls-platform-verifier, i.e. the
+# Windows certificate store (S6). native-tls (SChannel) only for the field probe's comparison.
+reqwest = { version = "0.13.5", features = ["json", "query"] }
+# Classifies TLS errors from the platform verifier (same 0.23 line reqwest uses).
+rustls = { version = "0.23.45", default-features = false }
+# GitLab token in Windows Credential Manager (T4); v1-compatible API.
+keyring = "4.2.0"
+# Hidden token input for gr-probe `token set` (field kit).
+rpassword = { version = "7.5.4", optional = true }
+
+[features]
+# Builds gr-probe (field kit, ADR-019) with native-tls for the S6 comparison and hidden input.
+field-probe = ["dep:rpassword", "reqwest/native-tls"]
+
+# Job Object with kill-on-close and resume of a suspended child (os/job.rs); same version as Tauri's.
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_System_JobObjects",
+  "Win32_System_Threading",
+  "Win32_System_Diagnostics_ToolHelp",
+] }
+
+[dev-dependencies]
+tempfile = "3.27.0"
+# GitLab client tests against a local mock server (09 › Layers).
+wiremock = "0.6.5"
+# Test CA and certificates, local HTTPS server for TLS tests and the S6 spike.
+rcgen = "0.14.10"
+tokio-rustls = "0.26.6"
+
+[lints.rust]
+# Only src/os/job.rs allows it (Win32 Job Object calls; docs/04 › Processes on Windows).
+unsafe_code = "deny"
+
+[lints.clippy]
+# CLAUDE.md: no unwrap()/expect() outside tests and app startup (clippy.toml allows them in tests).
+unwrap_used = "deny"
+expect_used = "deny"

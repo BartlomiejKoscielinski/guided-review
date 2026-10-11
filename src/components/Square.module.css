@@ -1,0 +1,45 @@
+/* docs/03-design-system.md › Square: 8–14px legend/indicator square. */
+.square {
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.yellow {
+  background: var(--yellow);
+}
+.green {
+  background: var(--green);
+}
+.purple {
+  background: var(--purple);
+}
+.orange {
+  background: var(--orange);
+}
+.blue {
+  background: var(--blue);
+}
+.white {
+  background: var(--white-block);
+}
+
+.s8 {
+  width: 8px;
+  height: 8px;
+}
+.s9 {
+  width: 9px;
+  height: 9px;
+}
+.s10 {
+  width: 10px;
+  height: 10px;
+}
+.s12 {
+  width: 12px;
+  height: 12px;
+}
+.s14 {
+  width: 14px;
+  height: 14px;
+}

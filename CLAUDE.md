@@ -37,7 +37,7 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 
 ## Non-negotiables
 
-- **Claude on others' code is read-only.** All `claude` invocations are built only in `src-tauri/src/claude/runner.rs` with the profiles from `05-integrations.md` (`--tools "Read,Grep,Glob"`, `--permission-mode dontAsk`, `--setting-sources user`, `--strict-mcp-config`, `--disallowedTools "mcp__*"`). Never `--bare` (breaks subscription login), never `--dangerously-skip-permissions`, never Bash for Claude.
+- **Claude on others' code is read-only.** All `claude` invocations are built only in `src-tauri/src/claude/runner.rs` with the profiles from `05-integrations.md` (`--tools "Read,Grep,Glob"`, `--permission-mode dontAsk`, `--restricted` (ADR-022), `--strict-mcp-config`, `--disallowedTools "mcp__*"`). Never `--bare` (breaks subscription login), never `--dangerously-skip-permissions`, never Bash for Claude.
 - **Fix with Claude only on own code** (self-review, own MR), one file, run in an app-managed scratch worktree (ADR-018), verified after the run, written to the working copy only after the user accepts.
 - **No company data on this PC** (ADR-019). Development and tests here use synthetic data only (fixture repos, the stand-in GitLab sandbox project). Never point the app, `claude` or a test at company repositories or the on-prem GitLab from this machine. Field kit reports carry no code, names or hostnames.
 - **Nothing reaches GitLab without an explicit click.** Publish, approve, resolve, reply, run pipeline, play job are separate actions. Approve sends the reviewed SHA. No shortcut approves.

@@ -39,7 +39,7 @@ Principle: **all logic lives in the Rust core** and is testable without Tauri; T
 | FS watch | `notify` | Working tree changes (staging sync, Fix in Rider) |
 | Intraline diff | `similar` | Word/char emphasis computed in Rust |
 | Types | `ts-rs` generates TS types from Rust structs into `src/ipc/types/` | Never hand-write IPC types twice |
-| Logging | `tracing` + `tracing-subscriber` with an own size-rotating writer (10 MB × 5 files) and a redaction layer | Local only; no tokens, prompts, Claude output or file contents (NFR-08). `tracing-appender` rotates by time only |
+| Logging | `tracing` + `tracing-subscriber` with an own size-rotating writer (10 MiB, 5 files in total: `guided-review.log`, `guided-review.1.log` … `.4.log` in `logs\`) that redacts every formatted record before writing it | Local only; no tokens, prompts, Claude output, diffs or file contents (NFR-08). Info level; `GUIDED_REVIEW_LOG` (e.g. `debug`, `guided_review_lib=debug,info`) overrides it for development, there is no setting. Debug builds also log to stderr. `tracing-appender` rotates by time only |
 | Lint / format | ESLint (typescript-eslint, react-hooks) + Prettier; `cargo fmt` + `cargo clippy -D warnings` | All part of `npm run verify` |
 | Code nav | LSP client over stdio to `csharp-ls`; fallback `tree-sitter` + `tree-sitter-c-sharp` | See `05-integrations.md` |
 | Tauri plugins | single-instance (with deep-link), deep-link, notification, autostart, window-state, dialog, opener | Check each plugin's current docs before use |
@@ -68,15 +68,21 @@ guided-review/
 │  │  ├─ commands/               #[tauri::command] adapters, one file per area
 │  │  ├─ review/                 sessions, plan model, coverage, steps, decisions, drafts
 │  │  ├─ git/                    runner, diff parser, hunk ids, range_diff, moved, staging, worktrees
-│  │  ├─ gitlab/                 client, models, pagination, poller, positions
-│  │  ├─ claude/                 runner, queue, tasks/, prompts (include_str!), schemas
+│  │  ├─ gitlab/                 client, tls, models, pagination, poller, positions
+│  │  ├─ claude/                 runner (profiles, child environment), discover, queue, tasks/,
+│  │  │                          prompts (include_str!), schemas
 │  │  ├─ nav/                    lsp client, tree-sitter index, membership (in MR / outside)
 │  │  ├─ store/                  db, migrations, repositories (one per table group)
-│  │  ├─ os/                     credentials, rider, deep_link, notifications, autostart, process
-│  │  ├─ bin/gr-probe.rs         field kit probe (ADR-019); reuses os/, claude/, gitlab/
+│  │  ├─ settings/               typed settings with defaults and patches (keys below)
+│  │  ├─ os/                     paths, window, process + job (Job Object), credentials, rider,
+│  │  │                          deep_link, notifications, autostart
+│  │  ├─ logging/                size-rotating log file, redaction (NFR-08)
+│  │  ├─ bin/gr-probe/           field kit probe (ADR-019); reuses os/, claude/, gitlab/
+│  │  ├─ route.rs                Route and start-route rules (F-30.4)
 │  │  └─ error.rs                AppError
 │  ├─ resources/prompts/*.md, resources/schemas/*.json   (copied from docs/claude/)
-│  └─ tests/                     integration tests with fixture repos
+│  └─ tests/                     integration tests with fixture repos; bin/ test helpers
+│                                (gr-test-child, fake-claude)
 ├─ tests/e2e/                    Playwright specs against the mock backend
 ├─ tools/mock-preview/           mock renderer for design checks
 ├─ field/                        runbooks for field visits and their sanitized reports (09 › Field kit)
@@ -97,13 +103,15 @@ type ErrorCode =
   | 'NAV_UNAVAILABLE' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
 ```
 
+Window controls of the custom title bar (minimize, maximize/restore, close, start dragging, maximized state) are part of the same interface: `tauri.ts` uses the Tauri window API (capabilities `core:window:allow-minimize`, `-toggle-maximize`, `-close`, `-start-dragging`), the mock keeps the state in memory. Components never call Tauri directly.
+
 Long-running work streams through Tauri **channels** (`tauri::ipc::Channel<T>`) passed as a command argument: preparation progress, Claude task events (`queued`, `started`, `partial_text`, `done`, `failed`), job log lines, LSP indexing progress. Global app events (tray actions, deep links, poller results) use `app.emit` with typed payloads.
 
 Command groups (non-exhaustive; add commands only with a matching type and mock):
 
 | Group | Commands |
 | - | - |
-| app | `app_health`, `app_settings_get`, `app_settings_set`, `app_open_external` |
+| app | `app_health`, `app_settings_get`, `app_settings_set(patch)`, `app_start_route`, `app_open_external` |
 | source | `source_detect(input)` |
 | sessions | `sessions_list_unfinished`, `session_open_mr(iid, ch)`, `session_open_commit(range)`, `session_open_local(scope)`, `session_close` |
 | review | `review_plan(session, ch)`, `review_set_strategy`, `review_reorder_steps`, `review_step(session, step)`, `review_findings(session, step, ch)`, `review_decide(finding, decision)`, `review_mark_step`, `review_ask(session, step, question, selection?, ch)` |
@@ -192,7 +200,7 @@ Stored in `settings` as JSON values; read through one typed struct in the core w
 | `ui.startIn` | `focus` | F-19.1 |
 | `ui.focusLayout` | `A` | F-19.1, F-07.9 |
 | `ui.diffColors` | `blue-orange` | F-19.1 |
-| `ui.lastRoute` | S-01 | F-30.4 (window geometry itself is kept by the window-state plugin) |
+| `ui.lastRoute` | `{"screen":"S-01"}` | F-30.4: the last screen as a `Route` (`route.rs`): `{"screen":"S-03","sessionId":"…"}`, `{"screen":"S-07","section":"claude"}`, `{"screen":"S-10","iid":480}`. `app_start_route` restores it: session screens only while their session exists, S-08/S-10 → S-01 (live GitLab data), S-11 → S-06 (Claude prefill); the first screen carries `restored: true`. Window geometry itself is kept by the window-state plugin. |
 | `os.startWithWindows` | `false` | F-19.1 |
 | `os.closeToTray` | `true` | F-28.1 |
 | `claude.path` | auto (ADR-021) | F-18.6 |
@@ -225,7 +233,8 @@ Repositories and their worktree folders live in `repos`, not in `settings`.
 All child processes go through `os/process.rs`:
 
 - `CREATE_NO_WINDOW` creation flag, so no console windows flash.
-- Each process is assigned to a **Job Object** with kill-on-close, so cancelling or quitting kills the whole tree.
+- Each process is assigned to a **Job Object** with kill-on-close, so cancelling or quitting kills the whole tree. The child starts with `CREATE_SUSPENDED` and is resumed only after it is in its job, so nothing it starts can escape; when it exits, anything it left running is killed too. Timeouts kill the tree the same way. `os/job.rs` is the only module allowed to use `unsafe` (Win32 calls).
+- Programs the user keeps open (Rider, the browser) start with `spawn_detached`: no job of ours, no pipes, so they outlive the call and the app.
 - Prompts go to `claude` through **stdin**, never as a long argument (Windows command line limit ~32k chars).
 - git runs with `-c core.quotepath=off -c core.longpaths=true -c color.ui=false` (except where colors are parsed, see moved code) and `LC_ALL=C` for stable messages; output is UTF-8; `\r` at line ends is stripped for display but preserved for patches.
 - Executable discovery: `git` from PATH, overridable in Settings. `claude` per ADR-021: Settings value → `%USERPROFILE%\.local\bin\claude.exe` → `claude.exe` on PATH → npm install run as `node …\@anthropic-ai\claude-code\cli.js`. Never `claude.cmd` through `cmd.exe`.

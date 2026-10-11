@@ -10,7 +10,7 @@
 // @fontsource/jetbrains-mono. The mock's own runtime is not needed: dc-shim.js expands the
 // template ({{holes}}, <sc-for>, <sc-if>) with values from the mock's renderVals().
 import { chromium } from 'playwright';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'node:fs';
 import { resolve, dirname, basename, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -55,4 +55,5 @@ await page.screenshot({ path: out });
 if (wantText) writeFileSync(out.replace(/\.png$/, '.txt'), await page.evaluate(() => document.body.innerText));
 const missing = await page.evaluate(() => [...new Set(window.__MISSING || [])]);
 await browser.close();
+unlinkSync(tmp);
 console.log(JSON.stringify({ out, errors, missingHoles: missing }));

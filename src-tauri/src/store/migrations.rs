@@ -1,0 +1,89 @@
+//! Schema migrations. Migration 001 is the schema from docs/04 › SQLite schema; later changes
+//! are new migrations appended here, never edits of applied ones.
+
+use rusqlite_migration::{M, Migrations};
+
+pub fn migrations() -> Migrations<'static> {
+    Migrations::new(vec![M::up(include_str!("migrations/001_initial.sql"))])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    /// Tables of docs/04 › SQLite schema.
+    const TABLES: [&str; 15] = [
+        "settings",
+        "repos",
+        "worktrees",
+        "sessions",
+        "plans",
+        "steps_state",
+        "findings",
+        "drafts",
+        "claude_cache",
+        "claude_sessions",
+        "dismissals",
+        "rule_suggestions",
+        "poll_state",
+        "queued_replies",
+        "job_variables",
+    ];
+
+    #[test]
+    fn migrations_are_valid() {
+        migrations().validate().unwrap();
+    }
+
+    #[test]
+    fn migration_001_creates_every_table_of_the_schema() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        migrations().to_latest(&mut conn).unwrap();
+        let mut stmt = conn
+            .prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
+            .unwrap();
+        let mut names: Vec<String> = stmt
+            .query_map([], |row| row.get(0))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap();
+        names.retain(|n| !n.starts_with("sqlite_"));
+        let mut expected: Vec<String> = TABLES.iter().map(|t| (*t).to_owned()).collect();
+        expected.sort();
+        assert_eq!(names, expected);
+    }
+
+    #[test]
+    fn migration_001_has_the_fields_added_at_kickoff() {
+        // P-05 (findings.kind), G-21 (steps_state.checklist_json), G-22 (worktrees, repos.worktree_root).
+        let mut conn = Connection::open_in_memory().unwrap();
+        migrations().to_latest(&mut conn).unwrap();
+        for (table, column) in [
+            ("findings", "kind"),
+            ("steps_state", "checklist_json"),
+            ("repos", "worktree_root"),
+            ("worktrees", "head_sha"),
+        ] {
+            let found: i64 = conn
+                .query_row(
+                    "SELECT COUNT(*) FROM pragma_table_info(?1) WHERE name = ?2",
+                    [table, column],
+                    |row| row.get(0),
+                )
+                .unwrap();
+            assert_eq!(found, 1, "{table}.{column}");
+        }
+    }
+
+    #[test]
+    fn migrating_twice_is_a_no_op() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        migrations().to_latest(&mut conn).unwrap();
+        migrations().to_latest(&mut conn).unwrap();
+        let version: i64 = conn
+            .query_row("PRAGMA user_version", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(version, 1);
+    }
+}

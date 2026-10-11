@@ -1,0 +1,80 @@
+/* Title-bar context and status pieces; styles from the mocks' title bars. */
+.repoSwitcher {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 10px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.repoName {
+  font-weight: 600;
+}
+
+.repoPath {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.chevron {
+  color: var(--text-secondary);
+}
+
+.repo {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+.iid {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+
+.iidMine {
+  color: var(--blue-text);
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.label {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+}
+
+.branch {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  background: var(--green);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
