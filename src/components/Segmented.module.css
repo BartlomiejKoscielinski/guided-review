@@ -1,0 +1,71 @@
+/* docs/03-design-system.md › Segmented; title bar (28px) and settings (40px) sizes from the mocks. */
+.group {
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-self: start;
+}
+
+.bar {
+  background: var(--panel-2);
+}
+.form {
+  background: var(--raised);
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 100ms linear;
+}
+
+.bar .option {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.form .option {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* Icon-only options (title bar layout switcher): 34×28, muted when off. */
+.bar .icon {
+  width: 34px;
+  padding: 0;
+  color: var(--text-muted);
+}
+
+.option[aria-checked='true'] {
+  color: var(--ink);
+}
+.white .option[aria-checked='true'] {
+  background: var(--white-block);
+}
+.yellow .option[aria-checked='true'] {
+  background: var(--yellow);
+}
+.purple .option[aria-checked='true'] {
+  background: var(--purple);
+}
+.green .option[aria-checked='true'] {
+  background: var(--green);
+}
+
+.option:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}

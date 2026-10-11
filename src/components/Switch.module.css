@@ -1,0 +1,33 @@
+/* docs/03-design-system.md › Switch: 46×26 square track, 18px square knob (Settings.dc.html). */
+.switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--switch-off);
+  cursor: pointer;
+}
+
+.knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  background: var(--text-muted);
+}
+
+.switch[aria-checked='true'] {
+  background: var(--green);
+}
+.switch[aria-checked='true'] .knob {
+  left: 24px;
+  background: var(--ink);
+}
+
+.switch:disabled {
+  cursor: default;
+}

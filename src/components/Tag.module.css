@@ -1,0 +1,61 @@
+/* docs/03-design-system.md › Tag: a word, condensed 800 uppercase; filled or ring. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+}
+
+.s {
+  padding: 1px 7px;
+  font-size: 12px;
+}
+.m {
+  padding: 1px 8px;
+  font-size: 13px;
+}
+.l {
+  padding: 3px 12px;
+  font-size: 14px;
+}
+
+.yellow {
+  --tag-color: var(--yellow);
+  --tag-text: var(--yellow);
+}
+.green {
+  --tag-color: var(--green);
+  --tag-text: var(--green-text);
+}
+.purple {
+  --tag-color: var(--purple);
+  --tag-text: var(--purple-text);
+}
+.orange {
+  --tag-color: var(--orange);
+  --tag-text: var(--orange-text);
+}
+.blue {
+  --tag-color: var(--blue);
+  --tag-text: var(--blue-text);
+}
+.white {
+  --tag-color: var(--white-block);
+  --tag-text: var(--text);
+}
+
+.filled {
+  background: var(--tag-color);
+}
+
+.ring {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--tag-color);
+  color: var(--tag-text);
+}

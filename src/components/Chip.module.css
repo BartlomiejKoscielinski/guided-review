@@ -1,0 +1,20 @@
+/* docs/03-design-system.md › ModelChip / StatusChip: 28px, panel-2, 8px square + text. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel-2);
+  color: var(--text-2);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+button.chip {
+  cursor: pointer;
+}
