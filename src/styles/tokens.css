@@ -1,0 +1,86 @@
+/* Design tokens: pasted from docs/03-design-system.md › Tokens. Components use only these variables. */
+
+:root {
+  /* surfaces */
+  --bg: #101010;            /* app background */
+  --bg-chrome: #0A0A0A;     /* title bar, dock, log background */
+  --bg-sunken: #0D0D0D;     /* inputs, empty diff side, inactive segmented background */
+  --panel: #141414;         /* side panels, sections */
+  --panel-2: #1A1A1A;       /* sticky bars, rows on panel */
+  --card: #1C1C1C;          /* list rows, cards, popover body */
+  --raised: #1F1F1F;        /* controls, hunk header, chips */
+  --raised-2: #262626;      /* neutral buttons, selected row, hover card */
+  --line: #2A2A2A;          /* inactive progress segment */
+  --ring: #4A4A47;          /* empty checkbox ring, dashed approval box */
+  --ring-2: #3A3A38;        /* canceled/neutral blocks */
+
+  /* text */
+  --text: #F4F4F2;
+  --text-2: #E8E8E4;
+  --text-3: #D6D6D1;
+  --text-body: #C9C9C4;     /* paragraphs on dark */
+  --text-secondary: #B3B3AE;
+  --text-muted: #8C8C87;    /* labels, meta */
+  --text-lineno: #7E7E79;
+  --ink: #101010;           /* text on color blocks */
+
+  /* color blocks (meaning in the table below) */
+  --yellow: #F7CF3D;   --yellow-hover: #FFE27A;
+  --green: #63D676;    --green-text: #93E3A0;
+  --purple: #B93CF6;   --purple-text: #C77DF8;  --purple-text-2: #D3A2FA;
+  --orange: #EF6E2E;   --orange-text: #F6A983;
+  --blue: #3F7CF2;     --blue-text: #9DBBF8;
+  --white-block: #F4F4F2;
+
+  /* diff, default palette "blue · orange" */
+  --diff-add-bg: rgba(63, 124, 242, 0.16);
+  --diff-add-em: rgba(63, 124, 242, 0.42);
+  --diff-add-ln: rgba(63, 124, 242, 0.10);
+  --diff-add-text: #9DBBF8;
+  --diff-del-bg: rgba(239, 110, 46, 0.14);
+  --diff-del-em: rgba(239, 110, 46, 0.40);
+  --diff-del-ln: rgba(239, 110, 46, 0.09);
+  --diff-del-text: #F6A983;
+  --diff-empty: #0D0D0D;
+  --diff-moved-bg: rgba(244, 244, 242, 0.035);
+  --diff-moved-ln: rgba(244, 244, 242, 0.05);
+  --diff-fresh-bg: rgba(99, 214, 118, 0.14);   /* lines just changed by an accepted fix */
+
+  /* syntax */
+  --syn-keyword: #D3A2FA;
+  --syn-type: #93E3A0;
+  --syn-string: #F6DC80;
+  --syn-comment: #8C8C87;
+  --syn-attribute: #B8C7E8;
+  --syn-number: #F6A983;
+  --syn-plain: #E8E8E4;
+  --syn-punct: #A3A39E;
+
+  /* misc */
+  --focus: #F7CF3D;
+  --shadow-pop: 0 14px 34px rgba(0, 0, 0, 0.5);
+  --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.6);
+  --kbd-bg: #2A2A2A;
+  --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
+
+  --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+/* Settings › General › Diff colors = "Green · red" */
+:root[data-diff="green-red"] {
+  --diff-add-bg: rgba(99, 214, 118, 0.15);
+  --diff-add-em: rgba(99, 214, 118, 0.40);
+  --diff-add-ln: rgba(99, 214, 118, 0.10);
+  --diff-add-text: #93E3A0;
+  --diff-del-bg: rgba(240, 80, 70, 0.14);
+  --diff-del-em: rgba(240, 80, 70, 0.40);
+  --diff-del-ln: rgba(240, 80, 70, 0.09);
+  --diff-del-text: #FF968C;
+}
+
+/* Not in 03 yet (proposed doc change): Switch track when off, from Settings.dc.html. */
+:root {
+  --switch-off: #333331;
+}

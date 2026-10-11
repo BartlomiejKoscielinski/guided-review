@@ -12,3 +12,5 @@ package-lock.json
 playwright-report/
 test-results/
 .design-check/
+# Pasted verbatim from docs/03-design-system.md
+src/styles/tokens.css
