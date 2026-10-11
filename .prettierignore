@@ -14,3 +14,5 @@ test-results/
 .design-check/
 # Pasted verbatim from docs/03-design-system.md
 src/styles/tokens.css
+tools/spikes/tauri-s7/gen
+tools/spikes/tauri-s7/target
