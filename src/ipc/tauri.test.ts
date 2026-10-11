@@ -8,6 +8,7 @@ const invokeMock = vi.mocked(invoke);
 describe('Tauri IPC client', () => {
   beforeEach(() => {
     invokeMock.mockReset();
+    invokeMock.mockResolvedValue(null);
   });
 
   it('calls app_health', async () => {
@@ -17,6 +18,20 @@ describe('Tauri IPC client', () => {
       platform: 'windows',
     });
     expect(invokeMock).toHaveBeenCalledWith('app_health', undefined);
+  });
+
+  it('calls the settings, start-route and sessions commands by their contract names', async () => {
+    const client = createTauriClient();
+    await client.appSettingsGet();
+    await client.appSettingsSet({ ui: { startIn: 'detailed' } });
+    await client.appStartRoute();
+    await client.sessionsListUnfinished();
+    expect(invokeMock.mock.calls).toEqual([
+      ['app_settings_get', undefined],
+      ['app_settings_set', { patch: { ui: { startIn: 'detailed' } } }],
+      ['app_start_route', undefined],
+      ['sessions_list_unfinished', undefined],
+    ]);
   });
 
   it('rejects with an IpcError carrying the AppError', async () => {

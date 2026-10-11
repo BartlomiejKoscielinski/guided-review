@@ -1,9 +1,15 @@
 //! `app_*` commands. Health of the app itself; GitLab and Claude Code status join in M1/M2.
 
 use serde::Serialize;
+use serde_json::Value;
+use tauri::State;
 use ts_rs::TS;
 
+use super::with_store;
 use crate::error::AppResult;
+use crate::route::Route;
+use crate::settings::Settings;
+use crate::store::{self, Store};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +31,25 @@ pub fn health() -> AppHealth {
 #[tauri::command]
 pub fn app_health() -> AppResult<AppHealth> {
     Ok(health())
+}
+
+/// All settings with defaults for keys that aren't stored (docs/04 › Settings).
+#[tauri::command]
+pub async fn app_settings_get(store: State<'_, Store>) -> AppResult<Settings> {
+    with_store(&store, |conn| store::settings::load(conn)).await
+}
+
+/// Applies a partial patch (`{ "ui": { "startIn": "detailed" } }`); invalid values are
+/// rejected with `INVALID_INPUT` and nothing is stored.
+#[tauri::command]
+pub async fn app_settings_set(store: State<'_, Store>, patch: Value) -> AppResult<Settings> {
+    with_store(&store, move |conn| store::settings::update(conn, &patch)).await
+}
+
+/// The screen to open on start (F-30.4).
+#[tauri::command]
+pub async fn app_start_route(store: State<'_, Store>) -> AppResult<Route> {
+    with_store(&store, |conn| store::start_route(conn)).await
 }
 
 #[cfg(test)]
