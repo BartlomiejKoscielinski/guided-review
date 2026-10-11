@@ -99,19 +99,20 @@ Every N minutes: review-requested list, my MRs (with `updated_after`), MRs I rev
 
 ## Claude Code (`claude -p`, user's own login)
 
-The organization has no API key, so the app runs the Claude Code CLI in print mode under the user's Enterprise login. Facts checked in the CLI reference and headless docs (October 2026). The CLI found on the development PC at kickoff (2.1.76 native, 2.1.77 npm) did not list `xhigh`, `--restricted` or `--append-system-prompt-file`, so S1 confirms every flag below on the version we pin:
+The organization has no API key, so the app runs the Claude Code CLI in print mode under the user's Enterprise login. Facts checked in the CLI reference and headless docs (October 2026) and confirmed by the M0 spikes S1–S4 on Claude Code 2.1.296 (native) with a personal Max login (`08` › Spike notes, details in `spikes/m0-claude-pc-max.md`); field visit 1 repeats them on Claude Enterprise. Minimum version: **2.1.248** (`--restricted`).
 
-- `--output-format json` returns metadata plus `result`; with `--json-schema '<schema>'` the validated object is in `structured_output`. `--output-format stream-json --verbose --include-partial-messages` streams events; the last line is the `result` message.
-- `--resume <session_id>` continues a conversation; capture `session_id` from the JSON result.
-- `--model <alias|name>` and `--effort low|medium|high|xhigh|max` (levels depend on the model).
-- `--tools "Read,Grep,Glob"` restricts which built-in tools exist; `--allowedTools` only pre-approves.
-- `--permission-mode dontAsk` denies anything that would prompt.
-- `--setting-sources user` skips project/local settings; `--strict-mcp-config` with no `--mcp-config` loads no MCP servers.
-- **Without `--bare`, `-p` runs the hooks in a project's `.claude/settings.json` and connects `.mcp.json` servers, with no trust dialog.** So the flags above are mandatory when working in a teammate's worktree.
-- `--bare` would avoid all project config **but does not use the subscription login** (needs `ANTHROPIC_API_KEY`), so it is not an option for us. The docs say bare mode will become the default for `-p` in a future release: pin and check every Claude Code update (see ADR-002 and the startup check below).
-- `--restricted` (v2.1.248+) removes command-running tools and loads only managed settings and `--settings`. **Spike (M0):** check whether it works with the Enterprise login; if it does, prefer it for read-only tasks.
-- `claude auth status` prints JSON with `loggedIn`, `authMethod` (`claude.ai` for subscription login), `apiProvider`, `email`, `orgId`, `orgName`, `subscriptionType` (observed on 2.1.77). The app reads only `loggedIn` and `authMethod` and never logs the rest.
-- `--setting-sources user` still loads the user's own `~/.claude/settings.json` (hooks, plugins, output style) and probably `~/.claude/CLAUDE.md`. User hooks that inject text into prompts change the output of every task. **Spike S3** decides how to suppress them (`--setting-sources ""` or `--settings '{"disableAllHooks": true}'`); the chosen flags join both profiles below.
+- `--output-format json` returns metadata plus `result`; with `--json-schema '<schema>'` the validated object is in `structured_output`. `--output-format stream-json --verbose --include-partial-messages` streams events; the last line is the `result` message, also with a schema. Fields the runner uses: `is_error`, `result`, `structured_output`, `session_id`, `terminal_reason`, `api_error_status`, `permission_denials`, `total_cost_usd`. `subtype` stays `"success"` even when `is_error` is true, so it is never used to detect failure.
+- `--json-schema` keywords are enforced: Claude Code rejects output that breaks `maxLength`, `pattern` or `minItems` and the model tries again (more turns). To comply, the model may shorten text or invent items, so schemas use `minItems` only where a value always exists (`claude/README.md`) and the Rust validation below stays authoritative.
+- `--resume <session_id>` continues a conversation (needs session persistence); capture `session_id` from the JSON result. The system prompt recorded on the first turn is reused.
+- `--model <alias|name>` and `--effort low|medium|high|xhigh|max` (levels depend on the model, see below).
+- `--tools "Read,Grep,Glob"` restricts which built-in tools exist; `--allowedTools` only pre-approves. `--tools ""` leaves no tools.
+- `--permission-mode dontAsk` denies anything that would prompt. A denied call doesn't fail the run: it is listed in `permission_denials` and the run can end with `is_error: false` (S1).
+- `--restricted` (v2.1.248+, ADR-022) ignores the user, project and local settings files (only managed settings and `--settings` apply), so no hooks, plugins, output style, CLAUDE.md, AGENTS.md, rules, skills or auto memory from the user or the repository load (S2/S3). It removes command-running tools and WebFetch and confines the file tools to the working directory and `--add-dir`. `--strict-mcp-config` with no `--mcp-config` loads no MCP servers.
+- **Without these flags, `-p` runs the hooks in a project's `.claude/settings.json` and connects `.mcp.json` servers, with no trust dialog, and loads all of the user's own configuration** (S3: under `--setting-sources user` every user hook ran, incl. hooks that inject text into the prompt). So the flags are mandatory for every task.
+- `--bare` would avoid all of that **but does not use the subscription login** (needs `ANTHROPIC_API_KEY`), so it is not an option for us. The docs say bare mode will become the default for `-p` in a future release: pin and check every Claude Code update (see ADR-002 and the startup check below).
+- `--append-system-prompt-file <file>` works (S1), although `claude --help` doesn't list it.
+- `claude auth status` prints JSON with `loggedIn`, `authMethod` (`claude.ai` for subscription login, `none` when signed out), `apiProvider`, `analyticsDisabled`, `projectsDirectory`, `configDirectory`, `email`, `orgId`, `orgName`, `subscriptionType` (2.1.296) and exits with 1 when not signed in. It only reads the stored credentials: in S1 it reported `loggedIn: true` while the login had expired and could not be refreshed. The app reads only `loggedIn` and `authMethod` and never logs the rest.
+- **Environment.** When the app's own environment contains `CLAUDECODE` (it was started from inside a Claude Code session, which happens only in development, e.g. `npm run tauri dev` in Claude Code), the runner removes `CLAUDECODE`, `CLAUDE_CODE_*`, `CLAUDE_AGENT_SDK_*`, `CLAUDE_PID`, `CLAUDE_EFFORT` and `ANTHROPIC_BASE_URL` from the child's environment, so `claude` runs as if the app had been started from Explorer (the S1 harness did the same). Otherwise the environment passes through unchanged (proxy, `CLAUDE_CONFIG_DIR` and provider settings of the user or the organization keep working).
 
 ### Invocation profiles (built only in `claude/runner.rs`)
 
@@ -123,26 +124,30 @@ claude -p
   [--model <m>] [--effort <e>]                (omitted when "Same as Claude Code")
   --tools "Read,Grep,Glob"
   --permission-mode dontAsk
-  --setting-sources user
+  --restricted                                (ADR-022)
   --strict-mcp-config
   --disallowedTools "mcp__*"
-  --append-system-prompt-file <rendered system-common.md in tmp/<task-id>/>   (verify in S1; else --append-system-prompt <text>)
-  --add-dir <%APPDATA%\GuidedReview\tmp\<task-id>>                          (verify in S1: needed so Read may open the input files under dontAsk)
-  [flags chosen in S3 to suppress user-level hooks]
+  --append-system-prompt-file <rendered system-common.md in tmp/<task-id>/>
+  --add-dir <%APPDATA%\GuidedReview\tmp\<task-id>>   (without it, Read of the input files is denied)
   [--no-session-persistence]                  (one-shot tasks; omit where follow-ups are allowed)
   [--resume <claude_session_id>]              (follow-up questions)
 cwd   = review worktree (others' MR) or repository root (own code, read-only tasks)
 stdin = the task prompt (rendered template + inputs as files referenced by path in tmp/)
 ```
+No positional argument follows the variadic options (`--tools`, `--add-dir`, `--allowedTools`, `--disallowedTools`); the prompt always goes through stdin.
+
+After the run, a `permission_denials` entry for a Read under the task folder fails the task with `CLAUDE_FAILED` ("Claude couldn't read the task inputs."): otherwise the run ends with `is_error: false` and an answer built without its inputs (R-04).
 
 **Fix on own code** (F-25), only when the session source is local or my own MR, run in a scratch worktree (ADR-018):
 ```
 same as read-only, plus
   --tools "Read,Grep,Glob,Edit"
-  --allowedTools "Edit(<path of the one file, relative to the scratch worktree>)"   (verify rule syntax in S4)
+  --allowedTools "Edit(/<path of the one file, relative to the scratch worktree>)"
   --permission-mode dontAsk                                                         (any other edit is denied)
 cwd   = scratch worktree created from `git stash create` (or HEAD)
 ```
+The rule uses the anchored form (leading `/` = the session's working directory, i.e. the scratch worktree) with forward slashes, as tested in S4 (also with spaces and Polish characters). Rules are gitignore patterns: the runner escapes `*`, `?`, `[`, `]` and a leading `!` or `#` in the path with `\`. Never backslashes as separators (they match nothing) and never a bare file name (it matches at any depth).
+
 After the process exits the app runs `git status --porcelain=v2` in the scratch worktree. If anything other than that file changed, it discards the run and fails with `CLAUDE_GUARD_VIOLATION`. Otherwise the proposal is the diff of that file. **Accept** writes the new content into the user's working copy only if the file's hash still equals the one taken when the run started; then the scratch worktree is removed.
 
 ### Tasks, models and contracts
@@ -165,28 +170,35 @@ After the process exits the app runs `git status --porcelain=v2` in the scratch 
 
 A task uses its override group's model and effort; "Default" in a group means the global default (F-18.2). The plan prompt serves every source (MR, commit or range, local scope) through a `{{source_block}}` rendered by the core. The **File order** strategy is not in the plan schema; the core computes it as path order.
 
-The prompts and schemas in `docs/claude/` are the starting point; copy them to `src-tauri/resources/` and bump `prompt_version` whenever you change one (it is part of the cache key). Validate every `structured_output` again in Rust before using it; this validation is authoritative even if the CLI enforces the schema:
+The prompts and schemas in `docs/claude/` are the starting point; copy them to `src-tauri/resources/` and bump `prompt_version` whenever you change one (it is part of the cache key). Validate every `structured_output` again in Rust before using it; this validation is authoritative even though the CLI enforces the schema:
 - structural errors (wrong types, unknown hunk/step IDs, lines outside the step, files not in the change) → `CLAUDE_SCHEMA`, never partial data;
+- evidence entries (`file:line` in findings, pipeline explanations and insights) must point at a file that exists in the worktree and a line within it, otherwise `CLAUDE_SCHEMA` (Claude cited something it didn't read);
 - strings longer than the schema's `maxLength` → clamped with "…";
 - a plan must reference at least 90% of the hunk IDs, otherwise `CLAUDE_SCHEMA` (a sign that Claude didn't read the inputs); the rest goes to the "Other" step (coverage invariant).
 
 ### Models and effort levels
-The UI shows labels and stores full model IDs. Supported efforts per model are filled in from S1 probes; unsupported ones are disabled (F-18.4).
+The UI shows labels and stores full model IDs. Supported efforts per model come from the model-config documentation and the S1 probes (2026-10-11). Claude Code silently runs an unsupported level as the highest supported level below it; F-18.4 still disables unsupported levels in the UI, which matters for models added later.
 
-| Label | `--model` | Efforts (from S1) |
+| Label | `--model` | Efforts |
 | - | - | - |
-| Same as Claude Code | (flag omitted) | all |
-| Opus 5.5 | `claude-opus-5-5` | |
-| Sonnet 5.5 | `claude-sonnet-5-5` | |
-| Haiku 5.5 | `claude-haiku-5-5` | |
-| Fable 5.1 | `claude-fable-5-1` | |
+| Same as Claude Code | (flag omitted; under `--restricted` the default model of the account or of managed settings, ADR-022) | all |
+| Opus 5.5 | `claude-opus-5-5` | low, medium, high, xhigh, max |
+| Sonnet 5.5 | `claude-sonnet-5-5` | low, medium, high, xhigh, max |
+| Haiku 5.5 | `claude-haiku-5-5` | low, medium, high, xhigh, max |
+| Fable 5.1 | `claude-fable-5-1` | low, medium, high, xhigh, max (on a Max plan it needs usage credits: 429, see below) |
 
 ### Errors from Claude
-`is_error: true` or a non-zero exit → `CLAUDE_FAILED`. A usage or rate limit reported by Claude Code → `CLAUDE_LIMITED` (F-18.7; the exact signal is recorded in S1). Not signed in → `CLAUDE_NOT_SIGNED_IN`. Executable missing → `CLAUDE_NOT_FOUND`.
+Mapped in this order (S1):
+1. Executable missing → `CLAUDE_NOT_FOUND`.
+2. `is_error: true` with `api_error_status: 429` (stream-json also sends a `rate_limit_event` with `rate_limit_info.status: "rejected"`, an `errorCode` such as `credits_required` and `resetsAt`) → `CLAUDE_LIMITED` (F-18.7; the reset time comes from `resetsAt`, Claude Code's `result` text goes into `detail`).
+3. `is_error: true` with `terminal_reason: "api_error"` and a `result` starting with "Not logged in" or "Failed to authenticate" → `CLAUDE_NOT_SIGNED_IN`. When the text is not recognised, a follow-up `claude auth status` with `loggedIn: false` maps the same way.
+4. Any other `is_error: true` or non-zero exit (unknown model: `api_error_status: 404`; `--max-turns`: `terminal_reason: "max_turns"`; unknown flag or invalid schema: exit 1 with the message on stderr and no JSON) → `CLAUDE_FAILED` with Claude Code's message as `detail`.
+A killed process writes no result; cancellation reports `CANCELLED`.
 
 ### Startup checks
-1. Resolve the executable (ADR-021). `claude --version` → store; if it changed since the last successful probe, run a tiny probe (`claude -p "Reply with OK" --output-format json --tools "" --no-session-persistence --setting-sources user --strict-mcp-config`) and mark Claude as healthy only if `is_error` is false.
-2. `claude auth status` → `loggedIn` must be true and `authMethod` must not be `none` (`CLAUDE_NOT_SIGNED_IN` otherwise).
+1. Resolve the executable (ADR-021). `claude --version` → store; a version below 2.1.248 → `CLAUDE_FAILED` "Guided Review needs Claude Code 2.1.248 or later."
+2. `claude auth status` → `loggedIn` must be true and `authMethod` must not be `none` (`CLAUDE_NOT_SIGNED_IN` otherwise). This only checks that credentials are stored.
+3. Probe: `claude -p --output-format json --model haiku --tools "" --no-session-persistence --restricted --strict-mcp-config` with "Reply with OK" on stdin (without `--model` if the organization doesn't allow Haiku). It runs when the version changed since the last successful probe and after any task failed with `CLAUDE_NOT_SIGNED_IN`; Claude counts as healthy only if `is_error` is false. The status shown in F-18.1 and F-01.6 is the latest of: `auth status`, the probe, the last task result.
 
 ---
 

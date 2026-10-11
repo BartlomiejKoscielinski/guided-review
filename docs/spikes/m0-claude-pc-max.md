@@ -10,7 +10,7 @@ Detailed notes behind the S1–S4 rows of the spike table in `08-decisions.md`. 
 
 ## S1 · Read-only profile with subscription login
 
-Profile as in `05` › Invocation profiles (`-p --output-format json --json-schema … --model … --effort low --tools "Read,Grep,Glob" --permission-mode dontAsk --setting-sources user --strict-mcp-config --disallowedTools "mcp__*" --append-system-prompt-file <tmp>\system-common.md --add-dir <tmp> --no-session-persistence`), cwd = fixture repo, prompt via stdin.
+Profile as in `05` › Invocation profiles before ADR-022 (`-p --output-format json --json-schema … --model … --effort low --tools "Read,Grep,Glob" --permission-mode dontAsk --setting-sources user --strict-mcp-config --disallowedTools "mcp__*" --append-system-prompt-file <tmp>\system-common.md --add-dir <tmp> --no-session-persistence`), cwd = fixture repo, prompt via stdin.
 
 | Check | Result |
 | - | - |
@@ -36,7 +36,7 @@ Fixture "teammate repo" with canaries: `CLAUDE.md` (PINEAPPLE), `AGENTS.md` (MAN
 
 | Variant (read-only profile +) | Project config | User hooks | User plugins (skills/agents) | `~/.claude/CLAUDE.md` + rules | Auto memory |
 | - | - | - | - | - | - |
-| `--setting-sources user` (current `05`) | none | **all run**: SessionStart injects "CAVEMAN MODE ACTIVE" and a previous-session summary; UserPromptSubmit injects hints; Pre/PostToolUse; Stop/SessionEnd | **loaded** (130 / 23) | **loaded** | on |
+| `--setting-sources user` (`05` before ADR-022) | none | **all run**: SessionStart injects "CAVEMAN MODE ACTIVE" and a previous-session summary; UserPromptSubmit injects hints; Pre/PostToolUse; Stop/SessionEnd | **loaded** (130 / 23) | **loaded** | on |
 | `--setting-sources ""` | none | none | none (17 / 5 built-in) | not loaded | on |
 | `--settings '{"disableAllHooks": true}'` | none | none | loaded (130 / 23) | loaded | on |
 | both of the above | none | none | none (17 / 5) | not loaded | on |

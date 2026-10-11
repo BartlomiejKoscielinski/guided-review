@@ -7,4 +7,4 @@ Variant: {{variant}}  (short = 1–2 sentences per section; long = up to 5)
 title: at most 72 characters.
 what: what changes for users and in the code.
 why: the reason; if unknown from the inputs, say what problem it appears to solve without inventing ticket numbers.
-how_to_test: concrete numbered steps a tester can follow on a device or emulator, including edge cases visible in the diff.
+how_to_test: concrete numbered steps a tester can follow on a device or emulator, including edge cases visible in the diff. If the change needs no manual test (e.g. only build files or comments), write one step saying so and why; never invent steps.

@@ -15,7 +15,7 @@ Goal: every acceptance criterion in `01-product.md` is covered by at least one a
 | Core unit | `cargo test` | diff parser, hunk IDs, intraline, coverage invariant, plan validation, range-diff parser, moved detection, staging patch builder, draft position mapping, cache keys, deep-link parser, redaction |
 | Core integration | `cargo test` + fixture repos | worktree lifecycle, stage/unstage/commit/fixup, merge-tree conflict check, range-diff on a rebased MR, replay of old commits |
 | GitLab client | `cargo test` + `wiremock` | every endpoint in `05-integrations.md`, pagination, 401/403/404/429 handling, retries; responses are cassettes recorded from the stand-in GitLab |
-| Claude runner | `cargo test` + fake `claude` | flags per profile (snapshot test of argv), stdin prompt, JSON parsing, `is_error`, schema violations, cancellation kills the tree, Fix guard restores on extra edits |
+| Claude runner | `cargo test` + fake `claude` | flags per profile (snapshot test of argv, `--restricted`), Edit rule escaping, environment cleanup when `CLAUDECODE` is set, stdin prompt, JSON parsing, error mapping (`is_error`, 429, sign-in texts, 404), `permission_denials` on task inputs, schema violations and evidence checks, cancellation kills the tree, Fix guard restores on extra edits |
 | UI components | Vitest + Testing Library | design-system components, DiffView rows, keyboard handling, a11y roles |
 | UI flows | Playwright against the mock backend (`npm run dev:mock`) | one spec per screen with its AC IDs; layout A/B/C; mode switch keeps state; publish/approve separation |
 | Visual | `/design-check S-xx` | screenshot of the implemented screen (mock backend, same data) next to `docs/design/screens/*.png`; differences listed and fixed or justified |
@@ -65,7 +65,7 @@ Items tagged `[field]` are checked on the company laptop during a field visit (o
 - [ ] F-19.1 Start with Windows works after reboot.
 - [ ] NFR-04 Token is in Credential Manager, not in the DB or logs (search the app data folder for `glpat-`). `[field]`
 - [ ] NFR-07 Installer installs and uninstalls cleanly; deep-link scheme registered and removed. `[field]`
-- [ ] F-18.1 Claude Code status and the read-only profile work with Claude Enterprise (S1–S3 re-run). `[field]`
+- [ ] F-18.1 Claude Code status and both profiles work with Claude Enterprise (S1–S4 re-run, incl. `--restricted`, ADR-022). `[field]`
 - [ ] F-19.5 Check and save accepts the on-prem token through the internal CA. `[field]`
 - [ ] F-02.1 Waiting for me / Mine / All open match the on-prem MR lists. `[field]`
 - [ ] F-12.5 Publishing drafts in the on-prem sandbox sends one notification. `[field]`

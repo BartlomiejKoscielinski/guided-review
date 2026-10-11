@@ -182,7 +182,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-17.4** The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes kept "to fix" (with Fix with Claude per item once F-25 exists) and **Copy as checklist**.
 
 ### F-18 Settings: Claude · S-07
-- **F-18.1** Status "Claude Code: signed in" (from `claude auth status`), or an action to sign in.
+- **F-18.1** Status "Claude Code: signed in" (from `claude auth status`, the startup probe and the last task result, `05` › Startup checks), or an action to sign in.
 - **F-18.2** Defaults: Model (Same as Claude Code, Opus 5.5, Sonnet 5.5, Haiku 5.5, Fable 5.1), Effort (low, medium, high, xhigh, max; default medium), "Writes in" (English, Polish) for notes, suggested comments, commit messages and descriptions.
 - **F-18.3** Per task overrides (model + effort): Review plan, Step analysis, Questions, Fixes on your code, MR description and pipeline, Commit message. Defaults: plan opus/high, step sonnet/medium, questions default/low, fixes sonnet/medium, MR & pipeline sonnet/low, commit haiku/low.
 - **F-18.4** Effort levels not supported by the chosen model are disabled with a tooltip ("<Model> doesn't support <effort>.").

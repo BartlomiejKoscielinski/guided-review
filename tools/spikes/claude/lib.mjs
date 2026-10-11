@@ -97,7 +97,7 @@ export function run(label, args, opts = {}) {
   });
 }
 
-/** The read-only profile from docs/05-integrations.md, plus switches for the spike variants. */
+/** The read-only profile as tested in M0 (docs/05 before ADR-022: --setting-sources user), plus switches for the spike variants. */
 export function readOnlyArgs({
   output = 'json',
   schema,
