@@ -6,6 +6,7 @@ pub mod commands;
 pub mod error;
 pub mod git;
 pub mod gitlab;
+pub mod logging;
 pub mod nav;
 pub mod os;
 pub mod review;
@@ -92,12 +93,41 @@ fn place_main_window(window: &WebviewWindow) -> tauri::Result<()> {
     Ok(())
 }
 
+/// Installs the local logger (NFR-08) before anything else runs. Without an app data folder or
+/// a writable log folder the app still starts; debug builds then log to stderr only.
+fn start_logging() {
+    match os::paths::app_data_dir() {
+        Ok(app_data) => {
+            if let Err(error) = logging::init(&app_data) {
+                tracing::warn!(%error, "logging to a file is off");
+            }
+        }
+        Err(error) => eprintln!("Guided Review: {error}; logging is off"),
+    }
+    tracing::info!(
+        version = env!("CARGO_PKG_VERSION"),
+        "Guided Review starting"
+    );
+}
+
+/// Opens the database. A failure is logged with its path before setup fails and the app exits
+/// (error states for this come in M11).
+fn open_store() -> Result<store::Store, Box<dyn std::error::Error>> {
+    let app_data = os::paths::app_data_dir()?;
+    let db = os::paths::db_path(&app_data);
+    store::Store::open(&db).map_err(|error| {
+        tracing::error!(%error, path = %db.display(), "the database could not be opened");
+        error.into()
+    })
+}
+
 /// Builds and runs the Tauri app.
 #[allow(
     clippy::expect_used,
     reason = "app startup: without its Tauri context the app cannot run"
 )]
 pub fn run() {
+    start_logging();
     tauri::Builder::default()
         .plugin(
             tauri_plugin_window_state::Builder::default()
@@ -109,9 +139,7 @@ pub fn run() {
             if let Some(window) = app.get_webview_window("main") {
                 show_main_window(&window);
             }
-            let app_data = os::paths::app_data_dir()?;
-            let store = store::Store::open(&os::paths::db_path(&app_data))?;
-            app.manage(store);
+            app.manage(open_store()?);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

@@ -39,7 +39,7 @@ Principle: **all logic lives in the Rust core** and is testable without Tauri; T
 | FS watch | `notify` | Working tree changes (staging sync, Fix in Rider) |
 | Intraline diff | `similar` | Word/char emphasis computed in Rust |
 | Types | `ts-rs` generates TS types from Rust structs into `src/ipc/types/` | Never hand-write IPC types twice |
-| Logging | `tracing` + `tracing-subscriber` with an own size-rotating writer (10 MB × 5 files) and a redaction layer | Local only; no tokens, prompts, Claude output or file contents (NFR-08). `tracing-appender` rotates by time only |
+| Logging | `tracing` + `tracing-subscriber` with an own size-rotating writer (10 MiB, 5 files in total: `guided-review.log`, `guided-review.1.log` … `.4.log` in `logs\`) that redacts every formatted record before writing it | Local only; no tokens, prompts, Claude output, diffs or file contents (NFR-08). Info level; `GUIDED_REVIEW_LOG` (e.g. `debug`, `guided_review_lib=debug,info`) overrides it for development, there is no setting. Debug builds also log to stderr. `tracing-appender` rotates by time only |
 | Lint / format | ESLint (typescript-eslint, react-hooks) + Prettier; `cargo fmt` + `cargo clippy -D warnings` | All part of `npm run verify` |
 | Code nav | LSP client over stdio to `csharp-ls`; fallback `tree-sitter` + `tree-sitter-c-sharp` | See `05-integrations.md` |
 | Tauri plugins | single-instance (with deep-link), deep-link, notification, autostart, window-state, dialog, opener | Check each plugin's current docs before use |
@@ -68,15 +68,21 @@ guided-review/
 │  │  ├─ commands/               #[tauri::command] adapters, one file per area
 │  │  ├─ review/                 sessions, plan model, coverage, steps, decisions, drafts
 │  │  ├─ git/                    runner, diff parser, hunk ids, range_diff, moved, staging, worktrees
-│  │  ├─ gitlab/                 client, models, pagination, poller, positions
-│  │  ├─ claude/                 runner, queue, tasks/, prompts (include_str!), schemas
+│  │  ├─ gitlab/                 client, tls, models, pagination, poller, positions
+│  │  ├─ claude/                 runner (profiles, child environment), discover, queue, tasks/,
+│  │  │                          prompts (include_str!), schemas
 │  │  ├─ nav/                    lsp client, tree-sitter index, membership (in MR / outside)
 │  │  ├─ store/                  db, migrations, repositories (one per table group)
-│  │  ├─ os/                     credentials, rider, deep_link, notifications, autostart, process
-│  │  ├─ bin/gr-probe.rs         field kit probe (ADR-019); reuses os/, claude/, gitlab/
+│  │  ├─ settings/               typed settings with defaults and patches (keys below)
+│  │  ├─ os/                     paths, window, process + job (Job Object), credentials, rider,
+│  │  │                          deep_link, notifications, autostart
+│  │  ├─ logging/                size-rotating log file, redaction (NFR-08)
+│  │  ├─ bin/gr-probe/           field kit probe (ADR-019); reuses os/, claude/, gitlab/
+│  │  ├─ route.rs                Route and start-route rules (F-30.4)
 │  │  └─ error.rs                AppError
 │  ├─ resources/prompts/*.md, resources/schemas/*.json   (copied from docs/claude/)
-│  └─ tests/                     integration tests with fixture repos
+│  └─ tests/                     integration tests with fixture repos; bin/ test helpers
+│                                (gr-test-child, fake-claude)
 ├─ tests/e2e/                    Playwright specs against the mock backend
 ├─ tools/mock-preview/           mock renderer for design checks
 ├─ field/                        runbooks for field visits and their sanitized reports (09 › Field kit)

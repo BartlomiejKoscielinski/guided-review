@@ -30,6 +30,9 @@ rusqlite_migration = "2.6.0"
 tauri-plugin-window-state = "2.5.0"
 dirs = "7.0.0"
 tracing = "0.1.44"
+# NFR-08: fmt layer + Targets filter; the size-rotating, redacting writer is our own (logging/).
+tracing-subscriber = { version = "0.3.23", default-features = false, features = ["fmt", "std", "registry"] }
+regex = "1.13.1"
 
 [dev-dependencies]
 tempfile = "3.27.0"
