@@ -135,7 +135,7 @@ Fonts are bundled (offline desktop app) with `@fontsource/barlow` (400, 500, 600
 - Base unit 2px; common gaps 2, 4, 6, 8, 10, 12, 14, 16, 18, 22, 26, 28, 32, 36, 44, 48.
 - Page padding: 26–48px. Panels: 14–22px inner padding. Rows: 9–14px vertical padding.
 - Lists of rows use 2px gaps on a panel background, not dividers.
-- Minimum window 1280×800; the mocks are drawn at 1600×1000. Side panels wrap below the main column on narrow windows (`flex-wrap`, `flex-basis` as in the mocks).
+- Minimum window 1280×800 (the work area when a screen is smaller, F-30.4); the mocks are drawn at 1600×1000. Side panels wrap below the main column on narrow windows (`flex-wrap`, `flex-basis` as in the mocks).
 
 ## Components
 

@@ -97,13 +97,15 @@ type ErrorCode =
   | 'NAV_UNAVAILABLE' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
 ```
 
+Window controls of the custom title bar (minimize, maximize/restore, close, start dragging, maximized state) are part of the same interface: `tauri.ts` uses the Tauri window API (capabilities `core:window:allow-minimize`, `-toggle-maximize`, `-close`, `-start-dragging`), the mock keeps the state in memory. Components never call Tauri directly.
+
 Long-running work streams through Tauri **channels** (`tauri::ipc::Channel<T>`) passed as a command argument: preparation progress, Claude task events (`queued`, `started`, `partial_text`, `done`, `failed`), job log lines, LSP indexing progress. Global app events (tray actions, deep links, poller results) use `app.emit` with typed payloads.
 
 Command groups (non-exhaustive; add commands only with a matching type and mock):
 
 | Group | Commands |
 | - | - |
-| app | `app_health`, `app_settings_get`, `app_settings_set`, `app_open_external` |
+| app | `app_health`, `app_settings_get`, `app_settings_set(patch)`, `app_start_route`, `app_open_external` |
 | source | `source_detect(input)` |
 | sessions | `sessions_list_unfinished`, `session_open_mr(iid, ch)`, `session_open_commit(range)`, `session_open_local(scope)`, `session_close` |
 | review | `review_plan(session, ch)`, `review_set_strategy`, `review_reorder_steps`, `review_step(session, step)`, `review_findings(session, step, ch)`, `review_decide(finding, decision)`, `review_mark_step`, `review_ask(session, step, question, selection?, ch)` |
@@ -192,7 +194,7 @@ Stored in `settings` as JSON values; read through one typed struct in the core w
 | `ui.startIn` | `focus` | F-19.1 |
 | `ui.focusLayout` | `A` | F-19.1, F-07.9 |
 | `ui.diffColors` | `blue-orange` | F-19.1 |
-| `ui.lastRoute` | S-01 | F-30.4 (window geometry itself is kept by the window-state plugin) |
+| `ui.lastRoute` | `{"screen":"S-01"}` | F-30.4: the last screen as a `Route` (`route.rs`): `{"screen":"S-03","sessionId":"…"}`, `{"screen":"S-07","section":"claude"}`, `{"screen":"S-10","iid":480}`. `app_start_route` restores it: session screens only while their session exists, S-08/S-10 → S-01 (live GitLab data), S-11 → S-06 (Claude prefill); the first screen carries `restored: true`. Window geometry itself is kept by the window-state plugin. |
 | `os.startWithWindows` | `false` | F-19.1 |
 | `os.closeToTray` | `true` | F-28.1 |
 | `claude.path` | auto (ADR-021) | F-18.6 |

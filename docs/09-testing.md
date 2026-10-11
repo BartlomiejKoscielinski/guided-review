@@ -56,6 +56,8 @@ A tiny test binary `fake-claude` (in `src-tauri/tests/bin/`) that records its ar
 
 ## Manual checklist (Windows integration, before each release)
 Items tagged `[field]` are checked on the company laptop during a field visit (on-prem GitLab, Claude Enterprise); the others can be checked on the development PC.
+- [ ] F-30.1 Title bar on the real exe: drag moves the window, double-click maximizes and restores, edges and corners resize, Win+arrows and dragging to the top edge snap; also on a second monitor with another scale.
+- [ ] F-30.4 Restarting keeps size, position and maximized state (no growth); a position saved on a disconnected monitor or with the title bar off-screen comes back onto the primary monitor; the last screen comes back.
 - [ ] F-24.1 Open in Rider opens the right file and line (worktree file for teammates' MRs). `[field]`
 - [ ] F-24.2 `guidedreview://mr/<iid>` from a browser opens the running app on the plan; a second link focuses the same window.
 - [ ] F-24.3 External Tools appear in Rider after restart and open the app on the current branch. `[field]`
