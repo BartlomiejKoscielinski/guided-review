@@ -1,0 +1,14 @@
+# Specification and design references are not formatted by Prettier.
+docs/
+*.md
+.claude/
+tools/mock-preview/
+# Generated
+src/ipc/types/
+src-tauri/target/
+src-tauri/gen/
+dist/
+package-lock.json
+playwright-report/
+test-results/
+.design-check/

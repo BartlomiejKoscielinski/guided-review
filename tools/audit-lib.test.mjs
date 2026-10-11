@@ -84,9 +84,7 @@ test('reads IDs from Vitest and Playwright test titles', () => {
     'F-06.1',
     'NFR-06',
   ]);
-  assert.deepEqual(extractTestRefs('tests/e2e/plan.spec.ts', "test('F-07.1 layouts')"), [
-    'F-07.1',
-  ]);
+  assert.deepEqual(extractTestRefs('tests/e2e/plan.spec.ts', "test('F-07.1 layouts')"), ['F-07.1']);
 });
 
 test('only test files count for TS/JS', () => {
@@ -99,7 +97,9 @@ test('only test files count for TS/JS', () => {
 });
 
 test('builds rows and fails on ticked items without evidence', () => {
-  const specIds = parseSpecIds('- **F-06.4** Strategy\n- **F-06.10** Coverage\n- **NFR-08** Privacy\n');
+  const specIds = parseSpecIds(
+    '- **F-06.4** Strategy\n- **F-06.10** Coverage\n- **NFR-08** Privacy\n',
+  );
   assert.deepEqual(specIds, ['F-06.4', 'F-06.10', 'NFR-08']);
   const progressItems = parseProgress(
     '## M3 · Plan\n- [x] F-06.4 Strategy (a1b2c3d)\n- [x] F-06.10 Coverage\n## M0 · X\n- [ ] NFR-08 Privacy\n',
@@ -116,5 +116,8 @@ test('builds rows and fails on ticked items without evidence', () => {
     ],
   );
   assert.equal(isFailing(rows), true);
-  assert.equal(isFailing(buildRows({ specIds, progressItems, refs, manual, onlyMilestone: 'M0' })), false);
+  assert.equal(
+    isFailing(buildRows({ specIds, progressItems, refs, manual, onlyMilestone: 'M0' })),
+    false,
+  );
 });

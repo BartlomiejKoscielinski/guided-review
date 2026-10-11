@@ -63,8 +63,10 @@ if (asJson) {
   const bad = rows.filter((r) => r.problems.length);
   for (const r of bad)
     console.log(`  ${r.id.padEnd(8)} ${String(r.milestone).padEnd(4)} ${r.problems.join('; ')}`);
-  if (orphanProgress.length) console.log('In PROGRESS but not in the spec: ' + orphanProgress.join(', '));
-  if (orphanTests.length) console.log('Referenced in tests but not in the spec: ' + orphanTests.join(', '));
+  if (orphanProgress.length)
+    console.log('In PROGRESS but not in the spec: ' + orphanProgress.join(', '));
+  if (orphanTests.length)
+    console.log('Referenced in tests but not in the spec: ' + orphanTests.join(', '));
   if (!bad.length && !orphanProgress.length && !orphanTests.length) console.log('No gaps.');
 }
 process.exit(isFailing(rows) ? 1 : 0);
