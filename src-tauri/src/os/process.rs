@@ -9,14 +9,14 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
 use tokio::process::{Child, ChildStdin, Command};
-use tokio::sync::watch;
 
 use crate::error::{AppError, ErrorCode};
+
+pub use super::cancel::Cancel;
 
 /// What to run. Built with the chainable methods; nothing goes through a shell.
 #[derive(Debug, Clone, Default)]
@@ -140,36 +140,6 @@ impl From<ProcessError> for AppError {
             ProcessError::Cancelled { .. } => AppError::new(ErrorCode::Cancelled, "Cancelled."),
             other => AppError::internal("A helper program failed.").with_detail(other.to_string()),
         }
-    }
-}
-
-/// Cancellation signal shared between the UI-facing task and the processes it runs.
-#[derive(Debug, Clone)]
-pub struct Cancel(Arc<watch::Sender<bool>>);
-
-impl Default for Cancel {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Cancel {
-    pub fn new() -> Self {
-        Self(Arc::new(watch::channel(false).0))
-    }
-
-    pub fn cancel(&self) {
-        self.0.send_replace(true);
-    }
-
-    pub fn is_cancelled(&self) -> bool {
-        *self.0.borrow()
-    }
-
-    /// Completes once [`Cancel::cancel`] was called (immediately if it already was).
-    pub async fn cancelled(&self) {
-        let mut receiver = self.0.subscribe();
-        let _ = receiver.wait_for(|cancelled| *cancelled).await;
     }
 }
 
