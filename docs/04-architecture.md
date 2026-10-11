@@ -233,7 +233,8 @@ Repositories and their worktree folders live in `repos`, not in `settings`.
 All child processes go through `os/process.rs`:
 
 - `CREATE_NO_WINDOW` creation flag, so no console windows flash.
-- Each process is assigned to a **Job Object** with kill-on-close, so cancelling or quitting kills the whole tree.
+- Each process is assigned to a **Job Object** with kill-on-close, so cancelling or quitting kills the whole tree. The child starts with `CREATE_SUSPENDED` and is resumed only after it is in its job, so nothing it starts can escape; when it exits, anything it left running is killed too. Timeouts kill the tree the same way. `os/job.rs` is the only module allowed to use `unsafe` (Win32 calls).
+- Programs the user keeps open (Rider, the browser) start with `spawn_detached`: no job of ours, no pipes, so they outlive the call and the app.
 - Prompts go to `claude` through **stdin**, never as a long argument (Windows command line limit ~32k chars).
 - git runs with `-c core.quotepath=off -c core.longpaths=true -c color.ui=false` (except where colors are parsed, see moved code) and `LC_ALL=C` for stable messages; output is UTF-8; `\r` at line ends is stripped for display but preserved for patches.
 - Executable discovery: `git` from PATH, overridable in Settings. `claude` per ADR-021: Settings value → `%USERPROFILE%\.local\bin\claude.exe` → `claude.exe` on PATH → npm install run as `node …\@anthropic-ai\claude-code\cli.js`. Never `claude.cmd` through `cmd.exe`.
