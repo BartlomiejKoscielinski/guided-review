@@ -37,10 +37,18 @@ fn show_main_window(window: &WebviewWindow) {
 }
 
 fn place_main_window(window: &WebviewWindow) -> tauri::Result<()> {
+    // tao sizes an undecorated window by its window-minus-client offset, which on the hidden,
+    // never-shown window still includes the 30px caption: every restore grew the window by
+    // that much. Toggling decorations makes Windows recompute the frame first (tao 0.37.1).
+    window.set_decorations(true)?;
+    window.set_decorations(false)?;
     window.restore_state(StateFlags::SIZE | StateFlags::POSITION)?;
-    let position = window.outer_position()?;
-    let size = window.outer_size()?;
-    let current = Rect::new(position.x, position.y, size.width, size.height);
+    // Place the client area: an undecorated window is all client area, while its outer rect
+    // also has invisible resize borders (8px on Windows 11) that may lie off the work area.
+    let outer = window.outer_position()?;
+    let inner = window.inner_position()?;
+    let size = window.inner_size()?;
+    let current = Rect::new(inner.x, inner.y, size.width, size.height);
     let monitors = window.available_monitors()?;
     let areas: Vec<MonitorArea> = monitors
         .iter()
@@ -74,7 +82,10 @@ fn place_main_window(window: &WebviewWindow) -> tauri::Result<()> {
         if placement.rect != current {
             let rect = placement.rect;
             window.set_size(PhysicalSize::new(rect.width, rect.height))?;
-            window.set_position(PhysicalPosition::new(rect.x, rect.y))?;
+            window.set_position(PhysicalPosition::new(
+                rect.x - (inner.x - outer.x),
+                rect.y - (inner.y - outer.y),
+            ))?;
         }
     }
     window.restore_state(StateFlags::MAXIMIZED)?;

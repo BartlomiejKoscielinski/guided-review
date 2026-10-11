@@ -97,7 +97,7 @@ fn clamp_i32(value: i64) -> i32 {
     i32::try_from(value).unwrap_or(if value < 0 { i32::MIN } else { i32::MAX })
 }
 
-/// Places the window (its current outer rect after the plugin's restore) on a monitor.
+/// Places the window (its client rect after the plugin's restore) on a monitor.
 /// Returns `None` when no monitor is known; the window is then left where it is.
 pub fn fit_window(window: Rect, monitors: &[MonitorArea], primary: usize) -> Option<Placement> {
     let primary_area = monitors.get(primary).or_else(|| monitors.first())?;
