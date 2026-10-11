@@ -11,4 +11,9 @@ export default defineConfig({
     watch: { ignored: ['**/src-tauri/**'] },
   },
   envPrefix: ['VITE_', 'TAURI_ENV_'],
+  build: {
+    // The production CSP allows fonts only from 'self' (no data: URIs), so small font subsets
+    // must stay files instead of being inlined. Other small assets use Vite's default.
+    assetsInlineLimit: (filePath) => (/\.(woff2?|ttf|otf)$/.test(filePath) ? false : undefined),
+  },
 });
