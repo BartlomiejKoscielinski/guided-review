@@ -255,3 +255,21 @@ fn nfr04_prompt_goes_through_stdin_and_node_runs_cli_js() {
     );
     assert_eq!(spec.stdin, None);
 }
+
+#[test]
+fn nfr04_restricted_fallback_only_swaps_the_isolation_flags() {
+    let fallback = strings(&restricted_fallback_args(&task()));
+    let mut expected = strings(&read_only_args(&task()));
+    let at = expected.iter().position(|a| a == "--restricted").unwrap();
+    expected.splice(
+        at..=at,
+        [
+            "--setting-sources".to_owned(),
+            String::new(),
+            "--settings".to_owned(),
+            r#"{"disableAllHooks":true}"#.to_owned(),
+        ],
+    );
+    assert_eq!(fallback, expected);
+    assert!(!fallback.iter().any(|a| a == "--restricted"));
+}

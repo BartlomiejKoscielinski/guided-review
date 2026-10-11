@@ -65,6 +65,28 @@ pub fn fix_args(task: &Task, file: &Path) -> Result<Vec<OsString>, RunnerError> 
     Ok(profile_args(task, FIX_TOOLS, Some(edit_rule(file)?)))
 }
 
+/// The ADR-022 fallback, used only by the field probe: if Claude Enterprise refuses
+/// `--restricted`, the read-only profile with `--setting-sources ""` and hooks disabled
+/// instead (S3: the same isolation except auto memory). The app adopts it only through a new
+/// ADR that supersedes ADR-022.
+pub fn restricted_fallback_args(task: &Task) -> Vec<OsString> {
+    read_only_args(task)
+        .into_iter()
+        .flat_map(|arg| {
+            if arg == "--restricted" {
+                vec![
+                    "--setting-sources".into(),
+                    "".into(),
+                    "--settings".into(),
+                    r#"{"disableAllHooks":true}"#.into(),
+                ]
+            } else {
+                vec![arg]
+            }
+        })
+        .collect()
+}
+
 fn profile_args(task: &Task, tools: &str, edit_rule: Option<String>) -> Vec<OsString> {
     let mut args: Vec<OsString> = vec!["-p".into(), "--output-format".into()];
     match task.output {

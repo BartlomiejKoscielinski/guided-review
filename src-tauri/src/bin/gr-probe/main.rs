@@ -6,8 +6,15 @@
 //! The GitLab token is typed hidden (`token set`) into Windows Credential Manager and read from
 //! there; it is never printed, logged or written to the report.
 
+mod claude_checks;
+mod claude_fixture;
+mod claude_s3_s4;
 mod env;
+mod gitlab_read;
+mod gitlab_write;
+mod gitlab_write_steps;
 mod report;
+mod sanitize;
 mod tls;
 mod token;
 
@@ -21,9 +28,14 @@ gr-probe (Guided Review field kit)
 
 Usage:
   gr-probe env                                   [--report <stem>]
+  gr-probe claude       [--model <id>]           [--report <stem>]
+            (about ten short Claude calls on synthetic fixtures; Haiku by default)
   gr-probe token set    --server <url>
   gr-probe token delete --server <url>
   gr-probe tls          --server <url>           [--report <stem>]
+  gr-probe gitlab read  --server <url> [--project <path>] [--report <stem>]
+  gr-probe gitlab write --server <url> --project <sandbox path> [--report <stem>]
+            (asks y/N before every call; only in a sandbox project)
 
 --report <stem>  where to write <stem>.json and <stem>.md (default field/reports/visit-1)
 ";
@@ -92,11 +104,20 @@ fn main() -> ExitCode {
     let words: Vec<&str> = args.words.iter().map(String::as_str).collect();
     let result = match words.as_slice() {
         ["env"] => Ok(("env", runtime.block_on(env::run()), Sanitizer::from_env())),
+        ["claude"] => runtime
+            .block_on(claude_checks::run(&args))
+            .map(|(checks, sanitizer)| ("claude", checks, sanitizer)),
         ["token", "set"] => return finish(token::set(&args)),
         ["token", "delete"] => return finish(token::delete(&args)),
         ["tls"] => runtime
             .block_on(tls::run(&args))
             .map(|(checks, sanitizer)| ("tls", checks, sanitizer)),
+        ["gitlab", "read"] => runtime
+            .block_on(gitlab_read::run(&args))
+            .map(|(checks, sanitizer)| ("gitlab_read", checks, sanitizer)),
+        ["gitlab", "write"] => runtime
+            .block_on(gitlab_write::run(&args))
+            .map(|(checks, sanitizer)| ("gitlab_write", checks, sanitizer)),
         _ => return usage_error("unknown command"),
     };
     match result {
