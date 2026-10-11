@@ -6,4 +6,5 @@ pub mod credentials;
 mod job;
 pub mod paths;
 pub mod process;
+pub mod rider;
 pub mod window;

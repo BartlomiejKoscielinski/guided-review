@@ -10,6 +10,7 @@ mod claude_checks;
 mod claude_fixture;
 mod claude_s3_s4;
 mod env;
+mod env_rider;
 mod gitlab_read;
 mod gitlab_write;
 mod gitlab_write_steps;

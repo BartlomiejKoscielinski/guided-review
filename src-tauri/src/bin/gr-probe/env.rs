@@ -1,5 +1,6 @@
 //! `env`: what the app will find on this machine: Windows build, git, Claude Code (path per
-//! ADR-021, version), WebView2, proxy settings. Rider paths are added with S9.
+//! ADR-021, version), WebView2, proxy settings, and every Rider install (S9: source, version,
+//! config folder, External Tools file, registry keys).
 
 use std::time::Duration;
 
@@ -46,6 +47,7 @@ pub async fn run() -> Vec<Check> {
         git.map(|text| text.trim().trim_start_matches("git version ").to_owned()),
     ));
     checks.extend(claude_checks().await);
+    checks.extend(crate::env_rider::rider_checks().await);
     checks.push(info_version(
         "webview2.version",
         reg_value(WEBVIEW2_KEY, "pv").await,
