@@ -43,6 +43,20 @@ regex = "1.13.1"
 # Async child processes and timeouts (os/process.rs); already in the tree through Tauri.
 tokio = { version = "1.53.2", features = ["process", "time", "io-util", "sync", "macros", "rt-multi-thread"] }
 
+# GitLab client (gitlab/); the default TLS is rustls with rustls-platform-verifier, i.e. the
+# Windows certificate store (S6). native-tls (SChannel) only for the field probe's comparison.
+reqwest = { version = "0.13.5", features = ["json", "query"] }
+# Classifies TLS errors from the platform verifier (same 0.23 line reqwest uses).
+rustls = { version = "0.23.45", default-features = false }
+# GitLab token in Windows Credential Manager (T4); v1-compatible API.
+keyring = "4.2.0"
+# Hidden token input for gr-probe `token set` (field kit).
+rpassword = { version = "7.5.4", optional = true }
+
+[features]
+# Builds gr-probe (field kit, ADR-019) with native-tls for the S6 comparison and hidden input.
+field-probe = ["dep:rpassword", "reqwest/native-tls"]
+
 # Job Object with kill-on-close and resume of a suspended child (os/job.rs); same version as Tauri's.
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62.2", features = [
@@ -55,6 +69,11 @@ windows = { version = "0.62.2", features = [
 
 [dev-dependencies]
 tempfile = "3.27.0"
+# GitLab client tests against a local mock server (09 › Layers).
+wiremock = "0.6.5"
+# Test CA and certificates, local HTTPS server for TLS tests and the S6 spike.
+rcgen = "0.14.10"
+tokio-rustls = "0.26.6"
 
 [lints.rust]
 # Only src/os/job.rs allows it (Win32 Job Object calls; docs/04 › Processes on Windows).

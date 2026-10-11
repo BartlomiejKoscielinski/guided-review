@@ -21,8 +21,8 @@
     "e2e": "playwright test",
     "gen:types": "cargo test --manifest-path src-tauri/Cargo.toml --lib export_bindings",
     "rust:fmt": "cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check",
-    "rust:clippy": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings",
-    "rust:test": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "rust:clippy": "cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings",
+    "rust:test": "cargo test --manifest-path src-tauri/Cargo.toml --all-features",
     "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run test:tools && npm run rust:fmt && npm run rust:clippy && npm run rust:test",
     "audit:ac": "node tools/audit.mjs"
   },
