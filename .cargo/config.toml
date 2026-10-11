@@ -1,0 +1,4 @@
+# ts-rs writes the TypeScript types of IPC structs here when `cargo test` runs (npm run gen:types).
+# Cargo finds this file from the working directory upwards, so it works from the repo root and src-tauri.
+[env]
+TS_RS_EXPORT_DIR = { value = "src/ipc/types", relative = true }
