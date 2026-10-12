@@ -118,12 +118,12 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | drafts | `drafts_list`, `drafts_create`, `drafts_update`, `drafts_delete`, `drafts_publish(ids, summary?)` |
 | gitlab | `gitlab_list_mrs(tab)`, `gitlab_mr(iid)`, `gitlab_discussions(iid)`, `gitlab_reply`, `gitlab_resolve(discussion, resolved)`, `gitlab_approval_state`, `gitlab_approve(sha)`, `gitlab_unapprove`, `gitlab_versions`, `gitlab_create_mr`, `gitlab_users_search` |
 | pipeline | `pipeline_list(iid)`, `pipeline_jobs(id)`, `pipeline_run_mr(iid)`, `pipeline_retry`, `pipeline_cancel`, `job_play(id, vars)`, `job_retry`, `job_cancel`, `job_trace(id, ch)`, `job_explain(id, ch)` |
-| git | `git_status`, `git_log(query)`, `git_commit_info(sha)`, `git_file_diff(source, path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
+| git | `git_status`, `git_log(query)`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
 | repos | `repo_active`, `repo_pick` (folder dialog in the core; in M1 it sets the default repository, F-19.6 adds the list in M2) |
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
 | fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |
-| claude | `claude_status`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
+| claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
 | rules | `rules_list`, `rules_suggestions`, `rules_propose_mr(id)`, `rules_dismiss(id, kind)` |
 | os | `rider_open(file, line)`, `rider_install_tools`, `tray_state`, `notifications_set_paused(until)` |
 
@@ -138,12 +138,14 @@ struct Session { id: Uuid, source: Source, repo_path: PathBuf, worktree: Option<
                  mode: Mode /*Focus|Detailed*/, layout: Layout /*A|B|C*/, strategy: Strategy,
                  created_at, updated_at, status: SessionStatus /*Preparing|Planning|Reviewing|Done|DraftsOnly*/ }
 
-struct FileDiff { old_path: Option<String>, new_path: Option<String>, status: FileStatus /*Added|Deleted|Renamed|Modified|Binary*/,
-                  additions: u32, deletions: u32, layer: Layer, hunks: Vec<Hunk> }
+struct FileDiff { old_path: Option<String>, new_path: Option<String>, status: FileStatus /*Added|Deleted|Renamed|Copied|Modified*/,
+                  binary: bool, mode_change: Option<String>, additions: u32, deletions: u32, layer: Layer /*M2*/,
+                  hunks: Vec<Hunk>, line_staging: bool /*false for binary or non-UTF-8 text*/ }
 struct Hunk { id: HunkId, file: String, old_start: u32, old_lines: u32, new_start: u32, new_lines: u32,
-              header: String, lines: Vec<Line>, mechanical: Option<MechanicalReason> }
+              header: String, lines: Vec<Line>, file_level: bool /*F-05.7*/, staged_differs: bool /*local*/,
+              mechanical: Option<MechanicalReason> /*M3*/ }
 struct Line { kind: LineKind /*Ctx|Add|Del*/, old_no: Option<u32>, new_no: Option<u32>, text: String,
-              emphasis: Vec<Range>, moved: Option<MovedRef> }
+              emphasis: Vec<Range> /*UTF-16 offsets*/, staged: Option<bool> /*local changes*/, moved: Option<MovedRef> /*M8*/ }
 
 struct Plan { intent: String, steps: Vec<Step>, orders: HashMap<Strategy, Vec<StepId>>, skim: Vec<SkimGroup>,
               risks: Vec<Risk>, description_check: Vec<Claim>, already_discussed: String, coverage: Coverage }

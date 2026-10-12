@@ -22,7 +22,7 @@ All calls go through `git/runner.rs` with `-c core.quotepath=off -c core.longpat
 | Stage selection | from the unstaged diff (I→W): build a patch with only the selected lines (unselected `-` lines become context, unselected `+` lines are dropped) → `git apply --cached --recount -`. Untracked files: whole file `git add -- <path>`, lines after `git add -N -- <path>` |
 | Unstage selection | from the staged diff (H→I), with the rules mirrored because the patch is applied in reverse (unselected `+` lines become context, unselected `-` lines are dropped) → `git apply --cached --reverse --recount -`. A whole new file: `git restore --staged -- <path>` (index only) |
 | Stage or unstage many files | `git add -A --pathspec-from-file=- --pathspec-file-nul` / `git restore --staged --pathspec-from-file=- --pathspec-file-nul` (paths on stdin; the command line stays under the 32k limit) |
-| Commit | `git commit -F <tmpfile> [--amend] [--fixup=<sha>]` (user's hooks run; show their output on failure) |
+| Commit | `git commit -F - [--amend] [--fixup=<sha>]` with the message on stdin (user's hooks run; show their output on failure) |
 | Push | `git push origin HEAD` (`-u origin <branch>` when no upstream). Never force-push. |
 | Commit details (S-06 commit mode) | `git show -s --format=%H%x1f%h%x1f%P%x1f%an%x1f%aI%x1f%s%x1f%b <sha>`; its files `git diff -M <first parent or empty tree> <sha>` |
 | Merge or rebase in progress | `.git/MERGE_HEAD`, `rebase-merge/`, `rebase-apply/`, `CHERRY_PICK_HEAD`, `REVERT_HEAD` in `git rev-parse --git-dir` |
