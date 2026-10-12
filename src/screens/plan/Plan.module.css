@@ -2,6 +2,7 @@
 .screen {
   height: 100%;
   overflow: auto;
+  line-height: 1.5; /* Overview.dc.html sets 1.5 on the page, not the global 1.45 */
 }
 
 .page {

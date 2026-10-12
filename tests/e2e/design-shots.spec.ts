@@ -49,8 +49,36 @@ async function startMock(page: Page) {
   await page.getByLabel(/Paste a merge request link/).blur();
 }
 
+/** Opens !482 from S-01 (the mock keeps MR sessions in memory, so S-02 can't be restored). */
+async function openMr482(page: Page) {
+  const input = page.getByLabel(/Paste a merge request link/);
+  await input.fill('https://gitlab.local/mobile/mobile-app/-/merge_requests/482');
+  await page.getByText('Merge request !482').waitFor();
+  await input.press('Enter');
+}
+
 const SHOTS: Shot[] = [
   { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' }, prepare: startMock },
+  {
+    screen: 'S02',
+    state: 'preparing',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      // 02 › S-02 Preparing: two stages done (green), the diff stage current (yellow).
+      await page.getByText('Computing diff · 16 files').waitFor();
+    },
+  },
+  {
+    screen: 'S02',
+    state: 'plan',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('button', { name: /Start step 1/ }).waitFor();
+      await page.getByText('pipeline passed').waitFor();
+    },
+  },
   {
     screen: 'S01',
     state: 'start-mine-tab',
