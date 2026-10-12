@@ -4,4 +4,4 @@ import type { SettingsSection } from "./SettingsSection";
 /**
  * A screen and its parameters, serialized as `{ "screen": "S-03", "sessionId": "…" }`.
  */
-export type Route = { "screen": "S-01" } | { "screen": "S-02", sessionId: string, } | { "screen": "S-03", sessionId: string, } | { "screen": "S-04", sessionId: string, } | { "screen": "S-05", sessionId: string, } | { "screen": "S-06" } | { "screen": "S-07", section: SettingsSection, } | { "screen": "S-08", iid: number, } | { "screen": "S-09", sessionId: string, } | { "screen": "S-10", iid: number, } | { "screen": "S-11" };
+export type Route = { "screen": "S-01" } | { "screen": "S-02", sessionId: string, } | { "screen": "S-03", sessionId: string, } | { "screen": "S-04", sessionId: string, } | { "screen": "S-05", sessionId: string, } | { "screen": "S-06", commit?: string, } | { "screen": "S-07", section: SettingsSection, } | { "screen": "S-08", iid: number, } | { "screen": "S-09", sessionId: string, } | { "screen": "S-10", iid: number, } | { "screen": "S-11" };

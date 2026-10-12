@@ -72,7 +72,7 @@ mod tests {
                 "s1",
                 SessionStatus::Reviewing,
                 Mode::Detailed,
-                &Route::Changes
+                &Route::Changes { commit: None }
             ),
             Route::Detailed { session_id: id() }
         );
