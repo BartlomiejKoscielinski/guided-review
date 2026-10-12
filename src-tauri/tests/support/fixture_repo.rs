@@ -156,6 +156,54 @@ impl FixtureRepo {
         self.git(&["remote", "add", "origin", bare.to_str().unwrap()]);
         bare
     }
+
+    /// A teammate's MR on `origin` (F-05.1): pushes `main`, then commits `files` in a second
+    /// clone and pushes them only as `refs/merge-requests/<iid>/head`, the way GitLab keeps
+    /// MR heads. This checkout never sees the commits until the app fetches them. Returns
+    /// the MR head SHA.
+    pub fn add_mr_on_origin(&self, iid: u64, files: &[(&str, &str)]) -> String {
+        let bare = self.root.join("origin ćma.git");
+        if !bare.exists() {
+            self.add_bare_origin();
+        }
+        self.git(&["push", "-q", "origin", "main"]);
+        let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let teammate = self.root.join(format!("teammate {iid} {n}"));
+        let status = Command::new("git")
+            .args(["clone", "-q", "-c", "core.autocrlf=false"])
+            .arg(&bare)
+            .arg(&teammate)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .unwrap();
+        assert!(status.success());
+        let clone = Self {
+            root: self.root.clone(),
+            path: teammate,
+            keep: true,
+        };
+        for (key, value) in [
+            ("user.name", "Teammate Żaneta"),
+            ("user.email", "teammate@example.invalid"),
+            ("core.autocrlf", "false"),
+            ("commit.gpgsign", "false"),
+            ("core.hooksPath", ".no-hooks"),
+        ] {
+            clone.git(&["config", key, value]);
+        }
+        for (rel, content) in files {
+            clone.write(rel, content);
+        }
+        let head = clone.commit_all(&format!("MR {iid}"));
+        clone.git(&[
+            "push",
+            "-q",
+            "origin",
+            &format!("+HEAD:refs/merge-requests/{iid}/head"),
+        ]);
+        head
+    }
 }
 
 impl Drop for FixtureRepo {

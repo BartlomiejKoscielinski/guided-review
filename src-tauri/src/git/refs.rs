@@ -33,7 +33,11 @@ pub fn is_branch_name(name: &str) -> bool {
 
 /// The full SHA of `<rev>^{commit}`, or `None` when it doesn't name a commit. `rev` must already
 /// be safe (a hex SHA or a full `refs/…` name).
-async fn verify_commit(git: &Git, rev: &str, cancel: &Cancel) -> Result<Option<String>, GitError> {
+pub async fn verify_commit(
+    git: &Git,
+    rev: &str,
+    cancel: &Cancel,
+) -> Result<Option<String>, GitError> {
     let spec = git.spec([
         "rev-parse",
         "--verify",

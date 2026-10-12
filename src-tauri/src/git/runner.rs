@@ -48,6 +48,14 @@ impl Git {
         &self.repo
     }
 
+    /// The same git program bound to another working tree (a review worktree).
+    pub fn at(&self, dir: impl Into<PathBuf>) -> Self {
+        Self {
+            program: self.program.clone(),
+            repo: dir.into(),
+        }
+    }
+
     /// The process for `git <standard options> <args>` in the repository.
     pub fn spec<I, S>(&self, args: I) -> ProcessSpec
     where

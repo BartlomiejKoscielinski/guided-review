@@ -8,6 +8,7 @@ pub mod migrations;
 pub mod repos;
 pub mod sessions;
 pub mod settings;
+pub mod worktrees;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};

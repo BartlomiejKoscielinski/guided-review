@@ -1,7 +1,7 @@
 //! git CLI wrapper (`runner.rs`), diff parsing (`patch.rs`, `diff.rs`), hunk IDs, intraline
 //! emphasis, local changes with their index state, staging, commit and push, the S-06 tree
-//! and the working-tree watcher. Range-diff, moved code and worktrees follow in later
-//! milestones.
+//! the working-tree watcher and review worktrees (`worktree.rs`). Range-diff and moved code
+//! follow in later milestones.
 
 pub mod commit;
 pub mod diff;
@@ -21,6 +21,7 @@ pub mod status;
 pub mod summary;
 pub mod tree;
 pub mod watch;
+pub mod worktree;
 
 pub use error::GitError;
 pub use runner::Git;
