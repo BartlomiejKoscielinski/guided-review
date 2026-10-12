@@ -5,12 +5,13 @@ import { Segmented } from '../../components/Segmented';
 import { StatusChip } from '../../components/StatusChip';
 import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
+import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
 import { BranchBlock } from './BranchBlock';
 import { ClaudeStatusChip } from './ClaudeStatusChip';
 import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
+import { GitlabStatusControl } from './GitlabStatusControl';
 import { PLACEHOLDER } from './placeholders';
-import { RepoSwitcher } from './RepoSwitcher';
 import { StatusText } from './StatusText';
 import { TaskModelChip } from './TaskModelChip';
 import { TitleBar } from './TitleBar';
@@ -80,11 +81,11 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-01':
       return (
         <TitleBar
-          context={<RepoSwitcher name={P.repo.name} path={P.repo.path} />}
+          context={<ActiveRepoSwitcher />}
           wideControls
           controls={
             <>
-              <StatusText color="green">{P.gitlabStatus}</StatusText>
+              <GitlabStatusControl />
               {<ClaudeStatusChip />}
             </>
           }

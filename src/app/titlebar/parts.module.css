@@ -14,6 +14,54 @@
   cursor: pointer;
 }
 
+/* F-30.7 menu: no mock; a popover body (--card, --shadow-pop) under the title bar. */
+.repoSwitcherRoot {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.repoMenu {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 100%;
+  padding: 4px;
+  background: var(--card);
+  box-shadow: var(--shadow-pop);
+}
+
+.repoItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13.5px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.repoItem:hover {
+  background: var(--raised);
+}
+
+.repoItemActive {
+  background: var(--raised-2);
+}
+
+.repoAdd {
+  color: var(--text-secondary);
+}
+
 .repoName {
   font-weight: 600;
 }

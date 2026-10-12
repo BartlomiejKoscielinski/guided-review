@@ -122,3 +122,5 @@ export function routeFor(screen: ScreenId, params: Params): Route | null {
 export const SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'general' };
 /** Settings › Claude: where the model chip goes (F-18.5). */
 export const CLAUDE_SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'claude' };
+/** Settings › GitLab: where "Add token" goes (F-01.6, F-02). */
+export const GITLAB_SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'gitlab' };

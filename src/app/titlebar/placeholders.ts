@@ -3,10 +3,8 @@
  * milestone (docs/07 › Criteria that point at later milestones). Each line names who replaces it.
  */
 export const PLACEHOLDER = {
-  /** Repository switcher (F-30.7, M2). */
+  /** Repository of review screens (the session's, M3). */
   repo: { name: 'mobile-app', path: 'C:\\src\\mobile-app' },
-  /** GitLab status on S-01 (F-01.6, M2). */
-  gitlabStatus: 'GitLab connected',
   /** Session context of review screens (M3). */
   mr: { iid: '!482', title: 'Offline queue for delivery photos' },
   /** S-09 context (M8). */

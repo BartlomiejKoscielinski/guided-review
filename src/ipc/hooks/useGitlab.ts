@@ -2,9 +2,13 @@ import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tan
 import { useIpc } from '../IpcContext';
 import type { IpcError } from '../errors';
 import type { GitlabStatus } from '../types/GitlabStatus';
+import type { MrList } from '../types/MrList';
+import type { MrTab } from '../types/MrTab';
 import { SETTINGS_KEY } from './useSettings';
 
 export const GITLAB_STATUS_KEY = ['gitlab', 'status'] as const;
+/** Every S-01 MR tab; refreshed when the active repository or the token changes. */
+export const GITLAB_MRS_ROOT = ['gitlab', 'mrs'] as const;
 
 /** Connected / no token / failing, with the masked token (F-19.2). */
 export function useGitlabStatus(): UseQueryResult<GitlabStatus, IpcError> {
@@ -12,6 +16,16 @@ export function useGitlabStatus(): UseQueryResult<GitlabStatus, IpcError> {
   return useQuery<GitlabStatus, IpcError>({
     queryKey: GITLAB_STATUS_KEY,
     queryFn: () => ipc.gitlabStatus(false),
+  });
+}
+
+/** One S-01 tab of the active repository's project, with the counts of all three (F-02.1). */
+export function useMrList(tab: MrTab, enabled: boolean): UseQueryResult<MrList, IpcError> {
+  const ipc = useIpc();
+  return useQuery<MrList, IpcError>({
+    queryKey: [...GITLAB_MRS_ROOT, tab],
+    queryFn: () => ipc.gitlabListMrs(tab),
+    enabled,
   });
 }
 
@@ -32,6 +46,7 @@ export function useSaveGitlabAccount() {
     gcTime: 0,
     onSuccess: (status) => {
       queryClient.setQueryData(GITLAB_STATUS_KEY, status);
+      void queryClient.invalidateQueries({ queryKey: GITLAB_MRS_ROOT });
       void queryClient.invalidateQueries({ queryKey: SETTINGS_KEY });
     },
   });
@@ -45,6 +60,7 @@ export function useRemoveGitlabAccount() {
     mutationFn: () => ipc.gitlabAccountRemove(),
     onSuccess: (status) => {
       queryClient.setQueryData(GITLAB_STATUS_KEY, status);
+      void queryClient.invalidateQueries({ queryKey: GITLAB_MRS_ROOT });
     },
   });
 }
