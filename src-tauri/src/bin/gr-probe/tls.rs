@@ -54,7 +54,9 @@ async fn version_check(server: &str, token: &Token, name: &str, backend: TlsBack
     let (handshake, detail) = match &result {
         Ok(response) => (Outcome::Pass, Detail::Status(response.status)),
         // Any HTTP answer means the TLS handshake succeeded.
-        Err(GitlabError::Unauthorized) => (Outcome::Pass, Detail::Status(401)),
+        Err(GitlabError::Unauthorized | GitlabError::TokenExpired | GitlabError::TokenRevoked) => {
+            (Outcome::Pass, Detail::Status(401))
+        }
         Err(GitlabError::Forbidden { .. }) => (Outcome::Pass, Detail::Status(403)),
         Err(GitlabError::NotFound) => (Outcome::Pass, Detail::Status(404)),
         Err(GitlabError::Status { status, .. }) => (Outcome::Pass, Detail::Status(*status)),
@@ -95,6 +97,8 @@ pub fn error_code(error: &GitlabError) -> String {
             .and_then(|v| v.get("kind").and_then(|k| k.as_str()).map(str::to_owned))
             .unwrap_or_else(|| "unreachable".into()),
         GitlabError::Unauthorized => "unauthorized".into(),
+        GitlabError::TokenExpired => "token_expired".into(),
+        GitlabError::TokenRevoked => "token_revoked".into(),
         GitlabError::Forbidden { .. } => "forbidden".into(),
         GitlabError::NotFound => "not_found".into(),
         GitlabError::RateLimited { .. } => "rate_limited".into(),
@@ -103,6 +107,7 @@ pub fn error_code(error: &GitlabError) -> String {
         GitlabError::InvalidToken => "invalid_token".into(),
         GitlabError::Setup(_) => "client_setup".into(),
         GitlabError::Decode(_) => "decode".into(),
+        GitlabError::Graphql(_) => "graphql".into(),
     }
 }
 

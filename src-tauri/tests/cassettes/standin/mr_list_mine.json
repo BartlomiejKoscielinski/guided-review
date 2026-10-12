@@ -1,0 +1,58 @@
+{
+  "data": {
+    "project": {
+      "all": {
+        "count": 6
+      },
+      "list": {
+        "nodes": [
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Dev Stand-in",
+              "username": "dev"
+            },
+            "createdAt": "2026-10-12T13:58:05Z",
+            "diffStatsSummary": {
+              "additions": 35,
+              "deletions": 0,
+              "fileCount": 2
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "SUCCESS"
+            },
+            "iid": "6",
+            "resolvableDiscussionsCount": 3,
+            "resolvedDiscussionsCount": 1,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": false
+                  },
+                  "username": "alice"
+                }
+              ]
+            },
+            "title": "Retry in UploadWorker after network loss",
+            "updatedAt": "2026-10-12T13:58:08Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/6"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": "eyJ1cGRhdGVkX2F0IjoiMjAyNi0xMC0xMiAxMzo1ODowOC44NTcxMDEwMDAgKzAwMDAiLCJpZCI6IjYifQ",
+          "hasNextPage": false
+        }
+      },
+      "mine": {
+        "count": 1
+      },
+      "waiting": {
+        "count": 3
+      }
+    }
+  }
+}

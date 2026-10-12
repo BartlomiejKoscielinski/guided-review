@@ -1,0 +1,128 @@
+{
+  "data": {
+    "project": {
+      "all": {
+        "count": 6
+      },
+      "list": {
+        "nodes": [
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Alice Stand-in",
+              "username": "alice"
+            },
+            "createdAt": "2026-10-12T13:57:17Z",
+            "diffStatsSummary": {
+              "additions": 749,
+              "deletions": 2,
+              "fileCount": 45
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "FAILED"
+            },
+            "iid": "4",
+            "resolvableDiscussionsCount": 0,
+            "resolvedDiscussionsCount": 0,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": false
+                  },
+                  "username": "dev"
+                }
+              ]
+            },
+            "title": "Migrate to .NET 10",
+            "updatedAt": "2026-10-12T13:57:20Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/4"
+          },
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Bob Stand-in",
+              "username": "bob"
+            },
+            "createdAt": "2026-10-12T13:57:16Z",
+            "diffStatsSummary": {
+              "additions": 1,
+              "deletions": 2,
+              "fileCount": 1
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "SUCCESS"
+            },
+            "iid": "3",
+            "resolvableDiscussionsCount": 0,
+            "resolvedDiscussionsCount": 0,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": false
+                  },
+                  "username": "dev"
+                }
+              ]
+            },
+            "title": "Crash when rotating the signature screen",
+            "updatedAt": "2026-10-12T13:57:18Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/3"
+          },
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Alice Stand-in",
+              "username": "alice"
+            },
+            "createdAt": "2026-10-12T13:57:15Z",
+            "diffStatsSummary": {
+              "additions": 116,
+              "deletions": 4,
+              "fileCount": 3
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "SUCCESS"
+            },
+            "iid": "2",
+            "resolvableDiscussionsCount": 0,
+            "resolvedDiscussionsCount": 0,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": false
+                  },
+                  "username": "dev"
+                }
+              ]
+            },
+            "title": "Offline queue for delivery photos",
+            "updatedAt": "2026-10-12T13:57:17Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/2"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": "eyJ1cGRhdGVkX2F0IjoiMjAyNi0xMC0xMiAxMzo1NzoxNy4wMDU5MTIwMDAgKzAwMDAiLCJpZCI6IjIifQ",
+          "hasNextPage": false
+        }
+      },
+      "mine": {
+        "count": 1
+      },
+      "waiting": {
+        "count": 3
+      }
+    }
+  }
+}
