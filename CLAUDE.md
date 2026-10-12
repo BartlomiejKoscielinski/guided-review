@@ -6,7 +6,7 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 
 | When | Read |
 | - | - |
-| Always, at the start of a session | `docs/README.md`, `docs/PROGRESS.md` (what is done, session log), the milestone in `docs/07-roadmap.md` |
+| Always, at the start of a session | `docs/README.md`; from `docs/PROGRESS.md` only the current milestone's checklist and the last two session-log rows (`grep -n '^## ' docs/PROGRESS.md`, then Read with offset/limit; never the whole file); the milestone in `docs/07-roadmap.md` |
 | Building a feature | its `F-xx` section in `docs/01-product.md` (acceptance criteria are the contract) |
 | Building or changing a screen | its `S-xx` section in `docs/02-screens.md`, the PNGs in `docs/design/screens/`, the mock in `docs/design/mocks/` (exact styles), `docs/03-design-system.md` |
 | Rust core, IPC, data, processes | `docs/04-architecture.md` |
@@ -30,10 +30,11 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 3. Tests carry the AC ID in their name (`f06_10_…` in Rust, `'F-06.10 …'` in TS).
 4. A screen is built against the **mock backend first**, compared with its PNG (`/design-check S-xx`), then wired to the real backend.
 5. Before saying a task is done: `/verify`; for UI changes also `/design-check`; at the end of a milestone `/audit`.
-6. End every session by updating `docs/PROGRESS.md` (tick with commit SHA, add a session-log line).
+6. End every session with `/handoff`: it updates `docs/PROGRESS.md` (ticks with commit SHA, a session-log line) and writes the prompt for the next session.
 7. If the spec is unclear, contradictory or seems wrong: stop and ask. Propose the doc change; never silently pick an interpretation. If a decision in `08-decisions.md` looks wrong, explain why and wait.
 8. If you are not sure about a library or CLI API (Tauri plugins, csharp-ls, GitLab endpoint, Claude Code flag): read its current docs before writing code and note the version in the commit message or spike notes.
 9. Don't add dependencies without saying why in the plan.
+10. Keep sessions short: one phase per session (plan · core · one screen with its design-check · wrap-up). When a phase ends with a commit, run `/handoff` and suggest a new session instead of continuing. Read docs by section (grep headings, Read with offset/limit); filter command output (`tools/verify.mjs`, `grep`, `tail`); open images only as crops.
 
 ## Non-negotiables
 

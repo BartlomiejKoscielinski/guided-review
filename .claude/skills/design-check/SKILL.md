@@ -2,6 +2,10 @@
 name: design-check
 description: Compare an implemented screen of Guided Review with its design mock and screenshots, list every difference and fix or justify it. Use after building or changing UI, or when the user says /design-check S-xx.
 argument-hint: [screen id, e.g. S-05]
+# Runs in its own subagent so screenshots, crops and mock text never enter the main session.
+# Not in the background: it edits files, and the caller needs the result before committing.
+context: fork
+background: false
 ---
 
 Screen: $ARGUMENTS
@@ -23,3 +27,8 @@ Token budget: images and the mocks (40–50 KB each) are the expensive part. Nev
    For exact values (font size, color, gap), read computed styles in the dev-mock page with a short script rather than estimating from pixels.
 7. Output a table: region · difference · severity (must fix / should fix / acceptable because …). Real data differences (names, numbers) are not issues.
 8. Fix all "must fix" and "should fix" items, re-capture only the affected states, re-run the diff and open only crops whose score did not drop. Repeat until only justified differences remain. Keep `.design-check/` out of git.
+9. Do not commit; the main session does. Return only this, in English, no images:
+   - the table from step 7 (final state, every remaining difference with its justification);
+   - what you fixed, as `file — change` lines;
+   - checks you ran after the fixes (`node tools/verify.mjs --only typecheck,lint,test` at least) and their result;
+   - anything that needs the user (spec unclear, a difference you could not fix).
