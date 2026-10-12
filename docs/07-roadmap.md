@@ -28,6 +28,7 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 - git runner, status/diff/log parsing, hunk IDs, intraline emphasis; virtualized file tree; DiffView (unified + split, Shiki worker, line numbers, hunk headers); staging patch builder; commit/amend/push.
 - Claude runner (read-only profile), queue, commit-message task, Settings › Claude (needed for model/effort).
 - Features: F-15 (all), F-16 (all), F-05.2, F-05.3, F-05.7, F-18 (all), F-30.5. Diff colors stay on the default blue · orange until M4 (F-19.1).
+- Without F-19.6 (M2) the repository is picked in S-06 ("Pick a repository", folder dialog) and stored as the default repository. The S-01 Claude chip shows the real F-18.1 status; the rest of F-01.6 stays a placeholder until M2.
 - Screens: S-06, S-07 (Claude).
 - Demo: 100-file local change, stage half of one file by lines, Suggest, Commit, Push.
 

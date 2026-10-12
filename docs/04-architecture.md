@@ -105,7 +105,7 @@ type ErrorCode =
 
 Window controls of the custom title bar (minimize, maximize/restore, close, start dragging, maximized state) are part of the same interface: `tauri.ts` uses the Tauri window API (capabilities `core:window:allow-minimize`, `-toggle-maximize`, `-close`, `-start-dragging`), the mock keeps the state in memory. Components never call Tauri directly.
 
-Long-running work streams through Tauri **channels** (`tauri::ipc::Channel<T>`) passed as a command argument: preparation progress, Claude task events (`queued`, `started`, `partial_text`, `done`, `failed`), job log lines, LSP indexing progress. Global app events (tray actions, deep links, poller results) use `app.emit` with typed payloads.
+Long-running work streams through Tauri **channels** (`tauri::ipc::Channel<T>`) passed as a command argument: preparation progress, Claude task events (`queued`, `started`, `partial_text`, `done`, `failed`), job log lines, LSP indexing progress. Global app events (tray actions, deep links, poller results, `repo_changed` from the working-tree watcher) use `app.emit` with typed payloads.
 
 Command groups (non-exhaustive; add commands only with a matching type and mock):
 
@@ -118,11 +118,12 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | drafts | `drafts_list`, `drafts_create`, `drafts_update`, `drafts_delete`, `drafts_publish(ids, summary?)` |
 | gitlab | `gitlab_list_mrs(tab)`, `gitlab_mr(iid)`, `gitlab_discussions(iid)`, `gitlab_reply`, `gitlab_resolve(discussion, resolved)`, `gitlab_approval_state`, `gitlab_approve(sha)`, `gitlab_unapprove`, `gitlab_versions`, `gitlab_create_mr`, `gitlab_users_search` |
 | pipeline | `pipeline_list(iid)`, `pipeline_jobs(id)`, `pipeline_run_mr(iid)`, `pipeline_retry`, `pipeline_cancel`, `job_play(id, vars)`, `job_retry`, `job_cancel`, `job_trace(id, ch)`, `job_explain(id, ch)` |
-| git | `git_status`, `git_log(query)`, `git_file_diff(path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
+| git | `git_status`, `git_log(query)`, `git_commit_info(sha)`, `git_file_diff(source, path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
+| repos | `repo_active`, `repo_pick` (folder dialog in the core; in M1 it sets the default repository, F-19.6 adds the list in M2) |
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
 | fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |
-| claude | `claude_commit_message`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
+| claude | `claude_status`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
 | rules | `rules_list`, `rules_suggestions`, `rules_propose_mr(id)`, `rules_dismiss(id, kind)` |
 | os | `rider_open(file, line)`, `rider_install_tools`, `tray_state`, `notifications_set_paused(until)` |
 
@@ -189,6 +190,8 @@ CREATE TABLE queued_replies(id TEXT PRIMARY KEY, project TEXT, iid INTEGER, disc
 CREATE TABLE job_variables (project TEXT, job_name TEXT, vars_json TEXT, updated_at TEXT, PRIMARY KEY (project, job_name));
 ```
 
+Migration 002 (M1): `CREATE TABLE app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT);` for state the app keeps for itself, not user settings (e.g. `claude.probedVersion`, `05` › Startup checks).
+
 Drafts belong to the MR (F-12.7): `drafts.session_id` points at the user's latest session for that MR, or at a session with status `DraftsOnly`.
 
 ## Settings (keys and defaults)
@@ -200,7 +203,7 @@ Stored in `settings` as JSON values; read through one typed struct in the core w
 | `ui.startIn` | `focus` | F-19.1 |
 | `ui.focusLayout` | `A` | F-19.1, F-07.9 |
 | `ui.diffColors` | `blue-orange` | F-19.1 |
-| `ui.lastRoute` | `{"screen":"S-01"}` | F-30.4: the last screen as a `Route` (`route.rs`): `{"screen":"S-03","sessionId":"…"}`, `{"screen":"S-07","section":"claude"}`, `{"screen":"S-10","iid":480}`. `app_start_route` restores it: session screens only while their session exists, S-08/S-10 → S-01 (live GitLab data), S-11 → S-06 (Claude prefill); the first screen carries `restored: true`. Window geometry itself is kept by the window-state plugin. |
+| `ui.lastRoute` | `{"screen":"S-01"}` | F-30.4: the last screen as a `Route` (`route.rs`): `{"screen":"S-03","sessionId":"…"}`, `{"screen":"S-07","section":"claude"}`, `{"screen":"S-10","iid":480}`, `{"screen":"S-06","commit":"<40-hex sha>"}` (commit mode; without `commit` local changes). `app_start_route` restores it: session screens only while their session exists, S-08/S-10 → S-01 (live GitLab data), S-11 → S-06 (Claude prefill), S-06 in commit mode as is (S-06 shows local changes if the commit no longer exists); the first screen carries `restored: true`. Window geometry itself is kept by the window-state plugin. |
 | `os.startWithWindows` | `false` | F-19.1 |
 | `os.closeToTray` | `true` | F-28.1 |
 | `claude.path` | auto (ADR-021) | F-18.6 |
