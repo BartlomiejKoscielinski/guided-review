@@ -1,0 +1,1018 @@
+{
+  "probe": "0.1.0",
+  "sections": {
+    "gitlab_read": {
+      "ran_at": "2026-10-12T06:26:42Z",
+      "checks": [
+        {
+          "id": "user.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "avatar_url": "string",
+              "bio": "string",
+              "bot": "bool",
+              "can_create_group": "bool",
+              "can_create_project": "bool",
+              "color_scheme_id": "number",
+              "commit_email": "string",
+              "confirmed_at": "string",
+              "created_at": "string",
+              "current_sign_in_at": "string",
+              "discord": "string",
+              "email": "string",
+              "external": "bool",
+              "extra_shared_runners_minutes_limit": "null",
+              "id": "number",
+              "identities": "array",
+              "job_title": "string",
+              "last_activity_on": "string",
+              "last_sign_in_at": "string",
+              "linkedin": "string",
+              "local_time": "null",
+              "location": "string",
+              "locked": "bool",
+              "name": "string",
+              "organization": "string",
+              "private_profile": "bool",
+              "projects_limit": "number",
+              "pronouns": "null",
+              "public_email": "null",
+              "scim_identities": "array",
+              "shared_runners_minutes_limit": "null",
+              "skype": "string",
+              "state": "string",
+              "theme_id": "number",
+              "twitter": "string",
+              "two_factor_enabled": "bool",
+              "username": "string",
+              "web_url": "string",
+              "website_url": "string",
+              "work_information": "null"
+            }
+          }
+        },
+        {
+          "id": "version",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "version.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "enterprise": "bool",
+              "kas": "object",
+              "revision": "string",
+              "version": "string"
+            }
+          }
+        },
+        {
+          "id": "version.gitlab",
+          "outcome": "info",
+          "detail": {
+            "type": "version",
+            "value": "17.11.7-ee"
+          }
+        },
+        {
+          "id": "version.enterprise_edition",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "token_self",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "token_self.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "active": "bool",
+              "created_at": "string",
+              "description": "string",
+              "expires_at": "string",
+              "id": "number",
+              "last_used_at": "string",
+              "name": "string",
+              "revoked": "bool",
+              "scopes": "array",
+              "user_id": "number"
+            }
+          }
+        },
+        {
+          "id": "token_self.scopes",
+          "outcome": "info",
+          "detail": {
+            "type": "names",
+            "value": [
+              "api"
+            ]
+          }
+        },
+        {
+          "id": "token_self.has_expiry",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "project",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.reviewer_username",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.reviewer_username.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "mr_filter.author_username",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.author_username.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "mr_filter.scope_reviews_for_me",
+          "outcome": "fail",
+          "detail": {
+            "type": "code",
+            "value": "status:400"
+          }
+        },
+        {
+          "id": "mr_filter.approved_by_usernames_me",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.approved_by_usernames_me.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "mr_filter.approved_by_usernames_none",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.approved_by_usernames_none.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "mr_filter.not_approved_by_usernames_me",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.not_approved_by_usernames_me.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "mr_filter.approver_ids_me",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.approver_ids_me.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "mr_filter.draft_no",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "mr_filter.draft_no.narrows_list",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "pagination.headers",
+          "outcome": "info",
+          "detail": {
+            "type": "names",
+            "value": [
+              "link",
+              "x-content-type-options",
+              "x-frame-options",
+              "x-gitlab-meta",
+              "x-next-page",
+              "x-page",
+              "x-per-page",
+              "x-prev-page",
+              "x-request-id",
+              "x-runtime",
+              "x-total",
+              "x-total-pages"
+            ]
+          }
+        },
+        {
+          "id": "pagination.next_page_parsed",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "latest_mr",
+          "outcome": "skip",
+          "detail": {
+            "type": "code",
+            "value": "no_open_mr"
+          }
+        }
+      ]
+    },
+    "gitlab_write": {
+      "ran_at": "2026-10-12T06:30:12Z",
+      "checks": [
+        {
+          "id": "user.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "avatar_url": "string",
+              "bio": "string",
+              "bot": "bool",
+              "can_create_group": "bool",
+              "can_create_project": "bool",
+              "color_scheme_id": "number",
+              "commit_email": "string",
+              "confirmed_at": "string",
+              "created_at": "string",
+              "current_sign_in_at": "string",
+              "discord": "string",
+              "email": "string",
+              "external": "bool",
+              "extra_shared_runners_minutes_limit": "null",
+              "id": "number",
+              "identities": "array",
+              "job_title": "string",
+              "last_activity_on": "string",
+              "last_sign_in_at": "string",
+              "linkedin": "string",
+              "local_time": "null",
+              "location": "string",
+              "locked": "bool",
+              "name": "string",
+              "organization": "string",
+              "private_profile": "bool",
+              "projects_limit": "number",
+              "pronouns": "null",
+              "public_email": "null",
+              "scim_identities": "array",
+              "shared_runners_minutes_limit": "null",
+              "skype": "string",
+              "state": "string",
+              "theme_id": "number",
+              "twitter": "string",
+              "two_factor_enabled": "bool",
+              "username": "string",
+              "web_url": "string",
+              "website_url": "string",
+              "work_information": "null"
+            }
+          }
+        },
+        {
+          "id": "w01_branch_base",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w02_commit_base",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w03_branch_head",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w04_commit_head",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w05_create_mr_draft_param",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w05.draft_param_honoured",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "w05b_draft_prefix",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "w05b.draft_prefix_honoured",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w06_mr_detail.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "approvals_before_merge": "null",
+              "assignee": "null",
+              "assignees": "array",
+              "author": "object",
+              "author.avatar_url": "string",
+              "author.id": "number",
+              "author.locked": "bool",
+              "author.name": "string",
+              "author.state": "string",
+              "author.username": "string",
+              "author.web_url": "string",
+              "blocking_discussions_resolved": "bool",
+              "changes_count": "string",
+              "closed_at": "null",
+              "closed_by": "null",
+              "created_at": "string",
+              "description": "string",
+              "detailed_merge_status": "string",
+              "diff_refs": "object",
+              "diff_refs.base_sha": "string",
+              "diff_refs.head_sha": "string",
+              "diff_refs.start_sha": "string",
+              "discussion_locked": "null",
+              "downvotes": "number",
+              "draft": "bool",
+              "first_contribution": "bool",
+              "first_deployed_to_production_at": "null",
+              "force_remove_source_branch": "bool",
+              "has_conflicts": "bool",
+              "head_pipeline": "object",
+              "head_pipeline.before_sha": "string",
+              "head_pipeline.committed_at": "null",
+              "head_pipeline.coverage": "null",
+              "head_pipeline.created_at": "string",
+              "head_pipeline.detailed_status": "object",
+              "head_pipeline.duration": "null",
+              "head_pipeline.finished_at": "null",
+              "head_pipeline.id": "number",
+              "head_pipeline.iid": "number",
+              "head_pipeline.project_id": "number",
+              "head_pipeline.queued_duration": "null",
+              "head_pipeline.ref": "string",
+              "head_pipeline.sha": "string",
+              "head_pipeline.source": "string",
+              "head_pipeline.started_at": "null",
+              "head_pipeline.status": "string",
+              "head_pipeline.tag": "bool",
+              "head_pipeline.updated_at": "string",
+              "head_pipeline.user": "object",
+              "head_pipeline.web_url": "string",
+              "head_pipeline.yaml_errors": "null",
+              "id": "number",
+              "iid": "number",
+              "imported": "bool",
+              "imported_from": "string",
+              "labels": "array",
+              "latest_build_finished_at": "null",
+              "latest_build_started_at": "null",
+              "merge_after": "null",
+              "merge_commit_sha": "null",
+              "merge_error": "null",
+              "merge_status": "string",
+              "merge_user": "null",
+              "merge_when_pipeline_succeeds": "bool",
+              "merged_at": "null",
+              "merged_by": "null",
+              "milestone": "null",
+              "pipeline": "null",
+              "prepared_at": "string",
+              "project_id": "number",
+              "reference": "string",
+              "references": "object",
+              "references.full": "string",
+              "references.relative": "string",
+              "references.short": "string",
+              "reviewers": "array",
+              "reviewers[]": "object",
+              "sha": "string",
+              "should_remove_source_branch": "null",
+              "source_branch": "string",
+              "source_project_id": "number",
+              "squash": "bool",
+              "squash_commit_sha": "null",
+              "squash_on_merge": "bool",
+              "state": "string",
+              "subscribed": "bool",
+              "target_branch": "string",
+              "target_project_id": "number",
+              "task_completion_status": "object",
+              "task_completion_status.completed_count": "number",
+              "task_completion_status.count": "number",
+              "time_stats": "object",
+              "time_stats.human_time_estimate": "null",
+              "time_stats.human_total_time_spent": "null",
+              "time_stats.time_estimate": "number",
+              "time_stats.total_time_spent": "number",
+              "title": "string",
+              "updated_at": "string",
+              "upvotes": "number",
+              "user": "object",
+              "user.can_merge": "bool",
+              "user_notes_count": "number",
+              "web_url": "string",
+              "work_in_progress": "bool"
+            }
+          }
+        },
+        {
+          "id": "w07_draft_added_line",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w07_draft_note.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "author_id": "number",
+              "commit_id": "null",
+              "discussion_id": "null",
+              "id": "number",
+              "line_code": "string",
+              "merge_request_id": "number",
+              "note": "string",
+              "position": "object",
+              "position.base_sha": "string",
+              "position.head_sha": "string",
+              "position.line_range": "null",
+              "position.new_line": "number",
+              "position.new_path": "string",
+              "position.old_line": "null",
+              "position.old_path": "string",
+              "position.position_type": "string",
+              "position.start_sha": "string",
+              "resolve_discussion": "bool"
+            }
+          }
+        },
+        {
+          "id": "w07_draft_deleted_line",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w07_draft_context_line",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w07_draft_no_position",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w08_bulk_publish",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 204
+          }
+        },
+        {
+          "id": "w08.added_line_kept",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w08.deleted_line_kept",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w08.context_line_kept",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w08.no_position_draft_is_general_comment",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w08_published_note.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "author": "object",
+              "author.avatar_url": "string",
+              "author.id": "number",
+              "author.locked": "bool",
+              "author.name": "string",
+              "author.state": "string",
+              "author.username": "string",
+              "author.web_url": "string",
+              "body": "string",
+              "commands_changes": "object",
+              "commit_id": "null",
+              "confidential": "bool",
+              "created_at": "string",
+              "id": "number",
+              "imported": "bool",
+              "imported_from": "string",
+              "internal": "bool",
+              "noteable_id": "number",
+              "noteable_iid": "number",
+              "noteable_type": "string",
+              "position": "object",
+              "position.base_sha": "string",
+              "position.head_sha": "string",
+              "position.line_range": "null",
+              "position.new_line": "number",
+              "position.new_path": "string",
+              "position.old_line": "null",
+              "position.old_path": "string",
+              "position.position_type": "string",
+              "position.start_sha": "string",
+              "project_id": "number",
+              "resolvable": "bool",
+              "resolved": "bool",
+              "resolved_at": "null",
+              "resolved_by": "null",
+              "system": "bool",
+              "type": "string",
+              "updated_at": "string"
+            }
+          }
+        },
+        {
+          "id": "w08b_draft_for_summary_publish",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w08b_bulk_publish_with_note",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 204
+          }
+        },
+        {
+          "id": "w08b.summary_note_published",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "w09_approvals_before.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "approval_rules_left": "array",
+              "approvals_left": "number",
+              "approvals_required": "number",
+              "approved": "bool",
+              "approved_by": "array",
+              "approver_groups": "array",
+              "approvers": "array",
+              "created_at": "string",
+              "description": "string",
+              "has_approval_rules": "bool",
+              "id": "number",
+              "iid": "number",
+              "invalid_approvers_rules": "array",
+              "merge_request_approvers_available": "bool",
+              "merge_status": "string",
+              "multiple_approval_rules_available": "bool",
+              "project_id": "number",
+              "require_password_to_approve": "bool",
+              "state": "string",
+              "suggested_approvers": "array",
+              "title": "string",
+              "updated_at": "string",
+              "user_can_approve": "bool",
+              "user_has_approved": "bool"
+            }
+          }
+        },
+        {
+          "id": "w09_approve_stale_sha",
+          "outcome": "fail",
+          "detail": {
+            "type": "code",
+            "value": "status:409"
+          }
+        },
+        {
+          "id": "w09_approve_head_sha",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w09.approved_by_listed",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w10.listed_by_reviewer_username",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w10.listed_by_author_username",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w10.listed_by_approved_by_usernames_me",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w10.listed_by_not_approved_by_usernames_me",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "w09_unapprove",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w12_run_mr_pipeline",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "w12_jobs.keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "[]": "object",
+              "[].allow_failure": "bool",
+              "[].archived": "bool",
+              "[].artifacts": "array",
+              "[].artifacts_expire_at": "null",
+              "[].commit": "object",
+              "[].commit.author_email": "string",
+              "[].commit.author_name": "string",
+              "[].commit.authored_date": "string",
+              "[].commit.committed_date": "string",
+              "[].commit.committer_email": "string",
+              "[].commit.committer_name": "string",
+              "[].commit.created_at": "string",
+              "[].commit.extended_trailers": "object",
+              "[].commit.id": "string",
+              "[].commit.message": "string",
+              "[].commit.parent_ids": "array",
+              "[].commit.short_id": "string",
+              "[].commit.title": "string",
+              "[].commit.trailers": "object",
+              "[].commit.web_url": "string",
+              "[].coverage": "null",
+              "[].created_at": "string",
+              "[].duration": "null",
+              "[].erased_at": "null",
+              "[].finished_at": "null",
+              "[].id": "number",
+              "[].name": "string",
+              "[].pipeline": "object",
+              "[].pipeline.created_at": "string",
+              "[].pipeline.id": "number",
+              "[].pipeline.iid": "number",
+              "[].pipeline.project_id": "number",
+              "[].pipeline.ref": "string",
+              "[].pipeline.sha": "string",
+              "[].pipeline.source": "string",
+              "[].pipeline.status": "string",
+              "[].pipeline.updated_at": "string",
+              "[].pipeline.web_url": "string",
+              "[].project": "object",
+              "[].project.ci_job_token_scope_enabled": "bool",
+              "[].queued_duration": "null",
+              "[].ref": "string",
+              "[].runner": "null",
+              "[].runner_manager": "null",
+              "[].stage": "string",
+              "[].started_at": "null",
+              "[].status": "string",
+              "[].tag": "bool",
+              "[].tag_list": "array",
+              "[].user": "object",
+              "[].user.avatar_url": "string",
+              "[].user.bio": "string",
+              "[].user.bot": "bool",
+              "[].user.created_at": "string",
+              "[].user.discord": "string",
+              "[].user.followers": "number",
+              "[].user.following": "number",
+              "[].user.id": "number",
+              "[].user.job_title": "string",
+              "[].user.linkedin": "string",
+              "[].user.local_time": "null",
+              "[].user.location": "string",
+              "[].user.locked": "bool",
+              "[].user.name": "string",
+              "[].user.organization": "string",
+              "[].user.pronouns": "null",
+              "[].user.public_email": "null",
+              "[].user.skype": "string",
+              "[].user.state": "string",
+              "[].user.twitter": "string",
+              "[].user.username": "string",
+              "[].user.web_url": "string",
+              "[].user.website_url": "string",
+              "[].user.work_information": "null",
+              "[].web_url": "string"
+            }
+          }
+        },
+        {
+          "id": "w12.manual_job_status",
+          "outcome": "info",
+          "detail": {
+            "type": "code",
+            "value": "created"
+          }
+        },
+        {
+          "id": "w13_play_manual_job",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        },
+        {
+          "id": "w13_cancel_job",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 201
+          }
+        },
+        {
+          "id": "w11_close_mr",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          }
+        }
+      ]
+    },
+    "tls": {
+      "ran_at": "2026-10-12T06:26:37Z",
+      "checks": [
+        {
+          "id": "token_stored",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": true
+          }
+        },
+        {
+          "id": "system_proxy_env",
+          "outcome": "info",
+          "detail": {
+            "type": "bool",
+            "value": false
+          }
+        },
+        {
+          "id": "platform.handshake",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          },
+          "ms": 406
+        },
+        {
+          "id": "platform.version_keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "enterprise": "bool",
+              "kas": "object",
+              "kas.enabled": "bool",
+              "kas.externalK8sProxyUrl": "null",
+              "kas.externalUrl": "null",
+              "kas.version": "null",
+              "revision": "string",
+              "version": "string"
+            }
+          }
+        },
+        {
+          "id": "platform.gitlab_version",
+          "outcome": "info",
+          "detail": {
+            "type": "version",
+            "value": "17.11.7-ee"
+          }
+        },
+        {
+          "id": "schannel.handshake",
+          "outcome": "pass",
+          "detail": {
+            "type": "status",
+            "value": 200
+          },
+          "ms": 336
+        },
+        {
+          "id": "schannel.version_keys",
+          "outcome": "info",
+          "detail": {
+            "type": "keys",
+            "value": {
+              "enterprise": "bool",
+              "kas": "object",
+              "kas.enabled": "bool",
+              "kas.externalK8sProxyUrl": "null",
+              "kas.externalUrl": "null",
+              "kas.version": "null",
+              "revision": "string",
+              "version": "string"
+            }
+          }
+        },
+        {
+          "id": "schannel.gitlab_version",
+          "outcome": "info",
+          "detail": {
+            "type": "version",
+            "value": "17.11.7-ee"
+          }
+        }
+      ]
+    }
+  }
+}

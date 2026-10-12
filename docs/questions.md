@@ -625,7 +625,7 @@ A criterion is ticked with its SHA when layers 1 and 2 pass (as today). Anything
 2. Unsigned exe built here runs on the laptop, so the field kit is `gr-probe.exe` + runbook, and later visits use a portable `GuidedReview.exe`.
 3. Probably yes. The runbook stays written for both: the laptop's Claude Code or you by hand.
 4. You will create an on-prem sandbox project, so field checks include `write`.
-5. Stand-in = **gitlab.com**, free account, private sandbox project with synthetic code (F-2 a).
+5. Stand-in = **gitlab.com**, free account, private sandbox project with synthetic code (F-2 a). **Update 2026-10-11:** on-prem is GitLab EE 17.11.7-ee, so the stand-in is F-2 (b) with that version, EE image (`tools/standin/`, ADR-019).
 6. Allowed.
 7. The laptop has Rider and the MAUI solution, so S8 runs at field visit 4 (M9) on the real solution.
 

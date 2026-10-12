@@ -49,32 +49,32 @@ Base: `https://<host>/api/v4`. Auth header `PRIVATE-TOKEN: <token>` (personal ac
 
 `:id` = URL-encoded project path (`mobile%2Fmobile-app`) or numeric id. `:iid` = MR number.
 
-During development the same client talks to the **stand-in GitLab** (gitlab.com, ADR-019); only the server URL differs. Differences between the stand-in (current version, Free tier) and the on-prem instance are recorded in the field visit reports and, where they matter, in this table.
+During development the same client talks to the **stand-in GitLab** (GitLab EE 17.11.7-ee in Docker on the PC, the on-prem version, ADR-019); only the server URL differs. Differences between the stand-in (Free tier, default instance settings) and the on-prem instance are recorded in the field visit reports and, where they matter, in this table.
 
 | Feature | Method and path | Status |
 | - | - | - |
 | Version | `GET /version` | standard (needs auth; a 401 still proves TLS) |
 | Current user | `GET /user` | standard |
-| Token check (F-19.5) | `GET /personal_access_tokens/self` (scopes, `expires_at`) | **verify** on your version |
-| MR lists | `GET /projects/:id/merge_requests?state=opened&reviewer_username=<me>` · `…&author_username=<me>` · `…&state=opened` | standard, **verify** reviewer filter on your version; **verify** whether an approver filter exists on your tier ("have not approved", F-02.1); fallback: per-MR approvals for at most 20 MRs, cached |
+| Token check (F-19.5) | `GET /personal_access_tokens/self` (scopes, `expires_at`) | verified on 17.11.7 (S5) |
+| MR lists | `GET /projects/:id/merge_requests?state=opened&reviewer_username=<me>` · `…&author_username=<me>` · `…&state=opened` | verified on 17.11.7 (S5): `reviewer_username` and `author_username` work, `scope=reviews_for_me` is 400 there; no approver exclusion (`not[approved_by_usernames]` is ignored), so "have not approved" (F-02.1) uses the fallback: per-MR approvals for at most 20 MRs, cached; the on-prem tier is checked at field visit 1 |
 | MR detail (incl. `diff_refs`: base/start/head SHA) | `GET /projects/:id/merge_requests/:iid` | standard |
 | MR versions | `GET /projects/:id/merge_requests/:iid/versions` and `/versions/:version_id` (fields `head_commit_sha`, `base_commit_sha`, `start_commit_sha`, `created_at`) | standard |
 | MRs of a commit | `GET /projects/:id/repository/commits/:sha/merge_requests` | standard |
 | Discussions | `GET /projects/:id/merge_requests/:iid/discussions` | standard |
 | Reply | `POST /projects/:id/merge_requests/:iid/discussions/:discussion_id/notes` (`body`) | standard |
 | Resolve / unresolve | `PUT /projects/:id/merge_requests/:iid/discussions/:discussion_id?resolved=true|false` | standard |
-| Draft notes | `POST /projects/:id/merge_requests/:iid/draft_notes` (`note`, `position[…]`, optional `in_reply_to_discussion_id`) | **verify** |
-| Publish drafts at once | `POST /projects/:id/merge_requests/:iid/draft_notes/bulk_publish` | **verify** |
+| Draft notes | `POST /projects/:id/merge_requests/:iid/draft_notes` (`note`, `position[…]`, optional `in_reply_to_discussion_id`) | verified on 17.11.7 (S5) |
+| Publish drafts at once | `POST /projects/:id/merge_requests/:iid/draft_notes/bulk_publish` | verified on 17.11.7 (S5, 204); its own `note` parameter is not published there, don't send it |
 | Approve / revoke | `POST /projects/:id/merge_requests/:iid/approve` (send `sha` = reviewed head) · `POST …/unapprove` | standard |
-| Approval state | `GET /projects/:id/merge_requests/:iid/approvals` | standard, **verify** fields on your tier |
-| Create MR | `POST /projects/:id/merge_requests` (`source_branch`, `target_branch`, `title`, `description`, `reviewer_ids`, `remove_source_branch`, `squash`, `labels`; draft via `Draft:` title prefix or `draft` field) | standard, **verify** `draft` |
+| Approval state | `GET /projects/:id/merge_requests/:iid/approvals` | verified on unlicensed EE 17.11.7 (S5: `approved_by`, `approvals_required`, `approvals_left`, rules); the on-prem tier at field visit 1 |
+| Create MR | `POST /projects/:id/merge_requests` (`source_branch`, `target_branch`, `title`, `description`, `reviewer_ids`, `remove_source_branch`, `squash`, `labels`; draft via the `Draft:` title prefix) | verified on 17.11.7 (S5): the `draft` field is ignored, the prefix works |
 | Users for reviewers | `GET /projects/:id/members/all?query=<text>` | standard |
 | MR pipelines | `GET /projects/:id/merge_requests/:iid/pipelines` | verified (python-gitlab docs) |
-| New MR pipeline | `POST /projects/:id/merge_requests/:iid/pipelines` | verified (GitLab MR !16148) |
+| New MR pipeline | `POST /projects/:id/merge_requests/:iid/pipelines` | verified (GitLab MR !16148; 200 on 17.11.7, S5) |
 | Pipeline jobs | `GET /projects/:id/pipelines/:pipeline_id/jobs` (retried jobs excluded unless `include_retried=true`) | verified (Jobs API docs) |
 | Job log | `GET /projects/:id/jobs/:job_id/trace` | verified |
 | Play manual job | `POST /projects/:id/jobs/:job_id/play` with `job_variables_attributes: [{key, value}]` | verified |
-| Manual job description / predefined variables (F-20.6) | none known in the Jobs API | **verify**; without a source the description is hidden and variables start empty (last values per job name come from `job_variables`) |
+| Manual job description / predefined variables (F-20.6) | none in the Jobs API (S5: the job object has no description or default variables) | the description is hidden and variables start empty (last values per job name come from `job_variables`) |
 | Retry job | `POST /projects/:id/jobs/:job_id/retry` | verified |
 | Cancel job | `POST /projects/:id/jobs/:job_id/cancel` | verified |
 | Retry pipeline (failed/canceled jobs) | `POST /projects/:id/pipelines/:pipeline_id/retry` | verified (Pipelines API docs) |
@@ -82,7 +82,7 @@ During development the same client talks to the **stand-in GitLab** (gitlab.com,
 | Test report | `GET /projects/:id/pipelines/:pipeline_id/test_report` | verified |
 | Job artifacts | `GET /projects/:id/jobs/:job_id/artifacts` | standard |
 
-Job statuses to handle: `created`, `pending`, `running`, `success`, `failed` (+ `allow_failure: true`), `canceled`, `skipped`, `manual`, also `waiting_for_resource`, `preparing`, `scheduled` (show as waiting).
+Job statuses to handle: `created`, `pending`, `running`, `success`, `failed` (+ `allow_failure: true`), `canceled`, `skipped`, `manual`, also `waiting_for_resource`, `preparing`, `scheduled` (show as waiting). A new manual job reads `created` before it becomes `manual` (S5), so poll instead of expecting `manual` at once.
 
 ### Draft note positions
 For a line comment on the reviewed version use the MR's `diff_refs` of that version:
@@ -90,7 +90,7 @@ For a line comment on the reviewed version use the MR's `diff_refs` of that vers
 - added line: `position[new_line]`
 - deleted line: `position[old_line]`
 - context line: **both** `old_line` and `new_line`.
-If the MR got a new version before publishing, re-map positions through the interdiff; drafts whose line no longer exists become general comments with the file:line quoted (ask the user first). The summary comment (F-12.4) is a draft note without a position, published in the same `bulk_publish` (**verify** in S5).
+If the MR got a new version before publishing, re-map positions through the interdiff; drafts whose line no longer exists become general comments with the file:line quoted (ask the user first). The summary comment (F-12.4) is a draft note without a position, published in the same `bulk_publish` (confirmed in S5 on 17.11.7).
 
 ### Polling (tray)
 Every N minutes: review-requested list, my MRs (with `updated_after`), MRs I reviewed (versions count changed → "N new commits"), discussions on my MRs (new notes since last seen), latest pipeline on my MRs. Store last-seen markers in `poll_state`. One request burst per interval, no more than ~10 requests.

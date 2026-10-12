@@ -56,10 +56,16 @@ Spike app `tools/spikes/tauri-s7/` with the app identifier `com.inpost.guidedrev
 
 ## S5 · GitLab API
 
-Not run in session 3. The probe is ready (`gr-probe gitlab read` / `gitlab write`, sandbox only, y/N per call). The stand-in moved from gitlab.com to GitLab EE 17.11.7-ee in Docker (`tools/standin/`, ADR-019 update by the parallel session), so S5 runs there next. Facts checked in the current GitLab docs (2026-10-11), to be confirmed on 17.11.7:
-- create MR has **no `draft` parameter** (only the `Draft:` title prefix); the response has `draft`;
-- `approve` with a `sha` that isn't the head → **409 Conflict**; `approve`/`unapprove` return 201 with the approval state;
-- `GET …/approvals` on Community Edition returns only `approved`, `approved_by`, `user_can_approve`, `user_has_approved`; EE (incl. unlicensed) adds `approvals_required`, `approvals_left`, rules;
-- `bulk_publish` takes `note` (a summary comment) and `reviewer_state`; a draft without position becomes a general comment;
-- MR lists: `reviewer_username`, `approved_by_usernames[]` (also `None`/`Any`), `scope=reviews_for_me`; `not[...]` has no approver key; `approver_ids[]` is Premium;
-- the job object has **no description or default variables**; play takes `job_variables_attributes` and the newer `job_inputs`.
+Run on the stand-in (2026-10-12): GitLab EE **17.11.7-ee** (the on-prem version) in Docker, unlicensed (Free-tier features), `tools/standin/`, project `sandbox/gr-sandbox`, user `dev` (Developer) with a personal access token (`api`). `gr-probe tls`, `gitlab read` and `gitlab write` (all 20 writes confirmed); report `field/baseline/standin-keysets.{md,json}`, the baseline field visit 1 is compared with.
+
+- **TLS:** the stand-in's test CA in `CurrentUser\Root` is trusted by the app's TLS (rustls-platform-verifier) and by SChannel, no configuration (as S6). git uses `http.sslBackend=schannel` here, so git over HTTPS trusts it too.
+- **Token check:** `GET /personal_access_tokens/self` → 200 with `scopes`, `expires_at`, `active`, `revoked`, `last_used_at`.
+- **Create MR:** `draft: true` is **ignored** (`draft` stays false); the `Draft:` title prefix works (`draft` true).
+- **Draft notes:** positions on an added (`new_line`), a deleted (`old_line`) and a context line (both) are created (201) and kept after `bulk_publish` (204). A draft **without position becomes a general comment** in the same publish, so the F-12.4 summary works as `05` describes.
+- **`bulk_publish` with `note` and `reviewer_state`:** 204, but the summary `note` is **not published** on 17.11.7 (newer than 17.11). Don't use it.
+- **Approve:** with a stale `sha` → **409**; with the head SHA → 201 and the user is in `approved_by`; `unapprove` → 201. The MR author could approve their own MR (default settings here; on-prem may forbid it, a Premium setting).
+- **`/approvals` on unlicensed EE:** `approved`, `approved_by`, `approvals_required`, `approvals_left`, `approval_rules_left`, `has_approval_rules`, `user_can_approve`, `user_has_approved`, `merge_request_approvers_available`, `multiple_approval_rules_available`, `require_password_to_approve`, `suggested_approvers`, `approvers`, `approver_groups`, `invalid_approvers_rules`.
+- **MR list filters:** `reviewer_username`, `author_username`, `approved_by_usernames[]` (also `None`), `approver_ids[]`, `draft=no` → 200. **`scope=reviews_for_me` → 400** (newer than 17.11). **`not[approved_by_usernames][]=<me>` is ignored:** an MR the user had approved was still listed. So "have not approved" (F-02.1) needs the per-MR approvals fallback in `05`. Not proven yet: that `approved_by_usernames[]` narrows the list (needs an MR approved by someone else; check in M2 with `alice`/`bob`).
+- **Pagination:** `x-next-page`, `x-page`, `x-per-page`, `x-prev-page`, `x-total`, `x-total-pages`, `link`.
+- **MR pipeline:** `POST …/merge_requests/:iid/pipelines` → **200**; a manual job reads `created` right after, before it becomes `manual`, so poll instead of expecting `manual`. Play with `job_variables_attributes` → 200 (no runner needed), cancel → 201. The job object has **no description** and no default variables (F-20.6: description hidden, variables start empty).
+- **Not measurable here:** one notification per publish (the stand-in sends no mail); stays a `[field]` check (F-12.5).
