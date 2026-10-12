@@ -1,12 +1,14 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
+import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
 import type { FileDiff } from './types/FileDiff';
 import type { FileRef } from './types/FileRef';
 import type { LocalChanges } from './types/LocalChanges';
+import type { ModelInfo } from './types/ModelInfo';
 import type { PushResult } from './types/PushResult';
 import type { Selection } from './types/Selection';
 import type { Route } from './types/Route';
@@ -50,6 +52,21 @@ export interface IpcClient {
   riderOpen(file: string, line: number): Promise<void>;
   /** Calls `listener` when the working tree, index or HEAD changed (F-16.2). */
   onRepoChanged(listener: () => void): Promise<() => void>;
+
+  // Claude Code (F-16.4, F-18).
+  /** The latest status: auth status, startup probe, last task result (F-18.1). */
+  claudeStatus(): Promise<ClaudeStatus>;
+  /** Runs the startup checks again. */
+  claudeRefresh(): Promise<ClaudeStatus>;
+  /** Opens `claude auth login` in its own console window. */
+  claudeSignIn(): Promise<void>;
+  /** File dialog for the executable (F-18.6); null when cancelled. */
+  claudePickExecutable(): Promise<ClaudeStatus | null>;
+  /** Models and their effort levels (F-18.2, F-18.4). */
+  claudeModels(): Promise<ModelInfo[]>;
+  /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
+  claudeCommitMessage(task: string): Promise<string>;
+  claudeCancel(task: string): Promise<void>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

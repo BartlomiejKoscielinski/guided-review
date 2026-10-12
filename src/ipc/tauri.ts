@@ -5,10 +5,12 @@ import { toIpcError } from './errors';
 import { createTauriWindowControls } from './tauri-window';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
+import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
 import type { LocalChanges } from './types/LocalChanges';
+import type { ModelInfo } from './types/ModelInfo';
 import type { PushResult } from './types/PushResult';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
@@ -53,6 +55,13 @@ export function createTauriClient(): IpcClient {
         throw toIpcError(error);
       }
     },
+    claudeStatus: () => call<ClaudeStatus>('claude_status'),
+    claudeRefresh: () => call<ClaudeStatus>('claude_refresh'),
+    claudeSignIn: () => call<undefined>('claude_sign_in'),
+    claudePickExecutable: () => call<ClaudeStatus | null>('claude_pick_executable'),
+    claudeModels: () => call<ModelInfo[]>('claude_models'),
+    claudeCommitMessage: (task) => call<string>('claude_commit_message', { task }),
+    claudeCancel: (task) => call<undefined>('claude_cancel', { task }),
     ...createTauriWindowControls(),
   };
 }

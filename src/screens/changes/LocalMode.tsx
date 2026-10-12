@@ -47,7 +47,7 @@ export function LocalMode() {
   const push = usePush();
   const lastMessage = useLastMessage();
   const rider = useRiderOpen();
-  const suggest = useSuggest();
+  const suggest = useSuggest(store.setMessage);
   const [pushed, setPushed] = useState<string | null>(null);
   const [pushError, setPushError] = useState<IpcError | null>(null);
 

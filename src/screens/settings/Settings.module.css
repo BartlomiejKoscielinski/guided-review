@@ -1,0 +1,230 @@
+/* S-07 Settings (Settings.dc.html): section nav | content (max width 900px). */
+.screen {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.nav {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 22px 12px;
+  background: var(--panel);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.navItem[aria-current='page'] {
+  background: var(--purple);
+  color: var(--ink);
+}
+
+.main {
+  flex: 999 1 560px;
+  min-width: 0;
+  overflow: auto;
+}
+
+.content {
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+  padding: 44px 48px 56px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 52px;
+  line-height: 0.95;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.statusText {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sectionTight {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 16px 24px;
+  align-items: center;
+  padding: 22px;
+  background: var(--panel);
+}
+
+.label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.select {
+  justify-self: start;
+  min-width: 280px;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--raised);
+  color: var(--text);
+  font-size: 14.5px;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) 190px 150px;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  background: var(--panel);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+}
+
+.taskText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.taskName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.taskSelect {
+  height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--raised);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.code {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}
+
+.footnote {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.path {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.error {
+  font-size: 13px;
+  color: var(--orange-text);
+}
+
+.efforts .effort {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.stub {
+  padding: 44px 48px;
+}

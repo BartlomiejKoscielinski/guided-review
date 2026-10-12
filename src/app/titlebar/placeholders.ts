@@ -7,8 +7,6 @@ export const PLACEHOLDER = {
   repo: { name: 'mobile-app', path: 'C:\\src\\mobile-app' },
   /** GitLab status on S-01 (F-01.6, M2). */
   gitlabStatus: 'GitLab connected',
-  /** Claude Code status chip on S-01 (F-01.6, F-18.1, M1). */
-  claudeStatus: 'Claude Code signed in',
   /** Session context of review screens (M3). */
   mr: { iid: '!482', title: 'Offline queue for delivery photos' },
   /** S-09 context (M8). */
@@ -21,15 +19,4 @@ export const PLACEHOLDER = {
   planStatus: 'Plan ready · Claude is analyzing step 1',
   /** S-10 pipeline status (F-26.1, M7). */
   pipelineStatus: 'Pipeline passed',
-  /** Model chips: model · effort of the screen's task (F-18.5, M1). */
-  model: {
-    plan: 'Opus 5.5 · high',
-    step: 'Sonnet 5.5 · medium',
-    summary: 'Sonnet 5.5 · low',
-    commit: 'Haiku 5.5 · low',
-    pipeline: 'Sonnet 5.5 · low',
-    rereview: 'Sonnet 5.5 · medium',
-    author: 'Sonnet 5.5 · medium',
-    createMr: 'Sonnet 5.5 · low',
-  },
 } as const;
