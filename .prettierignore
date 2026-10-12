@@ -19,3 +19,5 @@ field/baseline/
 src/styles/tokens.css
 tools/spikes/tauri-s7/gen
 tools/spikes/tauri-s7/target
+# Copied verbatim from docs/claude/ (a Rust test keeps them equal)
+src-tauri/resources/

@@ -381,3 +381,44 @@ pub fn spawn_detached(
     );
     Ok(child.id())
 }
+
+/// `CREATE_NEW_CONSOLE` (Windows process creation flag).
+const CREATE_NEW_CONSOLE: u32 = 0x0000_0010;
+
+/// Starts an interactive console program in its own console window, detached (Sign in to
+/// Claude Code: `claude auth login`, docs/05 › Startup checks). Stdio is inherited: the
+/// release app has no console handles, so the child uses its new console; a dev build started
+/// from a terminal shares that terminal instead.
+pub fn spawn_console(spec: &ProcessSpec) -> Result<u32, ProcessError> {
+    let name = spec.program_name();
+    let mut command = std::process::Command::new(&spec.program);
+    command.args(&spec.args);
+    if let Some(cwd) = &spec.cwd {
+        command.current_dir(cwd);
+    }
+    for name in &spec.env_remove {
+        command.env_remove(name);
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        command.creation_flags(CREATE_NEW_CONSOLE);
+    }
+    #[cfg(not(windows))]
+    let _ = CREATE_NEW_CONSOLE;
+    let child = command.spawn().map_err(|source| match source.kind() {
+        std::io::ErrorKind::NotFound => ProcessError::NotFound {
+            program: name.clone(),
+        },
+        _ => ProcessError::Spawn {
+            program: name.clone(),
+            source,
+        },
+    })?;
+    tracing::info!(
+        program = name,
+        args = spec.args.len(),
+        "console process started"
+    );
+    Ok(child.id())
+}

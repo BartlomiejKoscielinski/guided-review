@@ -81,6 +81,8 @@ sha2 = "0.10"
 notify-debouncer-mini = "0.7"
 # Folder and file pickers called from the core (repo_pick, Claude executable Change); 2.8.
 tauri-plugin-dialog = "2"
+# Task IDs for Claude task folders (tmp<task-id>); already in the tree through Tauri.
+uuid = { version = "1", features = ["v4"] }
 
 [features]
 # Builds gr-probe (field kit, ADR-019) with native-tls for the S6 comparison and hidden input.

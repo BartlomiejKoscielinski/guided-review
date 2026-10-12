@@ -1,5 +1,8 @@
 //! Per-test copies of the fake `claude` (`tests/bin/fake_claude.rs`).
-#![allow(dead_code, reason = "each test binary uses a different part of the helper")]
+#![allow(
+    dead_code,
+    reason = "each test binary uses a different part of the helper"
+)]
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "test helper")]
 
 use std::path::{Path, PathBuf};

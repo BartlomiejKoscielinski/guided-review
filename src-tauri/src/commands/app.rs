@@ -42,8 +42,14 @@ pub async fn app_settings_get(store: State<'_, Store>) -> AppResult<Settings> {
 /// Applies a partial patch (`{ "ui": { "startIn": "detailed" } }`); invalid values are
 /// rejected with `INVALID_INPUT` and nothing is stored.
 #[tauri::command]
-pub async fn app_settings_set(store: State<'_, Store>, patch: Value) -> AppResult<Settings> {
-    with_store(&store, move |conn| store::settings::update(conn, &patch)).await
+pub async fn app_settings_set(
+    store: State<'_, Store>,
+    claude: State<'_, super::claude::ClaudeApp>,
+    patch: Value,
+) -> AppResult<Settings> {
+    let settings = with_store(&store, move |conn| store::settings::update(conn, &patch)).await?;
+    super::claude::apply_settings(&claude, settings.claude.max_concurrent);
+    Ok(settings)
 }
 
 /// The screen to open on start (F-30.4).

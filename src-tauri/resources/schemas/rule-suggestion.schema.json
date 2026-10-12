@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RuleSuggestion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rule_line", "rationale"],
+  "properties": {
+    "rule_line": { "type": "string", "maxLength": 160, "description": "One line for .review/rules.md, imperative, specific." },
+    "rationale": { "type": "string", "maxLength": 240, "description": "Shown to the user, e.g. 'You dismissed ... 4 times, every time inside #if DEBUG.'" }
+  }
+}

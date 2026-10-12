@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CommitMessage",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "body"],
+  "properties": {
+    "summary": { "type": "string", "maxLength": 72 },
+    "body": { "type": "string", "maxLength": 1200, "description": "Empty string when the summary says enough." }
+  }
+}

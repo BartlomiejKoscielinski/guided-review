@@ -1,7 +1,7 @@
 //! The result message of a `claude -p` run (docs/05 › Claude Code): the single JSON object of
 //! `--output-format json`, or the last `"type":"result"` line of stream-json. Failure is read
 //! from `is_error`, `terminal_reason` and `api_error_status`, never from `subtype` (S1).
-//! Error mapping to `CLAUDE_*` codes comes with the runner in M1.
+//! Errors map to `CLAUDE_*` codes in `error.rs`.
 
 use serde::Deserialize;
 use serde_json::Value;
