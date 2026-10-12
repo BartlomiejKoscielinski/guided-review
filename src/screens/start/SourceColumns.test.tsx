@@ -59,6 +59,15 @@ describe('S-01 Commits', () => {
     });
   });
 
+  it('F-03.1 a search without matches shows "No commits match."', async () => {
+    const user = userEvent.setup();
+    renderStart();
+    await rows();
+    await user.type(commits().getByRole('textbox', { name: 'Search commits' }), 'zzz-nothing');
+    expect(await commits().findByText('No commits match.')).toBeInTheDocument();
+    expect(commits().queryAllByRole('option')).toHaveLength(0);
+  });
+
   it('F-03.2 a click selects one commit, Shift+click a range', async () => {
     const user = userEvent.setup();
     renderStart();

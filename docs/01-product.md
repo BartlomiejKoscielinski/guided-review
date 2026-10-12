@@ -66,7 +66,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-02.5** If a plan for an MR is already cached for its current head, the row says "plan is ready".
 
 ### F-03 Start: commits and local changes · S-01
-- **F-03.1** The Commits column lists commits of the current branch (branch name in the header), newest first, with SHA, subject, author · age. A search field filters by message, author or SHA.
+- **F-03.1** The Commits column lists commits of the current branch (branch name in the header), newest first, with SHA, subject, author · age. A search field filters by message, author or SHA; no match shows "No commits match."
 - **F-03.2** Clicking selects one commit; Shift+click selects a range. Actions: **Review `<sha>`** (step review; a range shows **Review `<oldest>..<newest>`** and includes the oldest selected commit) and **Browse files** (S-06 in commit mode; disabled for a range).
 - **F-03.3** The My changes column shows the current branch and three scopes as radio cards with counts: **Uncommitted changes**, **Staged only**, **Whole branch vs `<target>`**.
 - **F-03.4** Actions: **Review before push** (self-review, F-17) and **Browse and commit** (S-06 local mode). The column states: "Self-review never publishes anything. You end with a list of fixes before pushing and a draft MR description."

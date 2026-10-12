@@ -67,6 +67,9 @@ export function Commits() {
         </div>
       );
     }
+    if (rows.length === 0 && query !== '') {
+      return <p className={columnStyles.message}>No commits match.</p>;
+    }
     return (
       <div
         role="listbox"
