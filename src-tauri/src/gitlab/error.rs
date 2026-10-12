@@ -49,6 +49,9 @@ pub enum GitlabError {
     },
     #[error("GitLab's answer could not be read: {0}")]
     Decode(String),
+    /// A GraphQL `errors` entry (status 200): unknown field, bad argument, server error.
+    #[error("GitLab GraphQL error: {0}")]
+    Graphql(String),
 }
 
 impl GitlabError {
@@ -132,7 +135,10 @@ impl From<GitlabError> for AppError {
                 ErrorCode::GitlabUnauthorized,
                 "The token contains characters GitLab tokens never have.",
             ),
-            GitlabError::Status { .. } | GitlabError::Decode(_) | GitlabError::Setup(_) => {
+            GitlabError::Status { .. }
+            | GitlabError::Decode(_)
+            | GitlabError::Setup(_)
+            | GitlabError::Graphql(_) => {
                 AppError::internal("GitLab's answer was unexpected.").with_detail(detail)
             }
         }

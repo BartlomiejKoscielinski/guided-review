@@ -87,6 +87,11 @@ Context: Shiki's default Oniguruma engine is WebAssembly and would need `'wasm-u
 Decision (owner, 2026-10-12): Shiki runs in a Web Worker with its JavaScript regex engine and the `css-variables` theme mapped onto the `--syn-*` tokens; the CSP stays unchanged. If a grammar the app needs (C#, XAML/XML, JSON, YAML, Markdown, Kotlin/Java, Swift/ObjC) doesn't work with the JavaScript engine, stop and ask before adding `'wasm-unsafe-eval'`.
 Consequences: no WebAssembly in the webview; tokens are colored through CSS variables, so the diff palette and the syntax palette both come from `tokens.css`.
 
+### ADR-024 MR lists through GraphQL (M2 plan decision 1)
+Context: the REST MR lists lack `+add −del`, the file count, the head pipeline and unresolved-thread counts (F-02.2), and on 17.11.7 they can't exclude MRs I approved (S5: `not[approved_by_usernames]` is ignored), which forced per-MR approval calls.
+Decision (owner, 2026-10-12): S-01's lists use one GraphQL query per tab (`POST /api/graphql`, same `PRIVATE-TOKEN`, query in `gitlab/queries/mr_list.graphql`): `project.mergeRequests(state: opened, reviewerUsername | authorUsername, not: {approvedBy: [me]})` with `diffStatsSummary`, `headPipeline.status`, `approvedBy`, `reviewers { mergeRequestInteraction { approved } }`, `resolvableDiscussionsCount`, `resolvedDiscussionsCount`; the counts of all three tabs come in the same request as aliased `count` fields. Introspection and live queries on the stand-in (17.11.7, unlicensed, 2026-10-12) found every field, and `not: {approvedBy}` **does** filter there. A field missing on-prem falls back to REST for that field only and is recorded in `05`. Everything else stays REST.
+Consequences: no per-MR approvals fallback; a GraphQL `errors` entry (HTTP 200) maps to `INTERNAL` with GitLab's message; field visit 2 checks the query on-prem (key-set diff from `gr-probe`). The Free tier keeps one reviewer per MR (a second `reviewer_ids` entry is dropped), so multi-reviewer rows are only seen on a licensed instance.
+
 ---
 
 ## Spike notes (fill in during M0)

@@ -80,4 +80,122 @@ unless Project.find_by_full_path(full_path)
   puts "created project #{full_path}"
 end
 
-puts "seed done: users #{USERS.keys.join(', ')}, project #{full_path}"
+# --- Merge requests for S-01 (F-02.1, F-02.2): Waiting for me, Mine and All open for `dev` ---
+# Synthetic MAUI-like files; each MR is found again by its source branch, so re-runs skip it.
+
+project = Project.find_by_full_path(full_path)
+main = project.default_branch
+
+def cs_file(name, lines)
+  body = (1..lines).map { |i| "    // #{name} line #{i}" }.join("\n")
+  "namespace Delivery.App;\n\npublic class #{name}\n{\n#{body}\n}\n"
+end
+
+def commit_files(project, user, branch, start, message, actions)
+  result = Files::MultiService.new(
+    project, user,
+    commit_message: message, branch_name: branch, start_branch: start, actions: actions
+  ).execute
+  raise "commit #{branch}: #{result[:message]}" unless result[:status] == :success
+end
+
+BASE_FILES = {
+  'src/Delivery.App/Services/UploadWorker.cs' => 40,
+  'src/Delivery.App/Views/SignaturePage.xaml.cs' => 30,
+  'src/Delivery.App/Resources/Styles/Buttons.xaml' => 20,
+  'src/Delivery.App/Delivery.App.csproj' => 10
+}.freeze
+
+unless project.repository.blob_at(main, BASE_FILES.keys.first)
+  actions = BASE_FILES.map do |path, lines|
+    { action: 'create', file_path: path, content: cs_file(File.basename(path, '.*').delete('.'), lines) }
+  end
+  commit_files(project, root, main, main, 'Add the delivery app skeleton', actions)
+  puts 'committed the app skeleton'
+end
+
+def edit(path, lines, extra)
+  { action: 'update', file_path: path,
+    content: cs_file(File.basename(path, '.*').delete('.'), lines) + extra }
+end
+
+def create(path, lines)
+  { action: 'create', file_path: path, content: cs_file(File.basename(path, '.*').delete('.'), lines) }
+end
+
+# author, title, branch, reviewers, file actions, pipeline status, extras
+MRS = [
+  { author: 'alice', title: 'Offline queue for delivery photos', branch: 'feature/offline-queue',
+    reviewers: %w[dev], pipeline: 'success',
+    actions: [create('src/Delivery.App/Services/PhotoQueue.cs', 60),
+              create('src/Delivery.App/Services/PhotoQueueStore.cs', 45),
+              edit('src/Delivery.App/Services/UploadWorker.cs', 36, "// queue hook\n")] },
+  { author: 'bob', title: 'Crash when rotating the signature screen', branch: 'fix/signature-rotation',
+    reviewers: %w[dev], pipeline: 'success',
+    actions: [edit('src/Delivery.App/Views/SignaturePage.xaml.cs', 28, "// keep strokes on rotation\n")] },
+  { author: 'alice', title: 'Migrate to .NET 10', branch: 'chore/net10',
+    reviewers: %w[dev], pipeline: 'failed',
+    actions: [edit('src/Delivery.App/Delivery.App.csproj', 8, "<!-- net10.0 -->\n")] +
+             (1..44).map { |i| create("src/Delivery.App/Migrated/Page#{i}.cs", 12) } },
+  { author: 'bob', title: 'Dark theme: button colors', branch: 'feature/dark-buttons',
+    reviewers: %w[dev], approved_by: %w[dev], pipeline: 'running',
+    actions: [edit('src/Delivery.App/Resources/Styles/Buttons.xaml', 18, "<!-- dark -->\n")] },
+  { author: 'dev', title: 'Retry in UploadWorker after network loss', branch: 'fix/upload-retry',
+    reviewers: %w[alice bob], pipeline: 'success',
+    threads: [['alice', 'Should the retry back off?', false],
+              ['bob', 'What happens when the token expires mid-upload?', false],
+              ['alice', 'Typo in the log message.', true]],
+    actions: [edit('src/Delivery.App/Services/UploadWorker.cs', 44, "// retry after network loss\n"),
+              create('src/Delivery.App/Services/RetryPolicy.cs', 25)] },
+  { author: 'alice', title: 'Draft: Localize the settings screen', branch: 'feature/settings-pl',
+    reviewers: [], pipeline: nil,
+    actions: [create('src/Delivery.App/Resources/Strings/Settings.pl.resx', 15)] }
+].freeze
+
+def add_pipeline(project, mr, status, user)
+  pipeline = Ci::Pipeline.create!(
+    project: project, ref: mr.source_branch, sha: mr.diff_head_sha, source: :merge_request_event,
+    merge_request: mr, user: user, status: status
+  )
+  mr.update_column(:head_pipeline_id, pipeline.id)
+end
+
+def create_mr(project, author, main, spec, users)
+  unless project.repository.branch_exists?(spec[:branch])
+    commit_files(project, author, spec[:branch], main, spec[:title], spec[:actions])
+  end
+  mr = MergeRequests::CreateService.new(
+    project: project, current_user: author,
+    params: { source_branch: spec[:branch], target_branch: main, title: spec[:title],
+              reviewer_ids: spec[:reviewers].map { |name| users.fetch(name).id } }
+  ).execute
+  raise "MR #{spec[:branch]}: #{mr.errors.full_messages.join(', ')}" unless mr.persisted?
+
+  puts "created !#{mr.iid} #{spec[:title]}"
+  mr.reload
+end
+
+# Each extra is checked on its own, so a run that stopped half-way is completed by the next one.
+MRS.each do |spec|
+  author = users.fetch(spec[:author])
+  mr = project.merge_requests.find_by(source_branch: spec[:branch]) ||
+       create_mr(project, author, main, spec, users)
+  add_pipeline(project, mr, spec[:pipeline], author) if spec[:pipeline] && mr.head_pipeline_id.nil?
+  Array(spec[:approved_by]).each do |name|
+    approver = users.fetch(name)
+    next if mr.approved_by?(approver)
+
+    MergeRequests::ApprovalService.new(project: project, current_user: approver).execute(mr)
+  end
+  next if spec[:threads].nil? || mr.notes.where(type: 'DiscussionNote').exists?
+
+  spec[:threads].each do |name, text, resolved|
+    note = Notes::CreateService.new(
+      project, users.fetch(name),
+      noteable_type: 'MergeRequest', noteable_id: mr.id, note: text, type: 'DiscussionNote'
+    ).execute
+    note.discussion.resolve!(author) if resolved
+  end
+end
+
+puts "seed done: users #{USERS.keys.join(', ')}, project #{full_path}, #{MRS.size} merge requests"

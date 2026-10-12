@@ -60,7 +60,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 
 ### F-02 Start: merge request lists · S-01
 - **F-02.1** Tabs **Waiting for me** (I am a reviewer and have not approved), **Mine** (I am the author), **All open** (project). Each tab shows a count.
-- **F-02.2** A row shows: `!iid`, title, author · age, `+add −del · N files`, pipeline status (square + "pipeline passed/failed/running"), and an optional one-line note (e.g. "You're a reviewer · plan is ready", "Large: the plan splits it by layer", "2 unresolved threads from reviewers").
+- **F-02.2** A row shows: `!iid`, title, author · age, `+add −del · N files`, pipeline status (square + "pipeline passed/failed/running"), and an optional one-line note (e.g. "You're a reviewer · plan is ready", "Large: the plan splits it by layer", "2 unresolved threads from reviewers"). The note is the first that applies: unresolved threads ("1 unresolved thread from reviewers", "N unresolved threads from reviewers") > "Large: the plan splits it by layer" (40 files or more) > "You're a reviewer" (I'm a reviewer, any tab); F-02.5 adds " · plan is ready".
 - **F-02.3** Clicking a teammate's MR opens the plan (S-02). Clicking my own MR opens author mode (S-10).
 - **F-02.4** Lists refresh when S-01 gains focus and on the polling interval (F-28); the age of the data is visible when older than the interval.
 - **F-02.5** If a plan for an MR is already cached for its current head, the row says "plan is ready".
