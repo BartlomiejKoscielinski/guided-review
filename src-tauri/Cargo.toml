@@ -76,6 +76,9 @@ rpassword = { version = "7.5.4", optional = true }
 similar = "3"
 # Hunk IDs: SHA-256 over the content (docs/04 › Hunk ID); already in the tree through Tauri.
 sha2 = "0.10"
+# Working-tree watcher with a 300 ms debounce (F-16.2, docs/04 › Background work); re-exports
+# notify 8.2.
+notify-debouncer-mini = "0.7"
 
 [features]
 # Builds gr-probe (field kit, ADR-019) with native-tls for the S6 comparison and hidden input.
