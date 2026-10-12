@@ -27,15 +27,16 @@ Goal: every acceptance criterion in `01-product.md` is covered by at least one a
 | Layer | Where | GitLab | Claude | When |
 | - | - | - | - | - |
 | 1 · Automated | development PC | `wiremock` with cassettes | `fake-claude` | every commit (`npm run verify`) |
-| 2 · Stand-in integration | development PC | **stand-in GitLab**: gitlab.com, private sandbox project with synthetic code (the fixture MAUI-like project pushed there) | real `claude`, personal account, **fixture repos only** | per milestone, before ticking GitLab- or Claude-facing criteria |
+| 2 · Stand-in integration | development PC | **stand-in GitLab**: GitLab EE 17.11.7-ee (the on-prem version) in Docker on the PC, `https://localhost:8443` (`tools/standin/`), test users and a sandbox project with synthetic code (the fixture MAUI-like project pushed there) | real `claude`, personal account, **fixture repos only** | per milestone, before ticking GitLab- or Claude-facing criteria |
 | 3 · Field check | company laptop | on-prem GitLab over VPN, in a sandbox project the user created | Claude Enterprise | field visits listed in `07` |
 
 Rules:
 - No company code, MR content, names or hostnames on the development PC, and nothing of the company through the personal Claude account (T11).
 - Cassettes are recorded from the stand-in only. On-prem contributes a **key-set diff** per endpoint (JSON keys and types, never values). A difference becomes a new cassette variant and a test.
 - The app has no test-only code paths: the stand-in and on-prem differ only in the server URL and token.
-- Internal CA on the PC: a test CA and a local HTTPS test server check that the app trusts certificates from the Windows store. The user imports and later removes the test CA in `CurrentUser\Root`; the real proof is the TLS check at field visit 1.
-- Pipelines on the stand-in (M6) run on a project runner on the PC (`gitlab-runner`, shell executor, installed by the user) unless gitlab.com shared runners are available.
+- Internal CA on the PC: a test CA and a local HTTPS test server check that the app trusts certificates from the Windows store. The user imports and later removes the test CA in `CurrentUser\Root`; the real proof is the TLS check at field visit 1. The stand-in has its own test CA (`cargo run --example standin_cert`), which stays in `CurrentUser\Root` while the stand-in is used; its private key is never stored.
+- The stand-in listens on `127.0.0.1` only (an older release must not face the network) and follows the on-prem version when it is upgraded.
+- Pipelines on the stand-in (M6) run on a `gitlab-runner` next to it on the PC (set up in M6).
 
 ## Field kit
 

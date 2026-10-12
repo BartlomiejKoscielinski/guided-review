@@ -58,5 +58,5 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 ## Environment
 
 Two machines (ADR-019):
-- **Development PC (here):** Windows 11, PowerShell, Node LTS, Rust stable (MSVC) with VS Build Tools, git ≥ 2.40, Claude Code from the native installer (`%USERPROFILE%\.local\bin\claude.exe`), signed in with a personal account (`claude auth status`), Rider (installed like on the laptop, for S9), .NET SDK. GitLab = the **stand-in** on gitlab.com (private sandbox project with synthetic code). No VPN, no access to the company GitLab.
+- **Development PC (here):** Windows 11, PowerShell, Node LTS, Rust stable (MSVC) with VS Build Tools, git ≥ 2.40, Claude Code from the native installer (`%USERPROFILE%\.local\bin\claude.exe`), signed in with a personal account (`claude auth status`), Rider (installed like on the laptop, for S9), .NET SDK. GitLab = the **stand-in**: GitLab EE 17.11.7-ee (the on-prem version) in Docker, `https://localhost:8443`, synthetic data only (`tools/standin/README.md`). No VPN, no access to the company GitLab.
 - **Company laptop (field visits only):** VPN to the team's on-prem GitLab with an internal CA, Claude Enterprise, Rider, the MAUI solution, `csharp-ls` from M9. It clones this repo and runs `field/RUNBOOK-<n>.md` with `gr-probe.exe`; only the sanitized report comes back.

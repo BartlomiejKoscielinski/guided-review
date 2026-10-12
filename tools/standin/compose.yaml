@@ -1,0 +1,40 @@
+# Stand-in GitLab (ADR-019): the on-prem version, on this PC only, with synthetic data only.
+# Setup and daily use: tools/standin/README.md. When on-prem is upgraded, change the image tag
+# (following GitLab's upgrade path) and the version in docs/09-testing.md › Environments.
+name: gr-standin
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:17.11.7-ee.0
+    container_name: gr-standin-gitlab
+    hostname: gitlab
+    restart: unless-stopped
+    shm_size: '256m'
+    # Bound to this PC only: an old release with known vulnerabilities must not face the network.
+    ports:
+      - '127.0.0.1:8443:8443'
+      - '127.0.0.1:2222:22'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://localhost:8443'
+        letsencrypt['enable'] = false
+        nginx['ssl_certificate'] = '/standin/ssl/gitlab.crt'
+        nginx['ssl_certificate_key'] = '/standin/ssl/gitlab.key'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2222
+        gitlab_rails['usage_ping_enabled'] = false
+        # Memory-constrained settings (docs.gitlab.com › omnibus › memory_constrained_envs).
+        puma['worker_processes'] = 0
+        sidekiq['concurrency'] = 10
+        prometheus_monitoring['enable'] = false
+        gitlab_kas['enable'] = false
+    volumes:
+      # Named volumes: GitLab's data must not live on a Windows bind mount (permissions).
+      - gitlab-config:/etc/gitlab
+      - gitlab-logs:/var/log/gitlab
+      - gitlab-data:/var/opt/gitlab
+      - ./ssl:/standin/ssl:ro
+
+volumes:
+  gitlab-config:
+  gitlab-logs:
+  gitlab-data:

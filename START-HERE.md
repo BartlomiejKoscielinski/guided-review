@@ -32,7 +32,7 @@ This package contains everything Claude Code needs to build Guided Review exactl
 - A GitLab token (personal access token, scope `api`). Needed from M2.
 - From M9: the .NET SDK and `dotnet tool install --global csharp-ls`.
 
-**Two machines** (ADR-019): development happens on a PC without VPN, with a personal Claude account, a stand-in GitLab on gitlab.com (a private sandbox project with synthetic code; its token is stored by you) and Rider installed as on the laptop. The company laptop (VPN, on-prem GitLab, Claude Enterprise, Rider, the MAUI solution) clones the repo for short **field visits** (`field/RUNBOOK-<n>.md` + `gr-probe.exe`); only a sanitized report comes back. No company code or data on the PC.
+**Two machines** (ADR-019): development happens on a PC without VPN, with a personal Claude account, a stand-in GitLab in Docker pinned to the on-prem version (synthetic code and test users; its token is stored by you) and Rider installed as on the laptop. The company laptop (VPN, on-prem GitLab, Claude Enterprise, Rider, the MAUI solution) clones the repo for short **field visits** (`field/RUNBOOK-<n>.md` + `gr-probe.exe`); only a sanitized report comes back. No company code or data on the PC.
 
 ## 2. Create the repository
 
