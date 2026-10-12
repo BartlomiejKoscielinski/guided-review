@@ -13,6 +13,7 @@ import { ContextText } from './ContextText';
 import { GitlabStatusControl } from './GitlabStatusControl';
 import { PlanContext } from './PlanContext';
 import { PLACEHOLDER } from './placeholders';
+import { SettingsContext } from './SettingsContext';
 import { TaskModelChip } from './TaskModelChip';
 import { TitleBar } from './TitleBar';
 
@@ -115,16 +116,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-06':
       return <TitleBar context={<ChangesContext />} controls={<TaskModelChip group="commit" />} />;
     case 'S-07':
-      return (
-        <TitleBar
-          context={
-            <>
-              <ContextText kind="repo">{P.repo.name}</ContextText>
-              <ContextText kind="title">Settings</ContextText>
-            </>
-          }
-        />
-      );
+      return <TitleBar context={<SettingsContext />} />;
     case 'S-08':
       return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-09':

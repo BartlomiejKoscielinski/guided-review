@@ -95,6 +95,15 @@ describe('Shell', () => {
     expect(router.state.location.pathname).toBe('/settings/claude');
   });
 
+  it('F-30.7 Settings shows the active repository, not an example name', async () => {
+    const repoActive = () => Promise.resolve({ name: 'gr-sandbox', path: 'C:\\Repos\\gr-sandbox' });
+    renderApp({ screen: 'S-07', section: 'general' }, mockClient({ repoActive }));
+    const bar = within(screen.getByTestId('title-bar'));
+    expect(await bar.findByText('gr-sandbox')).toBeInTheDocument();
+    expect(bar.queryByText('mobile-app')).not.toBeInTheDocument();
+    expect(bar.getByText('Settings')).toBeInTheDocument();
+  });
+
   it('F-19.4 Settings tile is visible and purple on every screen', () => {
     for (const route of ALL) {
       const { unmount } = renderApp(route);
