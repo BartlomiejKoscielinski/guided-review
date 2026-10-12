@@ -2,7 +2,7 @@
 //! the Toolbox `rider.cmd` script (resolved to the real `rider64.exe`, never run), Toolbox and
 //! per-user installs under `%LOCALAPPDATA%`, then `%ProgramFiles%\JetBrains\JetBrains Rider *`.
 //! Each install's `product-info.json` gives the version and `dataDirectoryName`, the name of its
-//! config folder under `%APPDATA%\JetBrains\` (where `tools\External Tools.xml` lives).
+//! config folder under `%APPDATA%\JetBrains\` (External Tools: one `tools\<tool set>.xml` each, S9).
 
 use std::path::{Path, PathBuf};
 

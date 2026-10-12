@@ -19,9 +19,9 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 - AppError, logging (tracing, size rotation, redaction), settings store (SQLite + migrations, keys from `04` › Settings), window state and last-screen restore; `os/process.rs` skeleton (argument arrays, `CREATE_NO_WINDOW`, Job Object).
 - Install Playwright and re-render the PNGs whose mocks changed at kickoff (see `design/README.md` › Pending re-renders).
 - Spikes S1–S7 and S9 from `08-decisions.md` with results written there; S8 is deferred to M9 (field visit 4). Claude spikes S1–S4 run first, on the PC (Max); S5/S6 run against the stand-in GitLab; S9 on the PC with Rider installed. Adjust `05-integrations.md` if a spike disproves something (and say so in the PR).
-- Field kit: `gr-probe.exe` + `field/RUNBOOK-1.md` (`09` › Field kit). **Field visit 1** on the laptop: S1/S2/S3 on Claude Enterprise, S4, S6 against the internal CA, S5 read and write in the on-prem sandbox project, S9 paths and version.
+- Field kit: `gr-probe.exe` + `field/RUNBOOK-1.md` (`09` › Field kit). **Field visit 1** on the laptop (S1/S2/S3 on Claude Enterprise, S4, S6 against the internal CA, S5 read and write in the on-prem sandbox project, S9 paths and version) is postponed to the end of M2 and done together with field visit 2 (owner's decision 2026-10-12): until then the spike results are PC/Max and stand-in only.
 - Features: F-30.1, F-30.2, F-30.4, F-19.4, NFR-08.
-- Demo: app starts, dock switches between stub screens, Review tile dimmed without a session, Settings tile purple, `Ctrl+,` works, window and last screen restored; spike table filled (S8 deferred); field visit 1 report merged.
+- Demo: app starts, dock switches between stub screens, Review tile dimmed without a session, Settings tile purple, `Ctrl+,` works, window and last screen restored; spike table filled on the PC and the stand-in (S8 deferred; Laptop/Enterprise results come with field visit 1 at the end of M2).
 
 ## M1 · Local changes, diff renderer, commit
 **Goal:** a useful daily tool even without GitLab: browse local changes and a commit, stage hunks/lines, commit with a Claude-suggested message.
@@ -37,7 +37,7 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 - Features: F-01 (all), F-02.1, F-02.2, F-02.3, F-02.4, F-03 (all), F-05.1, F-05.4, F-05.6, F-19.2, F-19.5, F-19.6, F-24.1, F-24.4, F-30.7. F-02.4 refreshes on focus and on a fixed timer here; it is wired to the poller in M10.
 - Screens: S-01, S-07 (GitLab).
 - Demo (stand-in GitLab): paste an MR link → worktree created → Browse files shows the MR diff; Open in Rider jumps to a line.
-- **Field visit 2:** MR lists and filters, fetch, worktree and Open in Rider on real MRs (read-only).
+- **Field visit 2:** MR lists and filters, fetch, worktree and Open in Rider on real MRs (read-only). The same visit first runs `field/RUNBOOK-1.md` (field visit 1, postponed from M0). Its Claude Enterprise results (S1–S3) gate M3, which builds the review flow on Claude: M3 doesn't start before this report is merged.
 
 ## M3 · Plan and Focus review
 **Goal:** the core experience: plan, steps, notes, drafts (local), in Focus mode with all three layouts; self-review on local changes.

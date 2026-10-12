@@ -1,5 +1,6 @@
 //! Rider part of `env` (S9, F-24.4): every install the app's discovery finds, its config folder
-//! and External Tools file (existence only, never contents), and JetBrains registry keys.
+//! and External Tools folder (existence and number of tool-set files, never names or contents),
+//! and JetBrains registry keys.
 
 use guided_review_lib::os::process::ProcessSpec;
 use guided_review_lib::os::rider::{RiderInput, discover_all};
@@ -50,10 +51,26 @@ pub async fn rider_checks() -> Vec<Check> {
                 Check::new(&id("config_dir_exists"), Outcome::Info)
                     .detail(Detail::Bool(config.is_dir())),
             );
-            let tools = config.join("tools").join("External Tools.xml");
+            // One XML file per tool set (S9); counted, never named or read.
+            let tools = config.join("tools");
             checks.push(
-                Check::new(&id("external_tools_xml_exists"), Outcome::Info)
-                    .detail(Detail::Bool(tools.is_file())),
+                Check::new(&id("tools_dir_exists"), Outcome::Info)
+                    .detail(Detail::Bool(tools.is_dir())),
+            );
+            let tool_sets = std::fs::read_dir(&tools).map_or(0, |entries| {
+                entries
+                    .filter_map(Result::ok)
+                    .filter(|entry| {
+                        entry
+                            .path()
+                            .extension()
+                            .is_some_and(|ext| ext.eq_ignore_ascii_case("xml"))
+                    })
+                    .count()
+            });
+            checks.push(
+                Check::new(&id("tool_set_files"), Outcome::Info)
+                    .detail(Detail::Number(i64::try_from(tool_sets).unwrap_or(-1))),
             );
         }
     }
