@@ -112,14 +112,14 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | Group | Commands |
 | - | - |
 | app | `app_health`, `app_settings_get`, `app_settings_set(patch)`, `app_start_route`, `app_open_external` |
-| source | `source_detect(input)` |
-| sessions | `sessions_list_unfinished`, `session_open_mr(iid, ch)`, `session_open_commit(range)`, `session_open_local(scope)`, `session_close` |
+| source | `source_detect(input)`: MR URL → `!iid` → absolute path of a repository → SHA (7–40 hex, must resolve) → local or `origin/` branch; errors carry the F-01.5 copy; reads only |
+| sessions | `sessions_list_unfinished`, `session_open_mr(iid, ch)`, `session_open_commit(range)` (`from..to`, `from` excluded; one commit without `from`), `session_open_local(scope)`, `session_open_branch(branch)` (current branch → local changes vs target, other branch → `merge-base..branch`), `session_open_repo(path)` (adds the repository if needed, then self-review), `session_close` |
 | review | `review_plan(session, ch)`, `review_set_strategy`, `review_reorder_steps`, `review_step(session, step)`, `review_findings(session, step, ch)`, `review_decide(finding, decision)`, `review_mark_step`, `review_ask(session, step, question, selection?, ch)` |
 | drafts | `drafts_list`, `drafts_create`, `drafts_update`, `drafts_delete`, `drafts_publish(ids, summary?)` |
 | gitlab | `gitlab_list_mrs(tab)`, `gitlab_mr(iid)`, `gitlab_discussions(iid)`, `gitlab_reply`, `gitlab_resolve(discussion, resolved)`, `gitlab_approval_state`, `gitlab_approve(sha)`, `gitlab_unapprove`, `gitlab_versions`, `gitlab_create_mr`, `gitlab_users_search` |
 | pipeline | `pipeline_list(iid)`, `pipeline_jobs(id)`, `pipeline_run_mr(iid)`, `pipeline_retry`, `pipeline_cancel`, `job_play(id, vars)`, `job_retry`, `job_cancel`, `job_trace(id, ch)`, `job_explain(id, ch)` |
-| git | `git_status`, `git_log(query)`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
-| repos | `repo_active`, `repo_pick` (folder dialog in the core; in M1 it sets the default repository, F-19.6 adds the list in M2) |
+| git | `git_status`, `git_log(branch?, query?)`, `git_status_summary`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
+| repos | `repo_active`, `repo_pick` (folder dialog in the core; adds the repository and makes it active), `repo_list`, `repo_switch(id)`, `repo_set_default(id)`, `repo_remove(id)`. The **default** repository is the one the app starts with (and deep links without a project use); `repo_switch` changes the **active** one (S-01, S-06) until the app restarts |
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
 | fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |

@@ -6,7 +6,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::StoreError;
-use crate::review::model::{Mode, SessionStatus};
+use crate::review::model::{Layout, Mode, SessionStatus};
 use crate::review::sessions::{UnfinishedSession, resume_route};
 use crate::route::Route;
 
@@ -53,6 +53,77 @@ pub fn list_unfinished(
         });
     }
     Ok(sessions)
+}
+
+/// A session to create (F-01.3); `source_json` is the serialized `Source`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewSession {
+    pub id: String,
+    pub repo_id: i64,
+    pub source_json: String,
+    pub base_sha: String,
+    pub head_sha: String,
+    pub mode: Mode,
+    pub layout: Layout,
+    pub status: SessionStatus,
+}
+
+fn stored<T: serde::Serialize>(value: T) -> Option<String> {
+    match serde_json::to_value(value) {
+        Ok(Value::String(text)) => Some(text),
+        _ => None,
+    }
+}
+
+pub fn insert(conn: &Connection, session: &NewSession) -> Result<(), StoreError> {
+    conn.execute(
+        "INSERT INTO sessions (id, repo_id, source_json, base_sha, head_sha, start_sha, mode, layout,
+                               status, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?5, ?6, ?7, ?8,
+                 strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))",
+        params![
+            session.id,
+            session.repo_id,
+            session.source_json,
+            session.base_sha,
+            session.head_sha,
+            stored(session.mode),
+            stored(session.layout),
+            stored(session.status),
+        ],
+    )?;
+    Ok(())
+}
+
+/// The stored source of a session.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionSource {
+    pub repo_id: i64,
+    pub source_json: String,
+    pub base_sha: String,
+    pub head_sha: String,
+    pub status: Option<SessionStatus>,
+}
+
+pub fn source_of(conn: &Connection, id: &str) -> Result<Option<SessionSource>, StoreError> {
+    Ok(conn
+        .query_row(
+            "SELECT repo_id, source_json, base_sha, head_sha, status FROM sessions WHERE id = ?1",
+            params![id],
+            |row| {
+                Ok(SessionSource {
+                    repo_id: row.get(0)?,
+                    source_json: row.get(1)?,
+                    base_sha: row.get(2)?,
+                    head_sha: row.get(3)?,
+                    status: row
+                        .get::<_, Option<String>>(4)?
+                        .as_deref()
+                        .and_then(parse::<SessionStatus>),
+                })
+            },
+        )
+        .optional()?)
 }
 
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {

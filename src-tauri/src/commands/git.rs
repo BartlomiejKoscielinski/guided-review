@@ -1,5 +1,5 @@
-//! `git_*` commands for S-06 (F-15, F-16): local changes, commit mode, per-file diffs,
-//! staging, commit and push. Index writes are serialized by `RepoState::write_lock`.
+//! `git_*` commands for S-01 (F-03.1, F-03.3) and S-06 (F-15, F-16): commits, scope counts,
+//! local changes, commit mode, per-file diffs, staging, commit and push. Index writes are serialized by `RepoState::write_lock`.
 
 use serde::Deserialize;
 use tauri::State;
@@ -10,8 +10,10 @@ use crate::error::AppResult;
 use crate::git::commit::{self, CommitInfo, CommitResult, PushResult};
 use crate::git::diff::ChangedFile;
 use crate::git::local::{self, FileRef, LocalChanges};
+use crate::git::log::{self, CommitList};
 use crate::git::model::{FileDiff, FileStatus};
 use crate::git::staging::{self, Selection};
+use crate::git::summary::{self, StatusSummary};
 use crate::os::process::Cancel;
 use crate::store::Store;
 
@@ -31,6 +33,25 @@ pub enum DiffSource {
 pub async fn git_status(store: State<'_, Store>) -> AppResult<LocalChanges> {
     let git = active_git(&store).await?;
     Ok(local::local_changes(&git, &Cancel::new()).await?)
+}
+
+/// The Commits column of S-01 (F-03.1): the current branch when `branch` is missing; `query`
+/// filters by message, author or SHA prefix.
+#[tauri::command]
+pub async fn git_log(
+    store: State<'_, Store>,
+    branch: Option<String>,
+    query: Option<String>,
+) -> AppResult<CommitList> {
+    let git = active_git(&store).await?;
+    Ok(log::log(&git, branch.as_deref(), query.as_deref(), &Cancel::new()).await?)
+}
+
+/// Counts of the three My changes scopes (F-03.3).
+#[tauri::command]
+pub async fn git_status_summary(store: State<'_, Store>) -> AppResult<StatusSummary> {
+    let git = active_git(&store).await?;
+    Ok(summary::status_summary(&git, &Cancel::new()).await?)
 }
 
 /// Details and files of a commit; HEAD when `sha` is missing (F-15.6).

@@ -10,12 +10,15 @@ pub mod hunk_id;
 pub mod intraline;
 pub mod line_state;
 pub mod local;
+pub mod log;
 pub mod model;
 pub mod patch;
 pub mod patch_builder;
+pub mod refs;
 pub mod runner;
 pub mod staging;
 pub mod status;
+pub mod summary;
 pub mod tree;
 pub mod watch;
 

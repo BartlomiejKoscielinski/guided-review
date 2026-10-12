@@ -12,6 +12,7 @@ pub mod os;
 pub mod review;
 pub mod route;
 pub mod settings;
+pub mod source;
 pub mod store;
 
 use tauri::{LogicalSize, Manager, PhysicalPosition, PhysicalSize, WebviewWindow};
@@ -115,10 +116,15 @@ fn start_logging() {
 fn open_store() -> Result<store::Store, Box<dyn std::error::Error>> {
     let app_data = os::paths::app_data_dir()?;
     let db = os::paths::db_path(&app_data);
-    store::Store::open(&db).map_err(|error| {
+    let store = store::Store::open(&db).map_err(|error| {
         tracing::error!(%error, path = %db.display(), "the database could not be opened");
-        error.into()
-    })
+        Box::new(error) as Box<dyn std::error::Error>
+    })?;
+    // The app starts with the default repository (F-30.7 switches it for this run only).
+    if let Err(error) = store.with_conn(|conn| store::repos::reset_active(conn)) {
+        tracing::warn!(%error, "the switched repository could not be reset");
+    }
+    Ok(store)
 }
 
 /// Builds and runs the Tauri app.
@@ -156,7 +162,18 @@ pub fn run() {
             commands::sessions::sessions_list_unfinished,
             commands::repo::repo_active,
             commands::repo::repo_pick,
+            commands::repo::repo_list,
+            commands::repo::repo_switch,
+            commands::repo::repo_set_default,
+            commands::repo::repo_remove,
+            commands::source::source_detect,
+            commands::sessions::session_open_commit,
+            commands::sessions::session_open_local,
+            commands::sessions::session_open_branch,
+            commands::sessions::session_open_repo,
             commands::git::git_status,
+            commands::git::git_log,
+            commands::git::git_status_summary,
             commands::git::git_commit_info,
             commands::git::git_file_diff,
             commands::git::git_stage,

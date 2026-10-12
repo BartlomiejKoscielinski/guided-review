@@ -15,7 +15,7 @@ All calls go through `git/runner.rs` with `-c core.quotepath=off -c core.longpat
 | Fix scratch worktree (ADR-018) | `git stash create` → SHA (empty output = clean tree, use `HEAD`); `git worktree add --detach <tmp path> <sha>`; after the run `git -C <tmp path> status --porcelain=v2 -z` + `git -C <tmp path> diff`; then remove it. The user's checkout is never touched by this |
 | File list + counts | `git diff --name-status -z -M <base> <head>` and `git diff --numstat -z -M <base> <head>` |
 | Patch | `git diff --no-color --no-ext-diff -M -U3 <base> <head> [-- <path>]` (`-w` for Ignore whitespace) |
-| Commit list | `git log --format=%H%x1f%h%x1f%s%x1f%an%x1f%aI -n 200 <branch> [--grep/--author]` |
+| Commit list | `git log --format=%H%x1f%h%x1f%s%x1f%an%x1f%aI%x1f%ct%x1e -n 200 <branch> [--regexp-ignore-case --fixed-strings --grep=<q> / --author=<q>]`: a query runs the `--grep` and `--author` lists separately (git ANDs them) and merges them by committer time; a hex query of 4+ characters also matches a SHA prefix on the branch (`rev-parse --verify <q>^{commit}`, prefix checked, `merge-base --is-ancestor`) |
 | Local status | `git status --porcelain=v2 -z --untracked-files=all` |
 | Local diffs | unstaged `git diff`, staged `git diff --cached`, branch `git diff <merge-base>...HEAD` |
 | Local diff shown in S-06 | `git diff HEAD` (H→W) is displayed; each line's "in commit" state comes from the index: a `-` line (HEAD line number) is staged when `git diff --cached` (H→I) deletes it, a `+` line (working-tree line number) is staged when `git diff` (I→W) doesn't add it (ADR-008) |

@@ -8,6 +8,7 @@ pub mod gitlab;
 pub mod os;
 pub mod repo;
 pub mod sessions;
+pub mod source;
 
 use crate::error::{AppError, AppResult};
 use crate::store::{Store, StoreError};
