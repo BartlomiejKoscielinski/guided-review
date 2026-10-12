@@ -80,6 +80,36 @@ describe('Tauri IPC client', () => {
     ]);
   });
 
+  it('calls the repository list and source commands by their contract names', async () => {
+    const client = createTauriClient();
+    await client.repoList();
+    await client.repoSwitch(2);
+    await client.repoSetDefault(2);
+    await client.repoRemove(2);
+    await client.sourceDetect('!482');
+    await client.gitLog();
+    await client.gitLog('feature/zażółć', 'torch');
+    await client.gitStatusSummary();
+    await client.sessionOpenCommit({ from: '9be0d47', to: 'a3f9c12' });
+    await client.sessionOpenLocal({ kind: 'branchVsTarget', target: 'origin/develop' });
+    await client.sessionOpenBranch('develop');
+    await client.sessionOpenRepo('C:\\Repos ąę\\mobile-app');
+    expect(invokeMock.mock.calls).toEqual([
+      ['repo_list', undefined],
+      ['repo_switch', { id: 2 }],
+      ['repo_set_default', { id: 2 }],
+      ['repo_remove', { id: 2 }],
+      ['source_detect', { input: '!482' }],
+      ['git_log', { branch: null, query: null }],
+      ['git_log', { branch: 'feature/zażółć', query: 'torch' }],
+      ['git_status_summary', undefined],
+      ['session_open_commit', { range: { from: '9be0d47', to: 'a3f9c12' } }],
+      ['session_open_local', { scope: { kind: 'branchVsTarget', target: 'origin/develop' } }],
+      ['session_open_branch', { branch: 'develop' }],
+      ['session_open_repo', { path: 'C:\\Repos ąę\\mobile-app' }],
+    ]);
+  });
+
   it('rejects with an IpcError carrying the AppError', async () => {
     invokeMock.mockRejectedValue({ code: 'INTERNAL', message: 'Broken.', retryable: false });
     await expect(createTauriClient().appHealth()).rejects.toMatchObject({

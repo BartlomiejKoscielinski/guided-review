@@ -7,6 +7,11 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
+import type { CommitList } from './types/CommitList';
+import type { DetectedSource } from './types/DetectedSource';
+import type { OpenedSession } from './types/OpenedSession';
+import type { Repo } from './types/Repo';
+import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
 import type { GitlabStatus } from './types/GitlabStatus';
@@ -39,6 +44,18 @@ export function createTauriClient(): IpcClient {
     sessionsListUnfinished: () => call<UnfinishedSession[]>('sessions_list_unfinished'),
     repoActive: () => call<ActiveRepo | null>('repo_active'),
     repoPick: () => call<ActiveRepo | null>('repo_pick'),
+    repoList: () => call<Repo[]>('repo_list'),
+    repoSwitch: (id) => call<ActiveRepo>('repo_switch', { id }),
+    repoSetDefault: (id) => call<undefined>('repo_set_default', { id }),
+    repoRemove: (id) => call<undefined>('repo_remove', { id }),
+    sourceDetect: (input) => call<DetectedSource | null>('source_detect', { input }),
+    gitLog: (branch, query) =>
+      call<CommitList>('git_log', { branch: branch ?? null, query: query ?? null }),
+    gitStatusSummary: () => call<StatusSummary>('git_status_summary'),
+    sessionOpenCommit: (range) => call<OpenedSession>('session_open_commit', { range }),
+    sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
+    sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),
+    sessionOpenRepo: (path) => call<OpenedSession>('session_open_repo', { path }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),

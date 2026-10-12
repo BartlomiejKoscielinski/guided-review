@@ -1,6 +1,6 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
-import type { ActiveRepo } from '../types/ActiveRepo';
+import { createMockRepos, type MockRepos } from './repos';
 import type { CommitInfo } from '../types/CommitInfo';
 import type { FileDiff } from '../types/FileDiff';
 import type { FileGroup } from '../types/FileGroup';
@@ -17,7 +17,6 @@ import {
   localFiles,
   manyFiles,
   NEW_COMMIT,
-  REPO,
   stagedAtStart,
   type MockFile,
   type MockRow,
@@ -94,8 +93,8 @@ function fail(code: 'INVALID_INPUT' | 'GIT_FAILED' | 'CONFLICT', message: string
 export function createChangesBackend(
   scenario: ChangesScenario,
   respond: <T>(value: T) => Promise<T>,
+  repos: MockRepos = createMockRepos(scenario.noRepo ?? false),
 ): ChangesClient {
-  let repo: ActiveRepo | null = scenario.noRepo ? null : { ...REPO };
   const files: MockFile[] = scenario.clean
     ? []
     : scenario.files
@@ -215,7 +214,7 @@ export function createChangesBackend(
   };
 
   const requireRepo = () => {
-    if (!repo) throw fail('INVALID_INPUT', 'Pick a repository first.');
+    if (!repos.active()) throw fail('INVALID_INPUT', 'Pick a repository first.');
   };
   const visible = () => files.filter((f) => changeKeys(f).length > 0);
   const find = (path: string) => {
@@ -225,11 +224,8 @@ export function createChangesBackend(
   };
 
   return {
-    repoActive: async () => respond(repo),
-    repoPick: async () => {
-      repo = { ...REPO };
-      return respond(repo);
-    },
+    repoActive: async () => respond(repos.active()),
+    repoPick: async () => respond(repos.pick()),
     gitStatus: async () => {
       requireRepo();
       const rows = visible().map((f) => treeFile(f, true));

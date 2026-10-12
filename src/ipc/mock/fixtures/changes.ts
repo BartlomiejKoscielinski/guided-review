@@ -22,7 +22,6 @@ export interface MockFile {
   hunks: MockHunk[];
 }
 
-export const REPO = { name: 'mobile-app', path: 'C:\\src\\mobile-app' };
 export const BRANCH = 'chore/compiled-bindings';
 
 const LOCAL_GROUPS: [string, string[]][] = [

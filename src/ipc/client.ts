@@ -3,6 +3,13 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
+import type { CommitList } from './types/CommitList';
+import type { CommitRange } from './types/CommitRange';
+import type { DetectedSource } from './types/DetectedSource';
+import type { LocalScope } from './types/LocalScope';
+import type { OpenedSession } from './types/OpenedSession';
+import type { Repo } from './types/Repo';
+import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
 import type { FileDiff } from './types/FileDiff';
@@ -34,11 +41,36 @@ export interface IpcClient {
   /** Unfinished review sessions, most recent first (F-30.2). */
   sessionsListUnfinished(): Promise<UnfinishedSession[]>;
 
-  // Repository and S-06 (F-15, F-16).
-  /** The active repository, or null until one is picked (M1: the default repository). */
+  // Repositories (F-19.6, F-30.7).
+  /** The active repository: switched to in this run, else the default one; null until picked. */
   repoActive(): Promise<ActiveRepo | null>;
-  /** Folder dialog; the picked repository becomes the default. Null when cancelled. */
+  /** Folder dialog; adds the repository and makes it active (the default if first). Null when cancelled. */
   repoPick(): Promise<ActiveRepo | null>;
+  /** The configured repositories with project, default/active flags and worktree folder. */
+  repoList(): Promise<Repo[]>;
+  /** Switches the active repository of S-01 and S-06 until the app restarts (F-30.7). */
+  repoSwitch(id: number): Promise<ActiveRepo>;
+  repoSetDefault(id: number): Promise<void>;
+  /** Forgets the repository; nothing on disk changes. */
+  repoRemove(id: number): Promise<void>;
+
+  // S-01 sources (F-01, F-03).
+  /** What the input names, or null for blank input; rejects with the F-01.5 copy. */
+  sourceDetect(input: string): Promise<DetectedSource | null>;
+  /** Commits of a branch (the current one without `branch`), filtered by message, author or SHA. */
+  gitLog(branch?: string, query?: string): Promise<CommitList>;
+  /** Counts of the three My changes scopes (F-03.3). */
+  gitStatusSummary(): Promise<StatusSummary>;
+  /** Step review of a commit or a range `from..to`, `from` excluded (F-01.3, F-03.2). */
+  sessionOpenCommit(range: CommitRange): Promise<OpenedSession>;
+  /** Self-review of local changes in one scope (F-03.4). */
+  sessionOpenLocal(scope: LocalScope): Promise<OpenedSession>;
+  /** A typed branch: the current one as local changes, another one as its commits. */
+  sessionOpenBranch(branch: string): Promise<OpenedSession>;
+  /** A typed repository path: added if needed, made active, then self-review. */
+  sessionOpenRepo(path: string): Promise<OpenedSession>;
+
+  // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */
   gitStatus(): Promise<LocalChanges>;
   /** A commit's details and files; HEAD without `sha` (F-15.6). */

@@ -3,6 +3,8 @@ import { applySettingsPatch } from '../settings-patch';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
+import { createMockRepos } from './repos';
+import { createSourcesBackend } from './sources';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
 import { health } from './fixtures/app';
@@ -91,6 +93,8 @@ export function createMockClient({
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
+  const changes = loadJson(storage, MOCK_CHANGES_KEY, changesOption);
+  const repos = createMockRepos(changes.noRepo ?? false);
   let maximized = false;
   const maximizedListeners = new Set<(maximized: boolean) => void>();
   const setMaximized = (value: boolean) => {
@@ -112,7 +116,8 @@ export function createMockClient({
     appStartRoute: () =>
       respond(restoreRoute(settings.ui.lastRoute, (id) => sessions.some((s) => s.id === id))),
     sessionsListUnfinished: () => respond(sessions),
-    ...createChangesBackend(loadJson(storage, MOCK_CHANGES_KEY, changesOption), respond),
+    ...createChangesBackend(changes, respond, repos),
+    ...createSourcesBackend(respond, repos),
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, (ms) =>
       latencyMs > 0 ? wait(ms) : Promise.resolve(),
     ),
