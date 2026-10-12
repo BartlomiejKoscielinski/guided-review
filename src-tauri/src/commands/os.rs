@@ -12,11 +12,16 @@ use crate::os::process::spawn_detached;
 use crate::os::rider::{self, RiderInput};
 use crate::store::{self, Store};
 
-/// `file` is repository-relative with `/`; `line` is 1-based.
+/// `file` is repository-relative with `/`; `line` is 1-based. An empty `file` opens the
+/// repository folder ("Pull with rebase in Rider" after a rejected push).
 #[tauri::command]
 pub async fn rider_open(store: State<'_, Store>, file: String, line: u32) -> AppResult<()> {
     let git = active_git(&store).await?;
-    let path = inside(git.repo(), &file)?;
+    let path = if file.is_empty() {
+        None
+    } else {
+        Some(inside(git.repo(), &file)?)
+    };
     let settings = with_store(&store, |conn| store::settings::load(conn)).await?;
     let configured = settings.rider.path.map(PathBuf::from);
     let install = tauri::async_runtime::spawn_blocking(move || {
@@ -30,12 +35,13 @@ pub async fn rider_open(store: State<'_, Store>, file: String, line: u32) -> App
             "Rider wasn't found. Set its path in Settings › Integrations.",
         )
     })?;
-    spawn_detached(
-        &install.exe,
-        &rider::open_args(&path, line.max(1), None),
-        None,
-    )
-    .map_err(|e| AppError::internal("Rider could not be started.").with_detail(e.to_string()))?;
+    let args = match &path {
+        Some(path) => rider::open_args(path, line.max(1), None),
+        None => vec![git.repo().as_os_str().to_owned()],
+    };
+    spawn_detached(&install.exe, &args, None).map_err(|e| {
+        AppError::internal("Rider could not be started.").with_detail(e.to_string())
+    })?;
     Ok(())
 }
 

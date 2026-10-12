@@ -202,7 +202,7 @@ export function LocalMode() {
               <PushFailure
                 error={pushError}
                 onOpenRider={() => {
-                  if (selectedFile) rider.mutate({ file: selectedFile.path, line: 1 });
+                  rider.mutate({ file: '', line: 1 });
                 }}
               />
             )}
