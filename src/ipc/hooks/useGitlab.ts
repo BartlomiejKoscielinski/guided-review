@@ -1,4 +1,10 @@
-import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 import { useIpc } from '../IpcContext';
 import type { IpcError } from '../errors';
 import type { GitlabStatus } from '../types/GitlabStatus';
@@ -19,13 +25,17 @@ export function useGitlabStatus(): UseQueryResult<GitlabStatus, IpcError> {
   });
 }
 
-/** One S-01 tab of the active repository's project, with the counts of all three (F-02.1). */
+/**
+ * One S-01 tab of the active repository's project, with the counts of all three (F-02.1).
+ * Switching tabs keeps the previous list as placeholder data, so the counts stay visible.
+ */
 export function useMrList(tab: MrTab, enabled: boolean): UseQueryResult<MrList, IpcError> {
   const ipc = useIpc();
   return useQuery<MrList, IpcError>({
     queryKey: [...GITLAB_MRS_ROOT, tab],
     queryFn: () => ipc.gitlabListMrs(tab),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 

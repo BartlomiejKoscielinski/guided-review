@@ -1,0 +1,195 @@
+/* S-01 Merge requests column (Start.dc.html). */
+.column {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--blue);
+  color: var(--ink);
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--bg-sunken);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tabOn {
+  background: var(--blue);
+  color: var(--ink);
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--card);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover:not(:disabled) {
+  background: var(--raised);
+}
+
+.row:disabled {
+  cursor: default;
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.iid {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--blue-text);
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.size {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.add {
+  color: var(--diff-add-text);
+}
+
+.del {
+  color: var(--diff-del-text);
+}
+
+.pipeline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pipeSquare {
+  width: 9px;
+  height: 9px;
+  background: var(--ring-2);
+}
+
+.passed {
+  background: var(--green);
+}
+.failed {
+  background: var(--orange);
+}
+.running {
+  background: var(--blue);
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* Height of a row with a note line: 12 + 22.5 + 6 + 19 + 6 + 19 + 12. */
+.skeleton {
+  display: block;
+  height: 96px;
+  background: var(--card);
+}
+
+.message {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--card);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--orange-text);
+}
+
+.addToken {
+  display: flex;
+  padding: 4px 0;
+}
