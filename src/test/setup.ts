@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
+
+// Whole-app renders (S-01 with three columns) can take over 1 s under full-suite load.
+configure({ asyncUtilTimeout: 3000 });
 
 afterEach(() => {
   cleanup();

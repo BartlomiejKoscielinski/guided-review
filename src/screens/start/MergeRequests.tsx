@@ -5,10 +5,15 @@ import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import { MergeRequestIcon } from '../../components/icons';
 import { useGitlabStatus, useMrList } from '../../ipc/hooks/useGitlab';
+import { useSettings } from '../../ipc/hooks/useSettings';
 import { useOpenSource } from '../../ipc/hooks/useSources';
 import type { MrRow } from '../../ipc/types/MrRow';
 import type { MrTab } from '../../ipc/types/MrTab';
+import { Column } from './Column';
+import columnStyles from './Column.module.css';
 import { MrRowItem } from './MrRowItem';
+import { age } from './mrRow';
+import { useNow } from './useNow';
 import styles from './MergeRequests.module.css';
 
 const TABS: readonly { id: MrTab; label: string; empty: string }[] = [
@@ -18,6 +23,11 @@ const TABS: readonly { id: MrTab; label: string; empty: string }[] = [
 ];
 
 const SKELETON_ROWS = [0, 1, 2];
+
+/** F-28.2 default, until the settings load. */
+const DEFAULT_POLL_MINUTES = 3;
+/** How often the age of the data is recomputed. */
+const AGE_TICK_MS = 30_000;
 
 /** Settings › GitLab fixes these: no token, or one GitLab doesn't accept. */
 const TOKEN_CODES = new Set(['GITLAB_UNAUTHORIZED', 'GITLAB_FORBIDDEN']);
@@ -42,6 +52,7 @@ function AddToken() {
 /**
  * S-01 Merge requests column (F-02.1–F-02.3): Waiting for me / Mine / All open with counts,
  * rows as in Start.dc.html, 3 skeleton rows while loading, and "Add your GitLab token".
+ * Lists refresh on focus and every `poll.minutes`; older data shows "Updated 7 min ago" (F-02.4).
  */
 export function MergeRequests() {
   const navigate = useNavigate();
@@ -51,12 +62,17 @@ export function MergeRequests() {
   const tokenProblem =
     state === 'noToken' ||
     (state === 'failing' && TOKEN_CODES.has(status.data?.problem?.code ?? ''));
-  const list = useMrList(tab, state === 'connected');
+  const settings = useSettings();
+  const pollMs = (settings.data?.poll.minutes ?? DEFAULT_POLL_MINUTES) * 60_000;
+  const list = useMrList(tab, state === 'connected', pollMs);
+  const clock = useNow(AGE_TICK_MS);
   const open = useOpenSource();
   const listTokenProblem = list.error !== null && TOKEN_CODES.has(list.error.code);
   const counts = list.data?.counts;
   // Ages as of the fetch: the list is as old as its data (F-02.4).
   const now = list.dataUpdatedAt;
+  const fresh = list.data !== undefined && !list.isPlaceholderData;
+  const stale = fresh && clock - now > pollMs;
 
   const onOpen = (row: MrRow) => {
     // Own MR: author mode (S-10, M7); a teammate's: preparation, then the plan (S-02).
@@ -74,9 +90,10 @@ export function MergeRequests() {
   const body = () => {
     if (tokenProblem || listTokenProblem) return <AddToken />;
     if (state === 'failing' && status.data?.problem) {
-      return <p className={styles.message}>{status.data.problem.message}</p>;
+      return <p className={columnStyles.message}>{status.data.problem.message}</p>;
     }
-    if (list.error) return <p className={styles.message}>{list.error.message}</p>;
+    // A failed refresh keeps the rows; their age says how old they are.
+    if (list.error && !fresh) return <p className={columnStyles.message}>{list.error.message}</p>;
     if (!list.data || list.isPlaceholderData) {
       return (
         <div className={styles.rows} aria-busy="true" aria-label="Loading merge requests">
@@ -87,7 +104,7 @@ export function MergeRequests() {
       );
     }
     if (list.data.rows.length === 0) {
-      return <p className={styles.message}>{TABS.find((t) => t.id === tab)?.empty}</p>;
+      return <p className={columnStyles.message}>{TABS.find((t) => t.id === tab)?.empty}</p>;
     }
     return (
       <div className={styles.rows}>
@@ -100,39 +117,41 @@ export function MergeRequests() {
 
   const showTabs = !tokenProblem && !listTokenProblem;
   return (
-    <section aria-labelledby="h-mr" className={styles.column}>
-      <div className={styles.header}>
-        <MergeRequestIcon strokeWidth={2.2} />
-        <h2 id="h-mr" className={styles.heading}>
-          Merge requests
-        </h2>
-      </div>
-      <div className={styles.body}>
-        {showTabs && (
-          <div role="tablist" aria-label="Merge request filter" className={styles.tabs}>
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={t.id === tab}
-                className={cx(styles.tab, t.id === tab && styles.tabOn)}
-                onClick={() => {
-                  setTab(t.id);
-                }}
-              >
-                {t.label} <span className={styles.count}>{counts ? counts[t.id] : ''}</span>
-              </button>
-            ))}
-          </div>
-        )}
-        {open.error && (
-          <p role="alert" className={styles.error}>
-            {open.error.message}
-          </p>
-        )}
-        {body()}
-      </div>
-    </section>
+    <Column
+      id="h-mr"
+      title="Merge requests"
+      icon={<MergeRequestIcon strokeWidth={2.2} />}
+      tone="blue"
+      aside={
+        stale ? (
+          <span className={styles.age}>Updated {age(new Date(now).toISOString(), clock)} ago</span>
+        ) : undefined
+      }
+    >
+      {showTabs && (
+        <div role="tablist" aria-label="Merge request filter" className={styles.tabs}>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={t.id === tab}
+              className={cx(styles.tab, t.id === tab && styles.tabOn)}
+              onClick={() => {
+                setTab(t.id);
+              }}
+            >
+              {t.label} <span className={styles.count}>{counts ? counts[t.id] : ''}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {open.error && (
+        <p role="alert" className={columnStyles.error}>
+          {open.error.message}
+        </p>
+      )}
+      {body()}
+    </Column>
   );
 }

@@ -28,14 +28,21 @@ export function useGitlabStatus(): UseQueryResult<GitlabStatus, IpcError> {
 /**
  * One S-01 tab of the active repository's project, with the counts of all three (F-02.1).
  * Switching tabs keeps the previous list as placeholder data, so the counts stay visible.
+ * Refetched when S-01 mounts or the window gains focus, and every `pollMs` (F-02.4).
  */
-export function useMrList(tab: MrTab, enabled: boolean): UseQueryResult<MrList, IpcError> {
+export function useMrList(
+  tab: MrTab,
+  enabled: boolean,
+  pollMs: number | false,
+): UseQueryResult<MrList, IpcError> {
   const ipc = useIpc();
   return useQuery<MrList, IpcError>({
     queryKey: [...GITLAB_MRS_ROOT, tab],
     queryFn: () => ipc.gitlabListMrs(tab),
     enabled,
     placeholderData: keepPreviousData,
+    refetchOnWindowFocus: true,
+    refetchInterval: pollMs,
   });
 }
 
