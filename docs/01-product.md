@@ -62,12 +62,12 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-02.1** Tabs **Waiting for me** (I am a reviewer and have not approved), **Mine** (I am the author), **All open** (project). Each tab shows a count.
 - **F-02.2** A row shows: `!iid`, title, author · age, `+add −del · N files`, pipeline status (square + "pipeline passed/failed/running"), and an optional one-line note (e.g. "You're a reviewer · plan is ready", "Large: the plan splits it by layer", "2 unresolved threads from reviewers"). The note is the first that applies: unresolved threads ("1 unresolved thread from reviewers", "N unresolved threads from reviewers") > "Large: the plan splits it by layer" (40 files or more) > "You're a reviewer" (I'm a reviewer, any tab); F-02.5 adds " · plan is ready".
 - **F-02.3** Clicking a teammate's MR opens the plan (S-02). Clicking my own MR opens author mode (S-10).
-- **F-02.4** Lists refresh when S-01 gains focus and on the polling interval (F-28); the age of the data is visible when older than the interval.
+- **F-02.4** Lists refresh when S-01 gains focus and on the polling interval (F-28); the age of the data is visible when older than the interval ("Updated 7 min ago" in the Merge requests header).
 - **F-02.5** If a plan for an MR is already cached for its current head, the row says "plan is ready".
 
 ### F-03 Start: commits and local changes · S-01
 - **F-03.1** The Commits column lists commits of the current branch (branch name in the header), newest first, with SHA, subject, author · age. A search field filters by message, author or SHA.
-- **F-03.2** Clicking selects one commit; Shift+click selects a range. Actions: **Review `<sha>`** (step review) and **Browse files** (S-06 in commit mode).
+- **F-03.2** Clicking selects one commit; Shift+click selects a range. Actions: **Review `<sha>`** (step review; a range shows **Review `<oldest>..<newest>`** and includes the oldest selected commit) and **Browse files** (S-06 in commit mode; disabled for a range).
 - **F-03.3** The My changes column shows the current branch and three scopes as radio cards with counts: **Uncommitted changes**, **Staged only**, **Whole branch vs `<target>`**.
 - **F-03.4** Actions: **Review before push** (self-review, F-17) and **Browse and commit** (S-06 local mode). The column states: "Self-review never publishes anything. You end with a list of fixes before pushing and a draft MR description."
 

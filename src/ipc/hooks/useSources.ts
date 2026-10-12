@@ -1,11 +1,22 @@
-import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryResult,
+} from '@tanstack/react-query';
 import { useStartStore } from '../../state/start';
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
+import type { CommitList } from '../types/CommitList';
+import type { CommitRange } from '../types/CommitRange';
 import type { DetectedSource } from '../types/DetectedSource';
+import type { LocalScope } from '../types/LocalScope';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
+import type { StatusSummary } from '../types/StatusSummary';
+import { LOCAL_KEY } from './useChanges';
 import { GITLAB_MRS_ROOT } from './useGitlab';
 
 const detectKey = (input: string) => ['source', 'detect', input] as const;
@@ -79,5 +90,45 @@ export function useOpenSource() {
       void queryClient.invalidateQueries({ queryKey: ['git'] });
       void queryClient.invalidateQueries({ queryKey: GITLAB_MRS_ROOT });
     },
+  });
+}
+
+/** The Commits column (F-03.1): the current branch, filtered by message, author or SHA. */
+export function useCommitLog(
+  query: string,
+  enabled: boolean,
+): UseQueryResult<CommitList, IpcError> {
+  const ipc = useIpc();
+  return useQuery<CommitList, IpcError>({
+    queryKey: ['git', 'log', query],
+    queryFn: () => ipc.gitLog(undefined, query === '' ? undefined : query),
+    enabled,
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** The My changes column (F-03.3): counts of the three scopes; refreshed with the working tree. */
+export function useStatusSummary(enabled: boolean): UseQueryResult<StatusSummary, IpcError> {
+  const ipc = useIpc();
+  return useQuery<StatusSummary, IpcError>({
+    queryKey: [...LOCAL_KEY, 'summary'],
+    queryFn: () => ipc.gitStatusSummary(),
+    enabled,
+  });
+}
+
+/** Review `<sha>` / `<from>..<to>` on S-01 (F-03.2). */
+export function useOpenCommit() {
+  const ipc = useIpc();
+  return useMutation<OpenedSession, IpcError, CommitRange>({
+    mutationFn: (range) => ipc.sessionOpenCommit(range),
+  });
+}
+
+/** Review before push on S-01 (F-03.4). */
+export function useOpenLocal() {
+  const ipc = useIpc();
+  return useMutation<OpenedSession, IpcError, LocalScope>({
+    mutationFn: (scope) => ipc.sessionOpenLocal(scope),
   });
 }

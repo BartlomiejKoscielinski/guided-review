@@ -80,6 +80,7 @@ Paste into `src/styles/tokens.css` and use only these variables in components.
   --kbd-bg: #2A2A2A;
   --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
   --switch-off: #333331;            /* Switch track when off (Settings mock) */
+  --green-tint: #1F2A20;            /* selected RadioCard (Start mock) */
 
   --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;
@@ -153,7 +154,7 @@ Fonts are bundled (offline desktop app) with `@fontsource/barlow` (400, 500, 600
 | **Tabs** | Same as Segmented, with counts in mono. |
 | **Switch** | 46×26 square track (`--switch-off` off, green on), 18px square knob (ink on, `--text-muted` off). |
 | **Checkbox** | 17px, accent green; tri-state for directories. Large staging checkboxes in S-06 are 18px green squares with black check. Draft checkboxes in S-05 are blue (they select what gets published). |
-| **RadioCard** | Card with radio; selected = green tint `#1F2A20` + 2px green ring. |
+| **RadioCard** | Card with radio; selected = green tint `--green-tint` (`#1F2A20`) + 2px green ring. |
 | **Input / Select / TextArea** | 36–46px height, no border, `--bg-sunken` or `--panel-2`, text `--text`; mono for commit messages and descriptions. |
 | **ProgressSegments** | 8 segments 12×6px: done green, current yellow (or white in title bar), upcoming `--line`. |
 | **CoverageBar** | 8px green bar; remainder `--line`. |

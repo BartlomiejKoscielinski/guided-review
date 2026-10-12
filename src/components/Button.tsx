@@ -4,7 +4,7 @@ import { cx } from './cx';
 import styles from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'approve' | 'send' | 'claude' | 'neutral' | 'ghost';
-export type ButtonSize = 28 | 30 | 34 | 36 | 40 | 42 | 44 | 50;
+export type ButtonSize = 28 | 30 | 34 | 36 | 38 | 40 | 42 | 44 | 50;
 
 const FILLED: ReadonlySet<ButtonVariant> = new Set(['primary', 'approve', 'send', 'claude']);
 

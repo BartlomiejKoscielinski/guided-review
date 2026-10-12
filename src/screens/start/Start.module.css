@@ -9,7 +9,7 @@
   line-height: 1.5; /* Start.dc.html sets 1.5 on the page, not the global 1.45 */
 }
 
-/* Three columns: Merge requests, Commits, My changes (2f). */
+/* Three columns: Merge requests, Commits, My changes. */
 .columns {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr));

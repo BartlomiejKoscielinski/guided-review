@@ -1,0 +1,105 @@
+/* S-01 Commits column (Start.dc.html). */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.search {
+  height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.search::placeholder {
+  color: var(--text-muted);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 0;
+  background: var(--card);
+  color: var(--text);
+  font-family: var(--font-ui);
+  /* The mock's rows keep the button's normal line height: 35px rows. */
+  line-height: normal;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover:not(.rowOn) {
+  background: var(--raised);
+}
+
+.rowOn {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.sha {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+
+.rowOn .sha {
+  color: var(--ink);
+}
+
+.subject {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.meta {
+  font-size: 12px;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* Height of a row: 9 + 17 + 9. */
+.skeleton {
+  display: block;
+  height: 35px;
+  background: var(--card);
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.actionSha {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: none;
+}
