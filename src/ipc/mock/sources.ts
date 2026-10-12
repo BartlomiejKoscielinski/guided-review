@@ -160,7 +160,11 @@ export function createSourcesBackend(
       requireRepo();
       const known = (sha: string) => commits.some((c) => c.sha.startsWith(sha.toLowerCase()));
       if (!known(range.to)) throw noMatch(range.to);
-      if (range.from !== undefined && !known(range.from)) throw noMatch(range.from);
+      // A Shift+click range starts at the parent of its oldest commit, maybe below the list.
+      const parent = (sha: string) => commits.some((c) => c.parent === sha.toLowerCase());
+      if (range.from !== undefined && !known(range.from) && !parent(range.from)) {
+        throw noMatch(range.from);
+      }
       return opened(step);
     },
     sessionOpenLocal: async () => {

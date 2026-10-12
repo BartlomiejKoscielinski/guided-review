@@ -323,6 +323,12 @@ async fn f03_1_log_lists_newest_first_and_filters() {
     );
     assert_eq!(all.commits[0].author, "Test Łukasz");
     assert_eq!(all.commits[0].short_sha.len(), 7);
+    // F-03.2: a range starts at the oldest selected commit's parent.
+    assert_eq!(
+        all.commits[0].parent.as_deref(),
+        Some(all.commits[1].sha.as_str())
+    );
+    assert_eq!(all.commits[2].parent, None, "root commit");
 
     let feature = log::log(&git, Some("feature/zażółć"), Some("anna"), &cancel)
         .await

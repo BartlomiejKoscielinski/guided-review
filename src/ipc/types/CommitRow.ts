@@ -4,4 +4,9 @@ export type CommitRow = { sha: string, shortSha: string, subject: string, author
 /**
  * ISO 8601 author date.
  */
-date: string, };
+date: string, 
+/**
+ * First parent; `None` for a root commit. A Shift+click range starts here, so the oldest
+ * selected commit is included (`from` is excluded, F-03.2).
+ */
+parent?: string, };

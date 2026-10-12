@@ -12,8 +12,9 @@ use crate::os::process::Cancel;
 /// Commits shown at most (docs/05).
 pub const LIMIT: usize = 200;
 
-/// SHA, short SHA, subject, author, author date (ISO 8601), committer timestamp (merge order).
-const FORMAT: &str = "--format=%H%x1f%h%x1f%s%x1f%an%x1f%aI%x1f%ct%x1e";
+/// SHA, short SHA, subject, author, author date (ISO 8601), committer timestamp (merge order),
+/// parents.
+const FORMAT: &str = "--format=%H%x1f%h%x1f%s%x1f%an%x1f%aI%x1f%ct%x1f%P%x1e";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +26,11 @@ pub struct CommitRow {
     pub author: String,
     /// ISO 8601 author date.
     pub date: String,
+    /// First parent; `None` for a root commit. A Shift+click range starts here, so the oldest
+    /// selected commit is included (`from` is excluded, F-03.2).
+    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -154,7 +160,7 @@ fn parse(text: &str) -> Option<Vec<Entry>> {
         .filter(|record| !record.is_empty())
         .map(|record| {
             let fields: Vec<&str> = record.split('\x1f').collect();
-            let [sha, short_sha, subject, author, date, time] = fields.as_slice() else {
+            let [sha, short_sha, subject, author, date, time, parents] = fields.as_slice() else {
                 return None;
             };
             Some(Entry {
@@ -164,6 +170,7 @@ fn parse(text: &str) -> Option<Vec<Entry>> {
                     subject: (*subject).to_owned(),
                     author: (*author).to_owned(),
                     date: (*date).to_owned(),
+                    parent: parents.split_whitespace().next().map(str::to_owned),
                 },
                 time: time.trim().parse().ok()?,
             })
@@ -177,10 +184,12 @@ mod tests {
 
     #[test]
     fn f03_1_parses_records_and_merges_newest_first() {
-        let text = "aaa\x1fa\x1fFix ąę\x1fŁukasz\x1f2026-10-01T10:00:00+02:00\x1f100\x1e\n\
-                    bbb\x1fb\x1fAdd\x1fAnna\x1f2026-10-02T10:00:00+02:00\x1f200\x1e\n";
+        let text = "aaa\x1fa\x1fFix ąę\x1fŁukasz\x1f2026-10-01T10:00:00+02:00\x1f100\x1f\x1e\n\
+                    bbb\x1fb\x1fAdd\x1fAnna\x1f2026-10-02T10:00:00+02:00\x1f200\x1faaa ccc\x1e\n";
         let mut entries = parse(text).unwrap();
         assert_eq!(entries[0].row.subject, "Fix ąę");
+        assert_eq!(entries[0].row.parent, None);
+        assert_eq!(entries[1].row.parent.as_deref(), Some("aaa"));
         entries.extend(parse(text).unwrap());
         let merged = merge(entries);
         let shas: Vec<_> = merged.iter().map(|e| e.row.sha.as_str()).collect();

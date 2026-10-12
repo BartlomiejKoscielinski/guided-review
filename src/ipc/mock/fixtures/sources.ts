@@ -14,6 +14,7 @@ export function branchCommits(): CommitRow[] {
       subject: COMMIT.subject,
       author: COMMIT.author,
       date: ago(2 * HOUR),
+      parent: '9be0d47c2a1f3e5b6d7c8e9f0a1b2c3d4e5f6a7b',
     },
     {
       sha: '9be0d47c2a1f3e5b6d7c8e9f0a1b2c3d4e5f6a7b',
@@ -21,6 +22,7 @@ export function branchCommits(): CommitRow[] {
       subject: 'Offline queue: SqliteUploadQueue',
       author: 'Marta K.',
       date: ago(3 * HOUR),
+      parent: '51c2e8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6',
     },
     {
       sha: '51c2e8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6',
@@ -28,6 +30,7 @@ export function branchCommits(): CommitRow[] {
       subject: 'Fix: double tap in SendPhoto',
       author: 'You',
       date: ago(26 * HOUR),
+      parent: 'e07d3f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e',
     },
     {
       sha: 'e07d3f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e',
@@ -35,6 +38,7 @@ export function branchCommits(): CommitRow[] {
       subject: 'Update CommunityToolkit.Mvvm',
       author: 'Paweł S.',
       date: ago(30 * HOUR),
+      parent: 'c4a19b0f1e2d3c4b5a6978877665544332211009',
     },
     {
       sha: 'c4a19b0f1e2d3c4b5a6978877665544332211009',
@@ -42,6 +46,7 @@ export function branchCommits(): CommitRow[] {
       subject: 'Strings.resx: offline messages',
       author: 'Marta K.',
       date: ago(50 * HOUR),
+      parent: '7d2e9a1b0c3f4e5d6a7b8c9d0e1f2a3b4c5d6e7f',
     },
   ];
 }
