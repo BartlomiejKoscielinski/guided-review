@@ -533,6 +533,7 @@ Windows needs an AppUserModelID and a Start-menu shortcut (the installer) for to
 
 **R-12 · Rider External Tools · minor (M10)**
 `$SelectedText$` likely isn't the selected commit in the VCS log, so "Review this commit" may need a different macro or a prompt. S9.
+**Resolved 2026-10-12 (S9):** `$SelectedText$` is only the editor selection; "Review this commit" uses `$ClipboardContent$` after Git log › Copy Revision Number, and the app accepts only a hex SHA (`05` › JetBrains Rider, T5).
 
 **R-13 · GitLab version and tier differences · important (M2/M5)**
 Draft notes, bulk publish, approval fields and filters depend on version and tier. S5 early.
@@ -607,6 +608,8 @@ A test CA plus a local HTTPS endpoint (a small Rust test server) checks that the
 | 3 | end of M5/M6 | publish/approve/resolve, pipelines and jobs (sandbox) |
 | 4 | M7 and M9 | author mode on your own MR; **S8** csharp-ls on the real solution (timings only) |
 | 5 | M10/M11 | tray, toasts, deep links, Rider External Tools, installer: the `09` manual checklist |
+
+**Update 2026-10-12:** visit 1 is postponed to the end of M2 and done together with visit 2 (`07`); its Claude Enterprise results gate M3.
 
 ### F-6 · How results count in PROGRESS
 A criterion is ticked with its SHA when layers 1 and 2 pass (as today). Anything that can only be proven on the real environment gets a line in the `09` manual checklist tagged `[field]` and is checked off at the matching visit. If a field check fails, the item is unticked with `— partial: field <visit>: <what failed>`. `audit.mjs` keeps working, because manual-checklist items already count.
