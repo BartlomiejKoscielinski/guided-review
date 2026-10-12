@@ -7,4 +7,5 @@ mod job;
 pub mod paths;
 pub mod process;
 pub mod rider;
+pub mod rider_pick;
 pub mod window;

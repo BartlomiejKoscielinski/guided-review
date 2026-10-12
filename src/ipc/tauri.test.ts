@@ -69,6 +69,8 @@ describe('Tauri IPC client', () => {
     await client.gitLastMessage();
     await client.gitPush();
     await client.riderOpen('a b/ż.cs', 12);
+    await client.riderStatus();
+    await client.riderPickExecutable();
     expect(invokeMock.mock.calls).toEqual([
       ['repo_active', undefined],
       ['repo_pick', undefined],
@@ -82,6 +84,8 @@ describe('Tauri IPC client', () => {
       ['git_last_message', undefined],
       ['git_push', undefined],
       ['rider_open', { file: 'a b/ż.cs', line: 12, session: null }],
+      ['rider_status', undefined],
+      ['rider_pick_executable', undefined],
     ]);
   });
 

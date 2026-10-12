@@ -12,6 +12,7 @@ import type { DetectedSource } from './types/DetectedSource';
 import type { OpenedSession } from './types/OpenedSession';
 import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
+import type { RiderStatus } from './types/RiderStatus';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
@@ -73,6 +74,8 @@ export function createTauriClient(): IpcClient {
     gitPush: () => call<PushResult>('git_push'),
     riderOpen: (file, line, session) =>
       call<undefined>('rider_open', { file, line, session: session ?? null }),
+    riderStatus: () => call<RiderStatus>('rider_status'),
+    riderPickExecutable: () => call<RiderStatus | null>('rider_pick_executable'),
     onRepoChanged: async (listener) => {
       try {
         return await listen(EVENTS.repoChanged, () => {

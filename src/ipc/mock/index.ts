@@ -1,10 +1,11 @@
 import type { IpcClient } from '../client';
-import { applySettingsPatch } from '../settings-patch';
+import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
+import { createRiderBackend, type RiderScenario } from './rider';
 import { createSourcesBackend } from './sources';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
@@ -40,6 +41,8 @@ export interface MockOptions {
   claude?: ClaudeScenario;
   /** GitLab variations; the storage's `MOCK_GITLAB_KEY` wins. */
   gitlab?: GitlabScenario;
+  /** Rider variations (F-24.4). */
+  rider?: RiderScenario;
 }
 
 const wait = (ms: number): Promise<void> =>
@@ -91,6 +94,7 @@ export function createMockClient({
   changes: changesOption = {},
   claude: claudeOption = {},
   gitlab: gitlabOption = {},
+  rider: riderOption = {},
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
@@ -106,14 +110,15 @@ export function createMockClient({
     if (latencyMs > 0) await wait(latencyMs);
     return structuredClone(value);
   };
+  const setSettings = (patch: SettingsPatch): Settings => {
+    settings = applySettingsPatch(settings, patch);
+    storage?.setItem(MOCK_SETTINGS_KEY, JSON.stringify(settings));
+    return settings;
+  };
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
-    appSettingsSet: (patch) => {
-      settings = applySettingsPatch(settings, patch);
-      storage?.setItem(MOCK_SETTINGS_KEY, JSON.stringify(settings));
-      return respond(settings);
-    },
+    appSettingsSet: (patch) => respond(setSettings(patch)),
     appStartRoute: () =>
       respond(restoreRoute(settings.ui.lastRoute, (id) => sessions.some((s) => s.id === id))),
     sessionsListUnfinished: () => respond(sessions),
@@ -124,6 +129,7 @@ export function createMockClient({
       latencyMs > 0 ? wait(ms) : Promise.resolve(),
     ),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
+    ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),
     // The browser has no window to move; the mock only tracks the maximized state.
     windowMinimize: () => Promise.resolve(),
     windowToggleMaximize: () => {

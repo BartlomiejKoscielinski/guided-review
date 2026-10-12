@@ -1,15 +1,18 @@
-//! `rider_open` (F-15.5, F-24.1): opens a file in Rider at a line, from the active
-//! repository's working copy or, for a session, from the folder `rider.openFrom` picks.
+//! Rider commands: `rider_open` (F-15.5, F-24.1) opens a file at a line, from the active
+//! repository's working copy or, for a session, from the folder `rider.openFrom` picks;
+//! `rider_status` and `rider_pick_executable` back Settings › Integrations (F-24.4).
 
 use std::path::{Component, Path, PathBuf};
 
-use tauri::State;
+use tauri::{AppHandle, Runtime, State};
+use tauri_plugin_dialog::DialogExt;
 
 use super::repo::active_git;
 use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::os::process::spawn_detached;
-use crate::os::rider::{self, RiderInput};
+use crate::os::rider::{self, RiderInput, RiderInstall};
+use crate::os::rider_pick::{self, RiderStatus};
 use crate::store::{self, Store};
 
 /// `file` is repository-relative with `/`; `line` is 1-based. An empty `file` opens the
@@ -48,13 +51,7 @@ pub async fn rider_open(
     } else {
         Some(inside(&root, &file)?)
     };
-    let configured = settings.rider.path.map(PathBuf::from);
-    let install = tauri::async_runtime::spawn_blocking(move || {
-        rider::discover(&RiderInput::from_env(configured))
-    })
-    .await
-    .map_err(|e| AppError::internal("Rider lookup failed.").with_detail(e.to_string()))?
-    .ok_or_else(|| {
+    let install = detect(settings.rider.path).await?.ok_or_else(|| {
         AppError::new(
             ErrorCode::InvalidInput,
             "Rider wasn't found. Set its path in Settings › Integrations.",
@@ -68,6 +65,57 @@ pub async fn rider_open(
         AppError::internal("Rider could not be started.").with_detail(e.to_string())
     })?;
     Ok(())
+}
+
+/// The install the app uses: the Settings value, else the detected one (docs/05 › Rider).
+async fn detect(configured: Option<String>) -> AppResult<Option<RiderInstall>> {
+    let configured = configured.map(PathBuf::from);
+    tauri::async_runtime::spawn_blocking(move || rider::discover(&RiderInput::from_env(configured)))
+        .await
+        .map_err(|e| AppError::internal("Rider lookup failed.").with_detail(e.to_string()))
+}
+
+/// Settings › Integrations › JetBrains Rider: the path and version the app uses (F-24.4).
+#[tauri::command]
+pub async fn rider_status(store: State<'_, Store>) -> AppResult<RiderStatus> {
+    let settings = with_store(&store, |conn| store::settings::load(conn)).await?;
+    let install = detect(settings.rider.path).await?;
+    Ok(RiderStatus::from_install(install.as_ref()))
+}
+
+/// **Change** (F-24.4): file dialog for `rider64.exe` (or a Toolbox `rider.cmd`, stored as the
+/// exe it starts); saved as `rider.path`. `None` when the dialog was closed.
+#[tauri::command]
+pub async fn rider_pick_executable<R: Runtime>(
+    app: AppHandle<R>,
+    store: State<'_, Store>,
+) -> AppResult<Option<RiderStatus>> {
+    let dialog = app
+        .dialog()
+        .file()
+        .set_title("Rider executable")
+        .add_filter("Rider", &["exe", "cmd"]);
+    let picked = tauri::async_runtime::spawn_blocking(move || dialog.blocking_pick_file())
+        .await
+        .map_err(|e| AppError::internal("The file dialog failed.").with_detail(e.to_string()))?;
+    let Some(path) = picked.and_then(|p| p.into_path().ok()) else {
+        return Ok(None);
+    };
+    let install = tauri::async_runtime::spawn_blocking(move || rider_pick::pick_install(&path))
+        .await
+        .map_err(|e| AppError::internal("Rider lookup failed.").with_detail(e.to_string()))?
+        .ok_or_else(|| {
+            AppError::new(
+                ErrorCode::InvalidInput,
+                "That file isn't a Rider executable.",
+            )
+        })?;
+    let value = install.exe.to_string_lossy().into_owned();
+    with_store(&store, move |c| {
+        store::settings::update(c, &serde_json::json!({ "rider": { "path": value } })).map(drop)
+    })
+    .await?;
+    Ok(Some(RiderStatus::from_install(Some(&install))))
 }
 
 /// A repository-relative path joined to the repository; no absolute paths or `..`.

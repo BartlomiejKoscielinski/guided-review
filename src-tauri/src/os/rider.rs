@@ -10,7 +10,7 @@ use serde::Deserialize;
 
 use crate::settings::RiderOpenFrom;
 
-const EXE: &str = "rider64.exe";
+pub(crate) const EXE: &str = "rider64.exe";
 
 /// Where an install was found.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]

@@ -185,6 +185,8 @@ pub fn run() {
             commands::git::git_last_message,
             commands::git::git_push,
             commands::os::rider_open,
+            commands::os::rider_status,
+            commands::os::rider_pick_executable,
             commands::claude::claude_status,
             commands::claude::claude_refresh,
             commands::claude::claude_sign_in,

@@ -10,6 +10,7 @@ import type { LocalScope } from './types/LocalScope';
 import type { OpenedSession } from './types/OpenedSession';
 import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
+import type { RiderStatus } from './types/RiderStatus';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
@@ -101,6 +102,10 @@ export interface IpcClient {
    * opens from the folder `rider.openFrom` picks (F-24.1).
    */
   riderOpen(file: string, line: number, session?: string): Promise<void>;
+  /** The Rider install the app uses: `rider.path`, else the detected one (F-24.4). */
+  riderStatus(): Promise<RiderStatus>;
+  /** Change: file dialog for `rider64.exe`, saved as `rider.path`; null when cancelled (F-24.4). */
+  riderPickExecutable(): Promise<RiderStatus | null>;
   /** Calls `listener` when the working tree, index or HEAD changed (F-16.2). */
   onRepoChanged(listener: () => void): Promise<() => void>;
 
