@@ -137,9 +137,9 @@ export function LocalMode() {
           staging={diff.data?.lineStaging ? diffStaging : undefined}
         />
       ) : (
-        <main className={styles.centered}>
+        <div className={styles.centered}>
           {status.isPending ? '' : status.error ? status.error.message : 'Working tree clean.'}
-        </main>
+        </div>
       )}
       <CommitPanel
         message={store.message}

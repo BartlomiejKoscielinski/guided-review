@@ -37,6 +37,14 @@ const SHOTS: Shot[] = [
   { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' } },
   { screen: 'S07', state: 'settings-general', lastRoute: { screen: 'S-07', section: 'general' } },
   {
+    screen: 'S07',
+    state: 'settings-claude',
+    lastRoute: { screen: 'S-07', section: 'claude' },
+    prepare: async (page) => {
+      await page.getByText('Claude Code: signed in').waitFor();
+    },
+  },
+  {
     screen: 'S03',
     state: 'focus-layout-A',
     lastRoute: { screen: 'S-03', sessionId: 'demo' },

@@ -43,7 +43,7 @@ export function DiffPane({
       ? `Mode changed: ${diff.modeChange}.`
       : 'No text changes.';
   return (
-    <main className={styles.main}>
+    <section className={styles.main} aria-label="Diff">
       <div className={styles.fileBar}>
         <span className={styles.filePath}>
           <span className={styles.dirPart}>
@@ -90,6 +90,6 @@ export function DiffPane({
           empty={empty}
         />
       )}
-    </main>
+    </section>
   );
 }

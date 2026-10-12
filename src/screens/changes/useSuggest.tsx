@@ -16,7 +16,7 @@ export interface Suggest {
  * (F-18.7) and the user can retry.
  */
 export function useSuggest(onMessage: (message: string) => void): Suggest {
-  const task = useCommitMessage();
+  const task = useCommitMessage(onMessage);
   const status = useClaudeStatus();
   const error = task.error;
   let notice: ReactNode = null;
@@ -35,7 +35,7 @@ export function useSuggest(onMessage: (message: string) => void): Suggest {
   return {
     pending: task.isPending,
     run: () => {
-      task.mutate(crypto.randomUUID(), { onSuccess: onMessage });
+      task.mutate(crypto.randomUUID());
     },
     notice,
   };

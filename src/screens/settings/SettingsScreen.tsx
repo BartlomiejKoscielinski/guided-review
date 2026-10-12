@@ -14,9 +14,9 @@ export function SettingsScreen() {
   return (
     <div className={styles.screen}>
       <SectionNav current={current} />
-      <main className={styles.main} aria-label="Settings">
+      <div className={styles.main}>
         {current === 'claude' ? <ClaudeSection /> : <div className={styles.stub} />}
-      </main>
+      </div>
     </div>
   );
 }

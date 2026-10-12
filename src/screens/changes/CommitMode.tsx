@@ -77,7 +77,7 @@ export function CommitMode({ sha }: CommitModeProps) {
           notice={rider.error?.message}
         />
       ) : (
-        <main className={styles.centered} />
+        <div className={styles.centered} />
       )}
       {data && <CommitDetails info={data} />}
     </div>
