@@ -362,3 +362,15 @@
   color: var(--ink);
   font-size: 13.5px;
 }
+
+/* MR browse aside: `source → target` as on S-02 (Overview.dc.html branch block). */
+.mrBranch {
+  align-self: flex-start;
+  padding: 2px 8px;
+  background: var(--green);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}

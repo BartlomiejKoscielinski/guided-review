@@ -7,13 +7,18 @@ import { FileTree } from './FileTree';
 import { filterCount, flattenTree, stageCheck } from './tree';
 import styles from './Tree.module.css';
 
+/** Local changes, a commit (F-15.6) or a teammate's MR session (read-only browse, F-24.1). */
+export type TreeMode = 'local' | 'commit' | 'mr';
+
 export interface TreePanelProps {
-  mode: 'local' | 'commit';
+  mode: TreeMode;
   /** Short SHA for "Commit <sha>" (F-15.1); the toggle is disabled without one. */
   commitLabel: string | undefined;
-  onMode: (mode: 'local' | 'commit') => void;
+  /** MR browse: "!482" for the "MR !482" toggle, which then replaces the commit one. */
+  mrLabel?: string;
+  onMode: (mode: TreeMode) => void;
   groups: readonly FileGroup[];
-  /** "80 of 100 in commit" (local) or "3 files · Marta K. · 2 h ago" (commit). */
+  /** "80 of 100 in commit" (local) or "3 files · Marta K. · 2 h ago" (commit, MR). */
   summary: string;
   selected: string | undefined;
   filter: string;
@@ -48,11 +53,13 @@ export function TreePanel(props: TreePanelProps) {
           onChange={props.onMode}
           options={[
             { value: 'local', label: 'Local changes' },
-            {
-              value: 'commit',
-              label: props.commitLabel ? `Commit ${props.commitLabel}` : 'Commit',
-              disabled: props.commitLabel === undefined,
-            },
+            props.mrLabel !== undefined
+              ? { value: 'mr', label: `MR ${props.mrLabel}` }
+              : {
+                  value: 'commit',
+                  label: props.commitLabel ? `Commit ${props.commitLabel}` : 'Commit',
+                  disabled: props.commitLabel === undefined,
+                },
           ]}
         />
         <div className={styles.filter}>
