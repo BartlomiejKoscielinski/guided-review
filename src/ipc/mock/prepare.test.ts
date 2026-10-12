@@ -32,6 +32,7 @@ describe('mock MR preparation (F-05.1, F-05.6, F-01.5)', () => {
     const ipc = client();
     const { sessionId } = await ipc.sessionOpenMr(482, null, 't5', () => undefined);
     const session = await ipc.sessionMr(sessionId);
+    if (!session) throw new Error('no MR session');
     expect(session.mr).toMatchObject({ iid: 482, sourceBranch: 'feature/offline-upload' });
     expect(session).toMatchObject({ totalFiles: 16, additions: 462, deletions: 61 });
     const file = session.groups[0]?.files[0];
@@ -41,7 +42,10 @@ describe('mock MR preparation (F-05.1, F-05.6, F-01.5)', () => {
       { ...file, untracked: false },
     );
     expect(diff.hunks.length).toBe(1);
-    await expect(ipc.sessionMr('nope')).rejects.toMatchObject({ message: 'Unknown session.' });
+    await expect(ipc.sessionMr('mock-mr-session-99')).rejects.toMatchObject({
+      message: 'Unknown session.',
+    });
+    await expect(ipc.sessionMr('mock-session-1')).resolves.toBeNull();
   });
 
   it('F-01.5 an unknown MR or project gives the inline copy', async () => {

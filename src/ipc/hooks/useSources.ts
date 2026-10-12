@@ -5,6 +5,8 @@ import {
   useQueryClient,
   type UseQueryResult,
 } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
+import { PREPARING_PATH } from '../../app/routes';
 import { useStartStore } from '../../state/start';
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
@@ -15,6 +17,7 @@ import type { DetectedSource } from '../types/DetectedSource';
 import type { LocalScope } from '../types/LocalScope';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
+import type { SessionMr } from '../types/SessionMr';
 import type { StatusSummary } from '../types/StatusSummary';
 import { LOCAL_KEY } from './useChanges';
 import { GITLAB_MRS_ROOT } from './useGitlab';
@@ -54,12 +57,14 @@ function openDetected(
 
 /**
  * Enter / Start on S-01 (F-01.3): detects the (trimmed) input unless it is already known, then
- * opens it. An MR reports its preparation stages to the start store (S-02 Preparing, F-05.6).
+ * opens it. An MR reports its preparation to the start store; once GitLab knows the MR (the first
+ * stage), the app shows S-02 Preparing, which takes over: it opens the plan, shows a failure or
+ * cancels (F-05.6). Before that, errors (F-01.5) stay with the caller on S-01.
  */
 export function useOpenSource() {
   const ipc = useIpc();
   const queryClient = useQueryClient();
-  const setPreparing = useStartStore((s) => s.setPreparing);
+  const navigate = useNavigate();
   return useMutation<OpenedSession, IpcError, string>({
     mutationFn: async (input) => {
       const source = await queryClient.query<DetectedSource | null, IpcError>({
@@ -75,13 +80,32 @@ export function useOpenSource() {
       }
       tasks += 1;
       const task = `prepare-${String(tasks)}`;
-      if (source.kind === 'mr') setPreparing({ task, progress: null });
+      if (source.kind !== 'mr') return openDetected(ipc, source, task, () => undefined);
+      const { prepareStarted, prepareProgress, prepareFinished, prepareCleared } =
+        useStartStore.getState();
+      prepareStarted(task, source.iid);
+      // Whether S-02 Preparing took over; set in the progress callback (an object, so TS sees it).
+      const view = { shown: false };
       try {
-        return await openDetected(ipc, source, task, (progress) => {
-          setPreparing({ task, progress });
+        const opened = await openDetected(ipc, source, task, (progress) => {
+          prepareProgress(task, progress);
+          if (!view.shown) {
+            view.shown = true;
+            void navigate(PREPARING_PATH);
+          }
         });
-      } finally {
-        if (source.kind === 'mr') setPreparing(null);
+        if (view.shown) prepareFinished(task, { kind: 'opened', route: opened.route });
+        else prepareCleared(task);
+        return opened;
+      } catch (error) {
+        const cancelled = error instanceof IpcError && error.code === 'CANCELLED';
+        if (view.shown && !cancelled) {
+          const message = error instanceof IpcError ? error.message : 'Preparation failed.';
+          prepareFinished(task, { kind: 'failed', message });
+        } else {
+          prepareCleared(task);
+        }
+        throw error;
       }
     },
     // An MR of another repository switches to it; a typed path adds one (F-01.5, F-30.7).
@@ -131,4 +155,23 @@ export function useOpenLocal() {
   return useMutation<OpenedSession, IpcError, LocalScope>({
     mutationFn: (scope) => ipc.sessionOpenLocal(scope),
   });
+}
+
+/** S-02 / S-06 MR browse: a teammate's MR session as prepared; null for other sessions. */
+export function useSessionMr(sessionId: string): UseQueryResult<SessionMr | null, IpcError> {
+  const ipc = useIpc();
+  return useQuery<SessionMr | null, IpcError>({
+    queryKey: ['session', sessionId, 'mr'],
+    queryFn: () => ipc.sessionMr(sessionId),
+  });
+}
+
+/** Cancel on S-02 Preparing (F-05.6): stops the preparation; the caller goes back to S-01. */
+export function useCancelPreparation() {
+  const ipc = useIpc();
+  const prepareCleared = useStartStore((s) => s.prepareCleared);
+  return (task: string) => {
+    prepareCleared(task);
+    void ipc.sessionPrepareCancel(task);
+  };
 }

@@ -11,8 +11,8 @@ import { ClaudeStatusChip } from './ClaudeStatusChip';
 import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
 import { GitlabStatusControl } from './GitlabStatusControl';
+import { PlanContext } from './PlanContext';
 import { PLACEHOLDER } from './placeholders';
-import { StatusText } from './StatusText';
 import { TaskModelChip } from './TaskModelChip';
 import { TitleBar } from './TitleBar';
 
@@ -93,21 +93,8 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
       );
     case 'S-02':
       return (
-        <TitleBar
-          context={
-            <>
-              <ContextText kind="repo">{P.repo.name}</ContextText>
-              <ContextText kind="iid">{P.mr.iid}</ContextText>
-              <ContextText kind="label">Review plan</ContextText>
-            </>
-          }
-          controls={
-            <>
-              <StatusText color="purple">{P.planStatus}</StatusText>
-              {<TaskModelChip group="plan" />}
-            </>
-          }
-        />
+        // The plan status (F-06.12) comes with Claude's plan in M3.
+        <TitleBar context={<PlanContext />} controls={<TaskModelChip group="plan" />} />
       );
     case 'S-03':
       return (

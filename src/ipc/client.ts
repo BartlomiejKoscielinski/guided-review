@@ -86,9 +86,10 @@ export interface IpcClient {
   sessionPrepareCancel(task: string): Promise<void>;
   /**
    * A teammate's MR session as S-02's header and S-06's MR browse show it (F-06.1, F-24.1): the
-   * MR as prepared and the files of merge base → head. Starts no GitLab work.
+   * MR as prepared and the files of merge base → head; null for commit or local sessions.
+   * Starts no GitLab work.
    */
-  sessionMr(sessionId: string): Promise<SessionMr>;
+  sessionMr(sessionId: string): Promise<SessionMr | null>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */

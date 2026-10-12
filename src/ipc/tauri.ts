@@ -65,7 +65,7 @@ export function createTauriClient(): IpcClient {
       return call<OpenedSession>('session_open_mr', { iid, project, task, ch });
     },
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
-    sessionMr: (sessionId) => call<SessionMr>('session_mr', { sessionId }),
+    sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),

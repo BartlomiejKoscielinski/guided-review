@@ -7,7 +7,7 @@ use ts_rs::TS;
 
 use super::repo::{RepoState, active_git};
 use super::sessions::mr_session;
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult, ErrorCode};
 use crate::git::commit::{self, CommitInfo, CommitResult, PushResult};
 use crate::git::diff::{self, ChangedFile};
 use crate::git::local::{self, FileRef, LocalChanges};
@@ -87,7 +87,12 @@ pub async fn git_file_diff(
             commit::commit_file_diff(&git, &sha, &changed_file(file), &cancel).await?
         }
         DiffSource::Session { session_id } => {
-            let s = mr_session(&store, session_id).await?;
+            let s = mr_session(&store, session_id).await?.ok_or_else(|| {
+                AppError::new(
+                    ErrorCode::InvalidInput,
+                    "This session isn't a merge request.",
+                )
+            })?;
             diff::range_file_diff(&s.git, &s.base, &s.head, &changed_file(file), &cancel).await?
         }
     })

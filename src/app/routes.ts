@@ -10,24 +10,36 @@ export interface ScreenInfo {
   id: ScreenId;
   /** Memory-router path pattern. */
   path: string;
-  /** More patterns for the same screen (S-06 commit mode). */
+  /** More patterns for the same screen (S-02 Preparing, S-06 commit mode and MR browse). */
   morePaths?: readonly string[];
   /** Accessible name of the screen (heading of the stub until its milestone). */
   name: string;
   dock: DockArea;
 }
 
+/**
+ * S-02 Preparing (F-05.6): the MR has no session yet. Not a `Route`: it is never saved as the last
+ * screen, and the preparation lives in the start store.
+ */
+export const PREPARING_PATH = '/preparing';
+
 /** S-01…S-11 (S-12 is a capability inside S-03/S-04, S-13 a separate window). */
 export const SCREENS: readonly ScreenInfo[] = [
   { id: 'S-01', path: '/', name: 'Start', dock: 'mrs' },
-  { id: 'S-02', path: '/session/:sessionId/plan', name: 'Review plan', dock: 'review' },
+  {
+    id: 'S-02',
+    path: '/session/:sessionId/plan',
+    morePaths: [PREPARING_PATH],
+    name: 'Review plan',
+    dock: 'review',
+  },
   { id: 'S-03', path: '/session/:sessionId/step', name: 'Step review', dock: 'review' },
   { id: 'S-04', path: '/session/:sessionId/detailed', name: 'Step review', dock: 'review' },
   { id: 'S-05', path: '/session/:sessionId/summary', name: 'Summary', dock: 'review' },
   {
     id: 'S-06',
     path: '/changes',
-    morePaths: ['/changes/commit/:commit'],
+    morePaths: ['/changes/commit/:commit', '/changes/mr/:sessionId'],
     name: 'Changes',
     dock: 'changes',
   },
@@ -74,6 +86,7 @@ export function pathFor(route: Route): string {
     case 'S-05':
       return `/session/${enc(route.sessionId)}/summary`;
     case 'S-06':
+      if (route.sessionId) return `/changes/mr/${enc(route.sessionId)}`;
       return route.commit ? `/changes/commit/${enc(route.commit)}` : '/changes';
     case 'S-07':
       return `/settings/${route.section}`;
@@ -103,6 +116,7 @@ export function routeFor(screen: ScreenId, params: Params): Route | null {
     case 'S-11':
       return { screen };
     case 'S-06':
+      if (params.sessionId) return { screen, sessionId: params.sessionId };
       return params.commit ? { screen, commit: params.commit } : { screen };
     case 'S-02':
     case 'S-03':

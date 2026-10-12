@@ -1,0 +1,191 @@
+/* S-02 Review plan (Overview.dc.html): header and plan region; Preparing per 02 › S-02. */
+.screen {
+  height: 100%;
+  overflow: auto;
+}
+
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 36px 40px 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.centered {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--text-secondary);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 560px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 0.98;
+  font-weight: 800;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.branch {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--green);
+  padding: 2px 8px;
+}
+
+.counts {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.add {
+  color: var(--blue-text);
+}
+
+.del {
+  color: var(--orange-text);
+}
+
+.pipeline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pipeline:hover {
+  color: var(--text);
+}
+
+.pipeSquare {
+  width: 9px;
+  height: 9px;
+  background: var(--ring-2);
+}
+
+.pipe-passed {
+  background: var(--green);
+}
+.pipe-failed {
+  background: var(--orange);
+}
+.pipe-running {
+  background: var(--blue);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Browse files instead / Cancel: neutral fill on --raised, 16px (the mock's secondary action). */
+.secondary {
+  padding: 0 16px;
+  font-size: 16px;
+  background: var(--raised);
+}
+
+.enter {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.region {
+  padding: 20px 22px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.placeholder {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+.stages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.stage {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stageMark {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  background: var(--ring-2);
+}
+
+.stage.done {
+  color: var(--text-secondary);
+}
+.stage.done .stageMark {
+  background: var(--green);
+}
+.stage.current {
+  color: var(--text);
+}
+.stage.current .stageMark {
+  background: var(--yellow);
+}
+.stage.pending {
+  color: var(--text-muted);
+}
+.stage.failed {
+  color: var(--text);
+}
+.stage.failed .stageMark {
+  background: var(--orange);
+}
+
+.failure {
+  margin: 0;
+  font-size: 14px;
+  color: var(--orange-text);
+}

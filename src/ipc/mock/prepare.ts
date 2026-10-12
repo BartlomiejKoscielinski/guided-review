@@ -15,6 +15,8 @@ type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel' | 
 /** Pause between preparation stages, so S-02 Preparing is visible in `npm run dev:mock`. */
 export const MOCK_STAGE_MS = 400;
 
+const MR_SESSION = 'mock-mr-session-';
+
 const error = (code: IpcError['code'], message: string) =>
   new IpcError({ code, message, retryable: false });
 
@@ -76,13 +78,15 @@ export function createPrepareBackend(
         cancelled.delete(task);
       }
       sessions += 1;
-      const sessionId = `mock-mr-session-${String(sessions)}`;
+      const sessionId = `${MR_SESSION}${String(sessions)}`;
       opened.set(sessionId, mr);
       const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
       return result;
     },
     sessionMr: async (sessionId) => {
       const mr = opened.get(sessionId);
+      // Commit and local sessions of the sources mock have no MR.
+      if (!mr && !sessionId.startsWith(MR_SESSION)) return null;
       if (!mr) throw error('INVALID_INPUT', 'Unknown session.');
       await pause(0);
       const files: TreeFile[] = mrFiles().map((file) => ({

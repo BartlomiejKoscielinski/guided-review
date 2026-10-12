@@ -57,6 +57,13 @@
   padding: 0 20px;
   font-size: 18px;
 }
+/* S-02 Start step 1 and Browse files instead (16px, set by the screen). */
+.h46 {
+  gap: 10px;
+  height: 46px;
+  padding: 0 20px;
+  font-size: 18px;
+}
 .h50 {
   height: 50px;
   padding: 0 22px;

@@ -194,7 +194,8 @@ pub(super) struct MrSession {
     pub mr: MrMeta,
 }
 
-pub(super) async fn mr_session(store: &Store, id: String) -> AppResult<MrSession> {
+/// The MR session `id`; `None` for a session of commits or local changes.
+pub(super) async fn mr_session(store: &Store, id: String) -> AppResult<Option<MrSession>> {
     let (source, folders, settings) = with_store(store, move |conn| {
         Ok((
             store::sessions::source_of(conn, &id)?,
@@ -206,39 +207,42 @@ pub(super) async fn mr_session(store: &Store, id: String) -> AppResult<MrSession
     let (Some(source), Some(folders)) = (source, folders) else {
         return Err(AppError::new(ErrorCode::InvalidInput, "Unknown session."));
     };
-    let mr = source
-        .mr_json
-        .as_deref()
-        .and_then(|json| serde_json::from_str::<MrMeta>(json).ok())
-        .ok_or_else(|| {
-            AppError::new(
-                ErrorCode::InvalidInput,
-                "This session isn't a merge request.",
-            )
-        })?;
+    let Some(json) = source.mr_json else {
+        return Ok(None);
+    };
+    let mr = serde_json::from_str::<MrMeta>(&json).map_err(|e| {
+        AppError::internal("The session could not be read.").with_detail(e.to_string())
+    })?;
     let git = Git::new(
         settings.git.path.as_deref().map(Path::new),
         &folders.checkout,
     );
-    Ok(MrSession {
+    Ok(Some(MrSession {
         git,
         base: source.base_sha,
         head: source.head_sha,
         mr,
-    })
+    }))
 }
 
 /// S-02's header and S-06's read-only MR browse (F-06.1, F-24.1): the MR as prepared and the
-/// files of `merge-base..head`. Starts no GitLab work, so a restored screen can call it.
+/// files of `merge-base..head`; `None` when the session isn't a teammate's MR. Starts no
+/// GitLab work, so a restored screen can call it.
 #[tauri::command]
-pub async fn session_mr(store: State<'_, Store>, session_id: String) -> AppResult<SessionMr> {
-    let session = mr_session(&store, session_id).await?;
-    Ok(mr_summary::session_mr(
+pub async fn session_mr(
+    store: State<'_, Store>,
+    session_id: String,
+) -> AppResult<Option<SessionMr>> {
+    let Some(session) = mr_session(&store, session_id).await? else {
+        return Ok(None);
+    };
+    let summary = mr_summary::session_mr(
         &session.git,
         session.mr,
         &session.base,
         &session.head,
         &Cancel::new(),
     )
-    .await?)
+    .await?;
+    Ok(Some(summary))
 }

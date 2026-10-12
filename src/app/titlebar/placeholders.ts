@@ -13,8 +13,6 @@ export const PLACEHOLDER = {
   authorMr: { iid: '!480', title: 'Retry in UploadWorker after network loss' },
   /** Branch block on S-06 and S-11 (M1, M7). */
   branch: 'chore/compiled-bindings',
-  /** S-02 status (F-06.12, M3). */
-  planStatus: 'Plan ready · Claude is analyzing step 1',
   /** S-10 pipeline status (F-26.1, M7). */
   pipelineStatus: 'Pipeline passed',
 } as const;

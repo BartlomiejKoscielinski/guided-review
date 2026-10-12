@@ -39,7 +39,8 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
     controls: ['Repository mobile-app, C:\\src\\mobile-app', 'Claude Code signed in'],
   },
   'S-02': {
-    text: ['!482', 'Review plan', 'Plan ready · Claude is analyzing step 1'],
+    // The session of this test has no MR: no `!iid`; the plan status comes in M3 (F-06.12).
+    text: ['mobile-app', 'Review plan'],
     controls: ['Opus 5.5 · high'],
   },
   'S-03': {
