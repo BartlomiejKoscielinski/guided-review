@@ -121,3 +121,11 @@ test('builds rows and fails on ticked items without evidence', () => {
     false,
   );
 });
+
+test('reads a list of commit SHAs on a ticked line', () => {
+  const items = parseProgress(
+    '## M1 · Local\n- [x] F-15.1 Source toggle. (f463581, eae1bd6)\n- [x] F-15.3 Filter. (eae1bd6)\n',
+  );
+  assert.equal(items.get('F-15.1').sha, 'f463581');
+  assert.equal(items.get('F-15.3').sha, 'eae1bd6');
+});

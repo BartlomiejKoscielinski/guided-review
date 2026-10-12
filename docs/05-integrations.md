@@ -18,10 +18,14 @@ All calls go through `git/runner.rs` with `-c core.quotepath=off -c core.longpat
 | Commit list | `git log --format=%H%x1f%h%x1f%s%x1f%an%x1f%aI -n 200 <branch> [--grep/--author]` |
 | Local status | `git status --porcelain=v2 -z --untracked-files=all` |
 | Local diffs | unstaged `git diff`, staged `git diff --cached`, branch `git diff <merge-base>...HEAD` |
-| Stage selection | build a patch with only the selected lines (unselected `-` lines become context, unselected `+` lines are dropped) → `git apply --cached --recount -` |
-| Unstage selection | same patch → `git apply --cached --reverse --recount -` |
-| Commit | `git commit -F <tmpfile> [--amend] [--fixup=<sha>]` (user's hooks run; show their output on failure) |
+| Local diff shown in S-06 | `git diff HEAD` (H→W) is displayed; each line's "in commit" state comes from the index: a `-` line (HEAD line number) is staged when `git diff --cached` (H→I) deletes it, a `+` line (working-tree line number) is staged when `git diff` (I→W) doesn't add it (ADR-008) |
+| Stage selection | from the unstaged diff (I→W): build a patch with only the selected lines (unselected `-` lines become context, unselected `+` lines are dropped) → `git apply --cached --recount -`. Untracked files: whole file `git add -- <path>`, lines after `git add -N -- <path>` |
+| Unstage selection | from the staged diff (H→I), with the rules mirrored because the patch is applied in reverse (unselected `+` lines become context, unselected `-` lines are dropped) → `git apply --cached --reverse --recount -`. A whole new file: `git restore --staged -- <path>` (index only) |
+| Stage or unstage many files | `git add -A --pathspec-from-file=- --pathspec-file-nul` / `git restore --staged --pathspec-from-file=- --pathspec-file-nul` (paths on stdin; the command line stays under the 32k limit) |
+| Commit | `git commit -F - [--amend] [--fixup=<sha>]` with the message on stdin (user's hooks run; show their output on failure) |
 | Push | `git push origin HEAD` (`-u origin <branch>` when no upstream). Never force-push. |
+| Commit details (S-06 commit mode) | `git show -s --format=%H%x1f%h%x1f%P%x1f%an%x1f%aI%x1f%s%x1f%b <sha>`; its files `git diff -M <first parent or empty tree> <sha>` |
+| Merge or rebase in progress | `.git/MERGE_HEAD`, `rebase-merge/`, `rebase-apply/`, `CHERRY_PICK_HEAD`, `REVERT_HEAD` in `git rev-parse --git-dir` |
 | Conflict check | `git merge-tree --write-tree --no-messages --name-only <target> HEAD` → exit 1 = conflicts, list files |
 | Range-diff | `git range-diff --no-color <old_base>..<old_head> <new_base>..<new_head>` |
 | Replay old commit on new parent | `git merge-tree --write-tree --merge-base=<old_commit>^ <new_commit>^ <old_commit>` → tree T; author's real change = `git diff T <new_commit>` |
@@ -198,7 +202,8 @@ A killed process writes no result; cancellation reports `CANCELLED`.
 ### Startup checks
 1. Resolve the executable (ADR-021). `claude --version` → store; a version below 2.1.248 → `CLAUDE_FAILED` "Guided Review needs Claude Code 2.1.248 or later."
 2. `claude auth status` → `loggedIn` must be true and `authMethod` must not be `none` (`CLAUDE_NOT_SIGNED_IN` otherwise). This only checks that credentials are stored.
-3. Probe: `claude -p --output-format json --model haiku --tools "" --no-session-persistence --restricted --strict-mcp-config` with "Reply with OK" on stdin (without `--model` if the organization doesn't allow Haiku). It runs when the version changed since the last successful probe and after any task failed with `CLAUDE_NOT_SIGNED_IN`; Claude counts as healthy only if `is_error` is false. The status shown in F-18.1 and F-01.6 is the latest of: `auth status`, the probe, the last task result.
+3. Probe: `claude -p --output-format json --model haiku --tools "" --no-session-persistence --restricted --strict-mcp-config` with "Reply with OK" on stdin (without `--model` if the organization doesn't allow Haiku). It runs when the version changed since the last successful probe and after any task failed with `CLAUDE_NOT_SIGNED_IN`; Claude counts as healthy only if `is_error` is false. The status shown in F-18.1 and F-01.6 is the latest of: `auth status`, the probe, the last task result. The version of the last successful probe is kept in `app_state` (`claude.probedVersion`).
+4. **Sign in to Claude Code** opens a new console window running `claude auth login` (the resolved executable, argument array, detached with its own console, never `cmd.exe`); when the app window gets focus again, steps 2 and 3 run again.
 
 ---
 

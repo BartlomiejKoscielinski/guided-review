@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReviewPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent", "steps", "orders", "skim", "risks", "description_check", "already_discussed"],
+  "properties": {
+    "intent": { "type": "string", "maxLength": 600, "description": "2-4 sentences for a reviewer: what the change does and why." },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 15,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "short_title", "reason", "description", "layer", "hunk_ids", "builds_on"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^s[0-9]+$" },
+          "title": { "type": "string", "maxLength": 60, "description": "Short title, e.g. 'ViewModel: queue instead of upload'." },
+          "short_title": { "type": "string", "maxLength": 24, "description": "Label for the step list, e.g. 'ViewModel'." },
+          "reason": { "type": "string", "maxLength": 110, "description": "Why the step is here in the order, e.g. 'Everything else builds on this.'" },
+          "description": { "type": "string", "maxLength": 300, "description": "1-2 sentences shown under the step title." },
+          "layer": { "type": "string", "enum": ["Core", "Infrastructure", "App", "XAML", "Platforms", "Tests", "Resources", "Build", "Other"] },
+          "hunk_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "builds_on": { "type": "array", "items": { "type": "string", "pattern": "^s[0-9]+$" } }
+        }
+      }
+    },
+    "orders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_to_ui", "tests_first"],
+      "properties": {
+        "contract_to_ui": { "type": "array", "items": { "type": "string" } },
+        "tests_first": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "skim": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["hunk_ids", "reason"],
+        "properties": {
+          "hunk_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "reason": { "type": "string", "maxLength": 120, "description": "e.g. 'Formatting only, no logic changes.'" }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "severity", "steps"],
+        "properties": {
+          "text": { "type": "string", "maxLength": 200 },
+          "severity": { "type": "string", "enum": ["fix", "q"] },
+          "steps": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "description_check": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "status"],
+        "properties": {
+          "claim": { "type": "string", "maxLength": 160 },
+          "status": { "type": "string", "enum": ["found", "missing", "contradicted", "not_in_description"] },
+          "step": { "type": "string" }
+        }
+      }
+    },
+    "already_discussed": { "type": "string", "maxLength": 300 }
+  }
+}

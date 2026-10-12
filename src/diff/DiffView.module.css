@@ -1,0 +1,163 @@
+/* Diff renderer (docs/03 › HunkHeader, Code; Changes.dc.html hunks). Colors only from tokens. */
+.scroller {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 26px 40px;
+}
+
+.sizer {
+  position: relative;
+  width: 100%;
+}
+
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Shiki css-variables theme → syntax tokens (ADR-023). */
+.code {
+  --shiki-foreground: var(--syn-plain);
+  --shiki-token-keyword: var(--syn-keyword);
+  --shiki-token-function: var(--syn-type);
+  --shiki-token-string: var(--syn-string);
+  --shiki-token-string-expression: var(--syn-string);
+  --shiki-token-constant: var(--syn-number);
+  --shiki-token-comment: var(--syn-comment);
+  --shiki-token-punctuation: var(--syn-punct);
+  --shiki-token-parameter: var(--syn-plain);
+  --shiki-token-link: var(--syn-attribute);
+  display: block;
+  min-width: 0;
+  min-height: 22px;
+  padding: 0 16px 0 2px;
+  color: var(--syn-plain);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.hunkWrap.gap {
+  padding-top: 14px;
+}
+
+.hunkHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 32px;
+  padding: 7px 12px;
+  background: var(--panel-2);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.inCommit {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.range {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.differs {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.unified,
+.half {
+  display: grid;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 22px;
+  background: var(--panel);
+}
+
+.unified {
+  grid-template-columns: 44px 44px 16px minmax(0, 1fr);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2px;
+  background: var(--bg);
+}
+
+.half {
+  grid-template-columns: 44px 16px minmax(0, 1fr);
+}
+
+.lineNo {
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+  text-align: right;
+  user-select: none;
+  color: var(--text-lineno);
+}
+
+.pickable {
+  cursor: pointer;
+}
+
+.sign {
+  min-height: 22px;
+  user-select: none;
+  color: var(--text-lineno);
+}
+
+.add {
+  background: linear-gradient(var(--diff-add-bg), var(--diff-add-bg)), var(--panel);
+}
+.add .lineNo,
+.add .sign {
+  color: var(--diff-add-text);
+}
+
+.del {
+  background: linear-gradient(var(--diff-del-bg), var(--diff-del-bg)), var(--panel);
+}
+.del .lineNo,
+.del .sign {
+  color: var(--diff-del-text);
+}
+
+.empty {
+  background: var(--diff-empty);
+}
+
+.emAdd {
+  background: var(--diff-add-em);
+}
+.emDel {
+  background: var(--diff-del-em);
+}
+
+/* Local mode: changes that aren't in the commit (Changes.dc.html: opacity 0.4). */
+.dim > * {
+  opacity: 0.4;
+}
+
+.note {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.emptyState {
+  padding: 20px 12px;
+  background: var(--panel);
+  font-size: 13.5px;
+  color: var(--text-muted);
+}

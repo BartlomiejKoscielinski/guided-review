@@ -203,6 +203,11 @@ pub fn auth_status_args() -> Vec<OsString> {
     vec!["auth".into(), "status".into()]
 }
 
+/// `claude auth login`, run in its own console by Sign in to Claude Code (F-18.1).
+pub fn auth_login_args() -> Vec<OsString> {
+    vec!["auth".into(), "login".into()]
+}
+
 /// Variables removed from the child's environment when the app runs inside a Claude Code
 /// session (`CLAUDECODE` is set, development only); otherwise none (docs/05 › Environment).
 pub fn env_removals<I, K, V>(vars: I) -> Vec<OsString>

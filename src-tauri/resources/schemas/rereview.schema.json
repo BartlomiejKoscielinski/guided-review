@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RereviewSummary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["commits", "drafts"],
+  "properties": {
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "summary"],
+        "properties": {
+          "key": { "type": "string", "description": "The commit key given in the input." },
+          "summary": { "type": "string", "maxLength": 400 }
+        }
+      }
+    },
+    "drafts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["draft_id", "status", "why"],
+        "properties": {
+          "draft_id": { "type": "string" },
+          "status": { "type": "string", "enum": ["fixed", "still_relevant", "unclear"] },
+          "why": { "type": "string", "maxLength": 200 }
+        }
+      }
+    }
+  }
+}

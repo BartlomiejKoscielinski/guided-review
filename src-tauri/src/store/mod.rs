@@ -3,7 +3,9 @@
 //! One database file in the app data folder (docs/04 › Files and folders). The connection sits
 //! behind a mutex; commands run store calls on the blocking thread pool.
 
+pub mod app_state;
 pub mod migrations;
+pub mod repos;
 pub mod sessions;
 pub mod settings;
 
@@ -194,7 +196,7 @@ mod tests {
         let version: i64 = again
             .with_conn(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(version, 1);
+        assert_eq!(version, 2);
     }
 
     #[test]

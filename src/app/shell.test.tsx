@@ -72,13 +72,17 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
 };
 
 describe('Shell', () => {
-  it('F-30.1 each screen shows its title-bar controls', () => {
+  it('F-30.1 each screen shows its title-bar controls', async () => {
     for (const route of ALL) {
       const { unmount } = renderApp(route);
       const expected = EXPECTED_CONTROLS[route.screen];
       const bar = within(screen.getByTestId('title-bar'));
-      for (const text of expected.text) expect(bar.getByText(text)).toBeInTheDocument();
-      expect(titleBarControls(), route.screen).toEqual(expected.controls);
+      // S-06 shows the active repository and branch once the mock answers.
+      for (const text of expected.text) expect(await bar.findByText(text)).toBeInTheDocument();
+      // Model chips come from the settings and the core's model table (F-18.5).
+      await waitFor(() => {
+        expect(titleBarControls(), route.screen).toEqual(expected.controls);
+      });
       unmount();
     }
   });
@@ -86,7 +90,7 @@ describe('Shell', () => {
   it('F-30.1 the model chip opens Settings › Claude', async () => {
     const user = userEvent.setup();
     const { router } = renderApp({ screen: 'S-06' });
-    await user.click(screen.getByRole('button', { name: 'Haiku 5.5 · low' }));
+    await user.click(await screen.findByRole('button', { name: 'Haiku 5.5 · low' }));
     expect(router.state.location.pathname).toBe('/settings/claude');
   });
 
@@ -145,7 +149,8 @@ describe('Shell', () => {
     await waitFor(() => {
       expect(calls).toContain('sessionsListUnfinished');
     });
-    const allowed = /^(app|sessions|window|onWindow)/;
+    // Reading the cached Claude status and the model table starts no Claude work.
+    const allowed = /^(app|sessions|window|onWindow|claudeStatus$|claudeModels$)/;
     expect(calls.filter((name) => !allowed.test(name))).toEqual([]);
     expect(calls).not.toContain('appSettingsSet');
   });

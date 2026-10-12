@@ -23,7 +23,8 @@ export function parseProgress(progressMd) {
       items.set(m[2], {
         milestone,
         done: m[1] === 'x',
-        sha: (m[3].match(/\(([0-9a-f]{7,40})\)\s*$/) || [])[1] || null,
+        // "(sha)" or "(sha, sha, …)" when several commits completed the criterion.
+        sha: (m[3].match(/\(([0-9a-f]{7,40})(?:,\s*[0-9a-f]{7,40})*\)\s*$/) || [])[1] || null,
         partial: /— partial:/.test(m[3]),
       });
     }

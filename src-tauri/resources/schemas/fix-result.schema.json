@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FixResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["changed", "explanation"],
+  "properties": {
+    "changed": { "type": "boolean", "description": "False when no edit was made (e.g. the request is unclear or already satisfied)." },
+    "explanation": { "type": "string", "maxLength": 240, "description": "One sentence shown under the proposed diff." }
+  }
+}

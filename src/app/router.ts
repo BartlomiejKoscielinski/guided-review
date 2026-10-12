@@ -39,9 +39,13 @@ export const routeObjects: RouteObject[] = [
   {
     element: createElement(Shell),
     children: [
-      ...SCREENS.map((screen): RouteObject => {
+      ...SCREENS.flatMap((screen): RouteObject[] => {
         const handle: ScreenHandle = { screen: screen.id };
-        return { path: screen.path, element: createElement(SCREEN_COMPONENTS[screen.id]), handle };
+        return [screen.path, ...(screen.morePaths ?? [])].map((path) => ({
+          path,
+          element: createElement(SCREEN_COMPONENTS[screen.id]),
+          handle,
+        }));
       }),
       { path: '*', element: createElement(Navigate, { to: '/', replace: true }) },
     ],

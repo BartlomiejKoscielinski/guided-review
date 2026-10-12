@@ -10,6 +10,8 @@ export interface ScreenInfo {
   id: ScreenId;
   /** Memory-router path pattern. */
   path: string;
+  /** More patterns for the same screen (S-06 commit mode). */
+  morePaths?: readonly string[];
   /** Accessible name of the screen (heading of the stub until its milestone). */
   name: string;
   dock: DockArea;
@@ -22,7 +24,13 @@ export const SCREENS: readonly ScreenInfo[] = [
   { id: 'S-03', path: '/session/:sessionId/step', name: 'Step review', dock: 'review' },
   { id: 'S-04', path: '/session/:sessionId/detailed', name: 'Step review', dock: 'review' },
   { id: 'S-05', path: '/session/:sessionId/summary', name: 'Summary', dock: 'review' },
-  { id: 'S-06', path: '/changes', name: 'Changes', dock: 'changes' },
+  {
+    id: 'S-06',
+    path: '/changes',
+    morePaths: ['/changes/commit/:commit'],
+    name: 'Changes',
+    dock: 'changes',
+  },
   { id: 'S-07', path: '/settings/:section', name: 'Settings', dock: 'settings' },
   { id: 'S-08', path: '/mr/:iid/pipeline', name: 'Pipeline', dock: 'review' },
   {
@@ -66,7 +74,7 @@ export function pathFor(route: Route): string {
     case 'S-05':
       return `/session/${enc(route.sessionId)}/summary`;
     case 'S-06':
-      return '/changes';
+      return route.commit ? `/changes/commit/${enc(route.commit)}` : '/changes';
     case 'S-07':
       return `/settings/${route.section}`;
     case 'S-08':
@@ -92,9 +100,10 @@ export function routeFor(screen: ScreenId, params: Params): Route | null {
   const iid = Number(params.iid);
   switch (screen) {
     case 'S-01':
-    case 'S-06':
     case 'S-11':
       return { screen };
+    case 'S-06':
+      return params.commit ? { screen, commit: params.commit } : { screen };
     case 'S-02':
     case 'S-03':
     case 'S-04':

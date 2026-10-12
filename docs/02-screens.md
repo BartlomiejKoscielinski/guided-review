@@ -82,8 +82,13 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
 - Mock: `Changes.dc.html` · Screens: `S06-changes-local.png`, `S06-changes-commit.png`, `S06-changes-committed.png`
 - Entry: Changes tile, Browse files (S-01, S-02), Browse and commit.
 - Regions: left tree panel (source toggle, filter, master checkbox, directory groups, file rows) · center diff (file path, Unified/Split, Open in Rider, hunks with In-commit checkboxes) · right Commit panel (local) or commit details (commit mode). (F-15, F-16)
-- States: nothing to commit ("Working tree clean."), merge/rebase in progress (banner, commit disabled with reason), commit hook failure (show hook output in a collapsible block, keep the message), push rejected (offer "Pull with rebase" link to open Rider; the app does not auto-rebase).
-- After a commit the tree shows the real index (the committed-state PNG still shows "80 of 100 in commit"; that's a mock inconsistency).
+- States: nothing to commit ("Working tree clean."), merge/rebase in progress (banner "A merge is in progress. Finish or abort it in Rider or git first." / "A rebase is in progress. …", commit disabled with that reason), commit hook failure ("Commit failed. A hook rejected it." with the hook output in a collapsible block "Hook output"; the message is kept), push done ("Pushed to origin/<branch>." in the green block), push rejected ("Push rejected: the remote has commits you don't have." with a link "Pull with rebase in Rider" that opens Rider; the app does not auto-rebase), Claude usage limit ("Claude usage limit reached" with the reset time under Suggest, F-18.7; the message is kept).
+- No repository yet (M1, until F-19.6 in M2): "Pick a repository" with a folder dialog; the picked folder becomes the default repository and the title bar shows its name as text.
+- Local mode shows the diff HEAD → working tree; the checkboxes show the index (`05` › Local diff). If the staged version of a hunk's lines differs from the file (staged, then edited again), the hunk header adds a muted note "The staged version of these lines differs from the file." Untracked files are NEW; a rename shows as RENAMED once it is staged (before that git reports DELETED + NEW). Binary files have only the file checkbox and the text "Binary file. Not shown." Shift+click on a line number toggles that one line in the index; a hunk checkbox is tri-state like the directories.
+- The filter count shows the number of matching files while the filter is not empty, otherwise the number of files (the mock always shows the total).
+- Commit mode opens HEAD unless a commit is given (the route's `commit`, from Browse files in M2); the toggle reads "Commit <short sha>". **Amend previous commit** fills an empty message with the previous commit's message; text the user typed is never overwritten.
+- After a commit the tree shows the real index (the committed-state PNG still shows "80 of 100 in commit"; that's a mock inconsistency). **Push and create MR** pushes, then opens S-11.
+- **Review step by step** (commit mode) and **Review with Claude first** need review sessions: static placeholders until M3.
 - Data: `git.status`, `git.diff(path)`, `git.stage(hunks|lines)`, `git.unstage`, `git.commit(message, amend)`, `git.push`, `claude.commit_message()`.
 
 ## S-07 Settings
@@ -93,7 +98,9 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
 - Changes save immediately (no Save button); invalid values show inline errors.
 - Rows the mock doesn't show (built with the existing row styles: label left, control right):
   - General: "Keep running in the tray when closed" (switch, F-28.1).
-  - Claude: "Claude Code" executable (path · version, **Change**) and "Run at most N Claude tasks at once" (segmented 1–4) (F-18.6); the "Writes in" hint reads "Notes, suggested comments, commit messages, MR descriptions".
+  - Claude: "Claude Code" executable (path · version, **Change**) and "Run at most N Claude tasks at once" (segmented 1–4) (F-18.6); the "Writes in" hint reads "Notes, suggested comments, commit messages, MR descriptions". The status line under the heading: "Claude Code: signed in" (green square), "Claude Code: not signed in" (orange square, **Sign in to Claude Code**), "Claude Code: not found" (orange square, **Change**), "Guided Review needs Claude Code 2.1.248 or later." (orange square), "Claude usage limit reached" with the reset time (orange square, F-18.7).
+  - Model chips (F-18.5) with "Same as Claude Code" read "Claude Code default · <effort>".
+- Until their milestones the other sections are stubs and the Team rules badge is hidden.
   - GitLab: unconfigured state (Server URL, token input, **Check and save**), **Replace token**, **Remove**; repositories with **Add repository**, **Set as default**, **Remove** and the worktree folder per repository (F-19.5, F-19.6). The token is shown only as `glpat-…3f9a`.
   - Notifications: quiet hours from/to time inputs and a Weekends switch (F-28.5).
   - Shortcuts: every shortcut of F-30.6, grouped Review · Code · App (F-19.3).

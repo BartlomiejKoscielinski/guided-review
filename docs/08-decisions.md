@@ -82,6 +82,11 @@ Context: S3 (PC/Max, Claude Code 2.1.296) showed that `--setting-sources user` k
 Decision: both invocation profiles pass `--restricted` instead of `--setting-sources user`. `--tools`, `--permission-mode dontAsk`, `--strict-mcp-config` and `--disallowedTools "mcp__*"` stay: restricted mode removes only command-running tools and WebFetch, and its documentation asks for `--strict-mcp-config` to skip MCP servers. Minimum Claude Code version 2.1.248 (startup check in `05`).
 Consequences: the user's `settings.json` doesn't apply to the app's tasks (no hooks, plugins, output style, default model or `env` from it); "Same as Claude Code" (F-18.2) means the default model of the account or of managed settings; managed (Enterprise) settings still apply. Field visit 1 confirms restricted mode on Claude Enterprise. If it is refused there, the fallback is `--setting-sources "" --settings '{"disableAllHooks": true}'` (the same isolation on PC/Max except auto memory), recorded as an ADR that supersedes this one.
 
+### ADR-023 Shiki with the JavaScript regex engine (decides T10)
+Context: Shiki's default Oniguruma engine is WebAssembly and would need `'wasm-unsafe-eval'` in the CSP; the production CSP is `script-src 'self'`.
+Decision (owner, 2026-10-12): Shiki runs in a Web Worker with its JavaScript regex engine and the `css-variables` theme mapped onto the `--syn-*` tokens; the CSP stays unchanged. If a grammar the app needs (C#, XAML/XML, JSON, YAML, Markdown, Kotlin/Java, Swift/ObjC) doesn't work with the JavaScript engine, stop and ask before adding `'wasm-unsafe-eval'`.
+Consequences: no WebAssembly in the webview; tokens are colored through CSS variables, so the diff palette and the syntax palette both come from `tokens.css`.
+
 ---
 
 ## Spike notes (fill in during M0)

@@ -391,7 +391,7 @@ mod tests {
         let next = s
             .patched(&json!({ "ui": { "lastRoute": { "screen": "S-06" } } }))
             .unwrap();
-        assert_eq!(next.ui.last_route, Route::Changes);
+        assert_eq!(next.ui.last_route, Route::Changes { commit: None });
     }
 
     #[test]

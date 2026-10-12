@@ -310,3 +310,32 @@ export function LayoutGuideIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** Tri-state checkbox: some but not all (S-06 Changes mock). */
+export function MixedIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 16 16" defaultSize={10} defaultStroke={3.2} {...props}>
+      <path d="M3.5 8h9" />
+    </Svg>
+  );
+}
+
+/** S-06 tree: collapse all folders. */
+export function CollapseAllIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 16 16" defaultSize={14} defaultStroke={1.8} {...props}>
+      <path d="M4 3l4 3 4-3M4 13l4-3 4 3" />
+    </Svg>
+  );
+}
+
+/** Claude actions such as Suggest (filled squares, S-06 Changes mock). */
+export function ClaudeIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 16 16" defaultSize={13} filled {...props}>
+      <rect x="2" y="2" width="5" height="5" />
+      <rect x="9" y="9" width="5" height="5" />
+      <rect x="9" y="2" width="5" height="5" opacity="0.45" />
+    </Svg>
+  );
+}

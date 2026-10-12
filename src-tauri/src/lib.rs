@@ -135,11 +135,16 @@ pub fn run() {
                 .skip_initial_state("main")
                 .build(),
         )
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             if let Some(window) = app.get_webview_window("main") {
                 show_main_window(&window);
             }
-            app.manage(open_store()?);
+            let store = open_store()?;
+            let app_data = os::paths::app_data_dir()?;
+            commands::claude::manage(app.handle(), &app_data, &store);
+            app.manage(store);
+            commands::repo::manage(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -148,6 +153,24 @@ pub fn run() {
             commands::app::app_settings_set,
             commands::app::app_start_route,
             commands::sessions::sessions_list_unfinished,
+            commands::repo::repo_active,
+            commands::repo::repo_pick,
+            commands::git::git_status,
+            commands::git::git_commit_info,
+            commands::git::git_file_diff,
+            commands::git::git_stage,
+            commands::git::git_unstage,
+            commands::git::git_commit,
+            commands::git::git_last_message,
+            commands::git::git_push,
+            commands::os::rider_open,
+            commands::claude::claude_status,
+            commands::claude::claude_refresh,
+            commands::claude::claude_sign_in,
+            commands::claude::claude_pick_executable,
+            commands::claude::claude_models,
+            commands::claude::claude_commit_message,
+            commands::claude::claude_cancel,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Guided Review");

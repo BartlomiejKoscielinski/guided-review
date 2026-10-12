@@ -1,0 +1,88 @@
+//! Prompt templates and JSON Schemas (docs/claude/), copied to `src-tauri/resources/` and
+//! compiled in. `{{name}}` placeholders are filled here; lists are rendered to text by the
+//! caller. Every change to a prompt or schema bumps `PROMPT_VERSION` (part of the cache key).
+
+use crate::settings::Lang;
+
+/// Version of the prompts and schemas below.
+pub const PROMPT_VERSION: u32 = 1;
+
+pub const SYSTEM_COMMON: &str = include_str!("../../resources/prompts/system-common.md");
+pub const COMMIT_MESSAGE: &str = include_str!("../../resources/prompts/commit-message.md");
+pub const COMMIT_MESSAGE_SCHEMA: &str =
+    include_str!("../../resources/schemas/commit-message.schema.json");
+
+/// Fills `{{name}}` placeholders; unknown placeholders stay as they are.
+pub fn render(template: &str, values: &[(&str, &str)]) -> String {
+    values
+        .iter()
+        .fold(template.to_owned(), |text, (name, value)| {
+            text.replace(&format!("{{{{{name}}}}}"), value)
+        })
+}
+
+/// The language Claude writes human-readable text in (F-18.2, F-30.5).
+pub fn output_language(lang: Lang) -> &'static str {
+    match lang {
+        Lang::En => "English",
+        Lang::Pl => "Polish",
+    }
+}
+
+/// `system-common.md` for a task.
+pub fn system_common(lang: Lang) -> String {
+    render(SYSTEM_COMMON, &[("output_language", output_language(lang))])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn f30_5_output_language_follows_writes_in() {
+        let pl = system_common(Lang::Pl);
+        assert!(pl.contains("Write human-readable text in Polish."));
+        assert!(!pl.contains("{{output_language}}"));
+        assert!(system_common(Lang::En).contains("in English."));
+    }
+
+    #[test]
+    fn renders_placeholders() {
+        assert_eq!(
+            render("a {{x}} b {{y}} {{z}}", &[("x", "1"), ("y", "ż")]),
+            "a 1 b ż {{z}}"
+        );
+    }
+
+    #[test]
+    fn schemas_are_json() {
+        let schema: serde_json::Value = serde_json::from_str(COMMIT_MESSAGE_SCHEMA).unwrap();
+        assert_eq!(schema["properties"]["summary"]["maxLength"], 72);
+    }
+
+    /// The compiled-in copies must equal docs/claude (the spec).
+    #[test]
+    fn resources_match_docs() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        for dir in ["prompts", "schemas"] {
+            let docs = root.join("..").join("docs").join("claude").join(dir);
+            for entry in std::fs::read_dir(&docs).unwrap() {
+                let path = entry.unwrap().path();
+                let copy = root
+                    .join("resources")
+                    .join(dir)
+                    .join(path.file_name().unwrap());
+                assert_eq!(
+                    std::fs::read_to_string(&path)
+                        .unwrap()
+                        .replace("\r\n", "\n"),
+                    std::fs::read_to_string(&copy)
+                        .unwrap_or_default()
+                        .replace("\r\n", "\n"),
+                    "{} differs from docs/claude",
+                    copy.display()
+                );
+            }
+        }
+    }
+}

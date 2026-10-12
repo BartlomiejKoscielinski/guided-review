@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UsagesInsight",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["insight", "affected", "question"],
+  "properties": {
+    "insight": { "type": "string", "maxLength": 300, "description": "Empty string when no usage outside the change is affected." },
+    "affected": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "line"],
+        "properties": { "file": { "type": "string" }, "line": { "type": "integer", "minimum": 1 } }
+      }
+    },
+    "question": { "type": "string", "maxLength": 400, "description": "Becomes a draft via Add as a question; empty string when not needed." }
+  }
+}

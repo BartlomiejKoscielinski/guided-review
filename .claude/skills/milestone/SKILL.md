@@ -8,7 +8,7 @@ disable-model-invocation: true
 Milestone: $ARGUMENTS
 
 ## 1. Load the contract (no code yet)
-1. Read `docs/PROGRESS.md`. If earlier milestones have open items, list them and ask whether to continue anyway.
+1. List open items with `grep -n '^## M|^- [ ]' docs/PROGRESS.md` (do not read the whole file). If earlier milestones have open items, list them and ask whether to continue anyway.
 2. Read the $ARGUMENTS section of `docs/07-roadmap.md` and every acceptance criterion listed for $ARGUMENTS in `docs/PROGRESS.md`.
 3. For each feature involved, read its section in `docs/01-product.md`; for each screen, its section in `docs/02-screens.md`, and look at its PNGs in `docs/design/screens/` (open the images).
 4. Read the parts of `03`–`06` and `08-decisions.md` that apply. Items marked **verify** in `05-integrations.md`: check the current docs now and note the result.

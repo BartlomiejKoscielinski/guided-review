@@ -12,6 +12,11 @@
   color: var(--ink);
 }
 
+.xs {
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 16px;
+}
 .s {
   padding: 1px 7px;
   font-size: 12px;

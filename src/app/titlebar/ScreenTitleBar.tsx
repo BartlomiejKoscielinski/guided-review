@@ -1,17 +1,18 @@
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router';
 import { Button } from '../../components/Button';
 import { LayoutGuideIcon, LayoutMinimalIcon, LayoutSidebarIcon } from '../../components/icons';
-import { ModelChip } from '../../components/ModelChip';
 import { Segmented } from '../../components/Segmented';
 import { StatusChip } from '../../components/StatusChip';
 import { Tag } from '../../components/Tag';
-import { CLAUDE_SETTINGS_ROUTE, pathFor, type ScreenId } from '../routes';
+import type { ScreenId } from '../routes';
 import { BranchBlock } from './BranchBlock';
+import { ClaudeStatusChip } from './ClaudeStatusChip';
+import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
 import { PLACEHOLDER } from './placeholders';
 import { RepoSwitcher } from './RepoSwitcher';
 import { StatusText } from './StatusText';
+import { TaskModelChip } from './TaskModelChip';
 import { TitleBar } from './TitleBar';
 
 const P = PLACEHOLDER;
@@ -75,16 +76,6 @@ export interface ScreenTitleBarProps {
 
 /** The title bar with each screen's context and controls (docs/02 › Shell table). */
 export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
-  const navigate = useNavigate();
-  const chip = (label: string) => (
-    <ModelChip
-      label={label}
-      onOpen={() => {
-        void navigate(pathFor(CLAUDE_SETTINGS_ROUTE));
-      }}
-    />
-  );
-
   switch (screen) {
     case 'S-01':
       return (
@@ -94,7 +85,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
           controls={
             <>
               <StatusText color="green">{P.gitlabStatus}</StatusText>
-              {chip(P.claudeStatus)}
+              {<ClaudeStatusChip />}
             </>
           }
         />
@@ -112,7 +103,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
           controls={
             <>
               <StatusText color="purple">{P.planStatus}</StatusText>
-              {chip(P.model.plan)}
+              {<TaskModelChip group="plan" />}
             </>
           }
         />
@@ -121,30 +112,20 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
       return (
         <TitleBar
           context={<SessionContext />}
-          controls={<StepControls mode="focus" model={chip(P.model.step)} />}
+          controls={<StepControls mode="focus" model={<TaskModelChip group="step" />} />}
         />
       );
     case 'S-04':
       return (
         <TitleBar
           context={<SessionContext />}
-          controls={<StepControls mode="detailed" model={chip(P.model.step)} />}
+          controls={<StepControls mode="detailed" model={<TaskModelChip group="step" />} />}
         />
       );
     case 'S-05':
-      return <TitleBar context={<SessionContext />} controls={chip(P.model.summary)} />;
+      return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-06':
-      return (
-        <TitleBar
-          context={
-            <>
-              <RepoSwitcher name={P.repo.name} path={P.repo.path} />
-              <BranchBlock branch={P.branch} />
-            </>
-          }
-          controls={chip(P.model.commit)}
-        />
-      );
+      return <TitleBar context={<ChangesContext />} controls={<TaskModelChip group="commit" />} />;
     case 'S-07':
       return (
         <TitleBar
@@ -157,12 +138,12 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
         />
       );
     case 'S-08':
-      return <TitleBar context={<SessionContext />} controls={chip(P.model.pipeline)} />;
+      return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-09':
       return (
         <TitleBar
           context={<SessionContext iid={P.rereviewMr.iid} title={P.rereviewMr.title} />}
-          controls={chip(P.model.rereview)}
+          controls={<TaskModelChip group="step" />}
         />
       );
     case 'S-10':
@@ -181,7 +162,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
           controls={
             <>
               <StatusChip color="green" label={P.pipelineStatus} />
-              {chip(P.model.author)}
+              {<TaskModelChip group="fix" />}
             </>
           }
         />
@@ -196,7 +177,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
               <ContextText kind="title">New merge request</ContextText>
             </>
           }
-          controls={chip(P.model.createMr)}
+          controls={<TaskModelChip group="mr" />}
         />
       );
   }
