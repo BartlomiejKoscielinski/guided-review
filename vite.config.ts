@@ -10,6 +10,9 @@ export default defineConfig({
     strictPort: true,
     watch: { ignored: ['**/src-tauri/**'] },
   },
+  // The dependency scan does not follow `new Worker(new URL(...))`, so without the worker as an
+  // entry Vite finds shiki on the first highlight and reloads every open page mid-session.
+  optimizeDeps: { entries: ['index.html', 'src/**/*.worker.ts'] },
   envPrefix: ['VITE_', 'TAURI_ENV_'],
   build: {
     // The production CSP allows fonts only from 'self' (no data: URIs), so small font subsets
