@@ -22,9 +22,12 @@ const DAY = 24 * HOUR;
 /** An ISO time `ms` before now. */
 const ago = (ms: number): string => new Date(Date.now() - ms).toISOString();
 
-/** `YYYY-MM-DD` `days` from today (Settings.dc.html: "expires in 41 days"). */
+/** Local `YYYY-MM-DD` `days` from today (Settings.dc.html: "expires in 41 days"). */
 function inDays(days: number): string {
-  return new Date(Date.now() + days * DAY).toISOString().slice(0, 10);
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 /** Settings.dc.html › GitLab. */
