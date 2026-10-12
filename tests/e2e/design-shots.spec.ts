@@ -31,6 +31,12 @@ async function changesLocal(page: Page) {
   await tree.getByRole('button', { name: 'DeliveryPhotoPage.xaml' }).click();
   await tree.getByRole('button', { name: 'Expand src/App/Views/Scanner' }).click();
   await page.getByRole('checkbox', { name: 'In commit · lines 22–25' }).waitFor();
+  await waitForHighlight(page, 'RowDefinitions');
+}
+
+/** The Shiki worker colors the diff asynchronously; the shot waits for a colored token of the file. */
+async function waitForHighlight(page: Page, token: string) {
+  await page.locator('span[style*="color"]', { hasText: token }).first().waitFor();
 }
 
 const SHOTS: Shot[] = [
@@ -61,6 +67,7 @@ const SHOTS: Shot[] = [
         .getByRole('button', { name: 'UploadWorker.cs' })
         .click();
       await page.getByText(/ProcessAsync/).waitFor();
+      await waitForHighlight(page, 'IUploadQueue');
     },
   },
   {

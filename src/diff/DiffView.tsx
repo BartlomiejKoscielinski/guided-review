@@ -28,7 +28,7 @@ const LINE = 22;
 
 function estimate(row: DiffRow | undefined): number {
   if (!row) return LINE;
-  if (row.kind === 'hunk') return row.first ? 32 : 46;
+  if (row.kind === 'hunk') return row.first ? 31 : 45;
   if (row.kind === 'note') return 40;
   return LINE;
 }
