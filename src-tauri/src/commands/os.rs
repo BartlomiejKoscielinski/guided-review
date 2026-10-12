@@ -128,7 +128,11 @@ fn inside(repo: &Path, file: &str) -> AppResult<PathBuf> {
     if !safe {
         return Err(AppError::new(ErrorCode::InvalidInput, "Invalid file path."));
     }
-    Ok(repo.join(relative))
+    // Joined per component so a git path (`a/b.cs`) becomes a native one (`a\b.cs`).
+    Ok(relative
+        .components()
+        .filter(|c| matches!(c, Component::Normal(_)))
+        .fold(repo.to_path_buf(), |path, c| path.join(c)))
 }
 
 #[cfg(test)]
@@ -146,5 +150,19 @@ mod tests {
         assert!(inside(repo, "C:\\Windows\\win.ini").is_err());
         assert!(inside(repo, "/etc/passwd").is_err());
         assert!(inside(repo, "").is_err());
+    }
+
+    #[test]
+    fn f24_1_git_paths_become_native_paths_for_rider() {
+        let repo = Path::new("C:\\Repos\\.review\\gr-sandbox\\2");
+        let path = inside(repo, "src/Delivery.App/./Zażółć A.cs").unwrap();
+        assert_eq!(
+            path,
+            repo.join("src").join("Delivery.App").join("Zażółć A.cs")
+        );
+        assert_eq!(
+            path.to_string_lossy(),
+            "C:\\Repos\\.review\\gr-sandbox\\2\\src\\Delivery.App\\Zażółć A.cs"
+        );
     }
 }
