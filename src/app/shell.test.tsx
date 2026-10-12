@@ -72,12 +72,13 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
 };
 
 describe('Shell', () => {
-  it('F-30.1 each screen shows its title-bar controls', () => {
+  it('F-30.1 each screen shows its title-bar controls', async () => {
     for (const route of ALL) {
       const { unmount } = renderApp(route);
       const expected = EXPECTED_CONTROLS[route.screen];
       const bar = within(screen.getByTestId('title-bar'));
-      for (const text of expected.text) expect(bar.getByText(text)).toBeInTheDocument();
+      // S-06 shows the active repository and branch once the mock answers.
+      for (const text of expected.text) expect(await bar.findByText(text)).toBeInTheDocument();
       expect(titleBarControls(), route.screen).toEqual(expected.controls);
       unmount();
     }

@@ -8,6 +8,7 @@ import { StatusChip } from '../../components/StatusChip';
 import { Tag } from '../../components/Tag';
 import { CLAUDE_SETTINGS_ROUTE, pathFor, type ScreenId } from '../routes';
 import { BranchBlock } from './BranchBlock';
+import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
 import { PLACEHOLDER } from './placeholders';
 import { RepoSwitcher } from './RepoSwitcher';
@@ -134,17 +135,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-05':
       return <TitleBar context={<SessionContext />} controls={chip(P.model.summary)} />;
     case 'S-06':
-      return (
-        <TitleBar
-          context={
-            <>
-              <RepoSwitcher name={P.repo.name} path={P.repo.path} />
-              <BranchBlock branch={P.branch} />
-            </>
-          }
-          controls={chip(P.model.commit)}
-        />
-      );
+      return <TitleBar context={<ChangesContext />} controls={chip(P.model.commit)} />;
     case 'S-07':
       return (
         <TitleBar

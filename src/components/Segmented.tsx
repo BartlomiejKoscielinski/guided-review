@@ -19,8 +19,11 @@ export interface SegmentedProps<T extends string> {
   options: readonly SegmentedOption<T>[];
   value: T;
   onChange: (value: T) => void;
-  /** "bar" = 28px title-bar control, "form" = 40px settings control. */
-  size?: 'bar' | 'form';
+  /**
+   * "bar" = 28px title-bar control, "tool" = 30px toolbar control (S-06 Unified | Split),
+   * "fill" = 32px options sharing the full width (S-06 source toggle), "form" = 40px settings.
+   */
+  size?: 'bar' | 'tool' | 'fill' | 'form';
   /** Fill of the selected option (white block by default). */
   tone?: 'white' | 'yellow' | 'purple' | 'green';
 }

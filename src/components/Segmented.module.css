@@ -8,6 +8,13 @@
 .bar {
   background: var(--panel-2);
 }
+.tool {
+  background: var(--panel-2);
+}
+.fill {
+  display: flex;
+  background: var(--bg-sunken);
+}
 .form {
   background: var(--raised);
 }
@@ -33,6 +40,19 @@
   height: 28px;
   padding: 0 12px;
   font-size: 13px;
+  font-weight: 700;
+}
+.tool .option {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.fill .option {
+  flex: 1 1 0;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13.5px;
   font-weight: 700;
 }
 .form .option {

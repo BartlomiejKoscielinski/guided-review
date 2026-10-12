@@ -1,0 +1,220 @@
+/* S-06 left panel (Changes.dc.html › Changed files). */
+.panel {
+  flex: 1 1 320px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 10px 8px;
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.filterInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.filterInput::placeholder {
+  color: var(--text-muted);
+}
+
+.filterInput:focus-visible {
+  outline: none;
+}
+
+.filter:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.count {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.master {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+}
+
+.masterLabel {
+  flex: 1 1 auto;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.iconButton {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 6px 16px;
+}
+
+.sizer {
+  position: relative;
+  width: 100%;
+}
+
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.folder {
+  display: grid;
+  grid-template-columns: 18px 16px minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  height: 28px;
+  margin-top: 2px;
+  padding: 0 8px 0 4px;
+}
+
+.chevron {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.chevronIcon {
+  transition: transform 100ms linear;
+}
+
+.open .chevronIcon {
+  transform: rotate(90deg);
+}
+
+.dir {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dirCount {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.file {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  height: 26px;
+  padding: 0 8px 0 32px;
+}
+
+.commitMode .file {
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding-left: 30px;
+}
+
+.current {
+  background: var(--raised-2);
+}
+
+.select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.name {
+  font-size: 13.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.current .name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.dimName {
+  color: var(--text-lineno);
+}
+
+.struck {
+  text-decoration: line-through;
+}
+
+.stats {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.adds {
+  color: var(--blue-text);
+}
+
+.dels {
+  color: var(--orange-text);
+}
+
+.noMatch {
+  padding: 20px 12px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
