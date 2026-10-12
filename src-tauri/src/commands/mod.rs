@@ -2,6 +2,9 @@
 //! They only translate between IPC and the core modules; command names are `area_action`.
 
 pub mod app;
+pub mod git;
+pub mod os;
+pub mod repo;
 pub mod sessions;
 
 use crate::error::{AppError, AppResult};

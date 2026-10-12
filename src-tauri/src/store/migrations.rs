@@ -4,7 +4,10 @@
 use rusqlite_migration::{M, Migrations};
 
 pub fn migrations() -> Migrations<'static> {
-    Migrations::new(vec![M::up(include_str!("migrations/001_initial.sql"))])
+    Migrations::new(vec![
+        M::up(include_str!("migrations/001_initial.sql")),
+        M::up(include_str!("migrations/002_app_state.sql")),
+    ])
 }
 
 #[cfg(test)]
@@ -12,8 +15,9 @@ mod tests {
     use super::*;
     use rusqlite::Connection;
 
-    /// Tables of docs/04 › SQLite schema.
-    const TABLES: [&str; 15] = [
+    /// Tables of docs/04 › SQLite schema (001) and app_state (002).
+    const TABLES: [&str; 16] = [
+        "app_state",
         "settings",
         "repos",
         "worktrees",
@@ -37,7 +41,7 @@ mod tests {
     }
 
     #[test]
-    fn migration_001_creates_every_table_of_the_schema() {
+    fn migrations_create_every_table_of_the_schema() {
         let mut conn = Connection::open_in_memory().unwrap();
         migrations().to_latest(&mut conn).unwrap();
         let mut stmt = conn
@@ -84,6 +88,6 @@ mod tests {
         let version: i64 = conn
             .query_row("PRAGMA user_version", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(version, 1);
+        assert_eq!(version, 2);
     }
 }

@@ -79,6 +79,8 @@ sha2 = "0.10"
 # Working-tree watcher with a 300 ms debounce (F-16.2, docs/04 › Background work); re-exports
 # notify 8.2.
 notify-debouncer-mini = "0.7"
+# Folder and file pickers called from the core (repo_pick, Claude executable Change); 2.8.
+tauri-plugin-dialog = "2"
 
 [features]
 # Builds gr-probe (field kit, ADR-019) with native-tls for the S6 comparison and hidden input.
