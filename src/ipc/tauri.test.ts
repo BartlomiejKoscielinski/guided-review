@@ -34,6 +34,20 @@ describe('Tauri IPC client', () => {
     ]);
   });
 
+  it('calls the GitLab commands by their contract names', async () => {
+    const client = createTauriClient();
+    await client.gitlabStatus(true);
+    await client.gitlabAccountSave('https://gitlab.local', 'glpat-test0000');
+    await client.gitlabAccountRemove();
+    await client.gitlabListMrs('waiting');
+    expect(invokeMock.mock.calls).toEqual([
+      ['gitlab_status', { refresh: true }],
+      ['gitlab_account_save', { server: 'https://gitlab.local', token: 'glpat-test0000' }],
+      ['gitlab_account_remove', undefined],
+      ['gitlab_list_mrs', { tab: 'waiting' }],
+    ]);
+  });
+
   it('calls the repository and git commands by their contract names', async () => {
     const client = createTauriClient();
     const file = { path: 'a b/ż.cs', untracked: false };

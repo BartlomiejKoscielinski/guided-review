@@ -7,8 +7,11 @@ import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
 import type { FileDiff } from './types/FileDiff';
 import type { FileRef } from './types/FileRef';
+import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrList } from './types/MrList';
+import type { MrTab } from './types/MrTab';
 import type { PushResult } from './types/PushResult';
 import type { Selection } from './types/Selection';
 import type { Route } from './types/Route';
@@ -67,6 +70,16 @@ export interface IpcClient {
   /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;
+
+  // GitLab (F-01.6, F-02.1, F-02.2, F-19.2, F-19.5).
+  /** Connected / no token / failing; `refresh` checks GitLab again (F-01.6). */
+  gitlabStatus(refresh: boolean): Promise<GitlabStatus>;
+  /** Check and save / Replace token: stored only if GitLab accepts it with scope api (F-19.5). */
+  gitlabAccountSave(server: string, token: string): Promise<GitlabStatus>;
+  /** Removes the stored token; the server URL stays. */
+  gitlabAccountRemove(): Promise<GitlabStatus>;
+  /** One S-01 tab of the active repository's project with the counts of all three tabs. */
+  gitlabListMrs(tab: MrTab): Promise<MrList>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

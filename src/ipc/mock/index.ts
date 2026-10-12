@@ -2,6 +2,7 @@ import type { IpcClient } from '../client';
 import { applySettingsPatch } from '../settings-patch';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
+import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
 import { health } from './fixtures/app';
@@ -17,6 +18,8 @@ export const MOCK_SESSIONS_KEY = 'guided-review.mock.sessions';
 export const MOCK_CHANGES_KEY = 'guided-review.mock.changes';
 /** Key with a `ClaudeScenario` (Claude status and Suggest failures). */
 export const MOCK_CLAUDE_KEY = 'guided-review.mock.claude';
+/** Key with a `GitlabScenario` (connected, no token, failing). */
+export const MOCK_GITLAB_KEY = 'guided-review.mock.gitlab';
 
 export interface MockOptions {
   /** Fake latency per call, so loading states are visible in `npm run dev:mock`. */
@@ -32,6 +35,8 @@ export interface MockOptions {
   changes?: ChangesScenario;
   /** Claude variations; the storage's `MOCK_CLAUDE_KEY` wins. */
   claude?: ClaudeScenario;
+  /** GitLab variations; the storage's `MOCK_GITLAB_KEY` wins. */
+  gitlab?: GitlabScenario;
 }
 
 const wait = (ms: number): Promise<void> =>
@@ -82,6 +87,7 @@ export function createMockClient({
   sessions: sessionsOption = unfinishedSessions,
   changes: changesOption = {},
   claude: claudeOption = {},
+  gitlab: gitlabOption = {},
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
@@ -110,6 +116,7 @@ export function createMockClient({
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, (ms) =>
       latencyMs > 0 ? wait(ms) : Promise.resolve(),
     ),
+    ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
     // The browser has no window to move; the mock only tracks the maximized state.
     windowMinimize: () => Promise.resolve(),
     windowToggleMaximize: () => {

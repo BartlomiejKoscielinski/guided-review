@@ -4,6 +4,7 @@
 pub mod app;
 pub mod claude;
 pub mod git;
+pub mod gitlab;
 pub mod os;
 pub mod repo;
 pub mod sessions;

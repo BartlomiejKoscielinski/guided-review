@@ -145,6 +145,7 @@ pub fn run() {
             commands::claude::manage(app.handle(), &app_data, &store);
             app.manage(store);
             commands::repo::manage(app.handle());
+            app.manage(commands::gitlab::GitlabApp::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -171,6 +172,10 @@ pub fn run() {
             commands::claude::claude_models,
             commands::claude::claude_commit_message,
             commands::claude::claude_cancel,
+            commands::gitlab::gitlab_status,
+            commands::gitlab::gitlab_account_save,
+            commands::gitlab::gitlab_account_remove,
+            commands::gitlab::gitlab_list_mrs,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Guided Review");

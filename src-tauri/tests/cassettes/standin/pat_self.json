@@ -7,8 +7,6 @@
   "last_used_at": "2026-10-12T13:54:28.371Z",
   "name": "api",
   "revoked": false,
-  "scopes": [
-    "api"
-  ],
+  "scopes": ["api"],
   "user_id": 2
 }

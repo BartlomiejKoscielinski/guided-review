@@ -9,8 +9,10 @@ import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
+import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrList } from './types/MrList';
 import type { PushResult } from './types/PushResult';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
@@ -62,6 +64,11 @@ export function createTauriClient(): IpcClient {
     claudeModels: () => call<ModelInfo[]>('claude_models'),
     claudeCommitMessage: (task) => call<string>('claude_commit_message', { task }),
     claudeCancel: (task) => call<undefined>('claude_cancel', { task }),
+    gitlabStatus: (refresh) => call<GitlabStatus>('gitlab_status', { refresh }),
+    gitlabAccountSave: (server, token) =>
+      call<GitlabStatus>('gitlab_account_save', { server, token }),
+    gitlabAccountRemove: () => call<GitlabStatus>('gitlab_account_remove'),
+    gitlabListMrs: (tab) => call<MrList>('gitlab_list_mrs', { tab }),
     ...createTauriWindowControls(),
   };
 }
