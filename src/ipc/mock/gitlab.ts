@@ -137,6 +137,13 @@ function lists(): Record<MrTab, MrRow[]> {
   };
 }
 
+/** An MR of the mock lists by iid (what `gitlab_mr` would find), for preparation. */
+export function findMockMr(iid: number): MrRow | undefined {
+  return Object.values(lists())
+    .flat()
+    .find((mr) => mr.iid === iid);
+}
+
 const COUNTS = { waiting: 3, mine: 1, all: 12 };
 
 function addToken(): IpcError {

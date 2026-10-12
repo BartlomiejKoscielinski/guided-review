@@ -2,5 +2,6 @@
 
 pub mod layer;
 pub mod model;
+pub mod open_mr;
 pub mod prepare;
 pub mod sessions;

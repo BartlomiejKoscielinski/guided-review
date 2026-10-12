@@ -4,6 +4,7 @@ import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
+import { createPrepareBackend } from './prepare';
 import { createSourcesBackend } from './sources';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
@@ -118,6 +119,7 @@ export function createMockClient({
     sessionsListUnfinished: () => respond(sessions),
     ...createChangesBackend(changes, respond, repos),
     ...createSourcesBackend(respond, repos),
+    ...createPrepareBackend(repos, (ms) => (latencyMs > 0 ? wait(ms) : Promise.resolve())),
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, (ms) =>
       latencyMs > 0 ? wait(ms) : Promise.resolve(),
     ),

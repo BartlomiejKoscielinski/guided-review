@@ -1,5 +1,5 @@
-//! `rider_open` (F-15.5): opens a file of the active repository's working copy in Rider at a
-//! line. Files of a teammate's MR (worktree) follow with F-24.1 in M2.
+//! `rider_open` (F-15.5, F-24.1): opens a file in Rider at a line, from the active
+//! repository's working copy or, for a session, from the folder `rider.openFrom` picks.
 
 use std::path::{Component, Path, PathBuf};
 
@@ -13,16 +13,41 @@ use crate::os::rider::{self, RiderInput};
 use crate::store::{self, Store};
 
 /// `file` is repository-relative with `/`; `line` is 1-based. An empty `file` opens the
-/// repository folder ("Pull with rebase in Rider" after a rejected push).
+/// repository folder ("Pull with rebase in Rider" after a rejected push). With `session`, a
+/// teammate's MR opens from its review worktree or the checkout (`rider.openFrom`, F-24.1).
 #[tauri::command]
-pub async fn rider_open(store: State<'_, Store>, file: String, line: u32) -> AppResult<()> {
-    let git = active_git(&store).await?;
+pub async fn rider_open(
+    store: State<'_, Store>,
+    file: String,
+    line: u32,
+    session: Option<String>,
+) -> AppResult<()> {
+    let settings = with_store(&store, |conn| store::settings::load(conn)).await?;
+    let root = match session {
+        Some(id) => {
+            let folders = with_store(&store, move |conn| store::sessions::folders(conn, &id))
+                .await?
+                .ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
+            let root = rider::open_root(
+                settings.rider.open_from,
+                folders.worktree.as_deref(),
+                &folders.checkout,
+            );
+            if !root.is_dir() {
+                return Err(AppError::new(
+                    ErrorCode::WorktreeFailed,
+                    "The review worktree is gone. Open the merge request again.",
+                ));
+            }
+            root.to_path_buf()
+        }
+        None => active_git(&store).await?.repo().to_path_buf(),
+    };
     let path = if file.is_empty() {
         None
     } else {
-        Some(inside(git.repo(), &file)?)
+        Some(inside(&root, &file)?)
     };
-    let settings = with_store(&store, |conn| store::settings::load(conn)).await?;
     let configured = settings.rider.path.map(PathBuf::from);
     let install = tauri::async_runtime::spawn_blocking(move || {
         rider::discover(&RiderInput::from_env(configured))
@@ -37,7 +62,7 @@ pub async fn rider_open(store: State<'_, Store>, file: String, line: u32) -> App
     })?;
     let args = match &path {
         Some(path) => rider::open_args(path, line.max(1), None),
-        None => vec![git.repo().as_os_str().to_owned()],
+        None => vec![root.as_os_str().to_owned()],
     };
     spawn_detached(&install.exe, &args, None).map_err(|e| {
         AppError::internal("Rider could not be started.").with_detail(e.to_string())

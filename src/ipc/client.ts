@@ -8,6 +8,7 @@ import type { CommitRange } from './types/CommitRange';
 import type { DetectedSource } from './types/DetectedSource';
 import type { LocalScope } from './types/LocalScope';
 import type { OpenedSession } from './types/OpenedSession';
+import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
@@ -69,6 +70,18 @@ export interface IpcClient {
   sessionOpenBranch(branch: string): Promise<OpenedSession>;
   /** A typed repository path: added if needed, made active, then self-review. */
   sessionOpenRepo(path: string): Promise<OpenedSession>;
+  /**
+   * A teammate's MR (F-01.3, F-05): the repository of `project` (switched to) or the active one,
+   * preparation with progress, then S-02. Rejects with the F-01.5 copy for an unknown MR.
+   */
+  sessionOpenMr(
+    iid: number,
+    project: string | null,
+    task: string,
+    onProgress: (progress: PrepareProgress) => void,
+  ): Promise<OpenedSession>;
+  /** Cancel on S-02 Preparing (F-05.6); the running `sessionOpenMr` rejects with CANCELLED. */
+  sessionPrepareCancel(task: string): Promise<void>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */
@@ -83,8 +96,11 @@ export interface IpcClient {
   /** HEAD's message, for Amend previous commit. */
   gitLastMessage(): Promise<string | null>;
   gitPush(): Promise<PushResult>;
-  /** Opens a repository file in Rider at a 1-based line (F-15.5). */
-  riderOpen(file: string, line: number): Promise<void>;
+  /**
+   * Opens a repository file in Rider at a 1-based line (F-15.5); with `session`, a teammate's MR
+   * opens from the folder `rider.openFrom` picks (F-24.1).
+   */
+  riderOpen(file: string, line: number, session?: string): Promise<void>;
   /** Calls `listener` when the working tree, index or HEAD changed (F-16.2). */
   onRepoChanged(listener: () => void): Promise<() => void>;
 

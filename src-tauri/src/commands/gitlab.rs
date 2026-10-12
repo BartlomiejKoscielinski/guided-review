@@ -110,18 +110,11 @@ pub async fn gitlab_list_mrs(
     store: State<'_, Store>,
     tab: MrTab,
 ) -> AppResult<MrList> {
-    let status = current_status(&gitlab, &store, false).await?;
+    let (client, status) = connected_client(&gitlab, &store).await?;
     let (Some(server), Some(user)) = (status.server.as_deref(), status.user.as_ref()) else {
         return Err(not_connected(&status));
     };
     let project = active_project(&store, server).await?;
-    let host = account::server_host(server)?;
-    let token = gitlab
-        .tokens
-        .load(&host)
-        .map_err(account::AccountError::from)?
-        .ok_or_else(add_token)?;
-    let client = GitlabClient::new(server, &token, TLS)?;
     let result = mrs::list(
         &client,
         &project,
@@ -131,14 +124,37 @@ pub async fn gitlab_list_mrs(
         mrs::MAX_PAGES,
     )
     .await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// A client with the stored token, when GitLab is connected.
+pub(crate) async fn connected_client(
+    gitlab: &GitlabApp,
+    store: &Store,
+) -> AppResult<(GitlabClient, GitlabStatus)> {
+    let status = current_status(gitlab, store, false).await?;
+    let Some(server) = status.server.as_deref().filter(|_| status.user.is_some()) else {
+        return Err(not_connected(&status));
+    };
+    let host = account::server_host(server)?;
+    let token = gitlab
+        .tokens
+        .load(&host)
+        .map_err(account::AccountError::from)?
+        .ok_or_else(add_token)?;
+    let client = GitlabClient::new(server, &token, TLS)?;
+    Ok((client, status))
+}
+
+/// After a token error the title bar turns orange at its next status call.
+pub(crate) async fn forget_status_on_auth_error(gitlab: &GitlabApp, error: Option<&GitlabError>) {
     if matches!(
-        result,
-        Err(GitlabError::Unauthorized | GitlabError::TokenExpired | GitlabError::TokenRevoked)
+        error,
+        Some(GitlabError::Unauthorized | GitlabError::TokenExpired | GitlabError::TokenRevoked)
     ) {
-        // The title bar turns orange at its next status call.
         *gitlab.status.lock().await = None;
     }
-    Ok(result?)
 }
 
 fn add_token() -> AppError {

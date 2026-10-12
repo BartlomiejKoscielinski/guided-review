@@ -1,14 +1,20 @@
 //! `sessions_*` and `session_open_*` commands. Commit and local sessions open stub screens until
-//! M3 (M2 decision 3); MR sessions come with preparation (`session_open_mr`, F-05).
+//! M3 (M2 decision 3); MR sessions come with preparation (`session_open_mr`, F-05) and open S-02.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use tauri::State;
+use tauri::ipc::Channel;
 
+use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error};
 use super::repo::{active_git, add_folder};
 use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::os::process::Cancel;
+use crate::review::open_mr::{self, OpenMr, OpenMrError, SessionDefaults};
+use crate::review::prepare::PrepareProgress;
 use crate::review::sessions::{self, OpenedSession, UnfinishedSession};
 use crate::source::open::{self, Resolved};
 use crate::source::{CommitRange, LocalScope};
@@ -93,4 +99,87 @@ pub async fn session_open_repo(store: State<'_, Store>, path: String) -> AppResu
     let scope = open::default_scope(&git, &cancel).await?;
     let resolved = open::local(&git, &scope, &cancel).await?;
     create(&store, resolved).await
+}
+
+/// Running MR preparations by the UI's task ID, for `session_prepare_cancel` (F-05.6).
+#[derive(Default)]
+pub struct PrepareTasks(Mutex<HashMap<String, Cancel>>);
+
+impl PrepareTasks {
+    fn insert(&self, task: &str, cancel: &Cancel) {
+        if let Ok(mut tasks) = self.0.lock() {
+            tasks.insert(task.to_owned(), cancel.clone());
+        }
+    }
+
+    fn remove(&self, task: &str) {
+        if let Ok(mut tasks) = self.0.lock() {
+            tasks.remove(task);
+        }
+    }
+}
+
+/// A teammate's MR (F-01.3, F-02.3): the repository of `project` (switched to, decision 7; the
+/// active one without `project`), the MR from GitLab (404 → F-01.5 copy), preparation with
+/// progress on `ch` (F-05), then a Planning session on S-02. `task` is the UI's ID for
+/// `session_prepare_cancel`.
+#[tauri::command]
+pub async fn session_open_mr(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    tasks: State<'_, PrepareTasks>,
+    iid: u64,
+    project: Option<String>,
+    task: String,
+    ch: Channel<PrepareProgress>,
+) -> AppResult<OpenedSession> {
+    let (resolved, settings) = with_store(&store, move |conn| {
+        Ok((
+            open_mr::resolve_repo(conn, project.as_deref()),
+            store::settings::load(conn)?,
+        ))
+    })
+    .await?;
+    let (repo, project) = resolved?;
+    if !Path::new(&repo.path).is_dir() {
+        return Err(AppError::new(
+            ErrorCode::InvalidInput,
+            "Pick a repository first.",
+        ));
+    }
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let ctx = OpenMr {
+        client: &client,
+        store: &store,
+        git_program: settings.git.path.as_deref().map(Path::new),
+        repo: &repo,
+        project: &project,
+        iid,
+        defaults: SessionDefaults {
+            mode: settings.ui.start_in,
+            layout: settings.ui.focus_layout,
+        },
+    };
+    let progress = move |p: PrepareProgress| {
+        if let Err(error) = ch.send(p) {
+            tracing::debug!(%error, "preparation progress not delivered");
+        }
+    };
+    let cancel = Cancel::new();
+    tasks.insert(&task, &cancel);
+    let result = open_mr::open_mr(&ctx, &progress, &cancel).await;
+    tasks.remove(&task);
+    if let Err(OpenMrError::Gitlab(error)) = &result {
+        forget_status_on_auth_error(&gitlab, Some(error)).await;
+    }
+    Ok(result?)
+}
+
+/// Cancel on S-02 Preparing (F-05.6): kills the running git and removes a worktree the
+/// preparation created.
+#[tauri::command]
+pub fn session_prepare_cancel(tasks: State<'_, PrepareTasks>, task: String) {
+    if let Some(cancel) = tasks.0.lock().ok().and_then(|t| t.get(&task).cloned()) {
+        cancel.cancel();
+    }
 }

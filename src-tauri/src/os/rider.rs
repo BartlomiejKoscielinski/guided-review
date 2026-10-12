@@ -8,6 +8,8 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+use crate::settings::RiderOpenFrom;
+
 const EXE: &str = "rider64.exe";
 
 /// Where an install was found.
@@ -203,6 +205,20 @@ pub fn exe_from_toolbox_script(script: &str) -> Option<PathBuf> {
         .map(PathBuf::from)
 }
 
+/// The folder a session's files open from in Rider (F-24.1): a teammate's MR follows
+/// `rider.openFrom` (the review worktree, or the user's checkout); sessions without a
+/// worktree always use the checkout.
+pub fn open_root<'a>(
+    open_from: RiderOpenFrom,
+    worktree: Option<&'a Path>,
+    checkout: &'a Path,
+) -> &'a Path {
+    match (open_from, worktree) {
+        (RiderOpenFrom::Worktree, Some(worktree)) => worktree,
+        _ => checkout,
+    }
+}
+
 /// Arguments to open a file at a line (and column): `--line N [--column C] <file>`.
 pub fn open_args(file: &Path, line: u32, column: Option<u32>) -> Vec<std::ffi::OsString> {
     let mut args: Vec<std::ffi::OsString> = vec!["--line".into(), line.to_string().into()];
@@ -354,5 +370,20 @@ mod tests {
             .map(std::ffi::OsString::from)
         );
         assert_eq!(open_args(Path::new("A.cs"), 1, None).len(), 3);
+    }
+
+    #[test]
+    fn f24_1_open_from_picks_the_root_of_a_teammates_mr() {
+        let worktree = Path::new(r"C:\src\.review\mobile ąę\482");
+        let checkout = Path::new(r"C:\src\mobile ąę");
+        assert_eq!(
+            open_root(RiderOpenFrom::Worktree, Some(worktree), checkout),
+            worktree
+        );
+        assert_eq!(
+            open_root(RiderOpenFrom::Checkout, Some(worktree), checkout),
+            checkout
+        );
+        assert_eq!(open_root(RiderOpenFrom::Worktree, None, checkout), checkout);
     }
 }

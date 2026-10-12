@@ -152,6 +152,7 @@ pub fn run() {
             app.manage(store);
             commands::repo::manage(app.handle());
             app.manage(commands::gitlab::GitlabApp::default());
+            app.manage(commands::sessions::PrepareTasks::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -171,6 +172,8 @@ pub fn run() {
             commands::sessions::session_open_local,
             commands::sessions::session_open_branch,
             commands::sessions::session_open_repo,
+            commands::sessions::session_open_mr,
+            commands::sessions::session_prepare_cancel,
             commands::git::git_status,
             commands::git::git_log,
             commands::git::git_status_summary,

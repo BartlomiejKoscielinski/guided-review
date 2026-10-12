@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import { createTauriClient } from './tauri';
 
-vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(),
+  Channel: class {
+    onmessage: (message: unknown) => void = () => undefined;
+  },
+}));
 const invokeMock = vi.mocked(invoke);
 
 describe('Tauri IPC client', () => {
@@ -76,7 +81,7 @@ describe('Tauri IPC client', () => {
       ['git_commit', { message: 'Subject', amend: true }],
       ['git_last_message', undefined],
       ['git_push', undefined],
-      ['rider_open', { file: 'a b/ż.cs', line: 12 }],
+      ['rider_open', { file: 'a b/ż.cs', line: 12, session: null }],
     ]);
   });
 
@@ -117,5 +122,21 @@ describe('Tauri IPC client', () => {
       code: 'INTERNAL',
       message: 'Broken.',
     });
+  });
+
+  it('F-05.6 opens an MR with a progress channel, cancels it, and opens Rider from a session', async () => {
+    const client = createTauriClient();
+    const seen: unknown[] = [];
+    await client.sessionOpenMr(482, 'mobile/mobile-app', 'task-1', (p) => seen.push(p));
+    await client.sessionPrepareCancel('task-1');
+    await client.riderOpen('src/A.cs', 3, 'session-1');
+    const [open, cancel, rider] = invokeMock.mock.calls;
+    expect(open?.[0]).toBe('session_open_mr');
+    const args = open?.[1] as { ch: { onmessage: (m: unknown) => void } };
+    expect(args).toMatchObject({ iid: 482, project: 'mobile/mobile-app', task: 'task-1' });
+    args.ch.onmessage({ stage: 'creatingWorktree' });
+    expect(seen).toEqual([{ stage: 'creatingWorktree' }]);
+    expect(cancel).toEqual(['session_prepare_cancel', { task: 'task-1' }]);
+    expect(rider).toEqual(['rider_open', { file: 'src/A.cs', line: 3, session: 'session-1' }]);
   });
 });

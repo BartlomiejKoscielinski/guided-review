@@ -1,4 +1,4 @@
-import { invoke, type InvokeArgs } from '@tauri-apps/api/core';
+import { Channel, invoke, type InvokeArgs } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { IpcClient } from './client';
 import { toIpcError } from './errors';
@@ -10,6 +10,7 @@ import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
 import type { OpenedSession } from './types/OpenedSession';
+import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
@@ -56,6 +57,12 @@ export function createTauriClient(): IpcClient {
     sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
     sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),
     sessionOpenRepo: (path) => call<OpenedSession>('session_open_repo', { path }),
+    sessionOpenMr: (iid, project, task, onProgress) => {
+      const ch = new Channel<PrepareProgress>();
+      ch.onmessage = onProgress;
+      return call<OpenedSession>('session_open_mr', { iid, project, task, ch });
+    },
+    sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),
@@ -64,7 +71,8 @@ export function createTauriClient(): IpcClient {
     gitCommit: (message, amend) => call<CommitResult>('git_commit', { message, amend }),
     gitLastMessage: () => call<string | null>('git_last_message'),
     gitPush: () => call<PushResult>('git_push'),
-    riderOpen: (file, line) => call<undefined>('rider_open', { file, line }),
+    riderOpen: (file, line, session) =>
+      call<undefined>('rider_open', { file, line, session: session ?? null }),
     onRepoChanged: async (listener) => {
       try {
         return await listen(EVENTS.repoChanged, () => {

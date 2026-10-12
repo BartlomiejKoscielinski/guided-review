@@ -113,7 +113,7 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | - | - |
 | app | `app_health`, `app_settings_get`, `app_settings_set(patch)`, `app_start_route`, `app_open_external` |
 | source | `source_detect(input)`: MR URL → `!iid` → absolute path of a repository → SHA (7–40 hex, must resolve) → local or `origin/` branch; errors carry the F-01.5 copy; reads only |
-| sessions | `sessions_list_unfinished`, `session_open_mr(iid, ch)`, `session_open_commit(range)` (`from..to`, `from` excluded; one commit without `from`), `session_open_local(scope)`, `session_open_branch(branch)` (current branch → local changes vs target, other branch → `merge-base..branch`), `session_open_repo(path)` (adds the repository if needed, then self-review), `session_close` |
+| sessions | `sessions_list_unfinished`, `session_open_mr(iid, project?, task, ch)` (repository of `project`, switched to per F-01.5, else the active one; progress `PrepareProgress` on `ch`), `session_prepare_cancel(task)` (F-05.6), `session_open_commit(range)` (`from..to`, `from` excluded; one commit without `from`), `session_open_local(scope)`, `session_open_branch(branch)` (current branch → local changes vs target, other branch → `merge-base..branch`), `session_open_repo(path)` (adds the repository if needed, then self-review), `session_close` |
 | review | `review_plan(session, ch)`, `review_set_strategy`, `review_reorder_steps`, `review_step(session, step)`, `review_findings(session, step, ch)`, `review_decide(finding, decision)`, `review_mark_step`, `review_ask(session, step, question, selection?, ch)` |
 | drafts | `drafts_list`, `drafts_create`, `drafts_update`, `drafts_delete`, `drafts_publish(ids, summary?)` |
 | gitlab | `gitlab_list_mrs(tab)`, `gitlab_mr(iid)`, `gitlab_discussions(iid)`, `gitlab_reply`, `gitlab_resolve(discussion, resolved)`, `gitlab_approval_state`, `gitlab_approve(sha)`, `gitlab_unapprove`, `gitlab_versions`, `gitlab_create_mr`, `gitlab_users_search` |
@@ -125,7 +125,7 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |
 | claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
 | rules | `rules_list`, `rules_suggestions`, `rules_propose_mr(id)`, `rules_dismiss(id, kind)` |
-| os | `rider_open(file, line)`, `rider_install_tools`, `tray_state`, `notifications_set_paused(until)` |
+| os | `rider_open(file, line, session?)` (with a session, the root follows `rider.openFrom`, F-24.1), `rider_install_tools`, `tray_state`, `notifications_set_paused(until)` |
 
 ## Core data model (Rust, serialized to TS)
 
