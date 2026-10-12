@@ -349,6 +349,7 @@ pub async fn local_file_diff(
             mode_change: None,
             additions: 0,
             deletions: 0,
+            layer: crate::review::layer::layer_of(&file.path),
             hunks: Vec::new(),
             line_staging: false,
         });

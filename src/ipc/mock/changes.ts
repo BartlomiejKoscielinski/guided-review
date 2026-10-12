@@ -1,5 +1,6 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
+import { layerOf } from './layer';
 import { createMockRepos, type MockRepos } from './repos';
 import type { CommitInfo } from '../types/CommitInfo';
 import type { FileDiff } from '../types/FileDiff';
@@ -187,6 +188,7 @@ export function createChangesBackend(
       binary: false,
       additions: count('add'),
       deletions: count('del'),
+      layer: layerOf(file.path),
       hunks,
       lineStaging: local,
     };

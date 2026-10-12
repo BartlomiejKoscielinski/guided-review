@@ -37,6 +37,21 @@ Parse unified diff in Rust (`git/diff.rs`): file headers (incl. rename/copy, bin
 ### Range-diff parsing
 Line format: `<n>:  <sha> <op> <m>:  <sha> <subject>` where `op` is `=` (same), `!` (changed), `<` (only in old = dropped), `>` (only in new = new); `-` and `-------` mark the missing side. Regex: `^\s*(\d+|-):\s+([0-9a-f]+|-+)\s+([=!<>])\s+(\d+|-):\s+([0-9a-f]+|-+)\s+(.*)$`. Indented lines after a `!` entry are the patch-diff; keep them as a fallback view when the replay above conflicts.
 
+### Layers (F-05.4, `review/layer.rs`)
+From the repository-relative path (new path, old path for a deletion), case-insensitive, first match wins. "Folder" rules look at folder names only, never the file name.
+
+| Layer | Rule |
+| - | - |
+| Tests | a folder containing `tests`, or named `test` |
+| Platforms | a folder named `Platforms` |
+| Build | `.csproj`, `.sln`, `.props`, `.targets`, `Directory.*`, `.gitlab-ci.yml`, `global.json`, `nuget.config` |
+| Resources | a folder named `Resources`, or `.resx` |
+| XAML | `.xaml`, `.xaml.cs` |
+| Core | a folder named `Core` or ending in `.Core` |
+| Infrastructure | a folder named `Infrastructure` or ending in `.Infrastructure` |
+| App | any other `.cs` |
+| Other | everything else |
+
 ### Moved code (own algorithm, git as test oracle)
 `git diff --color-moved` cannot report "moved with a small change", so the core implements detection itself (`git/moved.rs`):
 1. Collect runs of deleted lines and added lines across all files of the diff.

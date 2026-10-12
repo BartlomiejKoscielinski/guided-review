@@ -14,6 +14,7 @@ use super::model::{FileDiff, FileStatus, Hunk, Line, LineKind, display_text};
 use super::patch::{self, PatchFile};
 use super::runner::Git;
 use crate::os::process::Cancel;
+use crate::review::layer::layer_of;
 
 /// Arguments of every patch: no colors or external diff tools, full blob IDs (stable
 /// file-level hunk IDs), renames, 3 lines of context and fixed `a/`/`b/` prefixes whatever
@@ -241,6 +242,7 @@ pub fn to_model(patch: &PatchFile, utf8: bool) -> FileDiff {
         mode_change,
         additions: patch.additions(),
         deletions: patch.deletions(),
+        layer: layer_of(patch.path()),
         hunks,
         line_staging: utf8 && !patch.binary,
     }
