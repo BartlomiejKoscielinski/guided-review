@@ -29,6 +29,20 @@ path = "tests/bin/gr_test_child.rs"
 test = false
 doc = false
 
+# Fake `claude.exe` for runner tests (docs/09 › Fake `claude`).
+[[bin]]
+name = "fake-claude"
+path = "tests/bin/fake_claude.rs"
+test = false
+doc = false
+
+# Demo repositories (docs/09 › Fixture repositories): `cargo run --bin make-fixtures`.
+[[bin]]
+name = "make-fixtures"
+path = "tests/bin/make_fixtures.rs"
+test = false
+doc = false
+
 [build-dependencies]
 tauri-build = { version = "2.7.2", features = [] }
 
@@ -58,6 +72,10 @@ rustls = { version = "0.23.45", default-features = false }
 keyring = "4.2.0"
 # Hidden token input for gr-probe `token set` (field kit).
 rpassword = { version = "7.5.4", optional = true }
+# Intraline emphasis (docs/05 › Diff parsing); 3.2.
+similar = "3"
+# Hunk IDs: SHA-256 over the content (docs/04 › Hunk ID); already in the tree through Tauri.
+sha2 = "0.10"
 
 [features]
 # Builds gr-probe (field kit, ADR-019) with native-tls for the S6 comparison and hidden input.

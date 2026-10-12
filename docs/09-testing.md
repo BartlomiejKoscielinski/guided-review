@@ -50,7 +50,7 @@ Rules:
 `fixtures/` contains a Rust test helper (or `cargo run --bin make-fixtures`) that builds repositories in a temp folder: a small MAUI-like project; an MR branch with renames, a moved method with one changed line, whitespace-only changes and a `.resx` edit; a second version of the same MR rebased onto a moved target branch with one changed commit, one new commit and one dropped commit. No bash scripts (Windows).
 
 ## Fake `claude`
-A tiny test binary `fake-claude` (in `src-tauri/tests/bin/`) that records its argv and stdin to a file and prints a canned JSON response chosen by an env var. The runner's executable path is configurable, so tests point it at `fake-claude`.
+A tiny test binary `fake-claude` (in `src-tauri/tests/bin/`) that records its argv, stdin and the files of its `--add-dir` folder to `calls.jsonl` and prints canned responses from `fake-claude.json`; both files sit next to the executable, and every test copies the binary into its own folder as `claude.exe` (`tests/support/fake_claude.rs`), so tests run in parallel without shared environment variables. The runner's executable path is configurable (`claude.path`), so tests point it at that copy.
 
 ## Mock backend data
 `src/ipc/mock/fixtures/` holds data matching the design mocks (MR !482 "Offline queue for delivery photos", Marta K., 8 steps, findings f1–f4, threads, pipelines #18342/#18321/#18320, MR !471 versions, MR !480 threads, etc.). With the same data the implementation can be compared with the mock screenshots one to one.
