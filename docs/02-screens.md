@@ -38,7 +38,7 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
   1. Hero: "WHAT ARE WE REVIEWING?" (56px condensed), input with detected-type block and **Start**, hint "Ctrl K opens this field from any screen." (F-01)
   2. "Pick up where you left off": resume cards (F-04)
   3. Three columns: **Merge requests** (blue header, tabs, rows; F-02), **Commits** (white header, search, selectable list, Review/Browse; F-03), **My changes** (green header, scope radios, Review before push / Browse and commit; F-03)
-- States: GitLab not configured → Merge requests column shows "Add your GitLab token" with a button to S-07 › GitLab; repository not a git repo → My changes column shows "Pick a repository" (folder dialog); empty tabs → "Nothing waiting for you." etc.; loading → 3 skeleton rows.
+- States: GitLab not configured → Merge requests column shows "Add your GitLab token" with a button to S-07 › GitLab; repository not a git repo → My changes column shows "Pick a repository" (folder dialog); empty tabs → "Nothing waiting for you." etc.; loading → 3 skeleton rows; input errors under the input (F-01.5): "No merge request !999 in mobile/mobile-app", "No commit, branch or repository matches “x”.", "x is not the configured GitLab server.", "mobile/x is not one of your repositories. Add it in Settings › GitLab."
 - Data: `gitlab.list_mrs(tab)`, `sessions.list_unfinished()`, `git.log(branch, query)`, `git.status_summary(scope)`, `app.health()`.
 
 ## S-02 Review plan

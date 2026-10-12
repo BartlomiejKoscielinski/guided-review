@@ -55,7 +55,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-01.2** The detected type is shown as a label block next to the input before starting (e.g. `MERGE REQUEST !482`, `COMMIT a3f9c12`, `BRANCH chore/compiled-bindings`).
 - **F-01.3** Enter or **Start** opens the source: MR → plan (S-02); commit → step review of that commit; branch or local path → self-review.
 - **F-01.4** `Ctrl+K` opens S-01 with the input focused, from any screen.
-- **F-01.5** Unknown or unreachable input shows an inline error under the input and stays on S-01 (e.g. "No merge request !999 in mobile/mobile-app").
+- **F-01.5** Unknown or unreachable input shows an inline error under the input and stays on S-01: "No merge request !999 in mobile/mobile-app", "No commit, branch or repository matches “x”.", "x is not the configured GitLab server." (MR URL on another host), "mobile/x is not one of your repositories. Add it in Settings › GitLab." (MR URL of a project without a configured repository). An MR URL of another configured repository switches the active repository (F-30.7).
 - **F-01.6** The title bar shows the repository switcher (name and path, F-30.7), "GitLab connected" with a green square, and "Claude Code signed in" as a chip with a purple square that opens Settings › Claude (on S-01 it takes the model chip's place); a failing check turns orange and offers the fixing action ("Add token", "Sign in to Claude Code").
 
 ### F-02 Start: merge request lists · S-01
