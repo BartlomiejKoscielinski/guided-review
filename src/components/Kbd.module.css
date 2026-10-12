@@ -1,6 +1,6 @@
 /* docs/03-design-system.md › Kbd: the only rounded element. */
 .kbd {
-  display: inline-block;
+  display: inline; /* as in the mocks: the box takes the font's content height, not 1em */
   padding: 2px 5px;
   border-radius: 3px;
   background: var(--kbd-bg);

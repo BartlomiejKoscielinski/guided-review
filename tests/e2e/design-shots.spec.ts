@@ -39,8 +39,28 @@ async function waitForHighlight(page: Page, token: string) {
   await page.locator('span[style*="color"]', { hasText: token }).first().waitFor();
 }
 
+/** Start.dc.html's state: the !482 link typed and detected, the Waiting for me list loaded. */
+async function startMock(page: Page) {
+  await page
+    .getByLabel(/Paste a merge request link/)
+    .fill('https://gitlab.local/mobile/mobile-app/-/merge_requests/482');
+  await page.getByText('Merge request !482').waitFor();
+  await page.getByText('Large: the plan splits it by layer').waitFor();
+  await page.getByLabel(/Paste a merge request link/).blur();
+}
+
 const SHOTS: Shot[] = [
-  { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' } },
+  { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' }, prepare: startMock },
+  {
+    screen: 'S01',
+    state: 'start-mine-tab',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await startMock(page);
+      await page.getByRole('tab', { name: /^Mine/ }).click();
+      await page.getByText('2 unresolved threads from reviewers').waitFor();
+    },
+  },
   { screen: 'S07', state: 'settings-general', lastRoute: { screen: 'S-07', section: 'general' } },
   {
     screen: 'S07',
