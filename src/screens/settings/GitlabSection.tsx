@@ -34,6 +34,9 @@ export function GitlabSection() {
           <span className={styles.inline}>
             <span className={styles.value}>{data.tokenMasked}</span>
             <span className={styles.hint}>{tokenMeta(data)}</span>
+          </span>
+          <span />
+          <span className={styles.inline}>
             <Button
               size={28}
               onClick={() => {

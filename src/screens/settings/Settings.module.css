@@ -104,8 +104,12 @@
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+/* The Claude section headings are tracked in the mock; Repositories and JetBrains Rider are not. */
+.h2Tracked {
+  letter-spacing: 0.02em;
 }
 
 .subtitle {

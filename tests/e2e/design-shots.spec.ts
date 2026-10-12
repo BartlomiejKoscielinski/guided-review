@@ -51,6 +51,22 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    screen: 'S07',
+    state: 'settings-gitlab',
+    lastRoute: { screen: 'S-07', section: 'gitlab' },
+    prepare: async (page) => {
+      await page.getByText('mobile/courier-api').waitFor();
+    },
+  },
+  {
+    screen: 'S07',
+    state: 'settings-integrations',
+    lastRoute: { screen: 'S-07', section: 'integrations' },
+    prepare: async (page) => {
+      await page.getByText('Found 2026.2').waitFor();
+    },
+  },
+  {
     screen: 'S03',
     state: 'focus-layout-A',
     lastRoute: { screen: 'S-03', sessionId: 'demo' },
