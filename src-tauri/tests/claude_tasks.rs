@@ -235,3 +235,39 @@ async fn f16_4_nothing_staged_asks_to_stage_first() {
     assert!(matches!(err, ClaudeError::Invalid(_)));
     assert!(fake.calls().is_empty(), "claude never runs");
 }
+
+/// Layer 2 (docs/09 › Environments): the real Claude Code on a synthetic fixture repository.
+/// Uses the developer's own login; run by hand:
+/// `cargo test --test claude_tasks real_claude -- --ignored --nocapture`.
+#[tokio::test]
+#[ignore = "runs the real claude (uses the developer's Claude usage)"]
+async fn real_claude_checks_and_commit_message_on_a_fixture_repo() {
+    let tmp = tempfile::tempdir().unwrap();
+    let check = status::check(
+        &CheckInput {
+            configured: None,
+            probed_version: None,
+            reprobe: true,
+            cwd: tmp.path().to_path_buf(),
+        },
+        &Cancel::new(),
+    )
+    .await;
+    println!("status: {:?}", check.status);
+    assert_eq!(check.status.state, ClaudeState::SignedIn);
+    let repo = staged_repo();
+    let settings = ClaudeSettings::default();
+    let git = Git::new(None, &repo.path);
+    let queue = Queue::new(2);
+    let exe = check.executable.unwrap();
+    let ctx = Context {
+        exe: &exe,
+        settings: &settings,
+        git: &git,
+        tmp_root: tmp.path(),
+        queue: &queue,
+    };
+    let message = commit_message::run(&ctx, &Cancel::new()).await.unwrap();
+    println!("message: {message}");
+    assert!(!message.is_empty() && message.lines().next().unwrap().chars().count() <= 72);
+}
