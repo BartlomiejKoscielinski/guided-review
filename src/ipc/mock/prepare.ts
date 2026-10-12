@@ -2,10 +2,15 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
+import type { MrRow } from '../types/MrRow';
+import type { SessionMr } from '../types/SessionMr';
+import type { TreeFile } from '../types/TreeFile';
+import { groupFiles } from './changes';
+import { lineCounts, MR_BRANCHES, mrFiles } from './fixtures/mr';
 import { findMockMr } from './gitlab';
 import type { MockRepos } from './repos';
 
-type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel'>;
+type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel' | 'sessionMr'>;
 
 /** Pause between preparation stages, so S-02 Preparing is visible in `npm run dev:mock`. */
 export const MOCK_STAGE_MS = 400;
@@ -24,6 +29,7 @@ export function createPrepareBackend(
 ): PrepareClient {
   const cancelled = new Set<string>();
   let sessions = 0;
+  const opened = new Map<string, MrRow>();
 
   const resolveProject = (project: string | null): string => {
     if (project !== null && project.trim() !== '') {
@@ -71,8 +77,40 @@ export function createPrepareBackend(
       }
       sessions += 1;
       const sessionId = `mock-mr-session-${String(sessions)}`;
-      const opened: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
-      return opened;
+      opened.set(sessionId, mr);
+      const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
+      return result;
+    },
+    sessionMr: async (sessionId) => {
+      const mr = opened.get(sessionId);
+      if (!mr) throw error('INVALID_INPUT', 'Unknown session.');
+      await pause(0);
+      const files: TreeFile[] = mrFiles().map((file) => ({
+        path: file.path,
+        name: file.path.split('/').pop() ?? file.path,
+        oldPath: file.oldPath,
+        status: file.status,
+        binary: false,
+        ...lineCounts(file),
+        untracked: false,
+      }));
+      const result: SessionMr = {
+        mr: {
+          iid: mr.iid,
+          title: mr.title,
+          author: mr.author.name,
+          createdAt: mr.createdAt,
+          sourceBranch: MR_BRANCHES.source,
+          targetBranch: MR_BRANCHES.target,
+          pipeline: mr.pipeline ?? undefined,
+        },
+        groups: groupFiles(files),
+        totalFiles: files.length,
+        additions: files.reduce((sum, f) => sum + f.additions, 0),
+        deletions: files.reduce((sum, f) => sum + f.deletions, 0),
+        commits: 3,
+      };
+      return result;
     },
     sessionPrepareCancel: (task) => {
       cancelled.add(task);

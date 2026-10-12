@@ -12,7 +12,9 @@ use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error};
 use super::repo::{active_git, add_folder};
 use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
+use crate::git::Git;
 use crate::os::process::Cancel;
+use crate::review::mr_summary::{self, MrMeta, SessionMr};
 use crate::review::open_mr::{self, OpenMr, OpenMrError, SessionDefaults};
 use crate::review::prepare::PrepareProgress;
 use crate::review::sessions::{self, OpenedSession, UnfinishedSession};
@@ -182,4 +184,61 @@ pub fn session_prepare_cancel(tasks: State<'_, PrepareTasks>, task: String) {
     if let Some(cancel) = tasks.0.lock().ok().and_then(|t| t.get(&task).cloned()) {
         cancel.cancel();
     }
+}
+
+/// A teammate's MR session: git in its repository, the stored range and MR fields.
+pub(super) struct MrSession {
+    pub git: Git,
+    pub base: String,
+    pub head: String,
+    pub mr: MrMeta,
+}
+
+pub(super) async fn mr_session(store: &Store, id: String) -> AppResult<MrSession> {
+    let (source, folders, settings) = with_store(store, move |conn| {
+        Ok((
+            store::sessions::source_of(conn, &id)?,
+            store::sessions::folders(conn, &id)?,
+            store::settings::load(conn)?,
+        ))
+    })
+    .await?;
+    let (Some(source), Some(folders)) = (source, folders) else {
+        return Err(AppError::new(ErrorCode::InvalidInput, "Unknown session."));
+    };
+    let mr = source
+        .mr_json
+        .as_deref()
+        .and_then(|json| serde_json::from_str::<MrMeta>(json).ok())
+        .ok_or_else(|| {
+            AppError::new(
+                ErrorCode::InvalidInput,
+                "This session isn't a merge request.",
+            )
+        })?;
+    let git = Git::new(
+        settings.git.path.as_deref().map(Path::new),
+        &folders.checkout,
+    );
+    Ok(MrSession {
+        git,
+        base: source.base_sha,
+        head: source.head_sha,
+        mr,
+    })
+}
+
+/// S-02's header and S-06's read-only MR browse (F-06.1, F-24.1): the MR as prepared and the
+/// files of `merge-base..head`. Starts no GitLab work, so a restored screen can call it.
+#[tauri::command]
+pub async fn session_mr(store: State<'_, Store>, session_id: String) -> AppResult<SessionMr> {
+    let session = mr_session(&store, session_id).await?;
+    Ok(mr_summary::session_mr(
+        &session.git,
+        session.mr,
+        &session.base,
+        &session.head,
+        &Cancel::new(),
+    )
+    .await?)
 }

@@ -11,6 +11,7 @@ import type { OpenedSession } from './types/OpenedSession';
 import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
+import type { SessionMr } from './types/SessionMr';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
@@ -83,6 +84,11 @@ export interface IpcClient {
   ): Promise<OpenedSession>;
   /** Cancel on S-02 Preparing (F-05.6); the running `sessionOpenMr` rejects with CANCELLED. */
   sessionPrepareCancel(task: string): Promise<void>;
+  /**
+   * A teammate's MR session as S-02's header and S-06's MR browse show it (F-06.1, F-24.1): the
+   * MR as prepared and the files of merge base → head. Starts no GitLab work.
+   */
+  sessionMr(sessionId: string): Promise<SessionMr>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */

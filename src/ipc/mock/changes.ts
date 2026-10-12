@@ -22,6 +22,7 @@ import {
   type MockFile,
   type MockRow,
 } from './fixtures/changes';
+import { mrFiles } from './fixtures/mr';
 
 /** Variations of the S-06 data for e2e tests and design shots (`MOCK_CHANGES_KEY`). */
 export interface ChangesScenario {
@@ -254,6 +255,11 @@ export function createChangesBackend(
     },
     gitFileDiff: async (source, file) => {
       requireRepo();
+      if (source.kind === 'session') {
+        const found = mrFiles().find((f) => f.path === file.path);
+        if (!found) throw fail('INVALID_INPUT', 'That file is not in the merge request.');
+        return respond(toDiff(found, false));
+      }
       if (source.kind === 'commit') {
         const found = commit.find((f) => f.path === file.path);
         if (!found) throw fail('INVALID_INPUT', 'That file is not in the commit.');

@@ -7,6 +7,7 @@ use std::path::Path;
 use rusqlite::Connection;
 
 use super::model::{Layout, Mode};
+use super::mr_summary::MrMeta;
 use super::prepare::{self, PrepareError, PrepareInput, PrepareProgress};
 use super::sessions::{OpenedSession, new_session};
 use crate::error::{AppError, ErrorCode};
@@ -140,6 +141,7 @@ pub async fn open_mr(
         ctx.defaults.layout,
     )?;
     row.worktree = Some(prepared.worktree.to_string_lossy().into_owned());
+    row.mr_json = Some(serde_json::to_string(&MrMeta::from_info(&info))?);
     let store = ctx.store.clone();
     tokio::task::spawn_blocking(move || store.with_conn(|c| sessions::insert(c, &row)))
         .await

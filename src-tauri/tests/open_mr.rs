@@ -7,11 +7,14 @@ mod fixture_repo;
 
 use fixture_repo::FixtureRepo;
 use guided_review_lib::error::{AppError, ErrorCode};
+use guided_review_lib::git::Git;
 use guided_review_lib::gitlab::client::GitlabClient;
+use guided_review_lib::gitlab::mrs::PipelineState;
 use guided_review_lib::gitlab::tls::TlsBackend;
 use guided_review_lib::os::credentials::Token;
 use guided_review_lib::os::process::Cancel;
 use guided_review_lib::review::model::{Layout, Mode, SessionStatus};
+use guided_review_lib::review::mr_summary::{MrMeta, session_mr};
 use guided_review_lib::review::open_mr::{
     OpenMr, OpenMrError, SessionDefaults, open_mr, resolve_repo,
 };
@@ -188,4 +191,65 @@ fn f01_3_session_mr_of_another_repository_switches_the_active_one() {
             Ok(())
         })
         .unwrap();
+}
+
+#[tokio::test]
+async fn f24_1_mr_session_keeps_the_header_and_lists_the_mr_files() {
+    let repo = FixtureRepo::new("open mr browse");
+    repo.write("src/App/MauiProgram.cs", "base\n");
+    repo.commit_all("Base");
+    let head = repo.add_mr_on_origin(
+        483,
+        &[
+            ("src/App/Views/Torch ąę.xaml", "<Grid />\n"),
+            ("src/App/MauiProgram.cs", "base\nmore\n"),
+        ],
+    );
+    let store = Store::open_in_memory().unwrap();
+    let row = repo_row(&store, &repo, "mobile-app", PROJECT);
+    let server = MockServer::start().await;
+    mr_answer(
+        &server,
+        483,
+        200,
+        json!({ "iid": 483, "title": "Torch browse", "source_branch": "feature/torch",
+                "target_branch": "main", "sha": head, "state": "opened",
+                "author": { "name": "Marta K." }, "created_at": "2026-10-12T08:00:00Z",
+                "head_pipeline": { "status": "failed" } }),
+    )
+    .await;
+    let client = client(&server);
+    let ctx = OpenMr {
+        client: &client,
+        store: &store,
+        git_program: None,
+        repo: &row,
+        project: PROJECT,
+        iid: 483,
+        defaults: DEFAULTS,
+    };
+    let opened = open_mr(&ctx, &|_| {}, &Cancel::new()).await.unwrap();
+
+    let saved = store
+        .with_conn(|c| sessions::source_of(c, &opened.session_id))
+        .unwrap()
+        .unwrap();
+    let mr: MrMeta = serde_json::from_str(saved.mr_json.as_deref().unwrap()).unwrap();
+    assert_eq!(mr.title, "Torch browse");
+    assert_eq!(mr.author, "Marta K.");
+    assert_eq!(mr.pipeline, Some(PipelineState::Failed));
+    let git = Git::new(None, &repo.path);
+    let summary = session_mr(&git, mr, &saved.base_sha, &saved.head_sha, &Cancel::new())
+        .await
+        .unwrap();
+    assert_eq!(summary.total_files, 2);
+    assert_eq!(summary.additions, 2);
+    assert_eq!(summary.deletions, 0);
+    assert!(summary.commits >= 1);
+    let paths: Vec<&str> = summary
+        .groups
+        .iter()
+        .flat_map(|g| g.files.iter().map(|f| f.path.as_str()))
+        .collect();
+    assert!(paths.contains(&"src/App/Views/Torch ąę.xaml"), "{paths:?}");
 }

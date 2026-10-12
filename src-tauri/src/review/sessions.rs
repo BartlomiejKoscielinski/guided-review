@@ -67,6 +67,7 @@ pub fn new_session(
         layout,
         status,
         worktree: None,
+        mr_json: None,
     };
     Ok((
         row,
@@ -129,7 +130,10 @@ mod tests {
                 "s1",
                 SessionStatus::Reviewing,
                 Mode::Detailed,
-                &Route::Changes { commit: None }
+                &Route::Changes {
+                    commit: None,
+                    session_id: None
+                }
             ),
             Route::Detailed { session_id: id() }
         );

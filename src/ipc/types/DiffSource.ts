@@ -3,4 +3,4 @@
 /**
  * Which diff S-06 shows (F-15.1).
  */
-export type DiffSource = { "kind": "local" } | { "kind": "commit", sha: string, };
+export type DiffSource = { "kind": "local" } | { "kind": "commit", sha: string, } | { "kind": "session", sessionId: string, };

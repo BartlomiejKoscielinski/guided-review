@@ -174,6 +174,7 @@ pub fn run() {
             commands::sessions::session_open_repo,
             commands::sessions::session_open_mr,
             commands::sessions::session_prepare_cancel,
+            commands::sessions::session_mr,
             commands::git::git_status,
             commands::git::git_log,
             commands::git::git_status_summary,

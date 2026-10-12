@@ -113,12 +113,12 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | - | - |
 | app | `app_health`, `app_settings_get`, `app_settings_set(patch)`, `app_start_route`, `app_open_external` |
 | source | `source_detect(input)`: MR URL → `!iid` → absolute path of a repository → SHA (7–40 hex, must resolve) → local or `origin/` branch; errors carry the F-01.5 copy; reads only |
-| sessions | `sessions_list_unfinished`, `session_open_mr(iid, project?, task, ch)` (repository of `project`, switched to per F-01.5, else the active one; progress `PrepareProgress` on `ch`), `session_prepare_cancel(task)` (F-05.6), `session_open_commit(range)` (`from..to`, `from` excluded; one commit without `from`), `session_open_local(scope)`, `session_open_branch(branch)` (current branch → local changes vs target, other branch → `merge-base..branch`), `session_open_repo(path)` (adds the repository if needed, then self-review), `session_close` |
+| sessions | `sessions_list_unfinished`, `session_open_mr(iid, project?, task, ch)` (repository of `project`, switched to per F-01.5, else the active one; progress `PrepareProgress` on `ch`), `session_prepare_cancel(task)` (F-05.6), `session_mr(sessionId)` (a teammate's MR as prepared — `sessions.mr_json` — plus the files, +/− and commits of merge base → head; S-02 header, S-06 MR browse; no GitLab call), `session_open_commit(range)` (`from..to`, `from` excluded; one commit without `from`), `session_open_local(scope)`, `session_open_branch(branch)` (current branch → local changes vs target, other branch → `merge-base..branch`), `session_open_repo(path)` (adds the repository if needed, then self-review), `session_close` |
 | review | `review_plan(session, ch)`, `review_set_strategy`, `review_reorder_steps`, `review_step(session, step)`, `review_findings(session, step, ch)`, `review_decide(finding, decision)`, `review_mark_step`, `review_ask(session, step, question, selection?, ch)` |
 | drafts | `drafts_list`, `drafts_create`, `drafts_update`, `drafts_delete`, `drafts_publish(ids, summary?)` |
 | gitlab | `gitlab_list_mrs(tab)`, `gitlab_mr(iid)`, `gitlab_discussions(iid)`, `gitlab_reply`, `gitlab_resolve(discussion, resolved)`, `gitlab_approval_state`, `gitlab_approve(sha)`, `gitlab_unapprove`, `gitlab_versions`, `gitlab_create_mr`, `gitlab_users_search` |
 | pipeline | `pipeline_list(iid)`, `pipeline_jobs(id)`, `pipeline_run_mr(iid)`, `pipeline_retry`, `pipeline_cancel`, `job_play(id, vars)`, `job_retry`, `job_cancel`, `job_trace(id, ch)`, `job_explain(id, ch)` |
-| git | `git_status`, `git_log(branch?, query?)`, `git_status_summary`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)`, `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
+| git | `git_status`, `git_log(branch?, query?)`, `git_status_summary`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)` (source `local`, `commit{sha}` or `session{sessionId}` = an MR session's merge base → head), `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
 | repos | `repo_active`, `repo_pick` (folder dialog in the core; adds the repository and makes it active), `repo_list`, `repo_switch(id)`, `repo_set_default(id)`, `repo_remove(id)`. The **default** repository is the one the app starts with (and deep links without a project use); `repo_switch` changes the **active** one (S-01, S-06) until the app restarts |
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
 | fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
@@ -175,7 +175,8 @@ CREATE TABLE worktrees     (path TEXT PRIMARY KEY, repo_id INTEGER, kind TEXT /*
                             head_sha TEXT, created_at TEXT, last_used_at TEXT);
 CREATE TABLE sessions      (id TEXT PRIMARY KEY, repo_id INTEGER, source_json TEXT, base_sha TEXT, head_sha TEXT, start_sha TEXT,
                             mr_version_id INTEGER, worktree TEXT, mode TEXT, layout TEXT, strategy TEXT, status TEXT,
-                            current_step TEXT, created_at TEXT, updated_at TEXT);
+                            current_step TEXT, created_at TEXT, updated_at TEXT,
+                            mr_json TEXT);  -- mr_json: migration 003 (M2), the MR as prepared (F-06.1)
 CREATE TABLE plans         (session_id TEXT PRIMARY KEY, plan_json TEXT, custom_order_json TEXT);
 CREATE TABLE steps_state   (session_id TEXT, step_id TEXT, reviewed INTEGER, scroll INTEGER, checklist_json TEXT,
                             PRIMARY KEY (session_id, step_id));

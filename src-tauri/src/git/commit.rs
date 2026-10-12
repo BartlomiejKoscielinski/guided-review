@@ -213,7 +213,8 @@ pub async fn commit_info(git: &Git, rev: &str, cancel: &Cancel) -> Result<Commit
     })
 }
 
-fn tree_file(file: ChangedFile) -> TreeFile {
+/// A changed file as a tree row without index state (commit mode, MR browse).
+pub fn tree_file(file: ChangedFile) -> TreeFile {
     TreeFile {
         name: tree::split(&file.path).1.to_owned(),
         path: file.path,

@@ -6,9 +6,10 @@ use tauri::State;
 use ts_rs::TS;
 
 use super::repo::{RepoState, active_git};
+use super::sessions::mr_session;
 use crate::error::AppResult;
 use crate::git::commit::{self, CommitInfo, CommitResult, PushResult};
-use crate::git::diff::ChangedFile;
+use crate::git::diff::{self, ChangedFile};
 use crate::git::local::{self, FileRef, LocalChanges};
 use crate::git::log::{self, CommitList};
 use crate::git::model::{FileDiff, FileStatus};
@@ -26,6 +27,9 @@ pub enum DiffSource {
     Local,
     /// A commit against its first parent.
     Commit { sha: String },
+    /// A teammate's MR session: merge base → head (S-06 MR browse, F-24.1).
+    #[serde(rename_all = "camelCase")]
+    Session { session_id: String },
 }
 
 /// Local changes of the active repository (S-06 local mode).
@@ -72,22 +76,33 @@ pub async fn git_file_diff(
     source: DiffSource,
     file: FileRef,
 ) -> AppResult<FileDiff> {
-    let git = active_git(&store).await?;
     let cancel = Cancel::new();
     Ok(match source {
-        DiffSource::Local => local::local_file_diff(&git, &file, &cancel).await?,
+        DiffSource::Local => {
+            let git = active_git(&store).await?;
+            local::local_file_diff(&git, &file, &cancel).await?
+        }
         DiffSource::Commit { sha } => {
-            let changed = ChangedFile {
-                path: file.path,
-                old_path: file.old_path,
-                status: FileStatus::Modified,
-                binary: false,
-                additions: 0,
-                deletions: 0,
-            };
-            commit::commit_file_diff(&git, &sha, &changed, &cancel).await?
+            let git = active_git(&store).await?;
+            commit::commit_file_diff(&git, &sha, &changed_file(file), &cancel).await?
+        }
+        DiffSource::Session { session_id } => {
+            let s = mr_session(&store, session_id).await?;
+            diff::range_file_diff(&s.git, &s.base, &s.head, &changed_file(file), &cancel).await?
         }
     })
+}
+
+/// The file to diff between two commits; git finds its status and counts again.
+fn changed_file(file: FileRef) -> ChangedFile {
+    ChangedFile {
+        path: file.path,
+        old_path: file.old_path,
+        status: FileStatus::Modified,
+        binary: false,
+        additions: 0,
+        deletions: 0,
+    }
 }
 
 /// Puts files or lines into the index (F-16.1).

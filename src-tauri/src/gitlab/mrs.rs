@@ -30,7 +30,7 @@ pub enum MrTab {
 }
 
 /// The head pipeline as S-01 shows it (square + "pipeline passed/failed/running").
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub enum PipelineState {

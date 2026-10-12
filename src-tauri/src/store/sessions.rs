@@ -70,6 +70,8 @@ pub struct NewSession {
     pub status: SessionStatus,
     /// The review worktree of a teammate's MR (F-05.1).
     pub worktree: Option<String>,
+    /// `MrMeta` of a teammate's MR as JSON (S-02 header, F-06.1).
+    pub mr_json: Option<String>,
 }
 
 fn stored<T: serde::Serialize>(value: T) -> Option<String> {
@@ -82,8 +84,8 @@ fn stored<T: serde::Serialize>(value: T) -> Option<String> {
 pub fn insert(conn: &Connection, session: &NewSession) -> Result<(), StoreError> {
     conn.execute(
         "INSERT INTO sessions (id, repo_id, source_json, base_sha, head_sha, start_sha, mode, layout,
-                               status, worktree, created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?5, ?6, ?7, ?8, ?9,
+                               status, worktree, mr_json, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?5, ?6, ?7, ?8, ?9, ?10,
                  strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))",
         params![
             session.id,
@@ -95,6 +97,7 @@ pub fn insert(conn: &Connection, session: &NewSession) -> Result<(), StoreError>
             stored(session.layout),
             stored(session.status),
             session.worktree,
+            session.mr_json,
         ],
     )?;
     Ok(())
@@ -109,12 +112,13 @@ pub struct SessionSource {
     pub head_sha: String,
     pub status: Option<SessionStatus>,
     pub worktree: Option<String>,
+    pub mr_json: Option<String>,
 }
 
 pub fn source_of(conn: &Connection, id: &str) -> Result<Option<SessionSource>, StoreError> {
     Ok(conn
         .query_row(
-            "SELECT repo_id, source_json, base_sha, head_sha, status, worktree FROM sessions
+            "SELECT repo_id, source_json, base_sha, head_sha, status, worktree, mr_json FROM sessions
              WHERE id = ?1",
             params![id],
             |row| {
@@ -128,6 +132,7 @@ pub fn source_of(conn: &Connection, id: &str) -> Result<Option<SessionSource>, S
                         .as_deref()
                         .and_then(parse::<SessionStatus>),
                     worktree: row.get(5)?,
+                    mr_json: row.get(6)?,
                 })
             },
         )
@@ -272,6 +277,7 @@ mod tests {
                         layout: Layout::A,
                         status: SessionStatus::Planning,
                         worktree: Some(r"C:\src\.review\mobile ąę\482".into()),
+                        mr_json: None,
                     },
                 )?;
                 assert_eq!(
