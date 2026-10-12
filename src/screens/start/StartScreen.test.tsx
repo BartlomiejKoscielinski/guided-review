@@ -78,7 +78,11 @@ describe('S-01 hero', () => {
       expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/step$/);
     });
     await user.keyboard('{Control>}k{/Control}');
-    await user.type(input(), 'chore/compiled-bindings{Enter}');
+    // Ctrl+K focuses and selects the input once S-01 is mounted; typing earlier gets replaced.
+    await waitFor(() => {
+      expect(input()).toHaveFocus();
+    });
+    await user.keyboard('chore/compiled-bindings{Enter}');
     await waitFor(() => {
       expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
     });
