@@ -245,6 +245,17 @@ pub fn decide(
     })
 }
 
+/// The session a stored note belongs to.
+pub fn session_of(conn: &Connection, finding_id: &str) -> Result<String, DecisionError> {
+    conn.query_row(
+        "SELECT session_id FROM findings WHERE id = ?1",
+        [finding_id],
+        |row| row.get(0),
+    )
+    .optional()?
+    .ok_or_else(|| DecisionError::NotFound(finding_id.to_owned()))
+}
+
 /// The notes dismissed for `subject` (inputs of the step task, F-09.4), oldest first.
 pub fn dismissed(conn: &Connection, subject: &str) -> Result<Vec<Dismissal>, DecisionError> {
     let mut stmt = conn.prepare(

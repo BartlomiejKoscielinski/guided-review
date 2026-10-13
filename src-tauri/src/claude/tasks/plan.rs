@@ -107,6 +107,34 @@ fn finish(output: &Value, hunks: &[HunkRef], files: &[FileDiff]) -> Result<Plan,
     Ok(plan)
 }
 
+fn cached_by_key(
+    store: &Store,
+    key: &CacheKey,
+    hunks: &[HunkRef],
+    files: &[FileDiff],
+) -> Option<Plan> {
+    match store.with_conn(|conn| plan_cache::get(conn, key)) {
+        Ok(Some(cached)) => match finish(&cached, hunks, files) {
+            Ok(plan) => Some(plan),
+            Err(error) => {
+                tracing::warn!(%error, "cached plan is invalid; planning again");
+                None
+            }
+        },
+        Ok(None) => None,
+        Err(error) => {
+            tracing::warn!(%error, "plan cache unavailable");
+            None
+        }
+    }
+}
+
+/// The cached plan of a request, validated again; never runs `claude` (S-03 opens after S-02).
+pub fn cached(ctx: &Context<'_>, req: &PlanRequest<'_>) -> Option<Plan> {
+    let hunks = coverage::hunk_refs(req.files);
+    cached_by_key(ctx.store, &key(ctx, req), &hunks, req.files)
+}
+
 /// The cached plan, or a run of `claude` that is cached on success.
 pub async fn run(
     ctx: &Context<'_>,
@@ -115,13 +143,8 @@ pub async fn run(
 ) -> Result<PlanOutcome, ClaudeError> {
     let hunks = coverage::hunk_refs(req.files);
     let key = key(ctx, req);
-    match ctx.store.with_conn(|conn| plan_cache::get(conn, &key)) {
-        Ok(Some(cached)) => match finish(&cached, &hunks, req.files) {
-            Ok(plan) => return Ok(PlanOutcome { plan, cached: true }),
-            Err(error) => tracing::warn!(%error, "cached plan is invalid; planning again"),
-        },
-        Ok(None) => {}
-        Err(error) => tracing::warn!(%error, "plan cache unavailable"),
+    if let Some(plan) = cached_by_key(ctx.store, &key, &hunks, req.files) {
+        return Ok(PlanOutcome { plan, cached: true });
     }
 
     let io = |e: std::io::Error| ClaudeError::failed(format!("task folder: {e}"));

@@ -216,7 +216,7 @@ impl Setup {
         for (id, priority) in step::schedule(&self.order, step_id) {
             let req = self.request(&id, &[]);
             out.push(
-                step::run(&self.ctx(), &req, priority, &Cancel::new())
+                step::run(&self.ctx(), &req, priority, &|| {}, &Cancel::new())
                     .await
                     .unwrap(),
             );
@@ -255,6 +255,7 @@ async fn f09_6_step_task_argv_inputs_and_result() {
         &s.ctx(),
         &req,
         step::schedule(&s.order, "s1")[0].1,
+        &|| {},
         &Cancel::new(),
     )
     .await
@@ -351,6 +352,7 @@ async fn f09_6_step_task_argv_inputs_and_result() {
         &s.ctx(),
         &req,
         step::schedule(&s.order, "s1")[0].1,
+        &|| {},
         &Cancel::new(),
     )
     .await
@@ -366,6 +368,7 @@ async fn f09_6_step_task_argv_inputs_and_result() {
         &s.ctx(),
         &s.request("s1", &dismissed),
         step::schedule(&s.order, "s1")[0].1,
+        &|| {},
         &Cancel::new(),
     )
     .await
@@ -450,6 +453,7 @@ async fn f09_1_invalid_output_is_claude_schema_and_not_cached() {
         &s.ctx(),
         &req,
         step::schedule(&s.order, "s1")[0].1,
+        &|| {},
         &Cancel::new(),
     )
     .await

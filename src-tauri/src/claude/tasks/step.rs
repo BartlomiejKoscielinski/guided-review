@@ -144,10 +144,12 @@ fn cached(
 }
 
 /// The cached analysis, or a run of `claude` at `priority` that is cached on success.
+/// `on_started` runs once the queue lets the run start (never on a cache hit).
 pub async fn run(
     ctx: &Context<'_>,
     req: &StepRequest<'_>,
     priority: Priority,
+    on_started: &(dyn Fn() + Sync),
     cancel: &Cancel,
 ) -> Result<StepOutcome, ClaudeError> {
     let step = step(req)?;
@@ -165,6 +167,7 @@ pub async fn run(
     if let Some(analysis) = cached(ctx, &key, &scope, req) {
         return Ok(hit(analysis));
     }
+    on_started();
 
     let io = |e: std::io::Error| ClaudeError::failed(format!("task folder: {e}"));
     let dir = TaskDir::create(ctx.tmp_root).map_err(io)?;

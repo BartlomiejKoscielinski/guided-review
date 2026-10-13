@@ -2,6 +2,7 @@
 //! `runner.rs` only (ADR-025 risk: no other module builds `claude` arguments).
 
 pub mod ask;
+pub mod events;
 pub mod plan;
 pub mod plan_inputs;
 pub mod step;

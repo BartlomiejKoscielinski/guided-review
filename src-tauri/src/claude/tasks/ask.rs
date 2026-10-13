@@ -11,7 +11,9 @@
 use std::path::Path;
 use std::time::Duration;
 
+use serde::Serialize;
 use serde_json::Value;
+use ts_rs::TS;
 
 use super::plan::Context;
 use super::plan_inputs::PlanSource;
@@ -50,7 +52,9 @@ pub struct AskRequest<'a> {
     pub selection: Option<&'a LineSelection>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
 pub struct AskAnswer {
     pub text: String,
     /// Continued the step's earlier Claude session.
@@ -128,9 +132,11 @@ pub fn task(
 }
 
 /// Asks the question, streaming text deltas to `on_text`; saves the Claude session of the step.
+/// `on_started` runs once the queue lets the task start.
 pub async fn run(
     ctx: &Context<'_>,
     req: &AskRequest<'_>,
+    on_started: &(dyn Fn() + Sync),
     on_text: &mut (dyn FnMut(&str) + Send),
     cancel: &Cancel,
 ) -> Result<AskAnswer, ClaudeError> {
@@ -167,6 +173,7 @@ pub async fn run(
         .map_err(store_err)?;
 
     let _permit = ctx.queue.acquire(Priority::Interactive, cancel).await?;
+    on_started();
     let result = match ask_once(ctx, req, &prompt, previous.clone(), on_text, cancel).await {
         Err(ClaudeError::Failed { message, detail })
             if previous.is_some()

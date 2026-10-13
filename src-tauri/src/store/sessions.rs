@@ -8,7 +8,7 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::StoreError;
-use crate::review::model::{Layout, Mode, SessionStatus};
+use crate::review::model::{Layout, Mode, SessionStatus, Strategy};
 use crate::review::sessions::{UnfinishedSession, resume_route};
 use crate::route::Route;
 
@@ -161,6 +161,22 @@ pub fn folders(conn: &Connection, id: &str) -> Result<Option<SessionFolders>, St
             },
         )
         .optional()?)
+}
+
+/// The session's step order strategy (F-06.4); the default when none is stored.
+pub fn strategy(conn: &Connection, id: &str) -> Result<Strategy, StoreError> {
+    let stored: Option<Option<String>> = conn
+        .query_row(
+            "SELECT strategy FROM sessions WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(stored
+        .flatten()
+        .as_deref()
+        .and_then(parse::<Strategy>)
+        .unwrap_or_default())
 }
 
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {

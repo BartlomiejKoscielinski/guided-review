@@ -176,7 +176,7 @@ impl Setup {
         let parts = Arc::new(Mutex::new(Vec::new()));
         let sink = parts.clone();
         let mut on_text = move |t: &str| sink.lock().unwrap().push(t.to_owned());
-        let answer = ask::run(&self.ctx(), &req, &mut on_text, &Cancel::new()).await;
+        let answer = ask::run(&self.ctx(), &req, &|| {}, &mut on_text, &Cancel::new()).await;
         let parts = parts.lock().unwrap().clone();
         (answer, parts)
     }
