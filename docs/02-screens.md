@@ -36,7 +36,7 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
 - Entry: app start, MRs tile, `Ctrl+K`, tray "Open app".
 - Regions:
   1. Hero: "WHAT ARE WE REVIEWING?" (56px condensed), input with detected-type block and **Start**, hint "Ctrl K opens this field from any screen." (F-01)
-  2. "Pick up where you left off": resume cards (F-04)
+  2. "Pick up where you left off": resume cards (F-04). Until M8 a card shows **Continue** only; the "N NEW COMMITS" tag and **Only new changes** (F-04.2) come with S-09 (M3 decision 10; design-check justification).
   3. Three columns: **Merge requests** (blue header, tabs, rows; F-02), **Commits** (white header, search, selectable list, Review/Browse; F-03), **My changes** (green header, scope radios, Review before push / Browse and commit; F-03)
 - States: GitLab not configured → Merge requests column shows "Add your GitLab token" with a button to S-07 › GitLab; repository not a git repo → My changes column shows "Pick a repository" (folder dialog); Commits header shows the current branch (F-03.1; the mock's `develop` is its sample current branch); a commit search without matches → "No commits match."; empty tabs → "Nothing waiting for you." (Waiting for me), "You have no open merge requests." (Mine), "No open merge requests." (All open); loading → 3 skeleton rows; MR lists older than the polling interval → "Updated 7 min ago" in the Merge requests header (F-02.4); input errors under the input (F-01.5): "No merge request !999 in mobile/mobile-app", "No commit, branch or repository matches “x”.", "x is not the configured GitLab server.", "mobile/x is not one of your repositories. Add it in Settings › GitLab."
 - Data: `gitlab.list_mrs(tab)`, `sessions.list_unfinished()`, `git.log(branch, query)`, `git.status_summary(scope)`, `app.health()`.
@@ -52,6 +52,7 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
   - Planning: deterministic data (files, hunks, layers, skim, coverage numbers) is shown immediately; Claude sections show a calm placeholder "Claude is planning · usually under a minute" and fill in when the result arrives.
   - Claude failed or not signed in: plan falls back to **File order** grouped by layer, with a banner "Claude isn't available. You can review in file order." and Retry.
   - Cached: everything appears at once; status shows "Plan from cache · <age>".
+- Already discussed (F-06.9, M3 decision 5): the summary text comes from Claude (`already_discussed`); without Claude it says "N open threads." from the discussions count. Threads load from GitLab when the plan runs and when a step opens; MR sessions only.
 - Data: `review.open_mr(iid)` (session + preparation events), `claude.plan(session)` (channel), `gitlab.mr_detail`, `gitlab.discussions`.
 
 ## S-03 Step review · Focus mode (layouts A, B, C)
@@ -60,7 +61,10 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
 - Layout A "Sidebar" (`Ctrl+1`): steps list left with short titles (done = green check square, current = yellow row, others numbered), "Skim · N files" at its bottom; main column: "STEP 4 OF 8", title (34px condensed), description, **Mark reviewed** (neutral button in A, as in the mock; yellow in B and C) + next arrow; file header; diff; inline note and thread cards.
 - Layout B "Minimal" (`Ctrl+2`): no sidebar; 8 progress segments in the title bar; floating toolbar centered at the bottom (prev, "Step 4 of 8", next, **Mark reviewed**, **Ask Claude**).
 - Layout C "Guide" (`Ctrl+3`): diff left; guide panel right (progress segments, step title and description, "WORTH A LOOK" numbered notes with the focused one expanded, "+1 minor", large **Mark reviewed**, "Ask Claude about this step…" input). Gutter markers are numbered.
+- Thread cards (F-06.9) are read-only until M5: avatars, author · age, text and replies, shown as step context. **Resolve**, **Reply** and **Reopen** arrive with F-11 (M3 decision 1; design-check justification for the buttons in the PNGs).
+- Focus | Detailed toggle in the title bar: shown; **Detailed** opens the S-04 stub until M4; `Ctrl+D` comes with M4 (M3 decision 8).
 - States: step analysis pending → notes area says "Claude is reading this step…" with spinner, diff fully usable; analysis failed → "Couldn't analyze this step." Retry; no notes → "Nothing stood out. Read it yourself, though." (no fake praise).
+- Answer card (F-10; no mock, M3 decision 4): note-card style with the purple Claude square, the streamed answer text, a follow-up input, **Add to drafts** and **Copy**. A and B: inline under the selected lines, or under the step header when nothing is selected. C: in the guide panel above the ask input. B's **Ask Claude** and More › Ask Claude open it with the input focused.
 - Data: `review.step(session, step_id)` (hunks, threads), `claude.step_findings(step_id)` (cached or channel), `review.decide(finding_id, decision)`, `review.mark_step(step_id, reviewed)`.
 
 ## S-04 Step review · Detailed mode
@@ -76,7 +80,8 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
 - Regions: heading "SUMMARY", progress line, **Back to steps** · left: tabs Drafts/Threads, list, Publish · right: Approval tile. (F-12, F-13, F-14)
 - States: publish in progress (button shows spinner, list locked); partial failure ("Published 3 of 5. 2 failed: <reason>." with Retry, failed items keep their checkbox); MR changed since review (yellow banner "The MR has a new version since your review." → S-09; approve disabled until acknowledged); approved with unpublished drafts (F-14.3 copy); "drafts only" session opened from S-08 or S-12 (F-12.7; progress line omitted).
 - Draft checkboxes are blue (they select what is published), unlike the green staging checkboxes.
-- **Self-review summary** (F-17.4): same layout and drafts list styling, no Publish, no Threads tab, no Approval tile; notes kept "to fix" with **Copy as checklist** (and Fix with Claude per item from M7).
+- **Self-review summary** (F-17.4): same layout and drafts list styling, no Publish, no Threads tab, no Approval tile; notes kept "to fix" with **Copy as checklist** (and Fix with Claude per item from M7). Heading "SUMMARY", progress line "All 6 steps reviewed." / "4 of 6 steps reviewed.", **Back to steps**; an empty list says "Nothing to fix." Self-review note cards say **Keep to fix** (confirmation "Kept to fix. It's on your list at the end.") and **Edit and keep**; Dismiss keeps its copy (F-17.2, M3 decision 2).
+- **Finish review** in M3 (M3 decision 9): a self-review opens the self-review summary; an MR session opens the S-05 stub until M5, while its drafts stay local.
 - Data: `drafts.list(session)`, `drafts.update`, `gitlab.publish_drafts(session, ids, summary?)`, `gitlab.discussions`, `gitlab.resolve(discussion, bool)`, `gitlab.approve(sha)`, `gitlab.unapprove()`, `gitlab.approval_state()`.
 
 ## S-06 Changes and commit

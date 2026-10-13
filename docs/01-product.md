@@ -177,9 +177,9 @@ This file is the source of truth for **what** the app does. Every feature has an
 
 ### F-17 Self-review (local changes)
 - **F-17.1** Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working tree).
-- **F-17.2** No publish, approve or thread actions are shown. Notes can be turned into a "fix list" and into Fix with Claude (F-25).
+- **F-17.2** No publish, approve or thread actions are shown. Notes can be turned into a "fix list" and into Fix with Claude (F-25). The note card's primary action is **Keep to fix** (instead of Add to drafts), confirmation "Kept to fix. It's on your list at the end."; **Edit and add** becomes **Edit and keep**; **Dismiss** keeps its copy.
 - **F-17.3** At the end it offers a draft MR description (F-27.2) and **Browse and commit**.
-- **F-17.4** The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes kept "to fix" (with Fix with Claude per item once F-25 exists) and **Copy as checklist**.
+- **F-17.4** The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes kept "to fix" (with Fix with Claude per item once F-25 exists) and **Copy as checklist**. Heading "SUMMARY", progress line "All 6 steps reviewed." or "4 of 6 steps reviewed.", **Back to steps**; an empty list says "Nothing to fix."
 
 ### F-18 Settings: Claude · S-07
 - **F-18.1** Status "Claude Code: signed in" (from `claude auth status`, the startup probe and the last task result, `05` › Startup checks), or an action to sign in.
