@@ -5,6 +5,7 @@ import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
+import { createPlanBackend } from './plan';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSourcesBackend } from './sources';
@@ -25,7 +26,7 @@ export const MOCK_CHANGES_KEY = 'guided-review.mock.changes';
 export const MOCK_CLAUDE_KEY = 'guided-review.mock.claude';
 /** Key with a `GitlabScenario` (connected, no token, failing). */
 export const MOCK_GITLAB_KEY = 'guided-review.mock.gitlab';
-/** Key with a `ReviewScenario` (S-03 step task failures). */
+/** Key with a `ReviewScenario` (S-02 plan and S-03 step task failures, cached plan). */
 export const MOCK_REVIEW_KEY = 'guided-review.mock.review';
 
 export interface MockOptions {
@@ -136,6 +137,9 @@ export function createMockClient({
     ),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
     ...createReviewBackend(loadJson(storage, MOCK_REVIEW_KEY, reviewOption), respond, (ms) =>
+      latencyMs > 0 ? wait(ms) : Promise.resolve(),
+    ),
+    ...createPlanBackend(loadJson(storage, MOCK_REVIEW_KEY, reviewOption), respond, (ms) =>
       latencyMs > 0 ? wait(ms) : Promise.resolve(),
     ),
     ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),

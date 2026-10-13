@@ -10,7 +10,9 @@ import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
+import type { PlanView } from './types/PlanView';
 import type { StepAnalysis } from './types/StepAnalysis';
+import type { StepOrder } from './types/StepOrder';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
@@ -71,6 +73,15 @@ export function createTauriClient(): IpcClient {
     },
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
+    reviewPlan: (sessionId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<PlanView>>();
+      ch.onmessage = onEvent;
+      return call<PlanView>('review_plan', { session: sessionId, ch });
+    },
+    reviewSetStrategy: (sessionId, strategy) =>
+      call<StepOrder>('review_set_strategy', { session: sessionId, strategy }),
+    reviewReorderSteps: (sessionId, stepIds) =>
+      call<StepOrder>('review_reorder_steps', { session: sessionId, order: stepIds }),
     reviewFindings: (sessionId, stepId, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<StepAnalysis>>();
       ch.onmessage = onEvent;

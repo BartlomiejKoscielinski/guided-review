@@ -8,8 +8,12 @@ import type { Finding } from '../types/Finding';
 import type { StepAnalysis } from '../types/StepAnalysis';
 import { ANSWER_PARTS, stepAnalysis } from './fixtures/review';
 
-/** Variations of S-03's Claude tasks (`MOCK_REVIEW_KEY`). */
+/** Variations of S-02's and S-03's Claude tasks (`MOCK_REVIEW_KEY`). */
 export interface ReviewScenario {
+  /** The plan task fails: S-02's Claude failed state (F-06.13 risk still shown). */
+  planFails?: boolean;
+  /** The first plan comes from the cache: "Plan from cache · <age>" (F-06.12). */
+  planCached?: boolean;
   /** The step task fails: "Couldn't analyze this step." with Retry (F-09.6). */
   stepFails?: boolean;
 }

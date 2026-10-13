@@ -10,6 +10,9 @@ import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
+import type { PlanView } from './types/PlanView';
+import type { StepOrder } from './types/StepOrder';
+import type { Strategy } from './types/Strategy';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
@@ -99,6 +102,20 @@ export interface IpcClient {
    * Starts no GitLab work.
    */
   sessionMr(sessionId: string): Promise<SessionMr | null>;
+
+  // S-02 plan (F-06). Claude task events go to `onEvent`.
+  /**
+   * The session's plan (F-06.2): from the cache `queued` → `done` with `cachedAt` and no
+   * `claude`, else `queued`, `started`, then `done` or `failed` (F-06.12).
+   */
+  reviewPlan(
+    sessionId: string,
+    onEvent: (event: ClaudeTaskEvent<PlanView>) => void,
+  ): Promise<PlanView>;
+  /** Contract to UI, Tests first or File order (F-06.4); clears a dragged order. No Claude. */
+  reviewSetStrategy(sessionId: string, strategy: Strategy): Promise<StepOrder>;
+  /** A dragged order naming every step once (F-06.5); saved in the session. */
+  reviewReorderSteps(sessionId: string, stepIds: string[]): Promise<StepOrder>;
 
   // S-03 steps, questions and decisions (F-09, F-10). Claude task events go to `onEvent`.
   /**
