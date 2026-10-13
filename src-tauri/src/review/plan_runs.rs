@@ -1,6 +1,8 @@
 //! The plan of a session with its channel events (`review_plan`, docs/04 › IPC contract):
-//! `queued`, `started` unless cached, then `done` with the plan and the session's step order,
-//! or `failed` (F-06.2, F-06.12). A cached plan starts no `claude` process.
+//! `queued`, `started` unless cached, then `done` with the plan and the session's step order
+//! (F-06.2, F-06.12). When Claude fails or isn't signed in, `done` carries the app's fallback
+//! plan (`plan_fallback.rs`) with the error; `failed` only when cancelled or the app failed.
+//! A cached plan starts no `claude` process.
 
 use std::collections::HashSet;
 
@@ -8,14 +10,17 @@ use serde::Serialize;
 use ts_rs::TS;
 
 use super::coverage;
+use super::plan_fallback;
 use super::plan_model::Plan;
 use super::step_context::SessionInputs;
 use super::step_order::{self, StepOrder};
 use super::step_runs::RunError;
+use crate::claude::ClaudeError;
 use crate::claude::tasks::events::ClaudeTaskEvent;
 use crate::claude::tasks::plan::{self, Context};
 use crate::error::AppError;
 use crate::git::model::{FileDiff, LineKind};
+use crate::gitlab::discussions::Thread;
 use crate::os::process::Cancel;
 
 /// S-02's data: the plan, where it came from and the reader's order.
@@ -42,6 +47,13 @@ pub struct PlanView {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub fallback: Option<AppError>,
+}
+
+/// The plan task's result: the view, and the Claude error behind a fallback view.
+#[derive(Debug, Clone)]
+pub struct Planned {
+    pub view: PlanView,
+    pub claude_error: Option<ClaudeError>,
 }
 
 /// Files touched and lines added and deleted by a set of hunks.
@@ -88,22 +100,32 @@ pub fn hunk_paths(files: &[FileDiff], hunk_ids: &[String]) -> Vec<String> {
         .collect()
 }
 
-/// Plans the session (or reads the cached plan) and emits the task events.
+/// Plans the session (or reads the cached plan) and emits the task events. On a Claude error
+/// other than a cancel, the result is the fallback view and `claude_error` says why.
 pub async fn plan(
     ctx: &Context<'_>,
     inputs: &SessionInputs,
     cancel: &Cancel,
     emit: &(dyn Fn(ClaudeTaskEvent<PlanView>) + Sync),
-) -> Result<PlanView, RunError> {
+) -> Result<Planned, RunError> {
     emit(ClaudeTaskEvent::Queued);
     let started = || emit(ClaudeTaskEvent::Started);
     let result = match plan::run(ctx, &inputs.plan_request(), &started, cancel).await {
-        Ok(outcome) => view(ctx, inputs, outcome.plan, outcome.cached_at).map_err(RunError::App),
-        Err(error) => Err(RunError::Claude(error)),
+        Ok(outcome) => view(ctx, inputs, outcome.plan, outcome.cached_at)
+            .map(|view| Planned {
+                view,
+                claude_error: None,
+            })
+            .map_err(RunError::App),
+        Err(ClaudeError::Cancelled) => Err(RunError::Claude(ClaudeError::Cancelled)),
+        Err(error) => Ok(Planned {
+            view: fallback_view(&inputs.files, &inputs.threads, &error),
+            claude_error: Some(error),
+        }),
     };
     emit(match &result {
-        Ok(view) => ClaudeTaskEvent::Done {
-            result: view.clone(),
+        Ok(planned) => ClaudeTaskEvent::Done {
+            result: planned.view.clone(),
         },
         Err(error) => ClaudeTaskEvent::Failed {
             error: error.clone().into(),
@@ -122,20 +144,37 @@ fn view(
     let order = ctx
         .store
         .with_conn(|conn| Ok(step_order::load(conn, &inputs.session_id, &plan, &hunks)))??;
-    let stats = |ids: &[String]| change_stats(&inputs.files, ids);
-    Ok(PlanView {
+    Ok(assemble(&inputs.files, plan, order, cached_at, None))
+}
+
+/// S-02 without Claude: the fallback plan in File order, never cached, nothing stored.
+pub fn fallback_view(files: &[FileDiff], threads: &[Thread], error: &ClaudeError) -> PlanView {
+    let plan = plan_fallback::plan(files, threads);
+    let order = step_order::fallback(&plan);
+    assemble(files, plan, order, None, Some(error.clone().into()))
+}
+
+fn assemble(
+    files: &[FileDiff],
+    plan: Plan,
+    order: StepOrder,
+    cached_at: Option<String>,
+    fallback: Option<AppError>,
+) -> PlanView {
+    let stats = |ids: &[String]| change_stats(files, ids);
+    PlanView {
         step_stats: plan.steps.iter().map(|s| stats(&s.hunk_ids)).collect(),
         skim_stats: plan.skim.iter().map(|g| stats(&g.hunk_ids)).collect(),
         skim_files: plan
             .skim
             .iter()
-            .map(|g| hunk_paths(&inputs.files, &g.hunk_ids))
+            .map(|g| hunk_paths(files, &g.hunk_ids))
             .collect(),
         plan,
         cached_at,
         order,
-        fallback: None,
-    })
+        fallback,
+    }
 }
 
 #[cfg(test)]

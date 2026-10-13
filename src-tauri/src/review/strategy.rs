@@ -34,7 +34,7 @@ pub fn complete_order(order: &mut Vec<String>, steps: &[Step]) {
 
 /// GitLab's diff order (`Gitlab::Diff::FileCollectionSorter`, 17.11): segment by segment,
 /// byte-wise and case-sensitive, a directory before a file at the same depth; `\` counts as `/`.
-fn gitlab_path_cmp(a: &str, b: &str) -> Ordering {
+pub(super) fn gitlab_path_cmp(a: &str, b: &str) -> Ordering {
     let a: Vec<&str> = a.split(['/', '\\']).collect();
     let b: Vec<&str> = b.split(['/', '\\']).collect();
     for (i, (x, y)) in a.iter().zip(&b).enumerate() {

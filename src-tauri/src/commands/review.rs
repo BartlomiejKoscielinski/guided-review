@@ -21,12 +21,10 @@ use crate::claude::tasks::step;
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::gitlab::discussions::{self, Thread};
 use crate::os::process::Cancel;
-use crate::review::coverage;
 use crate::review::decisions::{self, DecisionOutcome, FindingDecision};
 use crate::review::finding_model::StepAnalysis;
 use crate::review::position::LineSelection;
 use crate::review::step_context::{self, MrRef, StepContext};
-use crate::review::step_order;
 use crate::review::step_runs::{self, StepRuns};
 use crate::store::{self, Store};
 
@@ -104,15 +102,7 @@ pub(super) async fn step_context(
 
 /// The steps in the session's order: its strategy's, or the dragged one (F-06.4, F-06.5).
 async fn order(store: &Store, cx: Arc<StepContext>) -> AppResult<Vec<String>> {
-    let order = with_store(store, move |c| {
-        Ok(step_order::load(
-            c,
-            &cx.session_id,
-            &cx.plan,
-            &coverage::hunk_refs(&cx.files),
-        ))
-    })
-    .await??;
+    let order = with_store(store, move |c| Ok(cx.step_order(c))).await??;
     Ok(order.order)
 }
 

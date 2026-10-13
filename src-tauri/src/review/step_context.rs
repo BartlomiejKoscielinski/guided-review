@@ -6,11 +6,14 @@
 use std::future::Future;
 use std::path::{Path, PathBuf};
 
+use rusqlite::Connection;
+
 use super::coverage;
 use super::model::Strategy;
 use super::mr_summary::MrMeta;
 use super::plan_cache;
 use super::plan_model::Plan;
+use super::step_order::{self, StepOrder, StepOrderError};
 use super::strategy;
 use crate::claude::ClaudeError;
 use crate::claude::tasks::ask::AskRequest;
@@ -46,6 +49,8 @@ pub struct StepContext {
     pub cwd: PathBuf,
     pub files: Vec<FileDiff>,
     pub plan: Plan,
+    /// The plan is the app's file-order fallback (Claude failed): File order only, no drag.
+    pub fallback: bool,
     pub threads: Vec<Thread>,
     pub rules: Option<String>,
 }
@@ -232,9 +237,54 @@ impl StepContext {
             cwd: inputs.cwd,
             files: inputs.files,
             plan,
+            fallback: false,
             threads: inputs.threads,
             rules: inputs.rules,
         }
+    }
+
+    /// The session with the app's fallback plan (02 › S-02 Claude failed).
+    pub fn fallback(inputs: SessionInputs, plan: Plan) -> Self {
+        Self {
+            fallback: true,
+            ..Self::new(inputs, plan)
+        }
+    }
+
+    /// The reader's step order (F-06.4, F-06.5); File order for a fallback plan.
+    pub fn step_order(&self, conn: &Connection) -> Result<StepOrder, StepOrderError> {
+        if self.fallback {
+            return Ok(step_order::fallback(&self.plan));
+        }
+        step_order::load(conn, &self.session_id, &self.plan, &self.hunks())
+    }
+
+    /// Picks a strategy (F-06.4); refused on a fallback plan.
+    pub fn set_strategy(
+        &self,
+        conn: &Connection,
+        strategy: Strategy,
+    ) -> Result<StepOrder, StepOrderError> {
+        if self.fallback {
+            return Err(StepOrderError::Fallback);
+        }
+        step_order::set_strategy(conn, &self.session_id, strategy, &self.plan, &self.hunks())
+    }
+
+    /// Saves a dragged order (F-06.5); refused on a fallback plan.
+    pub fn reorder(
+        &self,
+        conn: &Connection,
+        order: &[String],
+    ) -> Result<StepOrder, StepOrderError> {
+        if self.fallback {
+            return Err(StepOrderError::Fallback);
+        }
+        step_order::reorder(conn, &self.session_id, order, &self.plan, &self.hunks())
+    }
+
+    fn hunks(&self) -> Vec<coverage::HunkRef<'_>> {
+        coverage::hunk_refs(&self.files)
     }
 
     /// `claude_cache.subject` and `dismissals.mr` of this review.

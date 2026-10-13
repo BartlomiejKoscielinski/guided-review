@@ -1,6 +1,7 @@
 //! `review_plan` below the Tauri layer (F-06.2, F-06.4, F-06.5, F-06.12): the inputs of a
 //! stored MR session, the channel events in order, the cache hit without `claude`, and the
-//! session's step order in the result. Fake `claude`, synthetic data only (ADR-019).
+//! session's step order in the result; the file-order fallback when Claude fails (02 › S-02).
+//! Fake `claude`, synthetic data only (ADR-019).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
 
 #[path = "support/fake_claude.rs"]
@@ -22,8 +23,8 @@ use guided_review_lib::git::model::FileDiff;
 use guided_review_lib::os::process::Cancel;
 use guided_review_lib::review::model::Strategy;
 use guided_review_lib::review::plan_runs::{self, PlanView};
-use guided_review_lib::review::step_context::{self, SessionInputs};
-use guided_review_lib::review::step_order;
+use guided_review_lib::review::step_context::{self, SessionInputs, StepContext};
+use guided_review_lib::review::step_order::{self, StepOrderError};
 use guided_review_lib::settings::ClaudeSettings;
 use guided_review_lib::store::{self, Store};
 use serde_json::{Value, json};
@@ -139,6 +140,7 @@ impl Setup {
         let emit = |e: ClaudeTaskEvent<PlanView>| events.lock().unwrap().push(e);
         let result = plan_runs::plan(&self.ctx(), inputs, &Cancel::new(), &emit)
             .await
+            .map(|planned| planned.view)
             .map_err(AppError::from);
         let kinds = events
             .into_inner()
@@ -215,14 +217,98 @@ async fn f06_12_cached_plan_goes_from_queued_to_done_with_its_age() {
 }
 
 #[tokio::test]
-async fn f06_2_invalid_plan_emits_failed_with_claude_schema() {
+async fn f06_4_fallback_when_claudes_plan_is_invalid_done_in_file_order() {
     let s = setup();
     let inputs = s.inputs().await;
     s.fake
         .set_scenario(&json!({ "responses": [plan_response(&inputs.files, false)] }));
-    let (events, result) = s.plan(&inputs).await;
-    assert_eq!(events, ["queued", "started", "failed"]);
-    assert_eq!(result.unwrap_err().code, ErrorCode::ClaudeSchema);
+    let (events, view) = s.plan(&inputs).await;
+    assert_eq!(events, ["queued", "started", "done"]);
+    let view = view.unwrap();
+    assert_eq!(view.fallback.unwrap().code, ErrorCode::ClaudeSchema);
+    let rows: Vec<_> = view
+        .plan
+        .steps
+        .iter()
+        .map(|s| (s.id.as_str(), s.title.as_str(), s.reason.as_str()))
+        .collect();
+    assert_eq!(
+        rows,
+        [
+            ("f1", "App", "Upload ViewModel.cs"),
+            ("f2", "Core", "IQueue.cs")
+        ]
+    );
+    assert_eq!(view.order.strategy, Strategy::FileOrder);
+    assert!(!view.order.custom);
+    assert_eq!(view.order.order, ["f1", "f2"]);
+    assert!(view.plan.intent.is_empty());
+    assert_eq!(view.plan.coverage.hunks, view.plan.coverage.hunks_total);
+    assert_eq!(view.step_stats.len(), 2);
+    assert_eq!(view.cached_at, None);
+}
+
+#[tokio::test]
+async fn f06_12_fallback_when_not_signed_in_is_never_cached() {
+    let s = setup();
+    let inputs = s.inputs().await;
+    let signed_out = json!({ "stdout": json!({ "type": "result", "is_error": true,
+        "terminal_reason": "api_error", "result": "Not logged in · Please run /login" })
+        .to_string(), "exit": 1 });
+    s.fake
+        .set_scenario(&json!({ "responses": [signed_out, plan_response(&inputs.files, true)] }));
+    let (events, first) = s.plan(&inputs).await;
+    assert_eq!(events, ["queued", "started", "done"]);
+    assert_eq!(
+        first.unwrap().fallback.unwrap().code,
+        ErrorCode::ClaudeNotSignedIn
+    );
+    // Signed in again: Claude plans; the fallback wasn't cached.
+    let (events, again) = s.plan(&inputs).await;
+    assert_eq!(events, ["queued", "started", "done"]);
+    let again = again.unwrap();
+    assert!(again.fallback.is_none());
+    assert_eq!(again.plan.intent, "Uploads go through a queue.");
+    assert_eq!(s.fake.calls().len(), 2);
+}
+
+#[tokio::test]
+async fn f06_4_fallback_refuses_strategy_and_drag_and_keeps_the_stored_order() {
+    let s = setup();
+    let inputs = s.inputs().await;
+    s.fake
+        .set_scenario(&json!({ "responses": [plan_response(&inputs.files, false)] }));
+    let (_, view) = s.plan(&inputs).await;
+    let plan = view.unwrap().plan;
+    s.store
+        .with_conn(|c| {
+            store::sessions::set_strategy(c, "r1", Strategy::TestsFirst)?;
+            Ok(())
+        })
+        .unwrap();
+    let cx = StepContext::fallback(inputs, plan);
+    s.store
+        .with_conn(|c| {
+            let order = cx.step_order(c).unwrap();
+            assert_eq!(order.strategy, Strategy::FileOrder);
+            assert_eq!(order.order, ["f1", "f2"]);
+            assert!(matches!(
+                cx.set_strategy(c, Strategy::ContractToUi),
+                Err(StepOrderError::Fallback)
+            ));
+            let dragged = ["f2".to_owned(), "f1".to_owned()];
+            assert!(matches!(
+                cx.reorder(c, &dragged),
+                Err(StepOrderError::Fallback)
+            ));
+            // The reader's own choice survives for when Claude plans again.
+            assert_eq!(
+                store::sessions::strategy(c, "r1").unwrap(),
+                Strategy::TestsFirst
+            );
+            Ok(())
+        })
+        .unwrap();
 }
 
 #[tokio::test]

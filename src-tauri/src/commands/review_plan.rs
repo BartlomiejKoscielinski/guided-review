@@ -14,11 +14,10 @@ use super::with_store;
 use crate::claude::tasks::events::ClaudeTaskEvent;
 use crate::error::AppResult;
 use crate::os::process::Cancel;
-use crate::review::coverage;
 use crate::review::model::Strategy;
 use crate::review::plan_runs::{self, PlanView};
 use crate::review::step_context::{self as context, MrRef, StepContext};
-use crate::review::step_order::{self, StepOrder};
+use crate::review::step_order::StepOrder;
 use crate::store::{self, Store};
 
 /// Opening S-02: the cached plan (`queued` → `done`, no `claude`) or a new plan (`queued`,
@@ -40,22 +39,32 @@ pub async fn review_plan(
     let cancel = Cancel::new();
     let inputs = context::load_inputs(&store, git_program, &session, threads, &cancel).await?;
     let emit = sender(ch);
-    let result = plan_runs::plan(&ctx, &inputs, &cancel, &emit).await;
-    match &result {
-        Ok(view) => {
-            review.remember(Arc::new(StepContext::new(inputs, view.plan.clone())));
-            after_task(&claude, &store, Ok(())).await;
-        }
+    let planned = match plan_runs::plan(&ctx, &inputs, &cancel, &emit).await {
+        Ok(planned) => planned,
         Err(error) => {
             if let Some(claude_error) = error.claude() {
                 after_task(&claude, &store, Err(claude_error)).await;
             }
+            return Err(error.into());
         }
-    }
-    result.map_err(Into::into)
+    };
+    let plan = planned.view.plan.clone();
+    let cx = match &planned.claude_error {
+        None => StepContext::new(inputs, plan),
+        Some(_) => StepContext::fallback(inputs, plan),
+    };
+    review.remember(Arc::new(cx));
+    after_task(
+        &claude,
+        &store,
+        planned.claude_error.as_ref().map_or(Ok(()), Err),
+    )
+    .await;
+    Ok(planned.view)
 }
 
 /// Contract to UI, Tests first or File order (F-06.4): stored, the dragged order cleared.
+/// Refused on the fallback plan (File order only).
 #[tauri::command]
 pub async fn review_set_strategy(
     review: State<'_, ReviewApp>,
@@ -66,17 +75,13 @@ pub async fn review_set_strategy(
     strategy: Strategy,
 ) -> AppResult<StepOrder> {
     let cx = planned(&review, &claude, &store, &gitlab, &session).await?;
-    with_store(&store, move |c| {
-        let hunks = coverage::hunk_refs(&cx.files);
-        Ok(step_order::set_strategy(
-            c, &session, strategy, &cx.plan, &hunks,
-        ))
-    })
-    .await?
-    .map_err(Into::into)
+    with_store(&store, move |c| Ok(cx.set_strategy(c, strategy)))
+        .await?
+        .map_err(Into::into)
 }
 
 /// A dragged order (F-06.5): every step of the plan exactly once; saved in the session.
+/// Refused on the fallback plan.
 #[tauri::command]
 pub async fn review_reorder_steps(
     review: State<'_, ReviewApp>,
@@ -87,12 +92,9 @@ pub async fn review_reorder_steps(
     order: Vec<String>,
 ) -> AppResult<StepOrder> {
     let cx = planned(&review, &claude, &store, &gitlab, &session).await?;
-    with_store(&store, move |c| {
-        let hunks = coverage::hunk_refs(&cx.files);
-        Ok(step_order::reorder(c, &session, &order, &cx.plan, &hunks))
-    })
-    .await?
-    .map_err(Into::into)
+    with_store(&store, move |c| Ok(cx.reorder(c, &order)))
+        .await?
+        .map_err(Into::into)
 }
 
 /// The session with its plan; "The plan isn't ready yet." before `review_plan` succeeded.
