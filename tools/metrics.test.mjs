@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { commandKey, parseTranscript, resultTokens, tokenTotals } from './metrics/transcript.mjs';
+import {
+  commandKey,
+  parseTranscript,
+  projectDirs,
+  resultTokens,
+  tokenTotals,
+} from './metrics/transcript.mjs';
 import { sessionSuggestions } from './metrics/suggest.mjs';
 
 test('commandKey names the program and what it runs', () => {
@@ -81,4 +87,20 @@ test('rules: reading tax and long sessions are reported, waiting for the owner i
   };
   const rules = sessionSuggestions(r).map((s) => s.rule);
   assert.deepEqual(rules, ['R4 long-session', 'R11 reading-tax']);
+});
+
+test('E4 transcript folders: the checkout, worktrees under it and lanes next to it with their lane', () => {
+  const names = [
+    'C--Repos-guided-review',
+    'c--repos-guided-review--claude-worktrees-x',
+    'C--Repos-gr-focus-b',
+    'C--Repos-gr-',
+    'C--Repos-gr--x',
+    'C--Repos-other',
+  ];
+  assert.deepEqual(projectDirs('C:/Repos/guided-review', names), [
+    { name: 'C--Repos-guided-review', lane: null },
+    { name: 'c--repos-guided-review--claude-worktrees-x', lane: null },
+    { name: 'C--Repos-gr-focus-b', lane: 'focus-b' },
+  ]);
 });

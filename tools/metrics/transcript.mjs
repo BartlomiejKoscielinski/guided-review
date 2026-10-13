@@ -198,6 +198,27 @@ export function byLabel(calls) {
   return [...g.values()];
 }
 
+/** Claude Code's transcript folder name for a project path, lowercased for comparison. */
+const slug = (path) => path.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+/**
+ * The folders under ~/.claude/projects (`names`) with transcripts of the repository at `root`: the
+ * checkout and worktrees under it (lane null), and lane worktrees next to it, `../gr-<lane>` from
+ * tools/lanes.mjs (a session started in a subfolder of a lane gets that subfolder in its lane name).
+ */
+export function projectDirs(root, names) {
+  const own = slug(root);
+  const lanes = slug(root.replace(/[\\/][^\\/]+[\\/]?$/, '') + '/gr-');
+  const dirs = [];
+  for (const name of names) {
+    const s = name.toLowerCase();
+    if (s.startsWith(own)) dirs.push({ name, lane: null });
+    else if (s.startsWith(lanes) && /^[a-z0-9][a-z0-9-]*$/.test(s.slice(lanes.length)))
+      dirs.push({ name, lane: s.slice(lanes.length) });
+  }
+  return dirs;
+}
+
 /** The ledger record of one session: main thread + subagents, compact enough to keep in git. */
 export function sessionRecord(file) {
   const id = basename(file, '.jsonl');

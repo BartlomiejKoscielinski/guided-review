@@ -12,6 +12,7 @@ import { spawn } from 'node:child_process';
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { laneConfig } from './lanes-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const logDir = join(root, '.verify');
@@ -36,7 +37,11 @@ const onlyIdx = args.indexOf('--only');
 const only = onlyIdx >= 0 ? args[onlyIdx + 1].split(',') : null;
 const wantE2e = args.includes('--e2e') || (only?.includes('e2e') ?? false);
 const specs = args.filter((a, i) => !a.startsWith('--') && i !== onlyIdx + 1);
-const steps = (only ?? STEPS).filter((s) => s !== 'e2e');
+// A lane worktree whose --owns has no src-tauri/ does not build Rust (tools/lanes.mjs).
+const lane = laneConfig(root);
+const noRust = !only && lane?.rust === false;
+if (noRust) console.log(`lane ${lane.lane}: no src-tauri/ in --owns, Rust steps skipped`);
+const steps = (only ?? STEPS).filter((s) => s !== 'e2e' && !(noRust && s.startsWith('rust:')));
 for (const s of steps) {
   if (!STEPS.includes(s)) {
     console.error(`Unknown step "${s}". Steps: ${STEPS.join(', ')}, e2e`);

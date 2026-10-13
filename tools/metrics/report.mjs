@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { homedir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { sessionRecord } from './transcript.mjs';
+import { projectDirs, sessionRecord } from './transcript.mjs';
 import { crossSuggestions, sessionSuggestions, skillCosts } from './suggest.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -29,15 +29,17 @@ const opt = (name) => {
 const k = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : `${Math.round(n / 1000)}k`);
 const min = (ms) => `${(ms / 60000).toFixed(1)}m`;
 const day = (iso) => (iso ?? '').slice(0, 10);
+// Lane sessions (tools/lanes.mjs) are prefixed with their lane.
+const label = (r) => `${r.lane ? `[${r.lane}] ` : ''}${r.title ?? r.id}`;
 
-/** Transcript folders of this repo: the checkout and any worktree under or next to it. */
+/** Transcript folders of this repo: the checkout, worktrees under it and lanes next to it. */
 function transcriptDirs() {
   const base = join(process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude'), 'projects');
-  const slug = root.replace(/[^a-zA-Z0-9]/g, '-');
   if (!existsSync(base)) return [];
-  return readdirSync(base)
-    .filter((d) => d.toLowerCase().startsWith(slug.toLowerCase()))
-    .map((d) => join(base, d));
+  return projectDirs(root, readdirSync(base)).map((d) => ({
+    dir: join(base, d.name),
+    lane: d.lane,
+  }));
 }
 
 function loadLedger() {
@@ -53,7 +55,7 @@ function loadLedger() {
 function ingest() {
   const ledger = loadLedger();
   let changed = 0;
-  for (const dir of transcriptDirs()) {
+  for (const { dir, lane } of transcriptDirs()) {
     for (const f of readdirSync(dir).filter((x) => x.endsWith('.jsonl'))) {
       const file = join(dir, f);
       const subDir = join(dir, f.replace(/\.jsonl$/, ''), 'subagents');
@@ -65,7 +67,9 @@ function ingest() {
       if (ledger.get(id)?.mtime === mtime) continue;
       const r = sessionRecord(file);
       if (!r.main.turns) continue;
-      ledger.set(id, { ...r, mtime });
+      // ../gr-<name> is a lane only when the session ran on a lane branch (mN/<lane>, tools/lanes.mjs).
+      if (lane && !(r.branch ?? '').endsWith(`/${lane}`)) continue;
+      ledger.set(id, { ...r, ...(lane ? { lane } : {}), mtime });
       changed++;
     }
   }
@@ -83,7 +87,7 @@ const totalRead = (r) => r.main.cacheRead + sub(r, 'cacheRead');
 function brief(r) {
   const lines = [];
   lines.push(
-    `${r.title ?? r.id} (${r.branch ?? '?'}) · ${day(r.start)} · ${r.activeMin} min active${r.costUSD ? ` · $${r.costUSD.toFixed(2)} (API-equivalent)` : ''}`,
+    `${label(r)} (${r.branch ?? '?'}) · ${day(r.start)} · ${r.activeMin} min active${r.costUSD ? ` · $${r.costUSD.toFixed(2)} (API-equivalent)` : ''}`,
   );
   lines.push(
     `main: ${r.main.turns} turns · base ${k(r.main.baseContext)} · max ${k(r.main.maxContext)} · cache read ${k(r.main.cacheRead)} (${k(r.main.cacheReadOver150k)} above 150k) · write ${k(r.main.cacheWrite)} · out ${k(r.main.output)}${r.compactions ? ` · ${r.compactions} compactions` : ''}`,
@@ -134,7 +138,7 @@ function table(records) {
     lines.push(
       [
         day(r.start),
-        (r.title ?? r.id).slice(0, 32).padEnd(32),
+        label(r).slice(0, 32).padEnd(32),
         String(r.activeMin).padStart(3),
         `${r.main.turns}+${sub(r, 'turns')}`.padStart(9),
         k(r.main.baseContext).padStart(4),
@@ -184,10 +188,7 @@ function lastReport(records) {
   const hits = new Map();
   for (const r of records)
     for (const s of sessionSuggestions(r))
-      hits.set(s.rule, [
-        ...(hits.get(s.rule) ?? []),
-        `${(r.title ?? r.id).slice(0, 24)}: ${s.text}`,
-      ]);
+      hits.set(s.rule, [...(hits.get(s.rule) ?? []), `${label(r).slice(0, 24)}: ${s.text}`]);
   out.push('', 'rule hits:');
   for (const [rule, xs] of hits) out.push(`  ${rule} ×${xs.length}: ${xs[0]}`);
   for (const s of crossSuggestions(records)) out.push(`  [${s.rule}] ${s.text}`);

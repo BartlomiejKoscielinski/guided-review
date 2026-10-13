@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import {
   buildContextPack,
   globToRegExp,
+  laneBranch,
   outsideOwns,
   overlaps,
+  ownsRust,
   parseId,
   pickPort,
   section,
@@ -128,4 +130,14 @@ test('ownership: files outside the globs and files touched by two lanes', () => 
 test('pickPort skips ports of other lanes and busy ports', async () => {
   assert.equal(await pickPort(new Set([1421]), async (p) => p === 1422), 1423);
   assert.equal(await pickPort(new Set(), async () => true), null);
+});
+
+test('E4 lanes: only globs reaching src-tauri/ build Rust; the branch follows the milestone', () => {
+  assert.ok(ownsRust(['src/**', 'src-tauri/src/review/**']));
+  assert.ok(ownsRust(['src-tauri\\src\\store\\']));
+  assert.ok(ownsRust(['**/*.rs']));
+  assert.ok(!ownsRust(['src/screens/step/**', 'tests/e2e/step*', 'docs/**']));
+  assert.equal(laneBranch('m3-plan-focus', 'trial'), 'm3/trial');
+  assert.equal(laneBranch('M12/x', 'trial'), 'm12/trial');
+  assert.equal(laneBranch('main', 'trial'), null);
 });

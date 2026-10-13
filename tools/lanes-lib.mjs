@@ -1,8 +1,9 @@
 // Helpers for parallel lanes (tools/context-pack.mjs, tools/lanes.mjs; E4 in
 // docs/process/IMPROVEMENTS.md): doc sections for a lane's context pack, file ownership by glob,
-// dev server ports. Pure except mainCheckout(); tested in tools/lanes.test.mjs.
+// dev server ports. Pure except mainCheckout() and laneConfig(); tested in tools/lanes.test.mjs.
 import { execFileSync } from 'node:child_process';
-import { dirname } from 'node:path';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { resultTokens } from './metrics/transcript.mjs';
 
 export const LANE_NAME = /^[a-z0-9][a-z0-9-]{0,30}$/;
@@ -16,6 +17,23 @@ export function mainCheckout(dir) {
     encoding: 'utf8',
   });
   return dirname(common.trim());
+}
+
+/** The lane.json of a lane worktree (tools/lanes.mjs); null in the main checkout, which has none. */
+export function laneConfig(dir) {
+  const lanes = join(dir, '.lanes');
+  if (!existsSync(lanes)) return null;
+  for (const name of readdirSync(lanes)) {
+    const file = join(lanes, name, 'lane.json');
+    if (existsSync(file)) return JSON.parse(readFileSync(file, 'utf8'));
+  }
+  return null;
+}
+
+/** The default lane branch: the milestone of the current branch ("m3-plan-focus" → "m3/<lane>"). */
+export function laneBranch(current, lane) {
+  const m = /^(m\d+)(?!\d)/i.exec(current ?? '');
+  return m ? `${m[1].toLowerCase()}/${lane}` : null;
 }
 
 /** "F-07", "f07", "F-07.3", "S-03", "s3" → { kind, num, ac }; anything else → null. */
@@ -238,6 +256,15 @@ export function globToRegExp(glob) {
     else re += c.replace(/[.+^${}()|[\]\\]/g, '\\$&');
   }
   return new RegExp(`^${re}$`);
+}
+
+/** True when a lane's globs reach the Rust core; only such a lane builds src-tauri (its own target). */
+export function ownsRust(globs) {
+  const probes = ['src-tauri/src/lib.rs', 'src-tauri/Cargo.toml'];
+  return globs.some((g) => {
+    const glob = g.replace(/\\/g, '/');
+    return /^src-tauri(\/|$)/.test(glob) || probes.some((p) => globToRegExp(glob).test(p));
+  });
 }
 
 export function outsideOwns(files, globs) {
