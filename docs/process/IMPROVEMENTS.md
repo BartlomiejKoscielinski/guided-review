@@ -19,7 +19,7 @@ Last retro: 2026-10-13T20:19Z (17 sessions)
 | E2 | 2026-10-13 | Context guard: PostToolUse hook warns at 120k (wrap up) and 160k (handoff now) (`tools/metrics/context-guard.mjs`) | sessions over 150k 10/10 → ≤ 3/10; cache read above 150k per session | open: reopened after review (the retro closed it on n=2, against its own < 3 rule). After 358ba79: P-2 137k, P-3 warned at 120k, handed off at 123k (a review fix continued it), one 51k session that never reached the guard. Judge at the next retro. |
 | E5 | 2026-10-13 | `/handoff` rule: next-session prompt fits ~100k context, max 3 tasks; the session-log row records `tasks x/y` (`.claude/skills/handoff/SKILL.md`) | prompt tasks done / planned per session (P-2: stopped by the guard before its last tasks; P-3, 5 tasks before E5: all but e2e on 1420, port busy) → all, before the 120k warning in ≥ 4 of 5 sessions. Not "sessions over 150k": the guard (E2) caps that by itself. | open |
 | E6 | 2026-10-13 | Playwright reporter always `line` (`playwright.config.ts`; was `list` outside CI); R2 hit 9× / 41k tax | `Bash: npx playwright` tax per session 41k → ≤ 10k | open |
-| E4 | planned | Context packs for lanes (`tools/context-pack.mjs`) and parallel lanes in worktrees | reading share of tax 84% → ≤ 50%; median cache read/session 12M → ≤ 7M; wall time per milestone | planned |
+| E4 | 2026-10-13 | Context packs for lanes (`tools/context-pack.mjs`) and parallel lanes in worktrees (`tools/lanes.mjs`, `/fanout`, `/integrate`; contract = plan `## Lanes` + IPC types) | reading share of tax 84% → ≤ 50%; median cache read/session 12M → ≤ 7M; wall time per milestone | open: tooling done in P-2–P-4, first measured run = the pilot of 2 lanes on M3 (P-5) |
 
 ## Closed
 

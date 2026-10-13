@@ -19,6 +19,7 @@ Write a plan in this shape and stop for approval (exit plan mode with it if you 
 - New dependencies with a one-line reason each.
 - Questions where the spec is unclear or contradicts the mocks, each with your proposed answer.
 - Order of work in small commits.
+- Parallel lanes (E4), when the milestone splits into independent parts: a `## Lanes` table in `docs/plans/$ARGUMENTS.md`, `| Lane | Goal | Owns | AC | Model / effort | Migrations |` (format and checks in `.claude/skills/fanout/SKILL.md`): disjoint `--owns` globs, each AC in one lane, reserved migration numbers without files. The plan plus the IPC types and commands of all lanes (with mock stubs) is the contract, committed before `/fanout $ARGUMENTS`; `/integrate $ARGUMENTS` merges the lanes back.
 Every AC of the milestone must appear in the table. If one can't be done in this milestone, say why.
 
 ## 3. Build

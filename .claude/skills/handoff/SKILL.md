@@ -6,6 +6,8 @@ argument-hint: [optional focus of the next session]
 
 Next session focus (optional): $ARGUMENTS
 
+**In a lane** (`.lanes/<lane>/lane.json` exists in this worktree, E4): do step 1, then instead of steps 2–4 write `.lanes/<lane>/report.md` (`.lanes/` is not committed): `## Done` (AC IDs with SHAs) · `## Tests` (names or counts; `/verify`, e2e, `/design-check` results) · `## Deviations` (from the spec or plan, with reasons) · `## Contract requests` (changes outside `--owns` or to IPC types, or `none`) · `## Open`. No PROGRESS, no metrics. Step 5 only when the lane is unfinished: the prompt continues it in this worktree (read `.lanes/<lane>/context.md` and the report). Otherwise tell the user the lane is ready for `/integrate <Mx>`.
+
 1. State: `git status --short`, `git log --oneline -15`, current branch. If there are uncommitted changes that belong to this session's work, ask whether to commit them first.
 2. PROGRESS, by section only (`grep -n '^## \|^- \[ \]' docs/PROGRESS.md`; never read the whole file):
    - tick criteria finished in this session with their SHAs, `(sha)` or `(sha, sha)`; mark partial ones `— partial: <what is missing>`;
