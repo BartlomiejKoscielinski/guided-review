@@ -4,6 +4,11 @@
 import { readFileSync } from 'node:fs';
 
 const STYLE_KEYS = ['ff', 'fs', 'fw', 'tt', 'ls', 'c', 'bg', 'br'];
+// Structure mode (the default /design-check during a milestone; pixel polish comes at the end):
+// only what breaks the design rules or the copy - font family, uppercase, token meaning, corners -
+// and shifts large enough to mean a misplaced region.
+const STRUCTURE_KEYS = ['ff', 'tt', 'c', 'bg', 'br'];
+const STRUCTURE_SHIFT = 40;
 
 /** Maps computed colors (`rgb(…)` / `rgba(…)`) to token names from src/styles/tokens.css. */
 export function loadTokenColors(tokensCss) {
@@ -85,12 +90,12 @@ function copyDiffs(missing, extra) {
   return lines;
 }
 
-function styleDiffs(pairs, tokens) {
+function styleDiffs(pairs, tokens, keys = STYLE_KEYS, boxes = true) {
   // Same difference on many elements (e.g. every label 12px instead of 11px) is reported once.
   const groups = new Map();
   for (const [m, e] of pairs) {
-    const diffs = STYLE_KEYS.filter((k) => !sameStyle(k, m[k], e[k])).map((k) => `${k} ${fmtValue(k, m[k], tokens)} → ${fmtValue(k, e[k], tokens)}`);
-    if (e.bg && m.bg && (Math.abs(e.w - m.w) > 3 || Math.abs(e.h - m.h) > 3)) diffs.push(`box ${m.w}×${m.h} → ${e.w}×${e.h}`);
+    const diffs = keys.filter((k) => !sameStyle(k, m[k], e[k])).map((k) => `${k} ${fmtValue(k, m[k], tokens)} → ${fmtValue(k, e[k], tokens)}`);
+    if (boxes && e.bg && m.bg && (Math.abs(e.w - m.w) > 3 || Math.abs(e.h - m.h) > 3)) diffs.push(`box ${m.w}×${m.h} → ${e.w}×${e.h}`);
     if (!diffs.length) continue;
     const key = diffs.join(' · ');
     groups.set(key, [...(groups.get(key) ?? []), m]);
@@ -98,12 +103,12 @@ function styleDiffs(pairs, tokens) {
   return [...groups].map(([key, ms]) => `${key}  — ${ms.length}× e.g. ${ms.slice(0, 3).map((m) => `${q(m.t)}@${m.x},${m.y}`).join(' ')}`);
 }
 
-function shifts(pairs) {
+function shifts(pairs, min = 3) {
   const groups = new Map();
   for (const [m, e] of pairs) {
     const dx = e.x - m.x;
     const dy = e.y - m.y;
-    if (Math.abs(dx) <= 3 && Math.abs(dy) <= 3) continue;
+    if (Math.abs(dx) <= min && Math.abs(dy) <= min) continue;
     const key = `${Math.round(dx / 2) * 2},${Math.round(dy / 2) * 2}`;
     groups.set(key, [...(groups.get(key) ?? []), m]);
   }
@@ -139,11 +144,18 @@ function codeFontDiffs(mock, impl) {
   return main(a) && main(b) && main(a) !== main(b) ? [`main code font (ff fs fw): ${main(a)} → ${main(b)}`] : [];
 }
 
-/** Returns [title, lines[]] sections; empty sections are dropped. */
-export function compareDom(mockAll, implAll, tokens) {
+/** Returns [title, lines[]] sections; empty sections are dropped. `structure` keeps only rule and copy differences. */
+export function compareDom(mockAll, implAll, tokens, { structure = false } = {}) {
   const mock = mockAll.filter((e) => !isCode(e));
   const impl = implAll.filter((e) => !isCode(e));
   const { pairs, missing, extra } = match(mock, impl);
+  if (structure)
+    return [
+      [`copy (${missing.length} mock texts unmatched, ${extra.length} impl texts unmatched)`, copyDiffs(missing, extra)],
+      ['font family / uppercase / token / corners (mock → impl)', styleDiffs(pairs, tokens, STRUCTURE_KEYS, false)],
+      [`misplaced (shift > ${STRUCTURE_SHIFT}px, impl − mock)`, shifts(pairs, STRUCTURE_SHIFT)],
+      ['colors that are not tokens', nonTokenColors(impl, tokens)],
+    ].filter(([, lines]) => lines.length);
   return [
     [`copy (${missing.length} mock texts unmatched, ${extra.length} impl texts unmatched)`, copyDiffs(missing, extra)],
     ['typography / color / box (mock → impl)', styleDiffs(pairs, tokens)],

@@ -6,10 +6,12 @@
 //   3. pixel heatmap + side-by-side crops of the most different cells (diff-shots.mjs),
 //   4. DOM comparison: copy, typography, token colors, shifted elements (compare-dom.mjs).
 // Prints a capped summary; the full report goes to .design-check/report-<screen>.md.
+// Default is structure mode: copy, design rules and misplaced regions only, no pixel diff. --pixel
+// adds the heatmap, crops and size/spacing differences (the UI polish pass at the end).
 //
 // Usage:
 //   node tools/mock-preview/design-check.mjs S06 [--states changes-local,changes-commit]
-//        [--no-shots] [--top 3] [--max-lines 12]
+//        [--no-shots] [--pixel] [--top 3] [--max-lines 12]
 // Requires the mock dev server or lets Playwright start it (playwright.config.ts webServer).
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -26,10 +28,11 @@ const opt = (name, def) => {
 };
 const screen = (args[0] ?? '').toUpperCase().replace('-', '');
 if (!/^S\d\d$/.test(screen)) {
-  console.error('Usage: design-check.mjs S06 [--states a,b] [--no-shots] [--top 3] [--max-lines 12]');
+  console.error('Usage: design-check.mjs S06 [--states a,b] [--no-shots] [--pixel] [--top 3] [--max-lines 12]');
   process.exit(2);
 }
 const top = opt('top', '3');
+const pixel = args.includes('--pixel');
 const maxLines = Number(opt('max-lines', 12));
 const out = join(root, '.design-check');
 mkdirSync(out, { recursive: true });
@@ -59,7 +62,7 @@ if (!args.includes('--no-shots')) {
   }
 }
 
-const report = [`# design-check ${screen}`, ''];
+const report = [`# design-check ${screen} (${pixel ? 'pixel' : 'structure'})`, ''];
 for (const state of states) {
   const id = `${screen}-${state}`;
   const lines = [];
@@ -77,15 +80,15 @@ for (const state of states) {
     );
     if (r.errors.length || r.missingHoles.length) lines.push(`mock render: errors ${JSON.stringify(r.errors)} missing holes ${JSON.stringify(r.missingHoles)}`);
     mockJson = mockOut.replace(/\.png$/, '.json');
-  } else lines.push(`no row in tools/mock-preview/states.json: pixel diff only, no DOM comparison`);
+  } else lines.push(`no row in tools/mock-preview/states.json: no DOM comparison${pixel ? ', pixel diff only' : ''}`);
 
   const designPng = join(root, 'docs', 'design', 'screens', `${id}.png`);
   const reference = existsSync(designPng) ? designPng : m ? join(out, `mock-${id}.png`) : null;
   if (!existsSync(designPng)) lines.push(m ? 'no design PNG: diffed against the rendered mock' : 'no design PNG and no mock state: nothing to compare');
-  if (reference) lines.push(...node(join(here, 'diff-shots.mjs'), [reference, impl + '.png', '--top', top, '--out-prefix', join(out, `cmp-${id}`)]).trimEnd().split('\n'));
+  if (reference && pixel) lines.push(...node(join(here, 'diff-shots.mjs'), [reference, impl + '.png', '--top', top, '--out-prefix', join(out, `cmp-${id}`)]).trimEnd().split('\n'));
 
   const sections = mockJson && existsSync(impl + '.json')
-    ? compareDom(JSON.parse(readFileSync(mockJson, 'utf8')), JSON.parse(readFileSync(impl + '.json', 'utf8')), tokens)
+    ? compareDom(JSON.parse(readFileSync(mockJson, 'utf8')), JSON.parse(readFileSync(impl + '.json', 'utf8')), tokens, { structure: !pixel })
     : [];
 
   console.log(`\n## ${id}`);

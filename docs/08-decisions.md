@@ -98,6 +98,11 @@ Context: field visits 1 and 2 (`field/RUNBOOK-1.md`, `field/RUNBOOK-2.md`) were 
 Decision: M2 is done on layers 1–2 and the stand-in: gr-probe GraphQL schema 41/41 and all tabs pass (`field/baseline/standin-keysets.*`), the real-app smoke and F-24.1 of session 2h-1. M3 starts on the PC/Max results of S1–S4 (ADR-022). Visits 1 and 2 run at **field visit 3** (after M5 or M6), before its own steps; the kit is ready (release `field-visit-2`).
 Consequences: until then these stay unproven: `--restricted` and the profiles on Claude Enterprise (S1–S3; if refused, ADR-022's fallback, a change in `claude/runner.rs` only), TLS through the internal CA (S6), on-prem tier and instance settings (S5, the GraphQL fields of ADR-024; a missing field falls back to REST for that field), and the `[field]` items of `09` for M2. M3–M5 work that depends on them is built against the stand-in and PC/Max as before and is rechecked at field visit 3.
 
+### ADR-026 Design checks: structure during milestones, pixel polish at the end (owner, 2026-10-13)
+Context: `/design-check` compared every screen to the pixel (sizes, spacing, offsets) after each screen phase; it was one of the two biggest token costs (2026-10-12: 16%), and later layout work redoes much of the pixel fitting.
+Decision: during milestones `/design-check S-xx` is a structure check: exact copy, the design rules of `03-design-system.md` (tokens, square corners, fills, word tags, Barlow Condensed uppercase), the right regions and components, regions off by more than 40px. Sizes, spacing, font sizes and weights are left for one **UI polish pass** in M11 (`/design-check S-xx pixel`).
+Consequences: screens may differ from the PNGs in size and spacing until M11; demos before M11 are judged on behaviour and structure. Copy and design-rule differences are still fixed at once.
+
 ---
 
 ## Spike notes (fill in during M0)

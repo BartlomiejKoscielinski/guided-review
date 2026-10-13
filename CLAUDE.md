@@ -30,7 +30,7 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 1. One milestone per branch. Start with `/milestone Mx`: it plans first (acceptance-criteria IDs → tasks → tests) and waits for approval.
 2. Small commits: `M3: F-06.4 F-06.5 strategy toggle and drag reorder`.
 3. Tests carry the AC ID in their name (`f06_10_…` in Rust, `'F-06.10 …'` in TS).
-4. A screen is built against the **mock backend first**, compared with its PNG (`/design-check S-xx`), then wired to the real backend and checked in the real app with `/app` (Claude drives it; don't ask the owner to click).
+4. A screen is built against the **mock backend first**, compared with its PNG (`/design-check S-xx`, a structure check; pixel polish in M11, ADR-026), then wired to the real backend and checked in the real app with `/app` (Claude drives it; don't ask the owner to click).
 5. Before saying a task is done: `/verify`; for UI changes also `/design-check`; at the end of a milestone `/audit`.
 6. End every session with `/handoff`: it updates `docs/PROGRESS.md` (ticks with commit SHA, a session-log line) and writes the prompt for the next session.
 7. If the spec is unclear, contradictory or seems wrong: stop and ask. Propose the doc change; never silently pick an interpretation. If a decision in `08-decisions.md` looks wrong, explain why and wait.
