@@ -18,6 +18,7 @@ use crate::gitlab::project::project_from_remote;
 use crate::gitlab::tls::TlsBackend;
 use crate::os::credentials::{Keyring, TokenStore};
 use crate::os::process::Cancel;
+use crate::review::plan_cache::{self, PlanSettings};
 use crate::store::{self, Store};
 
 const TLS: TlsBackend = TlsBackend::Platform;
@@ -125,7 +126,22 @@ pub async fn gitlab_list_mrs(
     )
     .await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
-    Ok(result?)
+    let list = result?;
+    // F-02.5: "plan is ready" from the plan cache of the active repository.
+    with_store(&store, move |conn| {
+        let mut list = list;
+        let settings = store::settings::load(conn)?;
+        if let Some(repo) = store::repos::active(conn)? {
+            plan_cache::mark_ready(
+                conn,
+                &PlanSettings::from(&settings.claude),
+                repo.id,
+                &mut list.rows,
+            )?;
+        }
+        Ok(list)
+    })
+    .await
 }
 
 /// A client with the stored token, when GitLab is connected.
