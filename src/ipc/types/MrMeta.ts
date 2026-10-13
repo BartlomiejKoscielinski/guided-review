@@ -16,4 +16,9 @@ createdAt?: string, sourceBranch: string, targetBranch: string,
 /**
  * The head pipeline when the session was prepared; none without a pipeline.
  */
-pipeline?: PipelineState, };
+pipeline?: PipelineState, 
+/**
+ * The MR description for the plan task (F-06.8); none when empty or for sessions prepared
+ * before it was stored.
+ */
+description?: string, };

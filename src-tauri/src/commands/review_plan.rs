@@ -1,0 +1,111 @@
+//! `review_*` commands of S-02: the plan (F-06.2, F-06.12) with its task events on `ch`, the
+//! strategy toggle (F-06.4, no Claude call) and the dragged order (F-06.5).
+
+use std::path::Path;
+use std::sync::Arc;
+
+use tauri::State;
+use tauri::ipc::Channel;
+
+use super::claude::{ClaudeApp, after_task, executable};
+use super::gitlab::GitlabApp;
+use super::review::{ReviewApp, mr_threads, plan_context, sender, step_context};
+use super::with_store;
+use crate::claude::tasks::events::ClaudeTaskEvent;
+use crate::error::AppResult;
+use crate::os::process::Cancel;
+use crate::review::coverage;
+use crate::review::model::Strategy;
+use crate::review::plan_runs::{self, PlanView};
+use crate::review::step_context::{self as context, MrRef, StepContext};
+use crate::review::step_order::{self, StepOrder};
+use crate::store::{self, Store};
+
+/// Opening S-02: the cached plan (`queued` → `done`, no `claude`) or a new plan (`queued`,
+/// `started`, `done` | `failed`). The plan is kept for the S-03 step tasks.
+#[tauri::command]
+pub async fn review_plan(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    ch: Channel<ClaudeTaskEvent<PlanView>>,
+) -> AppResult<PlanView> {
+    let settings = with_store(&store, |c| store::settings::load(c)).await?;
+    let exe = executable(&store).await?;
+    let ctx = plan_context(&claude, &store, &exe, &settings.claude);
+    let git_program = settings.git.path.as_deref().map(Path::new);
+    let threads = |mr: MrRef| mr_threads(&gitlab, &store, mr);
+    let cancel = Cancel::new();
+    let inputs = context::load_inputs(&store, git_program, &session, threads, &cancel).await?;
+    let emit = sender(ch);
+    let result = plan_runs::plan(&ctx, &inputs, &cancel, &emit).await;
+    match &result {
+        Ok(view) => {
+            review.remember(Arc::new(StepContext::new(inputs, view.plan.clone())));
+            after_task(&claude, &store, Ok(())).await;
+        }
+        Err(error) => {
+            if let Some(claude_error) = error.claude() {
+                after_task(&claude, &store, Err(claude_error)).await;
+            }
+        }
+    }
+    result.map_err(Into::into)
+}
+
+/// Contract to UI, Tests first or File order (F-06.4): stored, the dragged order cleared.
+#[tauri::command]
+pub async fn review_set_strategy(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    strategy: Strategy,
+) -> AppResult<StepOrder> {
+    let cx = planned(&review, &claude, &store, &gitlab, &session).await?;
+    with_store(&store, move |c| {
+        let hunks = coverage::hunk_refs(&cx.files);
+        Ok(step_order::set_strategy(
+            c, &session, strategy, &cx.plan, &hunks,
+        ))
+    })
+    .await?
+    .map_err(Into::into)
+}
+
+/// A dragged order (F-06.5): every step of the plan exactly once; saved in the session.
+#[tauri::command]
+pub async fn review_reorder_steps(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    order: Vec<String>,
+) -> AppResult<StepOrder> {
+    let cx = planned(&review, &claude, &store, &gitlab, &session).await?;
+    with_store(&store, move |c| {
+        let hunks = coverage::hunk_refs(&cx.files);
+        Ok(step_order::reorder(c, &session, &order, &cx.plan, &hunks))
+    })
+    .await?
+    .map_err(Into::into)
+}
+
+/// The session with its plan; "The plan isn't ready yet." before `review_plan` succeeded.
+async fn planned(
+    review: &ReviewApp,
+    claude: &ClaudeApp,
+    store: &Store,
+    gitlab: &GitlabApp,
+    session: &str,
+) -> AppResult<Arc<StepContext>> {
+    let settings = with_store(store, |c| store::settings::load(c)).await?;
+    let exe = executable(store).await?;
+    let ctx = plan_context(claude, store, &exe, &settings.claude);
+    let git_program = settings.git.path.as_deref().map(Path::new);
+    step_context(review, &ctx, gitlab, git_program, session).await
+}

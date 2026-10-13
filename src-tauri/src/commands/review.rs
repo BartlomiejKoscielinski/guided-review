@@ -19,12 +19,14 @@ use crate::claude::tasks::events::ClaudeTaskEvent;
 use crate::claude::tasks::plan::Context;
 use crate::claude::tasks::step;
 use crate::error::{AppError, AppResult, ErrorCode};
-use crate::gitlab::discussions;
+use crate::gitlab::discussions::{self, Thread};
 use crate::os::process::Cancel;
+use crate::review::coverage;
 use crate::review::decisions::{self, DecisionOutcome, FindingDecision};
 use crate::review::finding_model::StepAnalysis;
 use crate::review::position::LineSelection;
 use crate::review::step_context::{self, MrRef, StepContext};
+use crate::review::step_order;
 use crate::review::step_runs::{self, StepRuns};
 use crate::store::{self, Store};
 
@@ -35,7 +37,16 @@ pub struct ReviewApp {
     contexts: Mutex<HashMap<String, Arc<StepContext>>>,
 }
 
-fn plan_context<'a>(
+impl ReviewApp {
+    /// Keeps the session's context for the step tasks (a new plan replaces the old one).
+    pub(super) fn remember(&self, cx: Arc<StepContext>) {
+        if let Ok(mut contexts) = self.contexts.lock() {
+            contexts.insert(cx.session_id.clone(), cx);
+        }
+    }
+}
+
+pub(super) fn plan_context<'a>(
     claude: &'a ClaudeApp,
     store: &'a Store,
     exe: &'a crate::claude::discover::ClaudeExecutable,
@@ -50,8 +61,26 @@ fn plan_context<'a>(
     }
 }
 
+/// The MR's threads for the Claude tasks; none when GitLab can't be reached (they are a hint
+/// for Claude, not a requirement).
+pub(super) async fn mr_threads(gitlab: &GitlabApp, store: &Store, mr: MrRef) -> Vec<Thread> {
+    let client = match connected_client(gitlab, store).await {
+        Ok((client, _)) => client,
+        Err(error) => {
+            tracing::info!(error = %error.message, "no threads for the Claude tasks");
+            return Vec::new();
+        }
+    };
+    discussions::list(&client, &mr.project, mr.iid)
+        .await
+        .unwrap_or_else(|error| {
+            tracing::warn!(%error, "threads not loaded for the Claude tasks");
+            Vec::new()
+        })
+}
+
 /// The session's step context, loaded once per session.
-async fn step_context(
+pub(super) async fn step_context(
     review: &ReviewApp,
     ctx: &Context<'_>,
     gitlab: &GitlabApp,
@@ -66,37 +95,28 @@ async fn step_context(
     {
         return Ok(cx);
     }
-    let threads = |mr: MrRef| async move {
-        let client = match connected_client(gitlab, ctx.store).await {
-            Ok((client, _)) => client,
-            Err(error) => {
-                tracing::info!(error = %error.message, "no threads for the step tasks");
-                return Vec::new();
-            }
-        };
-        discussions::list(&client, &mr.project, mr.iid)
-            .await
-            .unwrap_or_else(|error| {
-                tracing::warn!(%error, "threads not loaded for the step tasks");
-                Vec::new()
-            })
-    };
+    let threads = |mr: MrRef| mr_threads(gitlab, ctx.store, mr);
     let cx =
         Arc::new(step_context::load(ctx, git_program, session, threads, &Cancel::new()).await?);
-    if let Ok(mut contexts) = review.contexts.lock() {
-        contexts.insert(session.to_owned(), cx.clone());
-    }
+    review.remember(cx.clone());
     Ok(cx)
 }
 
-/// The steps in the session's order.
-async fn order(store: &Store, cx: &StepContext) -> AppResult<Vec<String>> {
-    let session = cx.session_id.clone();
-    let strategy = with_store(store, move |c| store::sessions::strategy(c, &session)).await?;
-    Ok(cx.order(strategy))
+/// The steps in the session's order: its strategy's, or the dragged one (F-06.4, F-06.5).
+async fn order(store: &Store, cx: Arc<StepContext>) -> AppResult<Vec<String>> {
+    let order = with_store(store, move |c| {
+        Ok(step_order::load(
+            c,
+            &cx.session_id,
+            &cx.plan,
+            &coverage::hunk_refs(&cx.files),
+        ))
+    })
+    .await??;
+    Ok(order.order)
 }
 
-fn sender<T: serde::Serialize + Clone + Send + Sync>(
+pub(super) fn sender<T: serde::Serialize + Clone + Send + Sync>(
     ch: Channel<ClaudeTaskEvent<T>>,
 ) -> impl Fn(ClaudeTaskEvent<T>) + Sync
 where
@@ -132,7 +152,7 @@ pub async fn review_findings<R: Runtime>(
     let ctx = plan_context(&claude, &store, &exe, &settings.claude);
     let git_program = settings.git.path.as_deref().map(Path::new);
     let cx = step_context(&review, &ctx, &gitlab, git_program, &session).await?;
-    let order = order(&store, &cx).await?;
+    let order = order(&store, cx.clone()).await?;
     let schedule = step::schedule(&order, &step);
     if schedule.is_empty() {
         return Err(not_in_plan());
@@ -244,7 +264,7 @@ pub async fn review_ask(
     let ctx = plan_context(&claude, &store, &exe, &settings.claude);
     let git_program = settings.git.path.as_deref().map(Path::new);
     let cx = step_context(&review, &ctx, &gitlab, git_program, &session).await?;
-    let order = order(&store, &cx).await?;
+    let order = order(&store, cx.clone()).await?;
     if !order.contains(&step) {
         return Err(not_in_plan());
     }

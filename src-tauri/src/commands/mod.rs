@@ -9,6 +9,7 @@ pub mod gitlab;
 pub mod os;
 pub mod repo;
 pub mod review;
+pub mod review_plan;
 pub mod sessions;
 pub mod source;
 
