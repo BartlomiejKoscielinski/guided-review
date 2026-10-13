@@ -62,3 +62,46 @@ test('F-07.4 F-07.5 F-09.2 step 4: fold, thread, notes; Add to drafts and Undo',
   await expect(page.getByText('Fields and constructor: 3 new dependencies')).toHaveCount(0);
   await expect(page.getByText('private readonly IUploadQueue _queue;')).toBeVisible();
 });
+
+test('F-07.1 F-07.8 F-07.7 F-10.2 layouts B and C share the step, the note and the answer; Ctrl+1/2/3', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await page
+    .getByRole('navigation', { name: 'Steps' })
+    .getByRole('button', { name: /ViewModel/ })
+    .click();
+  await page
+    .getByRole('button', { name: 'Note 1: The whole photo goes into SQLite as byte[]' })
+    .click();
+  const main = page.locator('main[class*="main"]').first();
+  await main.evaluate((el) => {
+    el.scrollTop = 120;
+  });
+
+  await page.keyboard.press('Control+2');
+  await expect(page.getByRole('navigation', { name: 'Steps' })).toHaveCount(0);
+  await expect(page.getByRole('toolbar', { name: 'Step navigation' })).toContainText('Step 4 of 8');
+  await expect(
+    page.getByRole('article', { name: 'Claude note: The whole photo goes into SQLite as byte[]' }),
+  ).toBeVisible();
+  expect(await main.evaluate((el) => el.scrollTop)).toBe(120);
+
+  await page.keyboard.press('Control+3');
+  const guide = page.getByRole('complementary', { name: 'Guide' });
+  await expect(guide.getByText('Worth a look')).toBeVisible();
+  await expect(
+    guide.getByRole('article', { name: 'Claude note: The whole photo goes into SQLite as byte[]' }),
+  ).toBeVisible();
+
+  await guide.getByRole('textbox', { name: 'Ask Claude about this step' }).fill('Why a queue?');
+  await page.keyboard.press('Enter');
+  const answer = guide.getByRole('article', { name: 'Claude answer' });
+  await expect(answer.getByRole('button', { name: 'Add to drafts' })).toBeVisible();
+  await answer.getByRole('button', { name: 'Add to drafts' }).click();
+  await expect(answer.getByText(/Added to drafts/)).toBeVisible();
+
+  await page.keyboard.press('Control+1');
+  await expect(page.getByText('Step 4 of 8')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Steps' })).toBeVisible();
+});

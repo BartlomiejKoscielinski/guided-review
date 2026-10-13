@@ -23,6 +23,10 @@ export interface StepFileProps {
   scrollRoot: RefObject<HTMLElement | null>;
   selfReview?: boolean;
   onAsk?: (finding: Finding) => void;
+  /** Layout C: numbered gutter squares, and the focused note opens in the guide panel. */
+  guide?: boolean;
+  /** The answer card (F-10) under the selected lines, in layouts A and B. */
+  answer?: { side: 'old' | 'new'; line: number; node: ReactNode; file: string };
 }
 
 /** Where a thread sits in the diff: its new-side line, else its old-side line. */
@@ -48,6 +52,8 @@ export function StepFile({
   scrollRoot,
   selfReview,
   onAsk,
+  guide = false,
+  answer,
 }: StepFileProps) {
   const path = pathOf(file);
   const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
@@ -79,12 +85,13 @@ export function StepFile({
         finding={finding}
         number={number}
         focused={focused}
+        numbered={guide}
         onFocus={() => {
           onFocus(finding.id);
         }}
       />,
     );
-    if (focused) {
+    if (focused && !guide) {
       push(
         inserts,
         key,
@@ -93,6 +100,15 @@ export function StepFile({
         </div>,
       );
     }
+  }
+  if (answer && answer.file === path) {
+    push(
+      inserts,
+      lineKey(answer.side, answer.line),
+      <div key="answer" className={styles.inlineCard}>
+        {answer.node}
+      </div>,
+    );
   }
   for (const thread of threads) {
     const at = threadAt(thread);
