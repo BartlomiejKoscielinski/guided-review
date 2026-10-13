@@ -12,6 +12,8 @@ interface Shot {
   lastRoute: Record<string, unknown>;
   /** Unfinished sessions the mock reports (session screens need one to be restored). */
   sessions?: Record<string, unknown>[];
+  /** The mock's S-02/S-03 variations (`MOCK_REVIEW_KEY`, e.g. `planFails`). */
+  review?: Record<string, unknown>;
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -64,9 +66,27 @@ const SHOTS: Shot[] = [
     state: 'preparing',
     lastRoute: { screen: 'S-01' },
     prepare: async (page) => {
-      await openMr482(page);
+      // The last stage shows for only MOCK_STAGE_MS: a paused clock keeps it on screen.
+      await page.clock.install();
+      const input = page.getByLabel(/Paste a merge request link/);
+      await input.fill('https://gitlab.local/mobile/mobile-app/-/merge_requests/482');
+      await page.getByText('Merge request !482').waitFor();
+      await page.clock.pauseAt(Date.now() + 1000);
+      await input.press('Enter');
       // 02 › S-02 Preparing: two stages done (green), the diff stage current (yellow).
-      await page.getByText('Computing diff · 16 files').waitFor();
+      const line = page.getByText('Computing diff · 16 files');
+      while (!(await line.isVisible())) await page.clock.runFor(50);
+    },
+  },
+  {
+    screen: 'S02',
+    state: 'planning',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      // 02 › S-02 Planning: the header at once, the intent placeholder, no list or aside yet.
+      await page.getByText('Claude is planning · usually under a minute').waitFor();
+      await page.getByText('pipeline passed').waitFor();
     },
   },
   {
@@ -75,8 +95,43 @@ const SHOTS: Shot[] = [
     lastRoute: { screen: 'S-01' },
     prepare: async (page) => {
       await openMr482(page);
-      await page.getByRole('button', { name: /Start step 1/ }).waitFor();
-      await page.getByText('pipeline passed').waitFor();
+      await page.getByRole('heading', { name: 'Plan · 8 steps' }).waitFor();
+      // S02-plan.png: the first step's analysis (MOCK_STEP_MS) is still running.
+      await page.getByText('Plan ready · Claude is analyzing step 1').waitFor();
+    },
+  },
+  ...(['tests', 'files'] as const).map((strategy): Shot => ({
+    screen: 'S02',
+    state: `plan-${strategy}`,
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('heading', { name: 'Plan · 8 steps' }).waitFor();
+      const name = strategy === 'tests' ? 'Tests first' : 'File order';
+      await page.getByRole('radio', { name }).click();
+      await page.getByRole('radio', { name, checked: true }).waitFor();
+      await page.getByText('Plan ready', { exact: true }).waitFor();
+    },
+  })),
+  {
+    screen: 'S02',
+    state: 'failed',
+    lastRoute: { screen: 'S-01' },
+    review: { planFails: true },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByText("Claude isn't available. You can review in file order.").waitFor();
+    },
+  },
+  {
+    screen: 'S02',
+    state: 'cached',
+    lastRoute: { screen: 'S-01' },
+    review: { planCached: true },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('heading', { name: 'Plan · 8 steps' }).waitFor();
+      await page.getByText(/^Plan from cache · /).waitFor();
     },
   },
   {
@@ -151,8 +206,9 @@ mkdirSync('.design-check', { recursive: true });
 
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
-    await page.addInitScript(({ lastRoute, sessions }) => {
+    await page.addInitScript(({ lastRoute, sessions, review }) => {
       if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
+      if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
       localStorage.setItem(
         'guided-review.mock.settings',
         JSON.stringify({

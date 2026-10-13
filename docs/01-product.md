@@ -90,7 +90,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-06.2** "What this change does": 2–4 sentences from Claude (purple square marks Claude content).
 - **F-06.3** Plan · N steps: each row has a drag handle, number, title, layer tag, one-line reason ("Everything else builds on this."), `N files · +add −del` and a small add/delete bar.
 - **F-06.4** Strategy toggle: **Contract to UI** (default), **Tests first**, **File order**. Switching reorders steps instantly without a new Claude call; the caption explains the strategy ("Contract to UI: start with what everything else builds on."). **File order** follows GitLab's diff order: each step sits where its first file is in the MR's file list (path segment by segment, directories before files, case-sensitive); the caption reads "File order, as in GitLab: the UI shows up before the contract it relies on."
-- **F-06.5** Rows can be reordered by drag and drop; the custom order is saved in the session. A dragged order replaces the strategy order; picking a strategy clears it.
+- **F-06.5** Rows can be reordered by drag and drop; the custom order is saved in the session. A dragged order replaces the strategy order; picking a strategy clears it. While the order is dragged, no strategy is selected and the caption reads "Your order. Pick a strategy to reset it."
 - **F-06.6** Skim row: "Skim: N mechanical files" with a short reason and **Show**.
 - **F-06.7** Aside **Risks to check**: each risk with severity square and step references.
 - **F-06.8** Aside **MR description vs code**: each claim from the description with ✓ found in step N, or ! missing/contradicted.
