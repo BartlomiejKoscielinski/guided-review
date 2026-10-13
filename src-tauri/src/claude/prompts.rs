@@ -13,6 +13,8 @@ pub const COMMIT_MESSAGE_SCHEMA: &str =
     include_str!("../../resources/schemas/commit-message.schema.json");
 pub const PLAN: &str = include_str!("../../resources/prompts/plan.md");
 pub const PLAN_SCHEMA: &str = include_str!("../../resources/schemas/plan.schema.json");
+pub const STEP: &str = include_str!("../../resources/prompts/step.md");
+pub const STEP_SCHEMA: &str = include_str!("../../resources/schemas/step-findings.schema.json");
 
 /// Fills `{{name}}` placeholders; unknown placeholders stay as they are.
 pub fn render(template: &str, values: &[(&str, &str)]) -> String {
