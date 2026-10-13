@@ -9,7 +9,7 @@ Checks on the company laptop what the development PC can't prove (ADR-019, `docs
 ## Before you start
 
 1. The repository is cloned on the laptop and up to date (`git pull`).
-2. `gr-probe.exe` (built on the development PC, unsigned) is in `field\bin\`. Download it from the GitHub release **field-visit-1** of this repository. `field\bin\` is not committed.
+2. `gr-probe.exe` (built on the development PC, unsigned) is in `field\bin\`. Download it from the GitHub release **field-visit-2** of this repository (visit 1 runs as part of visit 2, see `field/RUNBOOK-2.md`). `field\bin\` is not committed.
 3. VPN connected; Claude Code signed in with the company account (`claude auth status`); git on PATH.
 4. In the on-prem GitLab: a **sandbox project** that you created for this (test branches, MRs, draft notes, approvals and a manual pipeline job are fine there), and a personal access token with scope `api` and a short expiry.
 
