@@ -217,3 +217,28 @@
 .inline {
   position: relative;
 }
+
+/* S-03 (Review.dc.html): no sign column; 48px old and 60px new gutter, number padded 10px, code
+   10px from it. */
+.noSigns .half {
+  grid-template-columns: 48px minmax(0, 1fr);
+}
+.noSigns .half.wide {
+  grid-template-columns: 60px minmax(0, 1fr);
+}
+.noSigns .sign {
+  display: none;
+}
+.noSigns .lineNo {
+  padding: 0 10px;
+}
+.noSigns .wide .lineNo {
+  padding-left: 8px;
+}
+.noSigns .code {
+  padding-left: 10px;
+}
+/* Equal code widths: the old half is 12px narrower than the new one (48px vs 60px gutter). */
+.noSigns .split:has(.wide) {
+  grid-template-columns: minmax(0, calc(50% - 7px)) minmax(0, 1fr);
+}

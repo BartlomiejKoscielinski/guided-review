@@ -2,10 +2,24 @@ import { useState, type RefObject } from 'react';
 import { Button } from '../../components/Button';
 import { CheckIcon, ChevronRightIcon } from '../../components/icons';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
+import type { Finding } from '../../ipc/types/Finding';
+import type { Severity } from '../../ipc/types/Severity';
 import { pathOf } from './diffPath';
 import { StepFile } from './StepFile';
 import { StepNotes } from './StepNotes';
 import styles from './Step.module.css';
+
+const SEVERITY_RANK: Record<Severity, number> = { fix: 0, q: 1, nit: 2 };
+
+/**
+ * The note focused when a step opens: the first open note of the highest severity (Review.dc.html
+ * opens on its first Should fix, f2), else the first note.
+ */
+function firstFocus(findings: Finding[]): string | null {
+  const open = findings.filter((f) => f.decision === 'open');
+  const pick = [...open].sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity])[0];
+  return pick?.id ?? findings[0]?.id ?? null;
+}
 
 export interface StepMainProps {
   sessionId: string;
@@ -24,7 +38,11 @@ export function StepMain({ sessionId, stepId, mainRef, onGo }: StepMainProps) {
   const { query: notes } = useStepFindings(sessionId, stepId);
   const findings = notes.data?.findings ?? [];
   const [focus, setFocus] = useState<string | null>(null);
-  const focused = focus ?? findings[0]?.id ?? null;
+  // Picked once per set of notes, so deciding the focused note doesn't move the focus away.
+  const [initial, setInitial] = useState<{ ids: string; id: string | null } | null>(null);
+  const ids = findings.map((f) => f.id).join(' ');
+  if (initial?.ids !== ids) setInitial({ ids, id: firstFocus(findings) });
+  const focused = focus ?? (initial?.ids === ids ? initial.id : firstFocus(findings));
 
   if (step.isError) {
     return (

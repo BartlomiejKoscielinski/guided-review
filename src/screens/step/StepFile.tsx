@@ -142,6 +142,7 @@ export function StepFile({
         diff={file}
         layout="split"
         headers={false}
+        signs={false}
         folds={diffFolds}
         markers={markers}
         inserts={inserts}

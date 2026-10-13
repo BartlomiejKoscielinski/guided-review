@@ -18,14 +18,6 @@ interface Shot {
   prepare?: (page: Page) => Promise<void>;
 }
 
-const DEMO_SESSION = {
-  id: 'demo',
-  status: 'reviewing',
-  mode: 'focus',
-  updatedAt: '2026-10-11T09:00:00Z',
-  resume: { screen: 'S-03', sessionId: 'demo' },
-};
-
 /** Changes.dc.html's local state: DeliveryPhotoPage.xaml selected, Deliveries and Scanner open. */
 async function changesLocal(page: Page) {
   const tree = page.getByRole('tree', { name: 'Files' });
@@ -172,8 +164,20 @@ const SHOTS: Shot[] = [
   {
     screen: 'S03',
     state: 'focus-layout-A',
-    lastRoute: { screen: 'S-03', sessionId: 'demo' },
-    sessions: [DEMO_SESSION],
+    lastRoute: { screen: 'S-01' },
+    // Review.dc.html's default state: step 4 of !482 (the mock keeps MR sessions in memory, so
+    // the step is reached from S-01 › plan › step 1 › the steps list).
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('button', { name: /Start step 1/ }).click();
+      await page
+        .getByRole('navigation', { name: 'Steps' })
+        .getByRole('button', { name: /ViewModel/ })
+        .click();
+      await page.getByText('Fields and constructor: 3 new dependencies').waitFor();
+      await page.getByText('Kick() is called on the UI thread.', { exact: false }).waitFor();
+      await waitForHighlight(page, 'RelayCommand');
+    },
   },
   { screen: 'S06', state: 'changes-local', lastRoute: { screen: 'S-06' }, prepare: changesLocal },
   {

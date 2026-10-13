@@ -113,23 +113,24 @@ describe('S-03 layout A', () => {
 
   it('F-07.5 a severity square per note; a square opens its note under the line', async () => {
     renderStep('s4');
-    const first = await screen.findByRole('button', {
+    // The step opens on its first Should fix (Review.dc.html's focus f2).
+    const second = await screen.findByRole('button', {
+      name: 'Note 2: PendingCount won’t refresh after upload',
+    });
+    expect(second).toHaveAttribute('aria-pressed', 'true');
+    expect(second.className).toMatch(/fix/);
+    expect(
+      screen.getByRole('article', { name: 'Claude note: PendingCount won’t refresh after upload' }),
+    ).toBeInTheDocument();
+    const first = screen.getByRole('button', {
       name: 'Note 1: The whole photo goes into SQLite as byte[]',
     });
-    expect(first).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(first);
+    expect(screen.getAllByRole('article')).toHaveLength(1);
     expect(
       screen.getByRole('article', {
         name: 'Claude note: The whole photo goes into SQLite as byte[]',
       }),
-    ).toBeInTheDocument();
-    const second = screen.getByRole('button', {
-      name: 'Note 2: PendingCount won’t refresh after upload',
-    });
-    expect(second.className).toMatch(/fix/);
-    await userEvent.click(second);
-    expect(screen.getAllByRole('article')).toHaveLength(1);
-    expect(
-      screen.getByRole('article', { name: 'Claude note: PendingCount won’t refresh after upload' }),
     ).toBeInTheDocument();
   });
 
@@ -155,11 +156,23 @@ describe('S-03 layout A', () => {
   it('F-07.6 the focused note card carries the decisions', async () => {
     renderStep('s4');
     const card = await screen.findByRole('article', {
-      name: 'Claude note: The whole photo goes into SQLite as byte[]',
+      name: 'Claude note: PendingCount won’t refresh after upload',
     });
     expect(within(card).getByRole('button', { name: 'Add to drafts' })).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: 'More' })).toBeInTheDocument();
+  });
+
+  it('F-07.6 deciding the note the step opened on keeps it focused, with Undo', async () => {
+    renderStep('s4');
+    const card = await screen.findByRole('article', {
+      name: 'Claude note: PendingCount won’t refresh after upload',
+    });
+    await userEvent.click(within(card).getByRole('button', { name: 'Add to drafts' }));
+    expect(await screen.findByRole('button', { name: 'Undo' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Note 2: PendingCount won’t refresh after upload' }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('F-09.6 S-03: "Claude is reading this step…" while the diff is already there', async () => {

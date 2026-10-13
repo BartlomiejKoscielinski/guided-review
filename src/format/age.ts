@@ -1,5 +1,6 @@
 /**
- * "just now", "5 min ago", "2 h ago", "3 d ago" (docs/03 › Copy style: times as "2 h ago").
+ * "just now", "5 min ago", "2 h ago", "yesterday", "3 d ago" (docs/03 › Copy style: times as
+ * "2 h ago"; one day is "yesterday" as in the mocks, e.g. Review.dc.html's thread).
  * Dates in the future (clock skew) count as just now.
  */
 export function formatAge(iso: string, now: Date = new Date()): string {
@@ -11,6 +12,7 @@ export function formatAge(iso: string, now: Date = new Date()): string {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${String(hours)} h ago`;
   const days = Math.floor(hours / 24);
+  if (days === 1) return 'yesterday';
   if (days < 60) return `${String(days)} d ago`;
   return new Date(iso).toISOString().slice(0, 10);
 }

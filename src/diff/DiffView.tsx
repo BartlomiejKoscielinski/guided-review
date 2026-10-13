@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { cx } from '../components/cx';
 import type { FileDiff } from '../ipc/types/FileDiff';
 import type { Hunk } from '../ipc/types/Hunk';
 import type { Line } from '../ipc/types/Line';
@@ -33,6 +34,8 @@ export interface DiffViewProps {
   inserts?: ReadonlyMap<string, ReactNode>;
   /** Scroll with this element instead of an own scroller (S-03's main column). */
   scrollRoot?: RefObject<HTMLElement | null>;
+  /** The +/− column; S-03 has none (Review.dc.html: 48px and 60px gutters, number then code). */
+  signs?: boolean;
 }
 
 const LINE = 22;
@@ -62,6 +65,7 @@ export function DiffView({
   markers,
   inserts,
   scrollRoot,
+  signs = true,
 }: DiffViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -185,9 +189,13 @@ export function DiffView({
       </div>
     );
 
-  if (scrollRoot) return <div className={styles.inline}>{list}</div>;
+  if (scrollRoot) return <div className={cx(styles.inline, !signs && styles.noSigns)}>{list}</div>;
   return (
-    <div ref={scrollRef} className={styles.scroller} data-testid="diff-scroller">
+    <div
+      ref={scrollRef}
+      className={cx(styles.scroller, !signs && styles.noSigns)}
+      data-testid="diff-scroller"
+    >
       {list}
     </div>
   );
