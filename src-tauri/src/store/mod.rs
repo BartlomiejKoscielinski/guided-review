@@ -4,6 +4,7 @@
 //! behind a mutex; commands run store calls on the blocking thread pool.
 
 pub mod app_state;
+pub mod claude_sessions;
 pub mod migrations;
 pub mod repos;
 pub mod sessions;

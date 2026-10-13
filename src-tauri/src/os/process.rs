@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use std::time::{Duration, Instant};
 
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, Command};
 
 use crate::error::{AppError, ErrorCode};
@@ -202,6 +202,27 @@ impl ProcessTree {
 /// the returned future kill the whole process tree; when the program exits, anything it left
 /// running is killed too.
 pub async fn run(spec: &ProcessSpec, cancel: &Cancel) -> Result<ProcessOutput, ProcessError> {
+    run_inner(spec, cancel, None).await
+}
+
+/// Called with each stdout line (without its line end) as it arrives.
+pub type OnLine<'a> = &'a mut (dyn FnMut(&str) + Send);
+
+/// [`run`], also handing each stdout line to `on_line` as it arrives (streaming Claude tasks).
+/// The returned output still holds all of stdout.
+pub async fn run_streaming(
+    spec: &ProcessSpec,
+    cancel: &Cancel,
+    on_line: OnLine<'_>,
+) -> Result<ProcessOutput, ProcessError> {
+    run_inner(spec, cancel, Some(on_line)).await
+}
+
+async fn run_inner(
+    spec: &ProcessSpec,
+    cancel: &Cancel,
+    on_line: Option<OnLine<'_>>,
+) -> Result<ProcessOutput, ProcessError> {
     let program = spec.program_name();
     if cancel.is_cancelled() {
         return Err(ProcessError::Cancelled { program });
@@ -239,7 +260,7 @@ pub async fn run(spec: &ProcessSpec, cancel: &Cancel) -> Result<ProcessOutput, P
         };
         tokio::join!(
             write_stdin(stdin, spec.stdin.as_deref()),
-            read_all(stdout),
+            read_stdout(stdout, on_line),
             read_all(stderr),
             exited
         )
@@ -333,6 +354,28 @@ async fn read_all(pipe: Option<impl AsyncRead + Unpin>) -> std::io::Result<Vec<u
         pipe.read_to_end(&mut bytes).await?;
     }
     Ok(bytes)
+}
+
+/// All of stdout; with `on_line`, read line by line and handed over as each line completes.
+async fn read_stdout(
+    pipe: Option<impl AsyncRead + Unpin>,
+    on_line: Option<OnLine<'_>>,
+) -> std::io::Result<Vec<u8>> {
+    let (pipe, on_line) = match (pipe, on_line) {
+        (Some(pipe), Some(on_line)) => (pipe, on_line),
+        (pipe, _) => return read_all(pipe).await,
+    };
+    let mut reader = BufReader::new(pipe);
+    let mut bytes = Vec::new();
+    let mut line = Vec::new();
+    loop {
+        line.clear();
+        if reader.read_until(b'\n', &mut line).await? == 0 {
+            return Ok(bytes);
+        }
+        on_line(String::from_utf8_lossy(&line).trim_end_matches(['\r', '\n']));
+        bytes.extend_from_slice(&line);
+    }
 }
 
 /// UTF-8 text and whether invalid bytes had to be replaced.

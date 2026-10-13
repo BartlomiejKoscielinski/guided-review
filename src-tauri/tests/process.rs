@@ -171,6 +171,17 @@ async fn process_decodes_utf8_and_keeps_crlf() {
 }
 
 #[tokio::test]
+async fn process_streams_stdout_lines_and_keeps_the_whole_output() {
+    let mut lines = Vec::new();
+    let mut on_line = |line: &str| lines.push(line.to_owned());
+    let output = process::run_streaming(&child().arg("utf8"), &Cancel::new(), &mut on_line)
+        .await
+        .unwrap();
+    assert_eq!(lines, ["zażółć gęślą jaźń", "ZAŻÓŁĆ"]);
+    assert_eq!(output.stdout, "zażółć gęślą jaźń\r\nZAŻÓŁĆ\n");
+}
+
+#[tokio::test]
 async fn process_flags_invalid_utf8() {
     let output = process::run(&child().arg("invalid-utf8"), &Cancel::new())
         .await
