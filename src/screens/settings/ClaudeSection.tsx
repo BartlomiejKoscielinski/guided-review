@@ -1,3 +1,4 @@
+import { cx } from '../../components/cx';
 import { Segmented } from '../../components/Segmented';
 import { useClaudeModels } from '../../ipc/hooks/useClaude';
 import { useSettings, useUpdateSettings } from '../../ipc/hooks/useSettings';
@@ -26,7 +27,7 @@ export function ClaudeSection() {
         <ClaudeStatusLine />
       </section>
       <section aria-labelledby="h-default" className={styles.section}>
-        <h2 id="h-default" className={styles.h2}>
+        <h2 id="h-default" className={cx(styles.h2, styles.h2Tracked)}>
           Defaults
         </h2>
         <div className={styles.grid}>
@@ -92,7 +93,7 @@ export function ClaudeSection() {
       </section>
       <section aria-labelledby="h-tasks" className={styles.sectionTight}>
         <div className={styles.titleBlock} style={{ gap: 2 }}>
-          <h2 id="h-tasks" className={styles.h2}>
+          <h2 id="h-tasks" className={cx(styles.h2, styles.h2Tracked)}>
             Per task
           </h2>
           <span className={styles.subtitle}>Overrides the defaults.</span>

@@ -66,17 +66,24 @@ export function useCommitInfo(
   });
 }
 
+function diffKey(source: DiffSource, file: FileRef | null): readonly unknown[] {
+  switch (source.kind) {
+    case 'local':
+      return [...LOCAL_KEY, 'diff', file?.path, file?.oldPath];
+    case 'commit':
+      return ['git', 'commit-diff', source.sha, file?.path];
+    case 'session':
+      return ['session', source.sessionId, 'diff', file?.path];
+  }
+}
+
 export function useFileDiff(
   source: DiffSource,
   file: FileRef | null,
 ): UseQueryResult<FileDiff, IpcError> {
   const ipc = useIpc();
-  const key =
-    source.kind === 'local'
-      ? [...LOCAL_KEY, 'diff', file?.path, file?.oldPath]
-      : ['git', 'commit-diff', source.sha, file?.path];
   return useQuery<FileDiff, IpcError>({
-    queryKey: key,
+    queryKey: diffKey(source, file),
     queryFn: () => {
       if (!file) throw new Error('No file selected.');
       return ipc.gitFileDiff(source, file);
@@ -128,11 +135,18 @@ export function useLastMessage() {
   });
 }
 
-export function useRiderOpen(): UseMutationResult<null, IpcError, { file: string; line: number }> {
+export interface RiderTarget {
+  file: string;
+  line: number;
+  session?: string;
+}
+
+/** Open in Rider; with `session`, a teammate's MR opens from `rider.openFrom`'s folder (F-24.1). */
+export function useRiderOpen(): UseMutationResult<null, IpcError, RiderTarget> {
   const ipc = useIpc();
-  return useMutation<null, IpcError, { file: string; line: number }>({
-    mutationFn: async ({ file, line }) => {
-      await ipc.riderOpen(file, line);
+  return useMutation<null, IpcError, RiderTarget>({
+    mutationFn: async ({ file, line, session }) => {
+      await ipc.riderOpen(file, line, session);
       return null;
     },
   });

@@ -20,12 +20,16 @@ pub enum Route {
     Detailed { session_id: String },
     #[serde(rename = "S-05", rename_all = "camelCase")]
     Summary { session_id: String },
-    /// Local changes, or commit mode with `commit` (a SHA, F-15.6).
-    #[serde(rename = "S-06")]
+    /// Local changes, commit mode with `commit` (a SHA, F-15.6), or the read-only browse of a
+    /// teammate's MR session with `session_id` (F-06.11, F-24.1).
+    #[serde(rename = "S-06", rename_all = "camelCase")]
     Changes {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         #[ts(optional)]
         commit: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        #[ts(optional)]
+        session_id: Option<String>,
     },
     #[serde(rename = "S-07")]
     Settings { section: SettingsSection },
@@ -80,9 +84,19 @@ impl Route {
     /// asks Claude for a description: restoring never starts Claude or GitLab work.
     pub fn restored(&self, session_exists: impl Fn(&str) -> bool) -> Self {
         match self {
+            Self::Changes {
+                session_id: Some(id),
+                ..
+            } if !session_exists(id) => Self::Changes {
+                commit: None,
+                session_id: None,
+            },
             Self::Start | Self::Changes { .. } | Self::Settings { .. } => self.clone(),
             Self::Pipeline { .. } | Self::Author { .. } => Self::Start,
-            Self::CreateMr => Self::Changes { commit: None },
+            Self::CreateMr => Self::Changes {
+                commit: None,
+                session_id: None,
+            },
             Self::Plan { session_id }
             | Self::Step { session_id }
             | Self::Detailed { session_id }
@@ -170,7 +184,10 @@ mod tests {
         assert_eq!(Route::Author { iid: 480 }.restored(|_| true), Route::Start);
         assert_eq!(
             Route::CreateMr.restored(|_| true),
-            Route::Changes { commit: None }
+            Route::Changes {
+                commit: None,
+                session_id: None
+            }
         );
     }
 
@@ -181,11 +198,19 @@ mod tests {
         };
         assert_eq!(settings.restored(|_| false), settings);
         assert_eq!(
-            Route::Changes { commit: None }.restored(|_| false),
-            Route::Changes { commit: None }
+            Route::Changes {
+                commit: None,
+                session_id: None
+            }
+            .restored(|_| false),
+            Route::Changes {
+                commit: None,
+                session_id: None
+            }
         );
         let commit = Route::Changes {
             commit: Some("a3f9c12".into()),
+            session_id: None,
         };
         assert_eq!(commit.restored(|_| false), commit);
         assert_eq!(
@@ -193,6 +218,26 @@ mod tests {
             json!({ "screen": "S-06", "commit": "a3f9c12" })
         );
         assert_eq!(Route::Start.restored(|_| false), Route::Start);
+    }
+
+    #[test]
+    fn f24_1_mr_browse_restores_only_while_its_session_exists() {
+        let browse = Route::Changes {
+            commit: None,
+            session_id: Some("s1".into()),
+        };
+        assert_eq!(browse.restored(|id| id == "s1"), browse);
+        assert_eq!(
+            browse.restored(|_| false),
+            Route::Changes {
+                commit: None,
+                session_id: None
+            }
+        );
+        assert_eq!(
+            serde_json::to_value(&browse).unwrap(),
+            json!({ "screen": "S-06", "sessionId": "s1" })
+        );
     }
 
     #[test]

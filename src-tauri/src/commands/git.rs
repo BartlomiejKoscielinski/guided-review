@@ -1,17 +1,20 @@
-//! `git_*` commands for S-06 (F-15, F-16): local changes, commit mode, per-file diffs,
-//! staging, commit and push. Index writes are serialized by `RepoState::write_lock`.
+//! `git_*` commands for S-01 (F-03.1, F-03.3) and S-06 (F-15, F-16): commits, scope counts,
+//! local changes, commit mode, per-file diffs, staging, commit and push. Index writes are serialized by `RepoState::write_lock`.
 
 use serde::Deserialize;
 use tauri::State;
 use ts_rs::TS;
 
 use super::repo::{RepoState, active_git};
-use crate::error::AppResult;
+use super::sessions::mr_session;
+use crate::error::{AppError, AppResult, ErrorCode};
 use crate::git::commit::{self, CommitInfo, CommitResult, PushResult};
-use crate::git::diff::ChangedFile;
+use crate::git::diff::{self, ChangedFile};
 use crate::git::local::{self, FileRef, LocalChanges};
+use crate::git::log::{self, CommitList};
 use crate::git::model::{FileDiff, FileStatus};
 use crate::git::staging::{self, Selection};
+use crate::git::summary::{self, StatusSummary};
 use crate::os::process::Cancel;
 use crate::store::Store;
 
@@ -24,6 +27,9 @@ pub enum DiffSource {
     Local,
     /// A commit against its first parent.
     Commit { sha: String },
+    /// A teammate's MR session: merge base → head (S-06 MR browse, F-24.1).
+    #[serde(rename_all = "camelCase")]
+    Session { session_id: String },
 }
 
 /// Local changes of the active repository (S-06 local mode).
@@ -31,6 +37,25 @@ pub enum DiffSource {
 pub async fn git_status(store: State<'_, Store>) -> AppResult<LocalChanges> {
     let git = active_git(&store).await?;
     Ok(local::local_changes(&git, &Cancel::new()).await?)
+}
+
+/// The Commits column of S-01 (F-03.1): the current branch when `branch` is missing; `query`
+/// filters by message, author or SHA prefix.
+#[tauri::command]
+pub async fn git_log(
+    store: State<'_, Store>,
+    branch: Option<String>,
+    query: Option<String>,
+) -> AppResult<CommitList> {
+    let git = active_git(&store).await?;
+    Ok(log::log(&git, branch.as_deref(), query.as_deref(), &Cancel::new()).await?)
+}
+
+/// Counts of the three My changes scopes (F-03.3).
+#[tauri::command]
+pub async fn git_status_summary(store: State<'_, Store>) -> AppResult<StatusSummary> {
+    let git = active_git(&store).await?;
+    Ok(summary::status_summary(&git, &Cancel::new()).await?)
 }
 
 /// Details and files of a commit; HEAD when `sha` is missing (F-15.6).
@@ -51,22 +76,38 @@ pub async fn git_file_diff(
     source: DiffSource,
     file: FileRef,
 ) -> AppResult<FileDiff> {
-    let git = active_git(&store).await?;
     let cancel = Cancel::new();
     Ok(match source {
-        DiffSource::Local => local::local_file_diff(&git, &file, &cancel).await?,
+        DiffSource::Local => {
+            let git = active_git(&store).await?;
+            local::local_file_diff(&git, &file, &cancel).await?
+        }
         DiffSource::Commit { sha } => {
-            let changed = ChangedFile {
-                path: file.path,
-                old_path: file.old_path,
-                status: FileStatus::Modified,
-                binary: false,
-                additions: 0,
-                deletions: 0,
-            };
-            commit::commit_file_diff(&git, &sha, &changed, &cancel).await?
+            let git = active_git(&store).await?;
+            commit::commit_file_diff(&git, &sha, &changed_file(file), &cancel).await?
+        }
+        DiffSource::Session { session_id } => {
+            let s = mr_session(&store, session_id).await?.ok_or_else(|| {
+                AppError::new(
+                    ErrorCode::InvalidInput,
+                    "This session isn't a merge request.",
+                )
+            })?;
+            diff::range_file_diff(&s.git, &s.base, &s.head, &changed_file(file), &cancel).await?
         }
     })
+}
+
+/// The file to diff between two commits; git finds its status and counts again.
+fn changed_file(file: FileRef) -> ChangedFile {
+    ChangedFile {
+        path: file.path,
+        old_path: file.old_path,
+        status: FileStatus::Modified,
+        binary: false,
+        additions: 0,
+        deletions: 0,
+    }
 }
 
 /// Puts files or lines into the index (F-16.1).

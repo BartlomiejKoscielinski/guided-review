@@ -1,4 +1,4 @@
-import { invoke, type InvokeArgs } from '@tauri-apps/api/core';
+import { Channel, invoke, type InvokeArgs } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { IpcClient } from './client';
 import { toIpcError } from './errors';
@@ -7,10 +7,20 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
+import type { CommitList } from './types/CommitList';
+import type { DetectedSource } from './types/DetectedSource';
+import type { OpenedSession } from './types/OpenedSession';
+import type { PrepareProgress } from './types/PrepareProgress';
+import type { Repo } from './types/Repo';
+import type { RiderStatus } from './types/RiderStatus';
+import type { SessionMr } from './types/SessionMr';
+import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
+import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrList } from './types/MrList';
 import type { PushResult } from './types/PushResult';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
@@ -37,6 +47,25 @@ export function createTauriClient(): IpcClient {
     sessionsListUnfinished: () => call<UnfinishedSession[]>('sessions_list_unfinished'),
     repoActive: () => call<ActiveRepo | null>('repo_active'),
     repoPick: () => call<ActiveRepo | null>('repo_pick'),
+    repoList: () => call<Repo[]>('repo_list'),
+    repoSwitch: (id) => call<ActiveRepo>('repo_switch', { id }),
+    repoSetDefault: (id) => call<undefined>('repo_set_default', { id }),
+    repoRemove: (id) => call<undefined>('repo_remove', { id }),
+    sourceDetect: (input) => call<DetectedSource | null>('source_detect', { input }),
+    gitLog: (branch, query) =>
+      call<CommitList>('git_log', { branch: branch ?? null, query: query ?? null }),
+    gitStatusSummary: () => call<StatusSummary>('git_status_summary'),
+    sessionOpenCommit: (range) => call<OpenedSession>('session_open_commit', { range }),
+    sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
+    sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),
+    sessionOpenRepo: (path) => call<OpenedSession>('session_open_repo', { path }),
+    sessionOpenMr: (iid, project, task, onProgress) => {
+      const ch = new Channel<PrepareProgress>();
+      ch.onmessage = onProgress;
+      return call<OpenedSession>('session_open_mr', { iid, project, task, ch });
+    },
+    sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
+    sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),
@@ -45,7 +74,10 @@ export function createTauriClient(): IpcClient {
     gitCommit: (message, amend) => call<CommitResult>('git_commit', { message, amend }),
     gitLastMessage: () => call<string | null>('git_last_message'),
     gitPush: () => call<PushResult>('git_push'),
-    riderOpen: (file, line) => call<undefined>('rider_open', { file, line }),
+    riderOpen: (file, line, session) =>
+      call<undefined>('rider_open', { file, line, session: session ?? null }),
+    riderStatus: () => call<RiderStatus>('rider_status'),
+    riderPickExecutable: () => call<RiderStatus | null>('rider_pick_executable'),
     onRepoChanged: async (listener) => {
       try {
         return await listen(EVENTS.repoChanged, () => {
@@ -62,6 +94,11 @@ export function createTauriClient(): IpcClient {
     claudeModels: () => call<ModelInfo[]>('claude_models'),
     claudeCommitMessage: (task) => call<string>('claude_commit_message', { task }),
     claudeCancel: (task) => call<undefined>('claude_cancel', { task }),
+    gitlabStatus: (refresh) => call<GitlabStatus>('gitlab_status', { refresh }),
+    gitlabAccountSave: (server, token) =>
+      call<GitlabStatus>('gitlab_account_save', { server, token }),
+    gitlabAccountRemove: () => call<GitlabStatus>('gitlab_account_remove'),
+    gitlabListMrs: (tab) => call<MrList>('gitlab_list_mrs', { tab }),
     ...createTauriWindowControls(),
   };
 }

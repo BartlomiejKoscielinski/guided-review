@@ -1,12 +1,14 @@
-//! Sessions repository (table `sessions`). Sessions are created from M3 on; in M0 the table
-//! is empty and the Review tile stays dimmed.
+//! Sessions repository (table `sessions`). Sessions are created from S-01 (F-01.3) and listed
+//! for the Review tile (F-30.2).
+
+use std::path::PathBuf;
 
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::StoreError;
-use crate::review::model::{Mode, SessionStatus};
+use crate::review::model::{Layout, Mode, SessionStatus};
 use crate::review::sessions::{UnfinishedSession, resume_route};
 use crate::route::Route;
 
@@ -53,6 +55,112 @@ pub fn list_unfinished(
         });
     }
     Ok(sessions)
+}
+
+/// A session to create (F-01.3); `source_json` is the serialized `Source`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewSession {
+    pub id: String,
+    pub repo_id: i64,
+    pub source_json: String,
+    pub base_sha: String,
+    pub head_sha: String,
+    pub mode: Mode,
+    pub layout: Layout,
+    pub status: SessionStatus,
+    /// The review worktree of a teammate's MR (F-05.1).
+    pub worktree: Option<String>,
+    /// `MrMeta` of a teammate's MR as JSON (S-02 header, F-06.1).
+    pub mr_json: Option<String>,
+}
+
+fn stored<T: serde::Serialize>(value: T) -> Option<String> {
+    match serde_json::to_value(value) {
+        Ok(Value::String(text)) => Some(text),
+        _ => None,
+    }
+}
+
+pub fn insert(conn: &Connection, session: &NewSession) -> Result<(), StoreError> {
+    conn.execute(
+        "INSERT INTO sessions (id, repo_id, source_json, base_sha, head_sha, start_sha, mode, layout,
+                               status, worktree, mr_json, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?5, ?6, ?7, ?8, ?9, ?10,
+                 strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))",
+        params![
+            session.id,
+            session.repo_id,
+            session.source_json,
+            session.base_sha,
+            session.head_sha,
+            stored(session.mode),
+            stored(session.layout),
+            stored(session.status),
+            session.worktree,
+            session.mr_json,
+        ],
+    )?;
+    Ok(())
+}
+
+/// The stored source of a session.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionSource {
+    pub repo_id: i64,
+    pub source_json: String,
+    pub base_sha: String,
+    pub head_sha: String,
+    pub status: Option<SessionStatus>,
+    pub worktree: Option<String>,
+    pub mr_json: Option<String>,
+}
+
+pub fn source_of(conn: &Connection, id: &str) -> Result<Option<SessionSource>, StoreError> {
+    Ok(conn
+        .query_row(
+            "SELECT repo_id, source_json, base_sha, head_sha, status, worktree, mr_json FROM sessions
+             WHERE id = ?1",
+            params![id],
+            |row| {
+                Ok(SessionSource {
+                    repo_id: row.get(0)?,
+                    source_json: row.get(1)?,
+                    base_sha: row.get(2)?,
+                    head_sha: row.get(3)?,
+                    status: row
+                        .get::<_, Option<String>>(4)?
+                        .as_deref()
+                        .and_then(parse::<SessionStatus>),
+                    worktree: row.get(5)?,
+                    mr_json: row.get(6)?,
+                })
+            },
+        )
+        .optional()?)
+}
+
+/// Where a session's files live: its repository's checkout and, for a teammate's MR, the
+/// review worktree (F-24.1).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionFolders {
+    pub checkout: PathBuf,
+    pub worktree: Option<PathBuf>,
+}
+
+pub fn folders(conn: &Connection, id: &str) -> Result<Option<SessionFolders>, StoreError> {
+    Ok(conn
+        .query_row(
+            "SELECT r.path, s.worktree FROM sessions s JOIN repos r ON r.id = s.repo_id
+             WHERE s.id = ?1",
+            params![id],
+            |row| {
+                Ok(SessionFolders {
+                    checkout: PathBuf::from(row.get::<_, String>(0)?),
+                    worktree: row.get::<_, Option<String>>(1)?.map(PathBuf::from),
+                })
+            },
+        )
+        .optional()?)
 }
 
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {
@@ -140,6 +248,46 @@ mod tests {
                 insert_for_test(c, "s1", "done", "focus", "2026-10-11T09:00:00Z");
                 assert!(exists(c, "s1")?);
                 assert!(!exists(c, "s2")?);
+                Ok(())
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn f24_1_session_folders_hold_the_checkout_and_the_mr_worktree() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .with_conn(|c| {
+                let repo = crate::store::repos::add(
+                    c,
+                    "mobile ąę",
+                    r"C:\src\mobile ąę",
+                    Some("mobile/mobile-app"),
+                )?;
+                insert(
+                    c,
+                    &NewSession {
+                        id: "mr".into(),
+                        repo_id: repo.id,
+                        source_json: r#"{"kind":"mr","project":"mobile/mobile-app","iid":482}"#
+                            .into(),
+                        base_sha: "a".into(),
+                        head_sha: "b".into(),
+                        mode: Mode::Focus,
+                        layout: Layout::A,
+                        status: SessionStatus::Planning,
+                        worktree: Some(r"C:\src\.review\mobile ąę\482".into()),
+                        mr_json: None,
+                    },
+                )?;
+                assert_eq!(
+                    folders(c, "mr")?,
+                    Some(SessionFolders {
+                        checkout: PathBuf::from(r"C:\src\mobile ąę"),
+                        worktree: Some(PathBuf::from(r"C:\src\.review\mobile ąę\482")),
+                    })
+                );
+                assert_eq!(folders(c, "missing")?, None);
                 Ok(())
             })
             .unwrap();

@@ -4,6 +4,8 @@
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+use crate::review::layer::Layer;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -102,6 +104,8 @@ pub struct FileDiff {
     pub mode_change: Option<String>,
     pub additions: u32,
     pub deletions: u32,
+    /// MAUI layer from the path (F-05.4).
+    pub layer: Layer,
     pub hunks: Vec<Hunk>,
     /// Single lines can be staged (false for binary files and text that isn't UTF-8).
     pub line_staging: bool,

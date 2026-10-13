@@ -60,6 +60,29 @@ impl fmt::Debug for Token {
     }
 }
 
+/// Where tokens are kept, per GitLab host: [`Keyring`] in the app, an in-memory store in tests.
+pub trait TokenStore: Send + Sync {
+    fn load(&self, host: &str) -> Result<Option<Token>, CredentialsError>;
+    fn save(&self, host: &str, token: &Token) -> Result<(), CredentialsError>;
+    fn delete(&self, host: &str) -> Result<bool, CredentialsError>;
+}
+
+/// Windows Credential Manager (ADR-020).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Keyring;
+
+impl TokenStore for Keyring {
+    fn load(&self, host: &str) -> Result<Option<Token>, CredentialsError> {
+        load(host)
+    }
+    fn save(&self, host: &str, token: &Token) -> Result<(), CredentialsError> {
+        save(host, token)
+    }
+    fn delete(&self, host: &str) -> Result<bool, CredentialsError> {
+        delete(host)
+    }
+}
+
 /// Reads the token stored for `host`; `None` when there is none.
 pub fn load(host: &str) -> Result<Option<Token>, CredentialsError> {
     match entry(host)?.get_password() {

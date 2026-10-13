@@ -9,6 +9,7 @@ const diff: FileDiff = {
   binary: false,
   additions: 2,
   deletions: 1,
+  layer: 'app',
   lineStaging: true,
   hunks: [
     {

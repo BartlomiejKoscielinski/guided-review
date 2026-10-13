@@ -96,6 +96,15 @@ export function CommitIcon(props: IconProps) {
   );
 }
 
+/** S-01 My changes (a monitor). */
+export function LocalChangesIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 24 24" defaultSize={22} defaultStroke={2} {...props}>
+      <rect x="3" y="4" width="18" height="12" />
+      <path d="M8 20h8" />
+    </Svg>
+  );
+}
 /** Dock: Settings (gear). */
 export function SettingsIcon(props: IconProps) {
   return (

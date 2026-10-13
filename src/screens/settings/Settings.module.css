@@ -104,8 +104,12 @@
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+/* The Claude section headings are tracked in the mock; Repositories and JetBrains Rider are not. */
+.h2Tracked {
+  letter-spacing: 0.02em;
 }
 
 .subtitle {
@@ -227,4 +231,114 @@
 
 .stub {
   padding: 44px 48px;
+}
+
+/* GitLab (F-19.2, F-19.5, F-19.6) and Integrations (F-24.4). */
+.gridWide {
+  grid-template-columns: 170px minmax(0, 1fr);
+}
+
+.value {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.pathSmall {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.input {
+  justify-self: start;
+  width: 100%;
+  max-width: 420px;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--raised);
+  color: var(--text);
+  font-size: 14.5px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+.selectNarrow {
+  min-width: 260px;
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.statusSmall {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.sectionRepos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.repos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.repo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--panel);
+}
+
+.repoText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.repoName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.repoMeta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.repoActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addRepo {
+  align-self: flex-start;
 }

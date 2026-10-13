@@ -63,6 +63,7 @@
   --kbd-bg: #2A2A2A;
   --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
   --switch-off: #333331;            /* Switch track when off (Settings mock) */
+  --green-tint: #1F2A20;            /* selected RadioCard (03-design-system › RadioCard) */
 
   --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;

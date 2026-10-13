@@ -5,13 +5,15 @@ import { Segmented } from '../../components/Segmented';
 import { StatusChip } from '../../components/StatusChip';
 import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
+import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
 import { BranchBlock } from './BranchBlock';
 import { ClaudeStatusChip } from './ClaudeStatusChip';
 import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
+import { GitlabStatusControl } from './GitlabStatusControl';
+import { PlanContext } from './PlanContext';
 import { PLACEHOLDER } from './placeholders';
-import { RepoSwitcher } from './RepoSwitcher';
-import { StatusText } from './StatusText';
+import { SettingsContext } from './SettingsContext';
 import { TaskModelChip } from './TaskModelChip';
 import { TitleBar } from './TitleBar';
 
@@ -80,11 +82,11 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-01':
       return (
         <TitleBar
-          context={<RepoSwitcher name={P.repo.name} path={P.repo.path} />}
+          context={<ActiveRepoSwitcher />}
           wideControls
           controls={
             <>
-              <StatusText color="green">{P.gitlabStatus}</StatusText>
+              <GitlabStatusControl />
               {<ClaudeStatusChip />}
             </>
           }
@@ -92,21 +94,8 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
       );
     case 'S-02':
       return (
-        <TitleBar
-          context={
-            <>
-              <ContextText kind="repo">{P.repo.name}</ContextText>
-              <ContextText kind="iid">{P.mr.iid}</ContextText>
-              <ContextText kind="label">Review plan</ContextText>
-            </>
-          }
-          controls={
-            <>
-              <StatusText color="purple">{P.planStatus}</StatusText>
-              {<TaskModelChip group="plan" />}
-            </>
-          }
-        />
+        // The plan status (F-06.12) comes with Claude's plan in M3.
+        <TitleBar context={<PlanContext />} controls={<TaskModelChip group="plan" />} />
       );
     case 'S-03':
       return (
@@ -127,16 +116,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-06':
       return <TitleBar context={<ChangesContext />} controls={<TaskModelChip group="commit" />} />;
     case 'S-07':
-      return (
-        <TitleBar
-          context={
-            <>
-              <ContextText kind="repo">{P.repo.name}</ContextText>
-              <ContextText kind="title">Settings</ContextText>
-            </>
-          }
-        />
-      );
+      return <TitleBar context={<SettingsContext />} />;
     case 'S-08':
       return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-09':

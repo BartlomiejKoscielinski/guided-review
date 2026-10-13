@@ -12,6 +12,7 @@
 | `08-decisions.md` | Decisions already made (ADRs) and the spike table for M0. |
 | `09-testing.md` | Test layers, environments (development PC, stand-in GitLab, field visits on the company laptop), field kit, naming with AC IDs, fixtures, fake `claude`, manual checklist. |
 | `PROGRESS.md` | Every acceptance criterion by milestone, ticked with commit SHAs, plus the session log. |
+| `plans/` | Approved milestone plans (`M2.md`…): AC → build → test, decisions taken at planning, session split. The decisions move into 01–08 as they are built. |
 | `questions.md` | Kickoff questions (2026-10-10) and the answers that shaped the current docs. History, not a contract. |
 | `claude/` | Prompts and JSON Schemas for the Claude tasks inside the app. |
 | `design/` | Interactive mocks (`mocks/`), rendered screenshots (`screens/`), how to render states. |

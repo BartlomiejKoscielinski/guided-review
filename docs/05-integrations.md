@@ -15,7 +15,7 @@ All calls go through `git/runner.rs` with `-c core.quotepath=off -c core.longpat
 | Fix scratch worktree (ADR-018) | `git stash create` → SHA (empty output = clean tree, use `HEAD`); `git worktree add --detach <tmp path> <sha>`; after the run `git -C <tmp path> status --porcelain=v2 -z` + `git -C <tmp path> diff`; then remove it. The user's checkout is never touched by this |
 | File list + counts | `git diff --name-status -z -M <base> <head>` and `git diff --numstat -z -M <base> <head>` |
 | Patch | `git diff --no-color --no-ext-diff -M -U3 <base> <head> [-- <path>]` (`-w` for Ignore whitespace) |
-| Commit list | `git log --format=%H%x1f%h%x1f%s%x1f%an%x1f%aI -n 200 <branch> [--grep/--author]` |
+| Commit list | `git log --format=%H%x1f%h%x1f%s%x1f%an%x1f%aI%x1f%ct%x1f%P%x1e -n 200 <branch> [--regexp-ignore-case --fixed-strings --grep=<q> / --author=<q>]`: a query runs the `--grep` and `--author` lists separately (git ANDs them) and merges them by committer time; a hex query of 4+ characters also matches a SHA prefix on the branch (`rev-parse --verify <q>^{commit}`, prefix checked, `merge-base --is-ancestor`) |
 | Local status | `git status --porcelain=v2 -z --untracked-files=all` |
 | Local diffs | unstaged `git diff`, staged `git diff --cached`, branch `git diff <merge-base>...HEAD` |
 | Local diff shown in S-06 | `git diff HEAD` (H→W) is displayed; each line's "in commit" state comes from the index: a `-` line (HEAD line number) is staged when `git diff --cached` (H→I) deletes it, a `+` line (working-tree line number) is staged when `git diff` (I→W) doesn't add it (ADR-008) |
@@ -36,6 +36,21 @@ Parse unified diff in Rust (`git/diff.rs`): file headers (incl. rename/copy, bin
 
 ### Range-diff parsing
 Line format: `<n>:  <sha> <op> <m>:  <sha> <subject>` where `op` is `=` (same), `!` (changed), `<` (only in old = dropped), `>` (only in new = new); `-` and `-------` mark the missing side. Regex: `^\s*(\d+|-):\s+([0-9a-f]+|-+)\s+([=!<>])\s+(\d+|-):\s+([0-9a-f]+|-+)\s+(.*)$`. Indented lines after a `!` entry are the patch-diff; keep them as a fallback view when the replay above conflicts.
+
+### Layers (F-05.4, `review/layer.rs`)
+From the repository-relative path (new path, old path for a deletion), case-insensitive, first match wins. "Folder" rules look at folder names only, never the file name.
+
+| Layer | Rule |
+| - | - |
+| Tests | a folder containing `tests`, or named `test` |
+| Platforms | a folder named `Platforms` |
+| Build | `.csproj`, `.sln`, `.props`, `.targets`, `Directory.*`, `.gitlab-ci.yml`, `global.json`, `nuget.config` |
+| Resources | a folder named `Resources`, or `.resx` |
+| XAML | `.xaml`, `.xaml.cs` |
+| Core | a folder named `Core` or ending in `.Core` |
+| Infrastructure | a folder named `Infrastructure` or ending in `.Infrastructure` |
+| App | any other `.cs` |
+| Other | everything else |
 
 ### Moved code (own algorithm, git as test oracle)
 `git diff --color-moved` cannot report "moved with a small change", so the core implements detection itself (`git/moved.rs`):
@@ -60,7 +75,7 @@ During development the same client talks to the **stand-in GitLab** (GitLab EE 1
 | Version | `GET /version` | standard (needs auth; a 401 still proves TLS) |
 | Current user | `GET /user` | standard |
 | Token check (F-19.5) | `GET /personal_access_tokens/self` (scopes, `expires_at`) | verified on 17.11.7 (S5) |
-| MR lists | `GET /projects/:id/merge_requests?state=opened&reviewer_username=<me>` · `…&author_username=<me>` · `…&state=opened` | verified on 17.11.7 (S5): `reviewer_username` and `author_username` work, `scope=reviews_for_me` is 400 there; no approver exclusion (`not[approved_by_usernames]` is ignored), so "have not approved" (F-02.1) uses the fallback: per-MR approvals for at most 20 MRs, cached; the on-prem tier is checked at field visit 1 |
+| MR lists (F-02.1, F-02.2; ADR-024) | **GraphQL** `POST /api/graphql`, `gitlab/queries/mr_list.graphql`: `project(fullPath).mergeRequests(state: opened, reviewerUsername: <me>, not: {approvedBy: [<me>]})` · `…(authorUsername: <me>)` · `…(state: opened)`, `sort: UPDATED_DESC`, `first: 100` + `pageInfo.endCursor`; fields `iid title draft webUrl createdAt updatedAt author{username name} diffStatsSummary{additions deletions fileCount} headPipeline{status} resolvableDiscussionsCount resolvedDiscussionsCount reviewers{nodes{username mergeRequestInteraction{approved}}} approvedBy{nodes{username}}`; the three tab counts as aliased `count` fields in the same request | verified on 17.11.7 (introspection + live, 2026-10-12): every field exists, `not: {approvedBy}` filters (unlike REST `not[approved_by_usernames]`, S5), cursor paging works. Missing field on-prem → REST for that field only, noted here. REST lists (`reviewer_username`, `author_username`; `scope=reviews_for_me` is 400) stay for the tray poller |
 | MR detail (incl. `diff_refs`: base/start/head SHA) | `GET /projects/:id/merge_requests/:iid` | standard |
 | MR versions | `GET /projects/:id/merge_requests/:iid/versions` and `/versions/:version_id` (fields `head_commit_sha`, `base_commit_sha`, `start_commit_sha`, `created_at`) | standard |
 | MRs of a commit | `GET /projects/:id/repository/commits/:sha/merge_requests` | standard |

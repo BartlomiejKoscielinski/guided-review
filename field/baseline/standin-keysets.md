@@ -4,7 +4,7 @@ gr-probe 0.1.0. Sanitized: versions, yes/no results, status codes, header names,
 
 ## gitlab_read
 
-Ran at 2026-10-12T06:26:42Z.
+Ran at 2026-10-13T08:09:49Z.
 
 | Check | Outcome | Detail | ms |
 | - | - | - | - |
@@ -19,23 +19,44 @@ Ran at 2026-10-12T06:26:42Z.
 | token_self.has_expiry | Info | true |  |
 | project | Pass | 200 |  |
 | mr_filter.reviewer_username | Pass | 200 |  |
-| mr_filter.reviewer_username.narrows_list | Info | false |  |
+| mr_filter.reviewer_username.narrows_list | Info | true |  |
 | mr_filter.author_username | Pass | 200 |  |
-| mr_filter.author_username.narrows_list | Info | false |  |
+| mr_filter.author_username.narrows_list | Info | true |  |
 | mr_filter.scope_reviews_for_me | Fail | `status:400` |  |
 | mr_filter.approved_by_usernames_me | Pass | 200 |  |
-| mr_filter.approved_by_usernames_me.narrows_list | Info | false |  |
+| mr_filter.approved_by_usernames_me.narrows_list | Info | true |  |
 | mr_filter.approved_by_usernames_none | Pass | 200 |  |
-| mr_filter.approved_by_usernames_none.narrows_list | Info | false |  |
+| mr_filter.approved_by_usernames_none.narrows_list | Info | true |  |
 | mr_filter.not_approved_by_usernames_me | Pass | 200 |  |
 | mr_filter.not_approved_by_usernames_me.narrows_list | Info | false |  |
 | mr_filter.approver_ids_me | Pass | 200 |  |
-| mr_filter.approver_ids_me.narrows_list | Info | false |  |
+| mr_filter.approver_ids_me.narrows_list | Info | true |  |
 | mr_filter.draft_no | Pass | 200 |  |
 | mr_filter.draft_no.narrows_list | Info | false |  |
 | pagination.headers | Info | `link`, `x-content-type-options`, `x-frame-options`, `x-gitlab-meta`, `x-next-page`, `x-page`, `x-per-page`, `x-prev-page`, `x-request-id`, `x-runtime`, `x-total`, `x-total-pages` |  |
-| pagination.next_page_parsed | Info | false |  |
-| latest_mr | Skip | `no_open_mr` |  |
+| pagination.next_page_parsed | Info | true |  |
+| mr_detail | Pass | 200 |  |
+| mr_detail.keys | Info | `approvals_before_merge`: null, `assignee`: null, `assignees`: array, `author`: object, `author.avatar_url`: string, `author.id`: number, `author.locked`: bool, `author.name`: string, `author.state`: string, `author.username`: string, `author.web_url`: string, `blocking_discussions_resolved`: bool, `changes_count`: string, `closed_at`: null, `closed_by`: null, `created_at`: string, `description`: null, `detailed_merge_status`: string, `diff_refs`: object, `diff_refs.base_sha`: string, `diff_refs.head_sha`: string, `diff_refs.start_sha`: string, `discussion_locked`: null, `downvotes`: number, `draft`: bool, `first_contribution`: bool, `first_deployed_to_production_at`: null, `force_remove_source_branch`: null, `has_conflicts`: bool, `head_pipeline`: null, `id`: number, `iid`: number, `imported`: bool, `imported_from`: string, `labels`: array, `latest_build_finished_at`: null, `latest_build_started_at`: null, `merge_after`: null, `merge_commit_sha`: null, `merge_error`: null, `merge_status`: string, `merge_user`: null, `merge_when_pipeline_succeeds`: bool, `merged_at`: null, `merged_by`: null, `milestone`: null, `pipeline`: null, `prepared_at`: string, `project_id`: number, `reference`: string, `references`: object, `references.full`: string, `references.relative`: string, `references.short`: string, `reviewers`: array, `sha`: string, `should_remove_source_branch`: null, `source_branch`: string, `source_project_id`: number, `squash`: bool, `squash_commit_sha`: null, `squash_on_merge`: bool, `state`: string, `subscribed`: bool, `target_branch`: string, `target_project_id`: number, `task_completion_status`: object, `task_completion_status.completed_count`: number, `task_completion_status.count`: number, `time_stats`: object, `time_stats.human_time_estimate`: null, `time_stats.human_total_time_spent`: null, `time_stats.time_estimate`: number, `time_stats.total_time_spent`: number, `title`: string, `updated_at`: string, `upvotes`: number, `user`: object, `user.can_merge`: bool, `user_notes_count`: number, `web_url`: string, `work_in_progress`: bool |  |
+| mr_approvals | Pass | 200 |  |
+| mr_approvals.keys | Info | `approval_rules_left`: array, `approvals_left`: number, `approvals_required`: number, `approved`: bool, `approved_by`: array, `approver_groups`: array, `approvers`: array, `created_at`: string, `description`: null, `has_approval_rules`: bool, `id`: number, `iid`: number, `invalid_approvers_rules`: array, `merge_request_approvers_available`: bool, `merge_status`: string, `multiple_approval_rules_available`: bool, `project_id`: number, `require_password_to_approve`: bool, `state`: string, `suggested_approvers`: array, `title`: string, `updated_at`: string, `user_can_approve`: bool, `user_has_approved`: bool |  |
+| mr_approval_state | Pass | 200 |  |
+| mr_approval_state.keys | Info | `approval_rules_overwritten`: bool, `rules`: array |  |
+| mr_versions | Pass | 200 |  |
+| mr_versions.keys | Info | `[]`: object, `[].base_commit_sha`: string, `[].created_at`: string, `[].head_commit_sha`: string, `[].id`: number, `[].merge_request_id`: number, `[].patch_id_sha`: string, `[].real_size`: string, `[].start_commit_sha`: string, `[].state`: string |  |
+| mr_discussions | Pass | 200 |  |
+| mr_discussions.keys | Info |  |  |
+| mr_draft_notes | Pass | 200 |  |
+| mr_draft_notes.keys | Info |  |  |
+| mr_pipelines | Pass | 200 |  |
+| mr_pipelines.keys | Info |  |  |
+| graphql.schema | Pass | 41 |  |
+| graphql.mr_list.waiting | Pass | 200 |  |
+| graphql.mr_list.waiting.has_rows | Info | true |  |
+| graphql.mr_list.mine | Pass | 200 |  |
+| graphql.mr_list.mine.has_rows | Info | true |  |
+| graphql.mr_list.all | Pass | 200 |  |
+| graphql.mr_list.all.has_rows | Info | true |  |
+| graphql.mr_list.all.keys | Info | `project`: object, `project.all`: object, `project.all.count`: number, `project.list`: object, `project.list.nodes`: array, `project.list.nodes[]`: object, `project.list.nodes[].approvedBy`: object, `project.list.nodes[].approvedBy.nodes`: array, `project.list.nodes[].approvedBy.nodes[]`: object, `project.list.nodes[].approvedBy.nodes[].username`: string, `project.list.nodes[].author`: object, `project.list.nodes[].author.name`: string, `project.list.nodes[].author.username`: string, `project.list.nodes[].createdAt`: string, `project.list.nodes[].diffStatsSummary`: object, `project.list.nodes[].diffStatsSummary.additions`: number, `project.list.nodes[].diffStatsSummary.deletions`: number, `project.list.nodes[].diffStatsSummary.fileCount`: number, `project.list.nodes[].draft`: bool, `project.list.nodes[].headPipeline`: object, `project.list.nodes[].headPipeline.status`: string, `project.list.nodes[].iid`: string, `project.list.nodes[].resolvableDiscussionsCount`: number, `project.list.nodes[].resolvedDiscussionsCount`: number, `project.list.nodes[].reviewers`: object, `project.list.nodes[].reviewers.nodes`: array, `project.list.nodes[].reviewers.nodes[]`: object, `project.list.nodes[].reviewers.nodes[].mergeRequestInteraction`: object, `project.list.nodes[].reviewers.nodes[].mergeRequestInteraction.approved`: bool, `project.list.nodes[].reviewers.nodes[].username`: string, `project.list.nodes[].title`: string, `project.list.nodes[].updatedAt`: string, `project.list.nodes[].webUrl`: string, `project.list.pageInfo`: object, `project.list.pageInfo.endCursor`: string, `project.list.pageInfo.hasNextPage`: bool, `project.mine`: object, `project.mine.count`: number, `project.waiting`: object, `project.waiting.count`: number |  |
 
 ## gitlab_write
 

@@ -1,0 +1,40 @@
+/* docs/03-design-system.md › RadioCard (Start.dc.html, My changes scopes). */
+.card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.on {
+  background: var(--green-tint);
+  box-shadow: inset 0 0 0 2px var(--green);
+}
+
+.radio {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin: 3px 0 0;
+  accent-color: var(--green);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  opacity: 0.8;
+}

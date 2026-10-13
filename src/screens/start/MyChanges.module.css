@@ -1,0 +1,40 @@
+/* S-01 My changes column (Start.dc.html). */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Height of a card: 10 + 21.75 + 2 + 17.25 + 10. */
+.skeleton {
+  display: block;
+  height: 61px;
+  background: var(--card);
+}
+
+.note {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

@@ -3,12 +3,25 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { CommitInfo } from './types/CommitInfo';
+import type { CommitList } from './types/CommitList';
+import type { CommitRange } from './types/CommitRange';
+import type { DetectedSource } from './types/DetectedSource';
+import type { LocalScope } from './types/LocalScope';
+import type { OpenedSession } from './types/OpenedSession';
+import type { PrepareProgress } from './types/PrepareProgress';
+import type { Repo } from './types/Repo';
+import type { RiderStatus } from './types/RiderStatus';
+import type { SessionMr } from './types/SessionMr';
+import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
 import type { FileDiff } from './types/FileDiff';
 import type { FileRef } from './types/FileRef';
+import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrList } from './types/MrList';
+import type { MrTab } from './types/MrTab';
 import type { PushResult } from './types/PushResult';
 import type { Selection } from './types/Selection';
 import type { Route } from './types/Route';
@@ -31,11 +44,54 @@ export interface IpcClient {
   /** Unfinished review sessions, most recent first (F-30.2). */
   sessionsListUnfinished(): Promise<UnfinishedSession[]>;
 
-  // Repository and S-06 (F-15, F-16).
-  /** The active repository, or null until one is picked (M1: the default repository). */
+  // Repositories (F-19.6, F-30.7).
+  /** The active repository: switched to in this run, else the default one; null until picked. */
   repoActive(): Promise<ActiveRepo | null>;
-  /** Folder dialog; the picked repository becomes the default. Null when cancelled. */
+  /** Folder dialog; adds the repository and makes it active (the default if first). Null when cancelled. */
   repoPick(): Promise<ActiveRepo | null>;
+  /** The configured repositories with project, default/active flags and worktree folder. */
+  repoList(): Promise<Repo[]>;
+  /** Switches the active repository of S-01 and S-06 until the app restarts (F-30.7). */
+  repoSwitch(id: number): Promise<ActiveRepo>;
+  repoSetDefault(id: number): Promise<void>;
+  /** Forgets the repository; nothing on disk changes. */
+  repoRemove(id: number): Promise<void>;
+
+  // S-01 sources (F-01, F-03).
+  /** What the input names, or null for blank input; rejects with the F-01.5 copy. */
+  sourceDetect(input: string): Promise<DetectedSource | null>;
+  /** Commits of a branch (the current one without `branch`), filtered by message, author or SHA. */
+  gitLog(branch?: string, query?: string): Promise<CommitList>;
+  /** Counts of the three My changes scopes (F-03.3). */
+  gitStatusSummary(): Promise<StatusSummary>;
+  /** Step review of a commit or a range `from..to`, `from` excluded (F-01.3, F-03.2). */
+  sessionOpenCommit(range: CommitRange): Promise<OpenedSession>;
+  /** Self-review of local changes in one scope (F-03.4). */
+  sessionOpenLocal(scope: LocalScope): Promise<OpenedSession>;
+  /** A typed branch: the current one as local changes, another one as its commits. */
+  sessionOpenBranch(branch: string): Promise<OpenedSession>;
+  /** A typed repository path: added if needed, made active, then self-review. */
+  sessionOpenRepo(path: string): Promise<OpenedSession>;
+  /**
+   * A teammate's MR (F-01.3, F-05): the repository of `project` (switched to) or the active one,
+   * preparation with progress, then S-02. Rejects with the F-01.5 copy for an unknown MR.
+   */
+  sessionOpenMr(
+    iid: number,
+    project: string | null,
+    task: string,
+    onProgress: (progress: PrepareProgress) => void,
+  ): Promise<OpenedSession>;
+  /** Cancel on S-02 Preparing (F-05.6); the running `sessionOpenMr` rejects with CANCELLED. */
+  sessionPrepareCancel(task: string): Promise<void>;
+  /**
+   * A teammate's MR session as S-02's header and S-06's MR browse show it (F-06.1, F-24.1): the
+   * MR as prepared and the files of merge base → head; null for commit or local sessions.
+   * Starts no GitLab work.
+   */
+  sessionMr(sessionId: string): Promise<SessionMr | null>;
+
+  // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */
   gitStatus(): Promise<LocalChanges>;
   /** A commit's details and files; HEAD without `sha` (F-15.6). */
@@ -48,8 +104,15 @@ export interface IpcClient {
   /** HEAD's message, for Amend previous commit. */
   gitLastMessage(): Promise<string | null>;
   gitPush(): Promise<PushResult>;
-  /** Opens a repository file in Rider at a 1-based line (F-15.5). */
-  riderOpen(file: string, line: number): Promise<void>;
+  /**
+   * Opens a repository file in Rider at a 1-based line (F-15.5); with `session`, a teammate's MR
+   * opens from the folder `rider.openFrom` picks (F-24.1).
+   */
+  riderOpen(file: string, line: number, session?: string): Promise<void>;
+  /** The Rider install the app uses: `rider.path`, else the detected one (F-24.4). */
+  riderStatus(): Promise<RiderStatus>;
+  /** Change: file dialog for `rider64.exe`, saved as `rider.path`; null when cancelled (F-24.4). */
+  riderPickExecutable(): Promise<RiderStatus | null>;
   /** Calls `listener` when the working tree, index or HEAD changed (F-16.2). */
   onRepoChanged(listener: () => void): Promise<() => void>;
 
@@ -67,6 +130,16 @@ export interface IpcClient {
   /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;
+
+  // GitLab (F-01.6, F-02.1, F-02.2, F-19.2, F-19.5).
+  /** Connected / no token / failing; `refresh` checks GitLab again (F-01.6). */
+  gitlabStatus(refresh: boolean): Promise<GitlabStatus>;
+  /** Check and save / Replace token: stored only if GitLab accepts it with scope api (F-19.5). */
+  gitlabAccountSave(server: string, token: string): Promise<GitlabStatus>;
+  /** Removes the stored token; the server URL stays. */
+  gitlabAccountRemove(): Promise<GitlabStatus>;
+  /** One S-01 tab of the active repository's project with the counts of all three tabs. */
+  gitlabListMrs(tab: MrTab): Promise<MrList>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

@@ -47,14 +47,17 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  min-height: 32px;
+  /* Height as in the mock: 7px padding around the 1.5 line of the range label (31.25px). */
   padding: 7px 12px;
   background: var(--panel-2);
   font-size: 12.5px;
+  line-height: 1.5;
   color: var(--text-secondary);
 }
 
 .inCommit {
+  /* The checkbox inherits the font; the mock's button keeps the UA's normal line height. */
+  line-height: normal;
   color: var(--text);
   font-family: var(--font-display);
   font-size: 13.5px;

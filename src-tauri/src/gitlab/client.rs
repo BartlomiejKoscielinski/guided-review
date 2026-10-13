@@ -102,6 +102,23 @@ impl GitlabClient {
         self.request(Method::PUT, path, query, body).await
     }
 
+    /// A GraphQL query (`POST /api/graphql`, ADR-024) with the same token header. GraphQL
+    /// answers errors with status 200: any entry in `errors` becomes [`GitlabError::Graphql`].
+    /// Returns `data`.
+    pub async fn graphql(&self, query: &str, variables: &Value) -> Result<Value, GitlabError> {
+        let body = serde_json::json!({ "query": query, "variables": variables });
+        let response = self
+            .request(Method::POST, "../graphql", &[], Some(&body))
+            .await?;
+        if let Some(message) = graphql_error(&response.body) {
+            return Err(GitlabError::Graphql(message));
+        }
+        match response.body.get("data") {
+            Some(data) if !data.is_null() => Ok(data.clone()),
+            _ => Err(GitlabError::Decode("GraphQL answer without data".into())),
+        }
+    }
+
     /// One request; error statuses and network failures become [`GitlabError`]s.
     pub async fn request(
         &self,
@@ -188,6 +205,16 @@ impl GitlabClient {
             }
         }
     }
+}
+
+/// The first GraphQL error message (shortened like REST messages), if any.
+fn graphql_error(body: &Value) -> Option<String> {
+    let first = body.get("errors")?.as_array()?.first()?;
+    let message = first
+        .get("message")
+        .and_then(Value::as_str)
+        .unwrap_or("GraphQL error");
+    Some(message.chars().take(300).collect())
 }
 
 /// Maps a transport failure: TLS problems first, then DNS, refused, timeout.

@@ -1,8 +1,8 @@
 import { useActiveRepo, useLocalChanges } from '../../ipc/hooks/useChanges';
+import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
 import { BranchBlock } from './BranchBlock';
-import { RepoSwitcher } from './RepoSwitcher';
 
-/** S-06 title-bar context: the active repository and the current branch (F-30.7 list in M2). */
+/** S-06 title-bar context: the active repository (F-30.7) and the current branch. */
 export function ChangesContext() {
   const repo = useActiveRepo();
   const status = useLocalChanges(Boolean(repo.data));
@@ -10,7 +10,7 @@ export function ChangesContext() {
   const branch = status.data?.branch;
   return (
     <>
-      <RepoSwitcher name={repo.data.name} path={repo.data.path} />
+      <ActiveRepoSwitcher />
       {branch && <BranchBlock branch={branch} />}
     </>
   );

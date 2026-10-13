@@ -1,10 +1,14 @@
-//! Unfinished review sessions for the Review dock tile (F-30.2) and where to resume them.
+//! New sessions from S-01 (F-01.3), unfinished sessions for the Review dock tile (F-30.2) and
+//! where to resume them.
 
 use serde::Serialize;
 use ts_rs::TS;
 
-use super::model::{Mode, SessionStatus};
+use super::model::{Layout, Mode, SessionStatus};
 use crate::route::Route;
+use crate::source::Source;
+use crate::source::open::Resolved;
+use crate::store::sessions::NewSession;
 
 /// A session the Review tile can open. Progress and titles for "Pick up where you left off"
 /// (F-04.1) join in M3.
@@ -18,6 +22,60 @@ pub struct UnfinishedSession {
     pub updated_at: String,
     /// The screen the Review tile opens for this session.
     pub resume: Route,
+}
+
+/// A session just opened from S-01 and the screen to show (F-01.3).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct OpenedSession {
+    pub session_id: String,
+    pub route: Route,
+}
+
+/// The row and route of a new session (M2 decision 3). Commits go to step review (S-03);
+/// local changes (self-review plan, F-17.1) and a prepared MR (F-05) go to S-02. The
+/// plans are stubs until M3. Set `worktree` on the row for an MR.
+pub fn new_session(
+    repo_id: i64,
+    resolved: Resolved,
+    mode: Mode,
+    layout: Layout,
+) -> Result<(NewSession, OpenedSession), serde_json::Error> {
+    let id = uuid::Uuid::new_v4().to_string();
+    let (status, route) = match resolved.source {
+        Source::Local { .. } | Source::Mr { .. } => (
+            SessionStatus::Planning,
+            Route::Plan {
+                session_id: id.clone(),
+            },
+        ),
+        Source::Commits { .. } => (
+            SessionStatus::Reviewing,
+            Route::Step {
+                session_id: id.clone(),
+            },
+        ),
+    };
+    let row = NewSession {
+        id: id.clone(),
+        repo_id,
+        source_json: serde_json::to_string(&resolved.source)?,
+        base_sha: resolved.base_sha,
+        head_sha: resolved.head_sha,
+        mode,
+        layout,
+        status,
+        worktree: None,
+        mr_json: None,
+    };
+    Ok((
+        row,
+        OpenedSession {
+            session_id: id,
+            route,
+        },
+    ))
 }
 
 /// The session's last screen: the saved last route if it belongs to the session, otherwise the
@@ -72,7 +130,10 @@ mod tests {
                 "s1",
                 SessionStatus::Reviewing,
                 Mode::Detailed,
-                &Route::Changes { commit: None }
+                &Route::Changes {
+                    commit: None,
+                    session_id: None
+                }
             ),
             Route::Detailed { session_id: id() }
         );

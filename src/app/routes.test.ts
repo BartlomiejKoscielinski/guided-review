@@ -24,7 +24,11 @@ describe('routes', () => {
   });
 
   it('maps every route to a path and back', () => {
-    for (const route of [...EXAMPLES, { screen: 'S-06', commit: 'a3f9c12' } satisfies Route]) {
+    const more: Route[] = [
+      { screen: 'S-06', commit: 'a3f9c12' },
+      { screen: 'S-06', sessionId: 's ąę' },
+    ];
+    for (const route of [...EXAMPLES, ...more]) {
       const matches = matchRoutes(routeObjects, pathFor(route));
       const leaf = matches?.at(-1);
       const handle = leaf?.route.handle as { screen: Route['screen'] } | undefined;

@@ -2,7 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import { createTauriClient } from './tauri';
 
-vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(),
+  Channel: class {
+    onmessage: (message: unknown) => void = () => undefined;
+  },
+}));
 const invokeMock = vi.mocked(invoke);
 
 describe('Tauri IPC client', () => {
@@ -34,6 +39,20 @@ describe('Tauri IPC client', () => {
     ]);
   });
 
+  it('calls the GitLab commands by their contract names', async () => {
+    const client = createTauriClient();
+    await client.gitlabStatus(true);
+    await client.gitlabAccountSave('https://gitlab.local', 'glpat-test0000');
+    await client.gitlabAccountRemove();
+    await client.gitlabListMrs('waiting');
+    expect(invokeMock.mock.calls).toEqual([
+      ['gitlab_status', { refresh: true }],
+      ['gitlab_account_save', { server: 'https://gitlab.local', token: 'glpat-test0000' }],
+      ['gitlab_account_remove', undefined],
+      ['gitlab_list_mrs', { tab: 'waiting' }],
+    ]);
+  });
+
   it('calls the repository and git commands by their contract names', async () => {
     const client = createTauriClient();
     const file = { path: 'a b/ż.cs', untracked: false };
@@ -50,6 +69,8 @@ describe('Tauri IPC client', () => {
     await client.gitLastMessage();
     await client.gitPush();
     await client.riderOpen('a b/ż.cs', 12);
+    await client.riderStatus();
+    await client.riderPickExecutable();
     expect(invokeMock.mock.calls).toEqual([
       ['repo_active', undefined],
       ['repo_pick', undefined],
@@ -62,7 +83,39 @@ describe('Tauri IPC client', () => {
       ['git_commit', { message: 'Subject', amend: true }],
       ['git_last_message', undefined],
       ['git_push', undefined],
-      ['rider_open', { file: 'a b/ż.cs', line: 12 }],
+      ['rider_open', { file: 'a b/ż.cs', line: 12, session: null }],
+      ['rider_status', undefined],
+      ['rider_pick_executable', undefined],
+    ]);
+  });
+
+  it('calls the repository list and source commands by their contract names', async () => {
+    const client = createTauriClient();
+    await client.repoList();
+    await client.repoSwitch(2);
+    await client.repoSetDefault(2);
+    await client.repoRemove(2);
+    await client.sourceDetect('!482');
+    await client.gitLog();
+    await client.gitLog('feature/zażółć', 'torch');
+    await client.gitStatusSummary();
+    await client.sessionOpenCommit({ from: '9be0d47', to: 'a3f9c12' });
+    await client.sessionOpenLocal({ kind: 'branchVsTarget', target: 'origin/develop' });
+    await client.sessionOpenBranch('develop');
+    await client.sessionOpenRepo('C:\\Repos ąę\\mobile-app');
+    expect(invokeMock.mock.calls).toEqual([
+      ['repo_list', undefined],
+      ['repo_switch', { id: 2 }],
+      ['repo_set_default', { id: 2 }],
+      ['repo_remove', { id: 2 }],
+      ['source_detect', { input: '!482' }],
+      ['git_log', { branch: null, query: null }],
+      ['git_log', { branch: 'feature/zażółć', query: 'torch' }],
+      ['git_status_summary', undefined],
+      ['session_open_commit', { range: { from: '9be0d47', to: 'a3f9c12' } }],
+      ['session_open_local', { scope: { kind: 'branchVsTarget', target: 'origin/develop' } }],
+      ['session_open_branch', { branch: 'develop' }],
+      ['session_open_repo', { path: 'C:\\Repos ąę\\mobile-app' }],
     ]);
   });
 
@@ -73,5 +126,21 @@ describe('Tauri IPC client', () => {
       code: 'INTERNAL',
       message: 'Broken.',
     });
+  });
+
+  it('F-05.6 opens an MR with a progress channel, cancels it, and opens Rider from a session', async () => {
+    const client = createTauriClient();
+    const seen: unknown[] = [];
+    await client.sessionOpenMr(482, 'mobile/mobile-app', 'task-1', (p) => seen.push(p));
+    await client.sessionPrepareCancel('task-1');
+    await client.riderOpen('src/A.cs', 3, 'session-1');
+    const [open, cancel, rider] = invokeMock.mock.calls;
+    expect(open?.[0]).toBe('session_open_mr');
+    const args = open?.[1] as { ch: { onmessage: (m: unknown) => void } };
+    expect(args).toMatchObject({ iid: 482, project: 'mobile/mobile-app', task: 'task-1' });
+    args.ch.onmessage({ stage: 'creatingWorktree' });
+    expect(seen).toEqual([{ stage: 'creatingWorktree' }]);
+    expect(cancel).toEqual(['session_prepare_cancel', { task: 'task-1' }]);
+    expect(rider).toEqual(['rider_open', { file: 'src/A.cs', line: 3, session: 'session-1' }]);
   });
 });

@@ -31,10 +31,64 @@ async function changesLocal(page: Page) {
   await tree.getByRole('button', { name: 'DeliveryPhotoPage.xaml' }).click();
   await tree.getByRole('button', { name: 'Expand src/App/Views/Scanner' }).click();
   await page.getByRole('checkbox', { name: 'In commit · lines 22–25' }).waitFor();
+  await waitForHighlight(page, 'RowDefinitions');
+}
+
+/** The Shiki worker colors the diff asynchronously; the shot waits for a colored token of the file. */
+async function waitForHighlight(page: Page, token: string) {
+  await page.locator('span[style*="color"]', { hasText: token }).first().waitFor();
+}
+
+/** Start.dc.html's state: the !482 link typed and detected, the Waiting for me list loaded. */
+async function startMock(page: Page) {
+  await page
+    .getByLabel(/Paste a merge request link/)
+    .fill('https://gitlab.local/mobile/mobile-app/-/merge_requests/482');
+  await page.getByText('Merge request !482').waitFor();
+  await page.getByText('Large: the plan splits it by layer').waitFor();
+  await page.getByLabel(/Paste a merge request link/).blur();
+}
+
+/** Opens !482 from S-01 (the mock keeps MR sessions in memory, so S-02 can't be restored). */
+async function openMr482(page: Page) {
+  const input = page.getByLabel(/Paste a merge request link/);
+  await input.fill('https://gitlab.local/mobile/mobile-app/-/merge_requests/482');
+  await page.getByText('Merge request !482').waitFor();
+  await input.press('Enter');
 }
 
 const SHOTS: Shot[] = [
-  { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' } },
+  { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' }, prepare: startMock },
+  {
+    screen: 'S02',
+    state: 'preparing',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      // 02 › S-02 Preparing: two stages done (green), the diff stage current (yellow).
+      await page.getByText('Computing diff · 16 files').waitFor();
+    },
+  },
+  {
+    screen: 'S02',
+    state: 'plan',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('button', { name: /Start step 1/ }).waitFor();
+      await page.getByText('pipeline passed').waitFor();
+    },
+  },
+  {
+    screen: 'S01',
+    state: 'start-mine-tab',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await startMock(page);
+      await page.getByRole('tab', { name: /^Mine/ }).click();
+      await page.getByText('2 unresolved threads from reviewers').waitFor();
+    },
+  },
   { screen: 'S07', state: 'settings-general', lastRoute: { screen: 'S-07', section: 'general' } },
   {
     screen: 'S07',
@@ -42,6 +96,22 @@ const SHOTS: Shot[] = [
     lastRoute: { screen: 'S-07', section: 'claude' },
     prepare: async (page) => {
       await page.getByText('Claude Code: signed in').waitFor();
+    },
+  },
+  {
+    screen: 'S07',
+    state: 'settings-gitlab',
+    lastRoute: { screen: 'S-07', section: 'gitlab' },
+    prepare: async (page) => {
+      await page.getByText('mobile/courier-api').waitFor();
+    },
+  },
+  {
+    screen: 'S07',
+    state: 'settings-integrations',
+    lastRoute: { screen: 'S-07', section: 'integrations' },
+    prepare: async (page) => {
+      await page.getByText('Found 2026.2').waitFor();
     },
   },
   {
@@ -61,6 +131,7 @@ const SHOTS: Shot[] = [
         .getByRole('button', { name: 'UploadWorker.cs' })
         .click();
       await page.getByText(/ProcessAsync/).waitFor();
+      await waitForHighlight(page, 'IUploadQueue');
     },
   },
   {

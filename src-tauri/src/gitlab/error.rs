@@ -36,6 +36,12 @@ pub enum GitlabError {
     Unreachable(NetworkProblem),
     #[error("GitLab rejected the token (401)")]
     Unauthorized,
+    /// 401 with "Token has expired." (F-19.5).
+    #[error("the GitLab token has expired (401)")]
+    TokenExpired,
+    /// 401 with "Token has been revoked.".
+    #[error("the GitLab token was revoked (401)")]
+    TokenRevoked,
     #[error("GitLab refused the request (403)")]
     Forbidden { message: Option<String> },
     #[error("not found on GitLab (404)")]
@@ -49,13 +55,25 @@ pub enum GitlabError {
     },
     #[error("GitLab's answer could not be read: {0}")]
     Decode(String),
+    /// A GraphQL `errors` entry (status 200): unknown field, bad argument, server error.
+    #[error("GitLab GraphQL error: {0}")]
+    Graphql(String),
 }
 
 impl GitlabError {
     /// The error for an HTTP error status; `body` is GitLab's JSON error, if any.
     pub fn from_status(status: u16, retry_after: Option<Duration>, body: &Value) -> Self {
         match status {
-            401 => Self::Unauthorized,
+            401 => {
+                let text = error_message(body).unwrap_or_default().to_lowercase();
+                if text.contains("expired") {
+                    Self::TokenExpired
+                } else if text.contains("revoked") {
+                    Self::TokenRevoked
+                } else {
+                    Self::Unauthorized
+                }
+            }
             403 => Self::Forbidden {
                 message: error_message(body),
             },
@@ -90,6 +108,14 @@ impl From<GitlabError> for AppError {
             GitlabError::Unauthorized => AppError::new(
                 ErrorCode::GitlabUnauthorized,
                 "GitLab didn't accept the token. Check it in Settings › GitLab.",
+            ),
+            GitlabError::TokenExpired => AppError::new(
+                ErrorCode::GitlabUnauthorized,
+                "The GitLab token has expired. Create a new one and replace it in Settings › GitLab.",
+            ),
+            GitlabError::TokenRevoked => AppError::new(
+                ErrorCode::GitlabUnauthorized,
+                "The GitLab token was revoked. Create a new one and replace it in Settings › GitLab.",
             ),
             GitlabError::Forbidden { message } => {
                 let e = AppError::new(
@@ -132,7 +158,10 @@ impl From<GitlabError> for AppError {
                 ErrorCode::GitlabUnauthorized,
                 "The token contains characters GitLab tokens never have.",
             ),
-            GitlabError::Status { .. } | GitlabError::Decode(_) | GitlabError::Setup(_) => {
+            GitlabError::Status { .. }
+            | GitlabError::Decode(_)
+            | GitlabError::Setup(_)
+            | GitlabError::Graphql(_) => {
                 AppError::internal("GitLab's answer was unexpected.").with_detail(detail)
             }
         }
@@ -171,6 +200,15 @@ mod tests {
         assert_eq!(
             GitlabError::from_status(401, None, &json!({"message": "401 Unauthorized"})),
             GitlabError::Unauthorized
+        );
+        let described = |text: &str| json!({"error": "invalid_token", "error_description": text});
+        assert_eq!(
+            GitlabError::from_status(401, None, &described("Token has expired.")),
+            GitlabError::TokenExpired
+        );
+        assert_eq!(
+            GitlabError::from_status(401, None, &described("Token has been revoked.")),
+            GitlabError::TokenRevoked
         );
         assert_eq!(
             GitlabError::from_status(403, None, &json!({"message": "403 Forbidden"})),

@@ -15,7 +15,7 @@ GitLab EE **17.11.7-ee** (the on-prem version) in Docker on the development PC (
 | 3 | **you** | `certutil -user -addstore Root tools\standin\ssl\gr-standin-ca.cer` and confirm the Windows security prompt. |
 | 4 | Claude or you | `docker compose -f tools/standin/compose.yaml up -d`, then wait until `docker compose -f tools/standin/compose.yaml ps` shows `healthy` (first start: image 1.9 GB, then 3–5 min). |
 | 5 | **you** | `docker exec gr-standin-gitlab grep "Password:" /etc/gitlab/initial_root_password`, sign in at `https://localhost:8443` as `root`, change the password. The file is deleted at the first restart after 24 h. |
-| 6 | Claude or you | `docker cp tools/standin/seed.rb gr-standin-gitlab:/tmp/seed.rb`, then `docker exec gr-standin-gitlab gitlab-rails runner /tmp/seed.rb`: users `dev` (you in the app), `alice`, `bob` (teammates), all Developers in group `sandbox`, and the project `sandbox/gr-sandbox` with a README. Users get random passwords nobody knows. |
+| 6 | Claude or you | `docker cp tools/standin/seed.rb gr-standin-gitlab:/tmp/seed.rb`, then `docker exec gr-standin-gitlab gitlab-rails runner /tmp/seed.rb`: users `dev` (you in the app), `alice`, `bob` (teammates), all Developers in group `sandbox`, and the project `sandbox/gr-sandbox` with a synthetic app skeleton and six MRs for S-01 (`dev` reviews !2–!4, approved !5, authored !6 with 2 unresolved threads, draft !7; pipelines are records with a status, no runner). Users get random passwords nobody knows. |
 | 7 | **you** | As root: Admin area › Users › `dev` › Edit › set a password. Sign in as `dev` in a private window (GitLab asks for a new password), then Edit profile › Access tokens › Add new token, scope `api`. Store it: `.\src-tauri\target\release\gr-probe.exe token set --server https://localhost:8443`. Not through impersonation: tokens created while impersonating are revoked when it ends. |
 | 8 | Claude or you | `.\src-tauri\target\release\gr-probe.exe tls --server https://localhost:8443` and `gitlab read --server https://localhost:8443 --project sandbox/gr-sandbox`. |
 
@@ -23,6 +23,7 @@ GitLab EE **17.11.7-ee** (the on-prem version) in Docker on the development PC (
 
 - Start: `docker compose -f tools/standin/compose.yaml up -d` · stop: `docker compose -f tools/standin/compose.yaml stop`. A stopped stand-in stays stopped after a reboot.
 - Logs: `docker compose -f tools/standin/compose.yaml logs -f gitlab`.
+- Cassettes and GraphQL checks (ADR-024): `cargo run --manifest-path src-tauri/Cargo.toml --example standin_query -- --graphql <file> --vars <json> --out <file>` or `-- --get /user`; it uses the token stored for `localhost` and talks to the stand-in only. In Git Bash set `MSYS_NO_PATHCONV=1` so `/user` stays a path.
 
 ## When on-prem is upgraded
 

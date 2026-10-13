@@ -1,0 +1,158 @@
+{
+  "data": {
+    "project": {
+      "all": {
+        "count": 6
+      },
+      "list": {
+        "nodes": [
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Alice Stand-in",
+              "username": "alice"
+            },
+            "createdAt": "2026-10-12T13:58:06Z",
+            "diffStatsSummary": {
+              "additions": 20,
+              "deletions": 0,
+              "fileCount": 1
+            },
+            "draft": true,
+            "headPipeline": null,
+            "iid": "7",
+            "resolvableDiscussionsCount": 0,
+            "resolvedDiscussionsCount": 0,
+            "reviewers": {
+              "nodes": []
+            },
+            "title": "Draft: Localize the settings screen",
+            "updatedAt": "2026-10-12T13:58:09Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/7"
+          },
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Dev Stand-in",
+              "username": "dev"
+            },
+            "createdAt": "2026-10-12T13:58:05Z",
+            "diffStatsSummary": {
+              "additions": 35,
+              "deletions": 0,
+              "fileCount": 2
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "SUCCESS"
+            },
+            "iid": "6",
+            "resolvableDiscussionsCount": 3,
+            "resolvedDiscussionsCount": 1,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": false
+                  },
+                  "username": "alice"
+                }
+              ]
+            },
+            "title": "Retry in UploadWorker after network loss",
+            "updatedAt": "2026-10-12T13:58:08Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/6"
+          },
+          {
+            "approvedBy": {
+              "nodes": [
+                {
+                  "username": "dev"
+                }
+              ]
+            },
+            "author": {
+              "name": "Bob Stand-in",
+              "username": "bob"
+            },
+            "createdAt": "2026-10-12T13:57:18Z",
+            "diffStatsSummary": {
+              "additions": 1,
+              "deletions": 2,
+              "fileCount": 1
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "RUNNING"
+            },
+            "iid": "5",
+            "resolvableDiscussionsCount": 0,
+            "resolvedDiscussionsCount": 0,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": true
+                  },
+                  "username": "dev"
+                }
+              ]
+            },
+            "title": "Dark theme: button colors",
+            "updatedAt": "2026-10-12T13:57:20Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/5"
+          },
+          {
+            "approvedBy": {
+              "nodes": []
+            },
+            "author": {
+              "name": "Alice Stand-in",
+              "username": "alice"
+            },
+            "createdAt": "2026-10-12T13:57:17Z",
+            "diffStatsSummary": {
+              "additions": 749,
+              "deletions": 2,
+              "fileCount": 45
+            },
+            "draft": false,
+            "headPipeline": {
+              "status": "FAILED"
+            },
+            "iid": "4",
+            "resolvableDiscussionsCount": 0,
+            "resolvedDiscussionsCount": 0,
+            "reviewers": {
+              "nodes": [
+                {
+                  "mergeRequestInteraction": {
+                    "approved": false
+                  },
+                  "username": "dev"
+                }
+              ]
+            },
+            "title": "Migrate to .NET 10",
+            "updatedAt": "2026-10-12T13:57:20Z",
+            "webUrl": "https://localhost:8443/sandbox/gr-sandbox/-/merge_requests/4"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": "eyJ1cGRhdGVkX2F0IjoiMjAyNi0xMC0xMiAxMzo1NzoyMC4wOTU0NTQwMDAgKzAwMDAiLCJpZCI6IjQifQ",
+          "hasNextPage": true
+        }
+      },
+      "mine": {
+        "count": 1
+      },
+      "waiting": {
+        "count": 3
+      }
+    }
+  }
+}

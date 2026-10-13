@@ -160,7 +160,7 @@ pub async fn local_changes(git: &Git, cancel: &Cancel) -> Result<LocalChanges, G
 }
 
 /// Tracked changes HEAD → working tree with renames (`git diff <base> --raw --numstat -M`).
-async fn tracked_changes(
+pub(crate) async fn tracked_changes(
     git: &Git,
     base: &str,
     cancel: &Cancel,
@@ -196,7 +196,7 @@ pub fn stage_state(index: char, worktree: char) -> StageState {
 }
 
 /// Line count and binary flag of an untracked file (git's rule: a NUL in the first 8000 bytes).
-async fn count_untracked(path: &Path) -> (bool, u32) {
+pub(crate) async fn count_untracked(path: &Path) -> (bool, u32) {
     let Ok(bytes) = tokio::fs::read(path).await else {
         return (false, 0);
     };
@@ -349,6 +349,7 @@ pub async fn local_file_diff(
             mode_change: None,
             additions: 0,
             deletions: 0,
+            layer: crate::review::layer::layer_of(&file.path),
             hunks: Vec::new(),
             line_staging: false,
         });

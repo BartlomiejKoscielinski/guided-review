@@ -1,0 +1,72 @@
+# MR lists for S-01 (F-02.1, F-02.2, ADR-024): one tab's rows plus the counts of all three tabs.
+# Waiting for me = I'm a reviewer and haven't approved; Mine = I'm the author; All open.
+query MrList(
+  $project: ID!
+  $me: String!
+  $reviewer: String
+  $author: String
+  $not: MergeRequestsResolverNegatedParams
+  $first: Int!
+  $after: String
+) {
+  project(fullPath: $project) {
+    waiting: mergeRequests(state: opened, reviewerUsername: $me, not: { approvedBy: [$me] }) {
+      count
+    }
+    mine: mergeRequests(state: opened, authorUsername: $me) {
+      count
+    }
+    all: mergeRequests(state: opened) {
+      count
+    }
+    list: mergeRequests(
+      state: opened
+      reviewerUsername: $reviewer
+      authorUsername: $author
+      not: $not
+      sort: UPDATED_DESC
+      first: $first
+      after: $after
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        iid
+        title
+        draft
+        webUrl
+        createdAt
+        updatedAt
+        author {
+          username
+          name
+        }
+        diffStatsSummary {
+          additions
+          deletions
+          fileCount
+        }
+        headPipeline {
+          status
+        }
+        resolvableDiscussionsCount
+        resolvedDiscussionsCount
+        reviewers {
+          nodes {
+            username
+            mergeRequestInteraction {
+              approved
+            }
+          }
+        }
+        approvedBy {
+          nodes {
+            username
+          }
+        }
+      }
+    }
+  }
+}

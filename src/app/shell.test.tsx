@@ -39,7 +39,8 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
     controls: ['Repository mobile-app, C:\\src\\mobile-app', 'Claude Code signed in'],
   },
   'S-02': {
-    text: ['!482', 'Review plan', 'Plan ready · Claude is analyzing step 1'],
+    // The session of this test has no MR: no `!iid`; the plan status comes in M3 (F-06.12).
+    text: ['mobile-app', 'Review plan'],
     controls: ['Opus 5.5 · high'],
   },
   'S-03': {
@@ -92,6 +93,15 @@ describe('Shell', () => {
     const { router } = renderApp({ screen: 'S-06' });
     await user.click(await screen.findByRole('button', { name: 'Haiku 5.5 · low' }));
     expect(router.state.location.pathname).toBe('/settings/claude');
+  });
+
+  it('F-30.7 Settings shows the active repository, not an example name', async () => {
+    const repoActive = () => Promise.resolve({ name: 'gr-sandbox', path: 'C:\\Repos\\gr-sandbox' });
+    renderApp({ screen: 'S-07', section: 'general' }, mockClient({ repoActive }));
+    const bar = within(screen.getByTestId('title-bar'));
+    expect(await bar.findByText('gr-sandbox')).toBeInTheDocument();
+    expect(bar.queryByText('mobile-app')).not.toBeInTheDocument();
+    expect(bar.getByText('Settings')).toBeInTheDocument();
   });
 
   it('F-19.4 Settings tile is visible and purple on every screen', () => {

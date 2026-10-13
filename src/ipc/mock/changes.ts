@@ -1,6 +1,7 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
-import type { ActiveRepo } from '../types/ActiveRepo';
+import { layerOf } from './layer';
+import { createMockRepos, type MockRepos } from './repos';
 import type { CommitInfo } from '../types/CommitInfo';
 import type { FileDiff } from '../types/FileDiff';
 import type { FileGroup } from '../types/FileGroup';
@@ -17,11 +18,11 @@ import {
   localFiles,
   manyFiles,
   NEW_COMMIT,
-  REPO,
   stagedAtStart,
   type MockFile,
   type MockRow,
 } from './fixtures/changes';
+import { mrFiles } from './fixtures/mr';
 
 /** Variations of the S-06 data for e2e tests and design shots (`MOCK_CHANGES_KEY`). */
 export interface ChangesScenario {
@@ -94,8 +95,8 @@ function fail(code: 'INVALID_INPUT' | 'GIT_FAILED' | 'CONFLICT', message: string
 export function createChangesBackend(
   scenario: ChangesScenario,
   respond: <T>(value: T) => Promise<T>,
+  repos: MockRepos = createMockRepos(scenario.noRepo ?? false),
 ): ChangesClient {
-  let repo: ActiveRepo | null = scenario.noRepo ? null : { ...REPO };
   const files: MockFile[] = scenario.clean
     ? []
     : scenario.files
@@ -188,6 +189,7 @@ export function createChangesBackend(
       binary: false,
       additions: count('add'),
       deletions: count('del'),
+      layer: layerOf(file.path),
       hunks,
       lineStaging: local,
     };
@@ -215,7 +217,7 @@ export function createChangesBackend(
   };
 
   const requireRepo = () => {
-    if (!repo) throw fail('INVALID_INPUT', 'Pick a repository first.');
+    if (!repos.active()) throw fail('INVALID_INPUT', 'Pick a repository first.');
   };
   const visible = () => files.filter((f) => changeKeys(f).length > 0);
   const find = (path: string) => {
@@ -225,11 +227,8 @@ export function createChangesBackend(
   };
 
   return {
-    repoActive: async () => respond(repo),
-    repoPick: async () => {
-      repo = { ...REPO };
-      return respond(repo);
-    },
+    repoActive: async () => respond(repos.active()),
+    repoPick: async () => respond(repos.pick()),
     gitStatus: async () => {
       requireRepo();
       const rows = visible().map((f) => treeFile(f, true));
@@ -256,6 +255,11 @@ export function createChangesBackend(
     },
     gitFileDiff: async (source, file) => {
       requireRepo();
+      if (source.kind === 'session') {
+        const found = mrFiles().find((f) => f.path === file.path);
+        if (!found) throw fail('INVALID_INPUT', 'That file is not in the merge request.');
+        return respond(toDiff(found, false));
+      }
       if (source.kind === 'commit') {
         const found = commit.find((f) => f.path === file.path);
         if (!found) throw fail('INVALID_INPUT', 'That file is not in the commit.');

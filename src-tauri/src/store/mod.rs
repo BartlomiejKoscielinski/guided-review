@@ -8,6 +8,7 @@ pub mod migrations;
 pub mod repos;
 pub mod sessions;
 pub mod settings;
+pub mod worktrees;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -196,7 +197,7 @@ mod tests {
         let version: i64 = again
             .with_conn(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(version, 2);
+        assert_eq!(version, 3);
     }
 
     #[test]
