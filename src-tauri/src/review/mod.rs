@@ -23,4 +23,5 @@ pub mod sessions;
 pub mod step_context;
 pub mod step_order;
 pub mod step_runs;
+pub mod step_view;
 pub mod strategy;

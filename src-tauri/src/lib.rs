@@ -203,6 +203,7 @@ pub fn run() {
             commands::review_plan::review_plan,
             commands::review_plan::review_set_strategy,
             commands::review_plan::review_reorder_steps,
+            commands::review::review_step,
             commands::review::review_findings,
             commands::review::review_ask,
             commands::review::review_decide,

@@ -10,6 +10,7 @@ pub mod plans;
 pub mod repos;
 pub mod sessions;
 pub mod settings;
+pub mod steps_state;
 pub mod worktrees;
 
 use std::path::{Path, PathBuf};

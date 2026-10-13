@@ -1,6 +1,6 @@
-//! `review_*` commands of S-03: a step's notes (F-09.6) with the prefetch of the next step,
-//! questions (F-10.1, F-10.2) and decisions on notes (F-09.2, F-09.4). Claude task events
-//! stream on `ch`.
+//! `review_*` commands of S-03: a step with its files and threads (F-07.2, F-07.3), its notes
+//! (F-09.6) with the prefetch of the next step, questions (F-10.1, F-10.2) and decisions on
+//! notes (F-09.2, F-09.4). Claude task events stream on `ch`.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -26,6 +26,7 @@ use crate::review::finding_model::StepAnalysis;
 use crate::review::position::LineSelection;
 use crate::review::step_context::{self, MrRef, StepContext};
 use crate::review::step_runs::{self, StepRuns};
+use crate::review::step_view::{self, StepView};
 use crate::store::{self, Store};
 
 /// Step runs in flight and the loaded sessions (files, plan, threads, rules).
@@ -41,6 +42,13 @@ impl ReviewApp {
         if let Ok(mut contexts) = self.contexts.lock() {
             contexts.insert(cx.session_id.clone(), cx);
         }
+    }
+
+    fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
+        self.contexts
+            .lock()
+            .ok()
+            .and_then(|c| c.get(session).cloned())
     }
 }
 
@@ -85,12 +93,7 @@ pub(super) async fn step_context(
     git_program: Option<&Path>,
     session: &str,
 ) -> AppResult<Arc<StepContext>> {
-    if let Some(cx) = review
-        .contexts
-        .lock()
-        .ok()
-        .and_then(|c| c.get(session).cloned())
-    {
+    if let Some(cx) = review.remembered(session) {
         return Ok(cx);
     }
     let threads = |mr: MrRef| mr_threads(gitlab, ctx.store, mr);
@@ -121,6 +124,37 @@ where
 
 fn not_in_plan() -> AppError {
     AppError::new(ErrorCode::InvalidInput, "The step is not in the plan.")
+}
+
+/// A step of S-03 (F-07.2, F-07.3): "STEP n OF m" in the reader's order, its files with only its
+/// hunks, the threads inside them and the reviewed flag. No Claude call: a session planned in
+/// this run (a fallback plan too) needs no Claude Code.
+#[tauri::command]
+pub async fn review_step(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    step: String,
+) -> AppResult<StepView> {
+    let cx = match review.remembered(&session) {
+        Some(cx) => cx,
+        None => {
+            let settings = with_store(&store, |c| store::settings::load(c)).await?;
+            let exe = executable(&store).await?;
+            let ctx = plan_context(&claude, &store, &exe, &settings.claude);
+            let git_program = settings.git.path.as_deref().map(Path::new);
+            step_context(&review, &ctx, &gitlab, git_program, &session).await?
+        }
+    };
+    let order = order(&store, cx.clone()).await?;
+    let (session_id, step_id) = (session.clone(), step.clone());
+    let reviewed = with_store(&store, move |c| {
+        store::steps_state::reviewed(c, &session_id, &step_id)
+    })
+    .await?;
+    Ok(step_view::of(&cx, &order, &step, reviewed)?)
 }
 
 /// Opening a step (F-09.6): its notes as `CurrentStep` with events on `ch`, and the next step
