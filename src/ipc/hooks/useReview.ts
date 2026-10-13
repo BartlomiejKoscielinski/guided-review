@@ -14,11 +14,31 @@ import type { DecisionOutcome } from '../types/DecisionOutcome';
 import type { FindingDecision } from '../types/FindingDecision';
 import type { LineSelection } from '../types/LineSelection';
 import type { StepAnalysis } from '../types/StepAnalysis';
+import type { StepView } from '../types/StepView';
 import { CLAUDE_STATUS_KEY } from './useClaude';
 import { draftsKey } from './useDrafts';
 
 export const findingsKey = (sessionId: string, stepId: string) =>
   ['review', 'findings', sessionId, stepId] as const;
+/** Every step of a session; a new step order invalidates them ("STEP n OF m", prev, next). */
+export const stepsKey = (sessionId: string) => ['review', 'step', sessionId] as const;
+export const stepKey = (sessionId: string, stepId: string) =>
+  [...stepsKey(sessionId), stepId] as const;
+
+/**
+ * A step of S-03 (F-07.2, F-07.3): header numbers in the reader's order, its files with only its
+ * hunks, read-only threads and the reviewed flag. No Claude, so it is there before the notes.
+ */
+export function useStep(sessionId: string, stepId: string): UseQueryResult<StepView, IpcError> {
+  const ipc = useIpc();
+  return useQuery<StepView, IpcError>({
+    queryKey: stepKey(sessionId, stepId),
+    queryFn: () => ipc.reviewStep(sessionId, stepId),
+    enabled: sessionId !== '' && stepId !== '',
+    staleTime: Infinity,
+    retry: false,
+  });
+}
 
 /** Where a Claude task is: S-03's "Claude is reading this step…" while `queued` or `started`. */
 export type TaskPhase = ClaudeTaskEvent<unknown>['kind'] | 'idle';

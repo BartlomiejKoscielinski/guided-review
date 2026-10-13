@@ -12,6 +12,7 @@ import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { PlanView } from './types/PlanView';
 import type { StepOrder } from './types/StepOrder';
+import type { StepView } from './types/StepView';
 import type { Strategy } from './types/Strategy';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { CommitInfo } from './types/CommitInfo';
@@ -118,6 +119,11 @@ export interface IpcClient {
   reviewReorderSteps(sessionId: string, stepIds: string[]): Promise<StepOrder>;
 
   // S-03 steps, questions and decisions (F-09, F-10). Claude task events go to `onEvent`.
+  /**
+   * A step of the planned session (F-07.2, F-07.3): "STEP n OF m" in the reader's order, its
+   * files with only its hunks, the threads inside them, the reviewed flag. No Claude.
+   */
+  reviewStep(sessionId: string, stepId: string): Promise<StepView>;
   /**
    * A step's notes (F-09.6): `queued`, `started` unless already analyzed, then `done` or
    * `failed`; the next step is prefetched. Notes come with their stored decisions.

@@ -13,12 +13,13 @@ import type { PlanView } from '../types/PlanView';
 import type { StepOrder } from '../types/StepOrder';
 import type { Strategy } from '../types/Strategy';
 import { CLAUDE_STATUS_KEY } from './useClaude';
-import type { TaskPhase } from './useReview';
+import { stepsKey, type TaskPhase } from './useReview';
 
 export const planKey = (sessionId: string) => ['review', 'plan', sessionId] as const;
 
 const setOrder = (queryClient: QueryClient, sessionId: string, order: StepOrder) => {
   queryClient.setQueryData<PlanView>(planKey(sessionId), (old) => (old ? { ...old, order } : old));
+  void queryClient.invalidateQueries({ queryKey: stepsKey(sessionId) });
 };
 
 /**

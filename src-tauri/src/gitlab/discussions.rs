@@ -62,6 +62,7 @@ pub struct ThreadPosition {
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct ThreadNote {
+    #[ts(type = "number")]
     pub id: u64,
     pub author: GitlabUser,
     /// Markdown as written; the UI sanitizes it (06 › T10).

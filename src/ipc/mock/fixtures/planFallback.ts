@@ -30,7 +30,7 @@ const LAYER_TITLE: Record<Layer, string> = {
 };
 
 /** GitLab's diff order as `strategy.rs` computes it: directories first, byte-wise. */
-function gitlabPathCmp(a: string, b: string): number {
+export function gitlabPathCmp(a: string, b: string): number {
   const x = a.split('/');
   const y = b.split('/');
   for (let i = 0; i < Math.min(x.length, y.length); i++) {
