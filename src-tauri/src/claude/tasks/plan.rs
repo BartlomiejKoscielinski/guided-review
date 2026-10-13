@@ -67,6 +67,8 @@ pub struct PlanOutcome {
     pub plan: Plan,
     /// Came from `claude_cache` (S-02 "Cached" state).
     pub cached: bool,
+    /// When the cached plan was stored (ISO 8601 UTC); `None` for a fresh run (F-06.12).
+    pub cached_at: Option<String>,
 }
 
 /// `.review/rules.md` at `base_sha` (the target branch), never from the MR head; `None` when
@@ -112,10 +114,14 @@ fn cached_by_key(
     key: &CacheKey,
     hunks: &[HunkRef],
     files: &[FileDiff],
-) -> Option<Plan> {
-    match store.with_conn(|conn| plan_cache::get(conn, key)) {
-        Ok(Some(cached)) => match finish(&cached, hunks, files) {
-            Ok(plan) => Some(plan),
+) -> Option<PlanOutcome> {
+    match store.with_conn(|conn| plan_cache::get_entry(conn, key)) {
+        Ok(Some(entry)) => match finish(&entry.output, hunks, files) {
+            Ok(plan) => Some(PlanOutcome {
+                plan,
+                cached: true,
+                cached_at: Some(entry.created_at),
+            }),
             Err(error) => {
                 tracing::warn!(%error, "cached plan is invalid; planning again");
                 None
@@ -132,20 +138,28 @@ fn cached_by_key(
 /// The cached plan of a request, validated again; never runs `claude` (S-03 opens after S-02).
 pub fn cached(ctx: &Context<'_>, req: &PlanRequest<'_>) -> Option<Plan> {
     let hunks = coverage::hunk_refs(req.files);
-    cached_by_key(ctx.store, &key(ctx, req), &hunks, req.files)
+    cached_by_key(ctx.store, &key(ctx, req), &hunks, req.files).map(|outcome| outcome.plan)
 }
 
-/// The cached plan, or a run of `claude` that is cached on success.
+/// The cached plan, or a run of `claude` that is cached on success. `on_started` runs once the
+/// queue lets the run start (never on a cache hit).
 pub async fn run(
     ctx: &Context<'_>,
     req: &PlanRequest<'_>,
+    on_started: &(dyn Fn() + Sync),
     cancel: &Cancel,
 ) -> Result<PlanOutcome, ClaudeError> {
     let hunks = coverage::hunk_refs(req.files);
     let key = key(ctx, req);
-    if let Some(plan) = cached_by_key(ctx.store, &key, &hunks, req.files) {
-        return Ok(PlanOutcome { plan, cached: true });
+    if let Some(outcome) = cached_by_key(ctx.store, &key, &hunks, req.files) {
+        return Ok(outcome);
     }
+    let _permit = ctx.queue.acquire(Priority::Plan, cancel).await?;
+    // Another plan of the same change may have finished while this one waited.
+    if let Some(outcome) = cached_by_key(ctx.store, &key, &hunks, req.files) {
+        return Ok(outcome);
+    }
+    on_started();
 
     let io = |e: std::io::Error| ClaudeError::failed(format!("task folder: {e}"));
     let dir = TaskDir::create(ctx.tmp_root).map_err(io)?;
@@ -206,7 +220,6 @@ pub async fn run(
         persist_session: false,
         resume: None,
     };
-    let _permit = ctx.queue.acquire(Priority::Plan, cancel).await?;
     let result = exec::run_task(
         ctx.exe,
         runner::read_only_args(&task),
@@ -230,5 +243,6 @@ pub async fn run(
     Ok(PlanOutcome {
         plan,
         cached: false,
+        cached_at: None,
     })
 }

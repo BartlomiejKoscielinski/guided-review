@@ -26,6 +26,9 @@ pub struct MrInfo {
     pub created_at: Option<String>,
     #[serde(default)]
     pub head_pipeline: Option<MrPipeline>,
+    /// Markdown; input of the plan task (F-06.8).
+    #[serde(default)]
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]

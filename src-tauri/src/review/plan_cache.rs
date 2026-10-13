@@ -132,14 +132,31 @@ fn sha256(text: &str) -> String {
 
 /// The cached `structured_output`, if any. A row that doesn't parse counts as a miss.
 pub fn get(conn: &Connection, key: &CacheKey) -> Result<Option<Value>, StoreError> {
-    let json: Option<String> = conn
+    Ok(get_entry(conn, key)?.map(|entry| entry.output))
+}
+
+/// A cached result with the time it was stored.
+#[derive(Debug, Clone, PartialEq)]
+pub struct CacheEntry {
+    pub output: Value,
+    /// ISO 8601 UTC ("Plan from cache · <age>", F-06.12).
+    pub created_at: String,
+}
+
+/// [`get`] with the time the row was stored.
+pub fn get_entry(conn: &Connection, key: &CacheKey) -> Result<Option<CacheEntry>, StoreError> {
+    let row: Option<(String, String)> = conn
         .query_row(
-            "SELECT result_json FROM claude_cache WHERE key = ?1 AND task = ?2",
+            "SELECT result_json, created_at FROM claude_cache WHERE key = ?1 AND task = ?2",
             params![key.key(), key.task],
-            |row| row.get(0),
+            |row| Ok((row.get(0)?, row.get(1)?)),
         )
         .optional()?;
-    Ok(json.and_then(|j| serde_json::from_str(&j).ok()))
+    Ok(row.and_then(|(json, created_at)| {
+        serde_json::from_str(&json)
+            .ok()
+            .map(|output| CacheEntry { output, created_at })
+    }))
 }
 
 /// Stores Claude's validated `structured_output` (replacing an older row with the same key).
@@ -311,6 +328,8 @@ mod tests {
                 assert_eq!(get(conn, &cached)?, None);
                 put(conn, &cached, &json!({ "intent": "x" }))?;
                 assert_eq!(get(conn, &cached)?, Some(json!({ "intent": "x" })));
+                let stored = get_entry(conn, &cached)?.unwrap().created_at;
+                assert!(stored.contains('T') && stored.ends_with('Z'), "{stored}");
                 // Hit.
                 assert!(plan_ready(conn, &settings(), 1, 482, "h1")?);
                 // Other head, other MR, other repository.

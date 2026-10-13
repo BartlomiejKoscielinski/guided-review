@@ -25,7 +25,7 @@ use crate::gitlab::discussions::Thread;
 use crate::os::process::Cancel;
 use crate::review::position::LineSelection;
 use crate::source::model::Source;
-use crate::store::{self, StoreError};
+use crate::store::{self, Store, StoreError};
 
 /// The MR a session reviews, for fetching its threads.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -126,7 +126,58 @@ where
     F: FnOnce(MrRef) -> Fut,
     Fut: Future<Output = Vec<Thread>>,
 {
-    let (row, folders) = ctx.store.with_conn(|conn| {
+    let inputs = load_inputs(ctx.store, git_program, session_id, threads, cancel).await?;
+    let plan = plan::cached(ctx, &inputs.plan_request()).ok_or(StepContextError::PlanNotReady)?;
+    Ok(StepContext::new(inputs, plan))
+}
+
+/// What the plan task needs from a stored MR session (`review_plan`); a [`StepContext`] once
+/// planned.
+#[derive(Debug)]
+pub struct SessionInputs {
+    pub session_id: String,
+    pub repo_id: i64,
+    pub source: PlanSource,
+    pub mr: MrRef,
+    pub base_sha: String,
+    pub head_sha: String,
+    pub cwd: PathBuf,
+    pub files: Vec<FileDiff>,
+    pub threads: Vec<Thread>,
+    pub rules: Option<String>,
+    pub description: Option<String>,
+}
+
+impl SessionInputs {
+    pub fn plan_request(&self) -> PlanRequest<'_> {
+        PlanRequest {
+            repo_id: self.repo_id,
+            project: &self.mr.project,
+            source: self.source.clone(),
+            base_sha: &self.base_sha,
+            head_sha: &self.head_sha,
+            cwd: &self.cwd,
+            description: self.description.as_deref(),
+            files: &self.files,
+            threads: &self.threads,
+            rules: self.rules.as_deref(),
+        }
+    }
+}
+
+/// The session's source, files, threads (see [`load`]), team rules and MR description.
+pub async fn load_inputs<F, Fut>(
+    store: &Store,
+    git_program: Option<&Path>,
+    session_id: &str,
+    threads: F,
+    cancel: &Cancel,
+) -> Result<SessionInputs, StepContextError>
+where
+    F: FnOnce(MrRef) -> Fut,
+    Fut: Future<Output = Vec<Thread>>,
+{
+    let (row, folders) = store.with_conn(|conn| {
         Ok((
             store::sessions::source_of(conn, session_id)?,
             store::sessions::folders(conn, session_id)?,
@@ -152,25 +203,9 @@ where
     let git = Git::new(git_program, &folders.checkout);
     let rules = plan::team_rules(&git, &row.base_sha, cancel).await?;
     let files = files(&git, &row.base_sha, &row.head_sha, cancel).await?;
-    let plan = plan::cached(
-        ctx,
-        &PlanRequest {
-            repo_id: row.repo_id,
-            project: &project,
-            source: source.clone(),
-            base_sha: &row.base_sha,
-            head_sha: &row.head_sha,
-            cwd: &cwd,
-            description: None,
-            files: &files,
-            threads: &[],
-            rules: rules.as_deref(),
-        },
-    )
-    .ok_or(StepContextError::PlanNotReady)?;
     let mr = MrRef { project, iid };
     let threads = threads(mr.clone()).await;
-    Ok(StepContext {
+    Ok(SessionInputs {
         session_id: session_id.to_owned(),
         repo_id: row.repo_id,
         source,
@@ -179,13 +214,29 @@ where
         head_sha: row.head_sha,
         cwd,
         files,
-        plan,
         threads,
         rules,
+        description: meta.description,
     })
 }
 
 impl StepContext {
+    pub fn new(inputs: SessionInputs, plan: Plan) -> Self {
+        Self {
+            session_id: inputs.session_id,
+            repo_id: inputs.repo_id,
+            source: inputs.source,
+            mr: inputs.mr,
+            base_sha: inputs.base_sha,
+            head_sha: inputs.head_sha,
+            cwd: inputs.cwd,
+            files: inputs.files,
+            plan,
+            threads: inputs.threads,
+            rules: inputs.rules,
+        }
+    }
+
     /// `claude_cache.subject` and `dismissals.mr` of this review.
     pub fn subject(&self) -> String {
         self.source.subject()

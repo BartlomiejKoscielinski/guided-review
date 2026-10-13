@@ -6,6 +6,7 @@
 pub mod app_state;
 pub mod claude_sessions;
 pub mod migrations;
+pub mod plans;
 pub mod repos;
 pub mod sessions;
 pub mod settings;

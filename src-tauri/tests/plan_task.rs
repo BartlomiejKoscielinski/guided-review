@@ -207,7 +207,7 @@ async fn f06_2_plan_task_argv_inputs_and_result() {
         "structured_output": plan_output(&s.files)
     }))] }));
     assert!(!s.plan_ready());
-    let outcome = plan::run(&s.ctx(), &s.request(), &Cancel::new())
+    let outcome = plan::run(&s.ctx(), &s.request(), &|| {}, &Cancel::new())
         .await
         .unwrap();
     assert!(!outcome.cached);
@@ -313,7 +313,7 @@ async fn f06_2_plan_task_argv_inputs_and_result() {
 
     // F-02.5: cached for that head; the next run starts no claude.
     assert!(s.plan_ready());
-    let again = plan::run(&s.ctx(), &s.request(), &Cancel::new())
+    let again = plan::run(&s.ctx(), &s.request(), &|| {}, &Cancel::new())
         .await
         .unwrap();
     assert!(again.cached);
@@ -328,7 +328,7 @@ async fn f06_2_invalid_output_is_claude_schema_and_not_cached() {
     output["steps"][0]["hunk_ids"] = json!(["0000000000000000"]);
     s.fake
         .set_scenario(&json!({ "responses": [result(json!({ "structured_output": output }))] }));
-    let error = plan::run(&s.ctx(), &s.request(), &Cancel::new())
+    let error = plan::run(&s.ctx(), &s.request(), &|| {}, &Cancel::new())
         .await
         .unwrap_err();
     assert!(matches!(error, ClaudeError::Schema(_)), "{error:?}");
@@ -342,12 +342,12 @@ async fn f02_5_another_plan_model_misses_the_cache() {
         result(json!({ "structured_output": plan_output(&s.files) })),
         result(json!({ "structured_output": plan_output(&s.files) })),
     ] }));
-    plan::run(&s.ctx(), &s.request(), &Cancel::new())
+    plan::run(&s.ctx(), &s.request(), &|| {}, &Cancel::new())
         .await
         .unwrap();
     s.settings.tasks.plan.model = "claude-sonnet-5-5".into();
     assert!(!s.plan_ready());
-    let outcome = plan::run(&s.ctx(), &s.request(), &Cancel::new())
+    let outcome = plan::run(&s.ctx(), &s.request(), &|| {}, &Cancel::new())
         .await
         .unwrap();
     assert!(!outcome.cached);

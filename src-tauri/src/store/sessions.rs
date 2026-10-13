@@ -179,6 +179,16 @@ pub fn strategy(conn: &Connection, id: &str) -> Result<Strategy, StoreError> {
         .unwrap_or_default())
 }
 
+/// Stores the session's strategy; `false` when there is no such session.
+pub fn set_strategy(conn: &Connection, id: &str, strategy: Strategy) -> Result<bool, StoreError> {
+    let changed = conn.execute(
+        "UPDATE sessions SET strategy = ?2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+         WHERE id = ?1",
+        params![id, stored(strategy)],
+    )?;
+    Ok(changed > 0)
+}
+
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {
     Ok(conn
         .query_row("SELECT 1 FROM sessions WHERE id = ?1", params![id], |_| {
