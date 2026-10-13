@@ -12,7 +12,8 @@
 // Usage:
 //   node tools/mock-preview/design-check.mjs S06 [--states changes-local,changes-commit]
 //        [--no-shots] [--pixel] [--top 3] [--max-lines 12]
-// Requires the mock dev server or lets Playwright start it (playwright.config.ts webServer).
+// Requires the mock dev server or lets Playwright start it (playwright.config.ts webServer), on
+// GR_PORT (default 1420; a lane worktree sets its own, tools/lanes.mjs).
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
@@ -51,13 +52,17 @@ const node = (script, scriptArgs) =>
   execFileSync(process.execPath, [script, ...scriptArgs], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// The dev server Playwright starts or reuses; the child inherits GR_PORT through the environment.
+const port = process.env.GR_PORT ?? '1420';
+
 if (!args.includes('--no-shots')) {
   const grep = `design shot ${screen} (${states.map(esc).join('|')})$`;
   try {
     const log = node(join(root, 'node_modules', '@playwright', 'test', 'cli.js'), ['test', 'design-shots', '--reporter=line', '-g', grep]);
-    console.log(`shots: ${(log.match(/(\d+) passed/) ?? [, '?'])[1]} passed`);
+    console.log(`shots: ${(log.match(/(\d+) passed/) ?? [, '?'])[1]} passed (port ${port})`);
   } catch (e) {
-    console.log('shots FAILED:\n' + String(e.stdout ?? '').split('\n').slice(-30).join('\n') + String(e.stderr ?? '').slice(-2000));
+    const hint = `shots FAILED (port ${port}; is something else serving it?):\n`;
+    console.log(hint + String(e.stdout ?? '').split('\n').slice(-30).join('\n') + String(e.stderr ?? '').slice(-2000));
     process.exit(1);
   }
 }

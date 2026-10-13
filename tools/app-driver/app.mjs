@@ -112,6 +112,12 @@ function tail(file, n) {
 }
 
 async function start(flags) {
+  // tauri.conf.json's devUrl and dev CSP are fixed to 1420 and every instance shares one app data dir.
+  if ((process.env.GR_PORT ?? '1420') !== '1420') {
+    throw new Error(
+      `GR_PORT=${process.env.GR_PORT}: lane worktrees use the mock backend; run the real app from the main checkout`,
+    );
+  }
   if (await cdpVersion()) return console.log(`already running, CDP on ${CDP}`);
   const others = tasklist(APP_EXE);
   const vite = listenerPids(1420);

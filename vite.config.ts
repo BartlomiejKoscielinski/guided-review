@@ -1,12 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Tauri expects a fixed port; `npm run dev:mock` (mode "mock") serves the UI with the mock backend.
+// Tauri expects a fixed port (devUrl 1420); `npm run dev:mock` (mode "mock") serves the UI with the
+// mock backend. GR_PORT moves it for a parallel lane worktree (tools/lanes.mjs), mock backend only.
 export default defineConfig({
   plugins: [react()],
   clearScreen: false,
   server: {
-    port: 1420,
+    port: Number(process.env.GR_PORT ?? 1420),
     strictPort: true,
     watch: { ignored: ['**/src-tauri/**'] },
   },

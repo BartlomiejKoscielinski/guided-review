@@ -14,3 +14,5 @@ tools/standin/ssl/
 .app-driver/
 # Context guard state per session (tools/metrics/context-guard.mjs)
 .metrics/guard/
+# Parallel lanes: registry, context packs, prompts, reports (tools/lanes.mjs, tools/context-pack.mjs)
+.lanes/
