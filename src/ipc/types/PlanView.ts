@@ -22,6 +22,10 @@ stepStats: Array<ChangeStats>,
  */
 skimStats: Array<ChangeStats>, 
 /**
+ * The paths of each skim group's files for **Show** (F-06.6), in the order of `plan.skim`.
+ */
+skimFiles: Array<Array<string>>, 
+/**
  * Why Claude couldn't plan (S-02 Claude failed): the plan is then the app's file-order
  * fallback, one step per layer group in GitLab file order, with config risks (F-06.13),
  * "N open threads." and coverage; no intent, orders, skim or claims. Never cached.

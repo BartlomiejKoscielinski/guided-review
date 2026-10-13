@@ -3,7 +3,13 @@ import { IpcError } from '../errors';
 import type { PlanView } from '../types/PlanView';
 import type { StepOrder } from '../types/StepOrder';
 import type { Strategy } from '../types/Strategy';
-import { MOCK_ORDERS, MOCK_SKIM_STATS, MOCK_STEP_STATS, mockPlan } from './fixtures/plan';
+import {
+  MOCK_ORDERS,
+  MOCK_SKIM_FILES,
+  MOCK_SKIM_STATS,
+  MOCK_STEP_STATS,
+  mockPlan,
+} from './fixtures/plan';
 import { mockFallbackView } from './fixtures/planFallback';
 import type { ReviewScenario } from './review';
 
@@ -77,6 +83,7 @@ export function createPlanBackend(
         order: order(s),
         stepStats: MOCK_STEP_STATS,
         skimStats: MOCK_SKIM_STATS,
+        skimFiles: [[...MOCK_SKIM_FILES]],
         ...(s.cachedAt === null ? {} : { cachedAt: s.cachedAt }),
       };
       // Opening S-02 again reads the plan from the cache.

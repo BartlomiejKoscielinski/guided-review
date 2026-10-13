@@ -131,7 +131,8 @@ const STEPS: MockStep[] = [
   ),
 ];
 
-const SKIM_FILES = [
+/** The skim row's files (`PlanView.skimFiles`, Show). */
+export const MOCK_SKIM_FILES = [
   `${CORE}RetryPolicy.cs`,
   `${APP}Views/DeliveryPhotoPage.xaml`,
   'tests/Mobile.Core.Tests/RetryPolicyTests.cs',
@@ -158,7 +159,7 @@ export function mockPlan(): Plan {
     orders: { contractToUi: MOCK_ORDERS.contractToUi, testsFirst: MOCK_ORDERS.testsFirst },
     skim: [
       {
-        hunkIds: SKIM_FILES.map(hunk),
+        hunkIds: MOCK_SKIM_FILES.map(hunk),
         reason:
           'Formatting (3), csproj with a new package, 3 keys in Strings.resx. Checked: no logic changes.',
       },

@@ -34,6 +34,8 @@ pub struct PlanView {
     pub step_stats: Vec<ChangeStats>,
     /// The same for each skim group (F-06.6), in the order of `plan.skim`.
     pub skim_stats: Vec<ChangeStats>,
+    /// The paths of each skim group's files for **Show** (F-06.6), in the order of `plan.skim`.
+    pub skim_files: Vec<Vec<String>>,
     /// Why Claude couldn't plan (S-02 Claude failed): the plan is then the app's file-order
     /// fallback, one step per layer group in GitLab file order, with config risks (F-06.13),
     /// "N open threads." and coverage; no intent, orders, skim or claims. Never cached.
@@ -76,6 +78,16 @@ pub fn change_stats(files: &[FileDiff], hunk_ids: &[String]) -> ChangeStats {
     stats
 }
 
+/// The paths of the files that `hunk_ids` touch, in diff order; unknown IDs add nothing.
+pub fn hunk_paths(files: &[FileDiff], hunk_ids: &[String]) -> Vec<String> {
+    let wanted: HashSet<&str> = hunk_ids.iter().map(String::as_str).collect();
+    files
+        .iter()
+        .filter(|f| f.hunks.iter().any(|h| wanted.contains(h.id.as_str())))
+        .filter_map(|f| f.new_path.clone().or_else(|| f.old_path.clone()))
+        .collect()
+}
+
 /// Plans the session (or reads the cached plan) and emits the task events.
 pub async fn plan(
     ctx: &Context<'_>,
@@ -114,6 +126,11 @@ fn view(
     Ok(PlanView {
         step_stats: plan.steps.iter().map(|s| stats(&s.hunk_ids)).collect(),
         skim_stats: plan.skim.iter().map(|g| stats(&g.hunk_ids)).collect(),
+        skim_files: plan
+            .skim
+            .iter()
+            .map(|g| hunk_paths(&inputs.files, &g.hunk_ids))
+            .collect(),
         plan,
         cached_at,
         order,
@@ -195,5 +212,22 @@ mod tests {
             }
         );
         assert_eq!(change_stats(&files, &[]), ChangeStats::default());
+    }
+
+    #[test]
+    fn f06_6_skim_show_lists_the_paths_of_the_groups_files() {
+        let files = [
+            file("src/Core/IUploadQueue.cs", &[("h1", 30, 0), ("h2", 8, 0)]),
+            file("src/App/Zażółć/Upload ViewModel.cs", &[("h3", 18, 9)]),
+        ];
+        let ids = |list: &[&str]| list.iter().map(|&s| s.to_owned()).collect::<Vec<_>>();
+        assert_eq!(
+            hunk_paths(&files, &ids(&["h3", "h2", "nope"])),
+            [
+                "src/Core/IUploadQueue.cs",
+                "src/App/Zażółć/Upload ViewModel.cs"
+            ]
+        );
+        assert!(hunk_paths(&files, &[]).is_empty());
     }
 }

@@ -92,6 +92,7 @@ export function mockFallbackView(error: AppError): PlanView {
     order: { strategy: 'fileOrder', custom: false, order },
     stepStats,
     skimStats: [],
+    skimFiles: [],
     fallback: error,
   };
 }
