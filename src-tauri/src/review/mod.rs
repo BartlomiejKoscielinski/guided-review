@@ -3,6 +3,7 @@
 pub mod config_risk;
 pub mod coverage;
 pub mod finding_model;
+pub mod findings;
 pub mod fingerprint;
 pub mod layer;
 pub mod mechanical;
