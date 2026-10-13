@@ -15,9 +15,10 @@ Next session focus (optional): $ARGUMENTS
 4. Commit: `<Mx>: PROGRESS session log <session>` with `.metrics/sessions.jsonl` (no Co-Authored-By trailer).
 5. Write the next-session prompt in a fenced block, in the user's language, at most ~25 lines:
    - first line: branch, clean tree, last commit SHA;
+   - budget: the prompt plus everything it tells the session to read must fit in ~100k tokens of context (base is ~43k, so ~55k of reading and work before the 120k guard), and has at most 3 numbered tasks; if more is left, split and give only the first part;
    - the one goal of the next session (one phase: plan, one core feature, one screen with its design-check, or wrap-up). If the remaining work is larger, split it and give only the first part;
    - what is already done that it must not redo, and what not to read;
    - exactly which files and sections to read (paths, `S-xx`/`F-xx` IDs, grep patterns), nothing more;
-   - numbered tasks with the done-condition for each (tests, `/verify`, `/design-check S-xx`);
+   - numbered tasks (max 3) with the done-condition for each (tests, `/verify`, `/design-check S-xx`);
    - the last step: `/handoff`.
 6. Tell the user the session's numbers in one line and to start a new session and paste the prompt. Do not continue working in this session.

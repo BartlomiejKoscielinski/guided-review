@@ -8,7 +8,7 @@ export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  reporter: process.env.CI ? 'line' : 'list',
+  reporter: 'line',
   use: {
     baseURL,
     viewport: { width: 1600, height: 1000 },
