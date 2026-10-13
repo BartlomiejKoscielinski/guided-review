@@ -195,6 +195,8 @@ CREATE TABLE job_variables (project TEXT, job_name TEXT, vars_json TEXT, updated
 
 Migration 002 (M1): `CREATE TABLE app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT);` for state the app keeps for itself, not user settings (e.g. `claude.probedVersion`, `05` › Startup checks).
 
+Migration 004 (M3): `claude_cache` gets lookup columns `repo_id INTEGER, subject TEXT, head_sha TEXT, model TEXT, effort TEXT, prompt_version INTEGER` and an index on `(task, repo_id, subject, head_sha)`. `subject` is `mr:<iid>`, `commit:<sha>`, `range:<from>..<to>` or `local:<scope>`; `model` and `effort` are `''` for "Same as Claude Code". They let S-01 say "plan is ready" (F-02.5) for a list row, which knows only the repository, the iid and `diffHeadSha` (ADR-024), not the base, the hunks or the rules of the cache key.
+
 Drafts belong to the MR (F-12.7): `drafts.session_id` points at the user's latest session for that MR, or at a session with status `DraftsOnly`.
 
 ## Settings (keys and defaults)
@@ -223,7 +225,7 @@ Stored in `settings` as JSON values; read through one typed struct in the core w
 
 Repositories and their worktree folders live in `repos`, not in `settings`.
 
-**Claude cache key** = SHA-256 of `task || repo || base_sha || head_sha || step_hunk_ids_sorted || prompt_version || model || effort || rules_hash || output_language`. A new prompt version invalidates naturally.
+**Claude cache key** = SHA-256 of `task || repo || base_sha || head_sha || step_hunk_ids_sorted || prompt_version || model || effort || rules_hash || output_language` (fields separated by `\0`; for the plan task the hunk IDs are all hunks of the change). A new prompt version invalidates naturally. The cache holds Claude's `structured_output`; a hit is validated again like a fresh result. **Plan is ready** (F-02.5, M3 decision 7, `review/plan_cache.rs`) = a `plan` row with the same `repo_id`, `subject`, `head_sha`, `model`, `effort` and `prompt_version` as the current plan settings. It ignores base, rules and language, so after the target branch, the team rules or "Writes in" change a row can still say "plan is ready" while opening it plans again.
 
 ## Background work
 
