@@ -1,7 +1,16 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
+import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
+import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
+import type { DecisionOutcome } from './types/DecisionOutcome';
+import type { Draft } from './types/Draft';
+import type { DraftPatch } from './types/DraftPatch';
+import type { FindingDecision } from './types/FindingDecision';
+import type { LineSelection } from './types/LineSelection';
+import type { NewDraft } from './types/NewDraft';
+import type { StepAnalysis } from './types/StepAnalysis';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { CommitRange } from './types/CommitRange';
@@ -90,6 +99,37 @@ export interface IpcClient {
    * Starts no GitLab work.
    */
   sessionMr(sessionId: string): Promise<SessionMr | null>;
+
+  // S-03 steps, questions and decisions (F-09, F-10). Claude task events go to `onEvent`.
+  /**
+   * A step's notes (F-09.6): `queued`, `started` unless already analyzed, then `done` or
+   * `failed`; the next step is prefetched. Notes come with their stored decisions.
+   */
+  reviewFindings(
+    sessionId: string,
+    stepId: string,
+    onEvent: (event: ClaudeTaskEvent<StepAnalysis>) => void,
+  ): Promise<StepAnalysis>;
+  /**
+   * A question on a step and, if any, the selected lines (F-10.1): `partialText` pieces, then
+   * `done` with the whole answer; follow-ups continue the step's Claude session (F-10.2).
+   */
+  reviewAsk(
+    sessionId: string,
+    stepId: string,
+    question: string,
+    selection: LineSelection | null,
+    onEvent: (event: ClaudeTaskEvent<AskAnswer>) => void,
+  ): Promise<AskAnswer>;
+  /** Add to drafts, Edit and add, Dismiss or Undo on a note (F-09.2, F-09.4). Local only. */
+  reviewDecide(findingId: string, decision: FindingDecision): Promise<DecisionOutcome>;
+
+  // Drafts (F-09.2, F-10.3): kept on this PC; nothing reaches GitLab without Publish.
+  draftsList(sessionId: string): Promise<Draft[]>;
+  draftsCreate(draft: NewDraft): Promise<Draft>;
+  /** Edits the text or the Publish tick; a published draft is refused. */
+  draftsUpdate(id: string, patch: DraftPatch): Promise<Draft>;
+  draftsDelete(id: string): Promise<void>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */

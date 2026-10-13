@@ -5,7 +5,12 @@ import { toIpcError } from './errors';
 import { createTauriWindowControls } from './tauri-window';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
+import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
+import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
+import type { DecisionOutcome } from './types/DecisionOutcome';
+import type { Draft } from './types/Draft';
+import type { StepAnalysis } from './types/StepAnalysis';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
@@ -66,6 +71,28 @@ export function createTauriClient(): IpcClient {
     },
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
+    reviewFindings: (sessionId, stepId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<StepAnalysis>>();
+      ch.onmessage = onEvent;
+      return call<StepAnalysis>('review_findings', { session: sessionId, step: stepId, ch });
+    },
+    reviewAsk: (sessionId, stepId, question, selection, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<AskAnswer>>();
+      ch.onmessage = onEvent;
+      return call<AskAnswer>('review_ask', {
+        session: sessionId,
+        step: stepId,
+        question,
+        selection,
+        ch,
+      });
+    },
+    reviewDecide: (findingId, decision) =>
+      call<DecisionOutcome>('review_decide', { finding: findingId, decision }),
+    draftsList: (sessionId) => call<Draft[]>('drafts_list', { sessionId }),
+    draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
+    draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),
+    draftsDelete: (id) => call<undefined>('drafts_delete', { id }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),

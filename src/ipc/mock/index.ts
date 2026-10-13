@@ -5,6 +5,7 @@ import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
+import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSourcesBackend } from './sources';
 import type { Settings } from '../types/Settings';
@@ -24,6 +25,8 @@ export const MOCK_CHANGES_KEY = 'guided-review.mock.changes';
 export const MOCK_CLAUDE_KEY = 'guided-review.mock.claude';
 /** Key with a `GitlabScenario` (connected, no token, failing). */
 export const MOCK_GITLAB_KEY = 'guided-review.mock.gitlab';
+/** Key with a `ReviewScenario` (S-03 step task failures). */
+export const MOCK_REVIEW_KEY = 'guided-review.mock.review';
 
 export interface MockOptions {
   /** Fake latency per call, so loading states are visible in `npm run dev:mock`. */
@@ -43,6 +46,8 @@ export interface MockOptions {
   gitlab?: GitlabScenario;
   /** Rider variations (F-24.4). */
   rider?: RiderScenario;
+  /** S-03 variations; the storage's `MOCK_REVIEW_KEY` wins. */
+  review?: ReviewScenario;
 }
 
 const wait = (ms: number): Promise<void> =>
@@ -95,6 +100,7 @@ export function createMockClient({
   claude: claudeOption = {},
   gitlab: gitlabOption = {},
   rider: riderOption = {},
+  review: reviewOption = {},
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
@@ -129,6 +135,9 @@ export function createMockClient({
       latencyMs > 0 ? wait(ms) : Promise.resolve(),
     ),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
+    ...createReviewBackend(loadJson(storage, MOCK_REVIEW_KEY, reviewOption), respond, (ms) =>
+      latencyMs > 0 ? wait(ms) : Promise.resolve(),
+    ),
     ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),
     // The browser has no window to move; the mock only tracks the maximized state.
     windowMinimize: () => Promise.resolve(),
