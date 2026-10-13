@@ -62,3 +62,56 @@ test('F-24.1 Browse files instead opens the MR read-only with Open in Rider', as
   await page.getByRole('radio', { name: 'Local changes' }).click();
   await expect(page.getByRole('complementary', { name: 'Merge request details' })).toHaveCount(0);
 });
+
+// S-02 plan on the mock (F-06.4, F-06.5, F-06.11): the toggle, a keyboard drag, Start step 1.
+
+const stepRows = (page: Page) => page.locator('li[data-step]');
+
+async function openPlan(page: Page) {
+  await openMr482(page);
+  await expect(page.getByRole('heading', { name: 'Plan · 8 steps' })).toBeVisible();
+}
+
+test('F-06.4 the strategy toggle reorders the steps without a new plan', async ({ page }) => {
+  await openPlan(page);
+  await expect(stepRows(page).first()).toContainText('Queue contract');
+  await page.getByRole('radio', { name: 'Tests first' }).click();
+  await expect(stepRows(page).first()).toContainText('Queue tests');
+  await expect(
+    page.getByText('Tests first: read them as the spec, then the implementation.'),
+  ).toBeVisible();
+  await page.getByRole('radio', { name: 'File order' }).click();
+  await expect(stepRows(page).first()).toContainText('DI registration and worker start');
+  await expect(page.getByText('Claude is planning · usually under a minute')).toHaveCount(0);
+});
+
+test('F-06.5 a keyboard drag moves a step and clears the strategy', async ({ page }) => {
+  await openPlan(page);
+  const handle = page.getByRole('button', { name: 'Move step: Queue contract' });
+  await handle.focus();
+  await page.keyboard.press('Space');
+  // dnd-kit measures the rows when the drag starts; move only once the row is lifted and moved.
+  const lifted = page.locator('li[data-dragging]');
+  await expect(lifted).toHaveCount(1);
+  await page.keyboard.press('ArrowDown');
+  await expect(lifted).toHaveAttribute('style', /translate3d\(0px, [1-9]/);
+  await page.keyboard.press('Space');
+  await expect(stepRows(page).nth(0)).toContainText('SqliteUploadQueue');
+  await expect(stepRows(page).nth(1)).toContainText('Queue contract');
+  await expect(page.getByText('Your order. Pick a strategy to reset it.')).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'Contract to UI' })).toHaveAttribute(
+    'aria-checked',
+    'false',
+  );
+  // Picking a strategy clears the dragged order.
+  await page.getByRole('radio', { name: 'Contract to UI' }).click();
+  await expect(stepRows(page).nth(0)).toContainText('Queue contract');
+});
+
+test('F-06.11 Enter starts step 1', async ({ page }) => {
+  await openPlan(page);
+  await page.getByRole('heading', { level: 1, name: TITLE }).click();
+  await page.keyboard.press('Enter');
+  // The app routes in memory; S-03's title bar has Finish review.
+  await expect(page.getByRole('button', { name: 'Finish review' })).toBeVisible();
+});
