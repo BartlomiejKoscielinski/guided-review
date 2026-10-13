@@ -77,9 +77,18 @@ fn f09_2_review_decide_add_to_drafts_and_errors() {
         assert_eq!(again.code, ErrorCode::Conflict);
         let missing = decide(c, "nope", &FindingDecision::Dismiss).unwrap_err();
         assert_eq!(missing.code, ErrorCode::InvalidInput);
-        // Notes of commits arrive with F-17.1; until then a decision there is refused.
-        let commits = decide(c, "f9", &FindingDecision::Dismiss).unwrap_err();
-        assert_eq!(commits.code, ErrorCode::InvalidInput);
+    });
+}
+
+#[test]
+fn f17_1_review_decide_on_commits_dismisses_under_their_own_subject() {
+    with(|c| {
+        let out = decide(c, "f9", &FindingDecision::Dismiss).unwrap();
+        assert_eq!(out.finding.decision, Decision::Dismissed);
+        let dismissed = decisions::dismissed(c, "commit:abc1234").unwrap();
+        assert_eq!(dismissed.len(), 1);
+        assert_eq!(dismissed[0].fingerprint, "cccc");
+        assert!(decisions::dismissed(c, "mr:482").unwrap().is_empty());
     });
 }
 
