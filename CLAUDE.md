@@ -23,6 +23,7 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 - `node tools/mock-preview/render-mock.mjs <Mock.dc.html> --state '<json>' --out <png>` (render a design mock)
 - `node tools/mock-preview/design-check.mjs S06` (/design-check data in one run: shots, mock render, pixel heatmap, DOM/style comparison)
 - `node tools/audit.mjs [--milestone M3]` (acceptance criteria vs PROGRESS vs tests)
+- `node tools/metrics/report.mjs [--last 8 | --retro-due]` (process feedback: tokens, context tax, time per session; experiments in `docs/process/IMPROVEMENTS.md`, `/retro`)
 - `node tools/app-driver/app.mjs start | snap | click <selector> | shot | stop` (drive the real app over WebView2 CDP; skill `/app`)
 
 ## How to work

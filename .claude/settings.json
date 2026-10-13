@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/metrics/context-guard.mjs\"", "timeout": 10 }]
+      }
+    ]
+  }
+}

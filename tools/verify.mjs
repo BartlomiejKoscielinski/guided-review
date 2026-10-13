@@ -9,7 +9,7 @@
 //   node tools/verify.mjs --e2e [spec ...]        verify steps + Playwright (all specs or the given ones)
 //   node tools/verify.mjs --only e2e changes      Playwright only, one spec
 import { spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -65,7 +65,14 @@ function run(name, command) {
   });
 }
 
+// Step timings for tools/metrics/report.mjs (what verify spends its time on).
+function record({ name, ok, secs }) {
+  const line = JSON.stringify({ at: new Date().toISOString(), step: name, secs: Number(secs), ok });
+  appendFileSync(join(logDir, 'timings.jsonl'), line + String.fromCharCode(10));
+}
+
 function report({ name, ok, secs, output, log }) {
+  record({ name, ok, secs });
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}  ${secs}s`);
   if (ok) return;
   const lines = output.split(/\r?\n/).filter((l) => l.trim() && !l.startsWith('> '));

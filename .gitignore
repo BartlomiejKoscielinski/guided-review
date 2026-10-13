@@ -12,3 +12,5 @@ playwright-report/
 tools/standin/ssl/
 # Real-app driver state, log and screenshots (tools/app-driver)
 .app-driver/
+# Context guard state per session (tools/metrics/context-guard.mjs)
+.metrics/guard/
