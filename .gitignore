@@ -10,3 +10,5 @@ playwright-report/
 .claude/settings.local.json
 # Stand-in GitLab certificate and key (cargo run --example standin_cert)
 tools/standin/ssl/
+# Real-app driver state, log and screenshots (tools/app-driver)
+.app-driver/
