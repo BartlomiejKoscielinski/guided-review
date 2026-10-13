@@ -1,0 +1,283 @@
+//! `review_*` commands of S-03: a step's notes (F-09.6) with the prefetch of the next step,
+//! questions (F-10.1, F-10.2) and decisions on notes (F-09.2, F-09.4). Claude task events
+//! stream on `ch`.
+
+use std::collections::HashMap;
+use std::path::Path;
+use std::sync::{Arc, Mutex};
+
+use rusqlite::Connection;
+use tauri::ipc::Channel;
+use tauri::{AppHandle, Manager, Runtime, State};
+
+use super::claude::{ClaudeApp, after_task, executable};
+use super::gitlab::{GitlabApp, connected_client};
+use super::with_store;
+use crate::claude::queue::Priority;
+use crate::claude::tasks::ask::AskAnswer;
+use crate::claude::tasks::events::ClaudeTaskEvent;
+use crate::claude::tasks::plan::Context;
+use crate::claude::tasks::step;
+use crate::error::{AppError, AppResult, ErrorCode};
+use crate::gitlab::discussions;
+use crate::os::process::Cancel;
+use crate::review::decisions::{self, DecisionOutcome, FindingDecision};
+use crate::review::finding_model::StepAnalysis;
+use crate::review::position::LineSelection;
+use crate::review::step_context::{self, MrRef, StepContext};
+use crate::review::step_runs::{self, StepRuns};
+use crate::store::{self, Store};
+
+/// Step runs in flight and the loaded sessions (files, plan, threads, rules).
+#[derive(Default)]
+pub struct ReviewApp {
+    runs: Arc<StepRuns>,
+    contexts: Mutex<HashMap<String, Arc<StepContext>>>,
+}
+
+fn plan_context<'a>(
+    claude: &'a ClaudeApp,
+    store: &'a Store,
+    exe: &'a crate::claude::discover::ClaudeExecutable,
+    settings: &'a crate::settings::ClaudeSettings,
+) -> Context<'a> {
+    Context {
+        exe,
+        settings,
+        tmp_root: &claude.tmp_root,
+        queue: &claude.queue,
+        store,
+    }
+}
+
+/// The session's step context, loaded once per session.
+async fn step_context(
+    review: &ReviewApp,
+    ctx: &Context<'_>,
+    gitlab: &GitlabApp,
+    git_program: Option<&Path>,
+    session: &str,
+) -> AppResult<Arc<StepContext>> {
+    if let Some(cx) = review
+        .contexts
+        .lock()
+        .ok()
+        .and_then(|c| c.get(session).cloned())
+    {
+        return Ok(cx);
+    }
+    let threads = |mr: MrRef| async move {
+        let client = match connected_client(gitlab, ctx.store).await {
+            Ok((client, _)) => client,
+            Err(error) => {
+                tracing::info!(error = %error.message, "no threads for the step tasks");
+                return Vec::new();
+            }
+        };
+        discussions::list(&client, &mr.project, mr.iid)
+            .await
+            .unwrap_or_else(|error| {
+                tracing::warn!(%error, "threads not loaded for the step tasks");
+                Vec::new()
+            })
+    };
+    let cx =
+        Arc::new(step_context::load(ctx, git_program, session, threads, &Cancel::new()).await?);
+    if let Ok(mut contexts) = review.contexts.lock() {
+        contexts.insert(session.to_owned(), cx.clone());
+    }
+    Ok(cx)
+}
+
+/// The steps in the session's order.
+async fn order(store: &Store, cx: &StepContext) -> AppResult<Vec<String>> {
+    let session = cx.session_id.clone();
+    let strategy = with_store(store, move |c| store::sessions::strategy(c, &session)).await?;
+    Ok(cx.order(strategy))
+}
+
+fn sender<T: serde::Serialize + Clone + Send + Sync>(
+    ch: Channel<ClaudeTaskEvent<T>>,
+) -> impl Fn(ClaudeTaskEvent<T>) + Sync
+where
+    ClaudeTaskEvent<T>: tauri::ipc::IpcResponse,
+{
+    move |event| {
+        if let Err(error) = ch.send(event) {
+            tracing::debug!(%error, "Claude task event not delivered");
+        }
+    }
+}
+
+fn not_in_plan() -> AppError {
+    AppError::new(ErrorCode::InvalidInput, "The step is not in the plan.")
+}
+
+/// Opening a step (F-09.6): its notes as `CurrentStep` with events on `ch`, and the next step
+/// prefetched in the background. A step already running (its prefetch) is joined, not run twice.
+#[tauri::command]
+#[allow(clippy::too_many_arguments, reason = "Tauri states and IPC arguments")]
+pub async fn review_findings<R: Runtime>(
+    app: AppHandle<R>,
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    step: String,
+    ch: Channel<ClaudeTaskEvent<StepAnalysis>>,
+) -> AppResult<StepAnalysis> {
+    let settings = with_store(&store, |c| store::settings::load(c)).await?;
+    let exe = executable(&store).await?;
+    let ctx = plan_context(&claude, &store, &exe, &settings.claude);
+    let git_program = settings.git.path.as_deref().map(Path::new);
+    let cx = step_context(&review, &ctx, &gitlab, git_program, &session).await?;
+    let order = order(&store, &cx).await?;
+    let schedule = step::schedule(&order, &step);
+    if schedule.is_empty() {
+        return Err(not_in_plan());
+    }
+    let subject = cx.subject();
+    let dismissed = with_store(&store, move |c| Ok(decisions::dismissed(c, &subject))).await??;
+
+    for (next, _) in schedule.iter().filter(|(_, p)| *p == Priority::Prefetch) {
+        prefetch(
+            app.clone(),
+            review.runs.clone(),
+            cx.clone(),
+            order.clone(),
+            next.clone(),
+            dismissed.clone(),
+        );
+    }
+
+    let req = cx.step_request(&step, &order, &dismissed);
+    let emit = sender(ch);
+    let result = step_runs::findings(
+        &review.runs,
+        &ctx,
+        &req,
+        &session,
+        Priority::CurrentStep,
+        &Cancel::new(),
+        &emit,
+    )
+    .await;
+    if let Err(error) = &result
+        && let Some(claude_error) = error.claude()
+    {
+        after_task(&claude, &store, Err(claude_error)).await;
+    } else if result.is_ok() {
+        after_task(&claude, &store, Ok(())).await;
+    }
+    result.map_err(AppError::from)
+}
+
+/// The next step's notes in the background (docs/04 › Prefetch), recorded like an opened step.
+fn prefetch<R: Runtime>(
+    app: AppHandle<R>,
+    runs: Arc<StepRuns>,
+    cx: Arc<StepContext>,
+    order: Vec<String>,
+    step: String,
+    dismissed: Vec<crate::claude::tasks::step_inputs::Dismissal>,
+) {
+    tauri::async_runtime::spawn(async move {
+        let (Some(claude), Some(store)) = (app.try_state::<ClaudeApp>(), app.try_state::<Store>())
+        else {
+            return;
+        };
+        let Ok(settings) = with_store(&store, |c| store::settings::load(c)).await else {
+            return;
+        };
+        let Ok(exe) = executable(&store).await else {
+            return;
+        };
+        let ctx = plan_context(&claude, &store, &exe, &settings.claude);
+        let req = cx.step_request(&step, &order, &dismissed);
+        let result = step_runs::findings(
+            &runs,
+            &ctx,
+            &req,
+            &cx.session_id,
+            Priority::Prefetch,
+            &Cancel::new(),
+            &|_| {},
+        )
+        .await;
+        match &result {
+            Ok(_) => after_task(&claude, &store, Ok(())).await,
+            Err(error) => {
+                tracing::info!(error = %AppError::from(error.clone()).message, "prefetch failed");
+                if let Some(claude_error) = error.claude() {
+                    after_task(&claude, &store, Err(claude_error)).await;
+                }
+            }
+        }
+    });
+}
+
+/// A question on a step and, if any, the selected lines (F-10.1): `partialText` deltas on `ch`,
+/// then `done` with the whole answer; follow-ups on the same step continue its Claude session
+/// (F-10.2).
+#[tauri::command]
+#[allow(clippy::too_many_arguments, reason = "Tauri states and IPC arguments")]
+pub async fn review_ask(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    step: String,
+    question: String,
+    selection: Option<LineSelection>,
+    ch: Channel<ClaudeTaskEvent<AskAnswer>>,
+) -> AppResult<AskAnswer> {
+    if question.trim().is_empty() {
+        return Err(AppError::new(
+            ErrorCode::InvalidInput,
+            "Type a question first.",
+        ));
+    }
+    let settings = with_store(&store, |c| store::settings::load(c)).await?;
+    let exe = executable(&store).await?;
+    let ctx = plan_context(&claude, &store, &exe, &settings.claude);
+    let git_program = settings.git.path.as_deref().map(Path::new);
+    let cx = step_context(&review, &ctx, &gitlab, git_program, &session).await?;
+    let order = order(&store, &cx).await?;
+    if !order.contains(&step) {
+        return Err(not_in_plan());
+    }
+    let req = cx.ask_request(&step, &order, question.trim(), selection.as_ref());
+    let emit = sender(ch);
+    let result = step_runs::ask(&ctx, &req, &Cancel::new(), &emit).await;
+    after_task(&claude, &store, result.as_ref().map(drop)).await;
+    result.map_err(AppError::from)
+}
+
+/// A decision on a note (F-09.2, F-09.4); dismissals are kept per MR.
+pub(crate) fn decide(
+    conn: &mut Connection,
+    finding: &str,
+    decision: &FindingDecision,
+) -> AppResult<DecisionOutcome> {
+    let session = decisions::session_of(conn, finding)?;
+    let source = store::sessions::source_of(conn, &session)?
+        .ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
+    let subject = step_context::subject(&source.source_json)?;
+    Ok(decisions::decide(conn, finding, decision, &subject)?)
+}
+
+/// Add to drafts, Edit and add, Dismiss and Undo on a note card (F-09.2). Local only.
+#[tauri::command]
+pub async fn review_decide(
+    store: State<'_, Store>,
+    finding: String,
+    decision: FindingDecision,
+) -> AppResult<DecisionOutcome> {
+    with_store(&store, move |c| Ok(decide(c, &finding, &decision))).await?
+}
+
+#[cfg(test)]
+#[path = "review_tests.rs"]
+mod tests;

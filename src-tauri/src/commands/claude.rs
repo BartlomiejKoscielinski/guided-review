@@ -32,7 +32,7 @@ pub struct ClaudeApp {
     pub queue: Queue,
     tasks: Mutex<HashMap<String, Cancel>>,
     checking: tokio::sync::Mutex<()>,
-    tmp_root: PathBuf,
+    pub(super) tmp_root: PathBuf,
 }
 
 impl ClaudeApp {
@@ -115,7 +115,7 @@ pub async fn claude_refresh(
     run_check(&claude, &store).await
 }
 
-async fn executable(store: &Store) -> AppResult<ClaudeExecutable> {
+pub(super) async fn executable(store: &Store) -> AppResult<ClaudeExecutable> {
     let settings = with_store(store, |c| store::settings::load(c)).await?;
     discover(&DiscoveryInput::from_env(
         settings.claude.path.map(PathBuf::from),
@@ -227,7 +227,11 @@ pub async fn claude_commit_message(
 }
 
 /// Updates the status and the queue after a task (F-18.1, F-18.7).
-async fn after_task(claude: &ClaudeApp, store: &Store, result: Result<(), &ClaudeError>) {
+pub(super) async fn after_task(
+    claude: &ClaudeApp,
+    store: &Store,
+    result: Result<(), &ClaudeError>,
+) {
     claude.status.task_result(result);
     match result {
         Ok(()) => claude.queue.resume(),

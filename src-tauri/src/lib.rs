@@ -153,6 +153,7 @@ pub fn run() {
             commands::repo::manage(app.handle());
             app.manage(commands::gitlab::GitlabApp::default());
             app.manage(commands::sessions::PrepareTasks::default());
+            app.manage(commands::review::ReviewApp::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -199,6 +200,13 @@ pub fn run() {
             commands::gitlab::gitlab_account_save,
             commands::gitlab::gitlab_account_remove,
             commands::gitlab::gitlab_list_mrs,
+            commands::review::review_findings,
+            commands::review::review_ask,
+            commands::review::review_decide,
+            commands::drafts::drafts_list,
+            commands::drafts::drafts_create,
+            commands::drafts::drafts_update,
+            commands::drafts::drafts_delete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Guided Review");

@@ -3,10 +3,12 @@
 
 pub mod app;
 pub mod claude;
+pub mod drafts;
 pub mod git;
 pub mod gitlab;
 pub mod os;
 pub mod repo;
+pub mod review;
 pub mod sessions;
 pub mod source;
 
