@@ -6,11 +6,12 @@ use crate::claude::result::clamp;
 use crate::git::model::{FileDiff, FileStatus, Hunk, LineKind};
 use crate::review::layer::Layer;
 use crate::review::mechanical::MechanicalReason;
+use crate::source::model::{LocalScope, Source};
 
 /// A changed line in the hunk index is clamped to this many characters.
 const FIRST_LINE_MAX: usize = 100;
 
-/// What is being reviewed. Commits and local changes join with F-17.1 (M3 session 3c).
+/// What is being reviewed: a teammate's MR, commits, or the user's own local changes (F-17.1).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlanSource {
     Mr {
@@ -19,10 +20,19 @@ pub enum PlanSource {
         source_branch: String,
         target_branch: String,
     },
+    /// A single commit (`from` absent, against its first parent) or `from..to` (SHAs).
+    Commits { from: Option<String>, to: String },
+    /// The user's own changes in the repository root (no worktree).
+    Local { scope: LocalScope },
+}
+
+fn short(sha: &str) -> &str {
+    sha.get(..7).unwrap_or(sha)
 }
 
 impl PlanSource {
-    /// `{{source_label}}`: `merge request !482 "Title" (feature/x → develop)`.
+    /// `{{source_label}}`: `merge request !482 "Title" (feature/x → develop)`, `commit 1a2b3c4`,
+    /// `commits 1a2b3c4..5d6e7f8` or the user's own changes in one scope.
     pub fn label(&self) -> String {
         match self {
             Self::Mr {
@@ -31,22 +41,60 @@ impl PlanSource {
                 source_branch,
                 target_branch,
             } => format!("merge request !{iid} \"{title}\" ({source_branch} → {target_branch})"),
+            Self::Commits { from: None, to } => format!("commit {}", short(to)),
+            Self::Commits {
+                from: Some(from),
+                to,
+            } => {
+                format!("commits {}..{}", short(from), short(to))
+            }
+            Self::Local { scope } => match scope {
+                LocalScope::Uncommitted => "the author's own uncommitted changes".to_owned(),
+                LocalScope::Staged => "the author's own staged changes".to_owned(),
+                LocalScope::BranchVsTarget { target } => {
+                    format!("the author's own branch against {target}")
+                }
+            },
         }
     }
 
-    /// `{{source_block}}`: the commits the diff lies between.
+    /// `{{source_block}}`: the commits or tree states the diff lies between.
     pub fn block(&self, base_sha: &str, head_sha: &str) -> String {
         match self {
             Self::Mr { target_branch, .. } => format!(
                 "The diff runs from the merge base with {target_branch} ({base_sha}) to the MR head ({head_sha})."
             ),
+            Self::Commits { from: None, .. } => format!(
+                "The diff runs from the commit's first parent ({base_sha}) to the commit ({head_sha})."
+            ),
+            Self::Commits { from: Some(_), .. } => format!(
+                "The diff runs from {base_sha} (not included) to {head_sha}, every commit in between."
+            ),
+            Self::Local { scope } => match scope {
+                LocalScope::Uncommitted => format!(
+                    "The diff runs from HEAD ({base_sha}) to the working tree: staged, unstaged and untracked changes not committed yet."
+                ),
+                LocalScope::Staged => format!(
+                    "The diff runs from HEAD ({base_sha}) to the index: only the staged changes; the working tree may hold more unstaged edits."
+                ),
+                LocalScope::BranchVsTarget { target } => format!(
+                    "The diff runs from the merge base with {target} ({base_sha}) to HEAD ({head_sha}); the working tree may hold uncommitted edits on top."
+                ),
+            },
         }
     }
 
-    /// `claude_cache.subject` (docs/04, migration 004).
+    /// `claude_cache.subject` (docs/04, migration 004), one per source.
     pub fn subject(&self) -> String {
         match self {
             Self::Mr { iid, .. } => crate::review::plan_cache::mr_subject(*iid),
+            Self::Commits { from, to } => crate::review::plan_cache::subject(&Source::Commits {
+                from: from.clone(),
+                to: to.clone(),
+            }),
+            Self::Local { scope } => crate::review::plan_cache::subject(&Source::Local {
+                scope: scope.clone(),
+            }),
         }
     }
 }

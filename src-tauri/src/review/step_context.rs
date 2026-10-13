@@ -1,7 +1,8 @@
 //! What the step and ask tasks of a session need (F-09.6, F-10.1): the source, the files of
 //! merge base → head with their hunks, the session's plan from `claude_cache` (S-03 opens after
 //! S-02 planned, so this never runs the plan task), the MR's threads and the team rules.
-//! Teammates' MRs only, like `PlanSource` (commits and local changes join with F-17.1).
+//! Every source (F-17.1): an MR runs in its review worktree; commits and the user's own local
+//! changes run in the repository root, without a worktree and without threads.
 
 use std::future::Future;
 use std::path::{Path, PathBuf};
@@ -13,6 +14,7 @@ use super::model::Strategy;
 use super::mr_summary::MrMeta;
 use super::plan_cache;
 use super::plan_model::Plan;
+use super::source_files;
 use super::step_order::{self, StepOrder, StepOrderError};
 use super::strategy;
 use crate::claude::ClaudeError;
@@ -23,7 +25,7 @@ use crate::claude::tasks::step::StepRequest;
 use crate::claude::tasks::step_inputs::Dismissal;
 use crate::error::{AppError, ErrorCode};
 use crate::git::model::FileDiff;
-use crate::git::{Git, GitError, diff};
+use crate::git::{Git, GitError};
 use crate::gitlab::discussions::Thread;
 use crate::os::process::Cancel;
 use crate::review::position::LineSelection;
@@ -42,10 +44,13 @@ pub struct StepContext {
     pub session_id: String,
     pub repo_id: i64,
     pub source: PlanSource,
-    pub mr: MrRef,
+    /// `{{project}}`: the GitLab project, else the repository's name.
+    pub project: String,
+    /// MR sessions only.
+    pub mr: Option<MrRef>,
     pub base_sha: String,
     pub head_sha: String,
-    /// The review worktree, else the repository root.
+    /// The review worktree of an MR, else the repository root (F-17.1).
     pub cwd: PathBuf,
     pub files: Vec<FileDiff>,
     pub plan: Plan,
@@ -59,7 +64,7 @@ pub struct StepContext {
 pub enum StepContextError {
     #[error("unknown session")]
     UnknownSession,
-    #[error("the session is not a merge request")]
+    #[error("the merge request of the session is missing")]
     NotMr,
     #[error("the session has no cached plan")]
     PlanNotReady,
@@ -81,7 +86,7 @@ impl From<StepContextError> for AppError {
             }
             StepContextError::NotMr => AppError::new(
                 ErrorCode::InvalidInput,
-                "Step notes need a merge request session.",
+                "The session's merge request could not be read.",
             ),
             StepContextError::PlanNotReady => {
                 AppError::new(ErrorCode::InvalidInput, "The plan isn't ready yet.")
@@ -96,12 +101,11 @@ impl From<StepContextError> for AppError {
     }
 }
 
-/// The review subject of a stored source (`claude_cache.subject`, `dismissals.mr`).
+/// The review subject of a stored source (`claude_cache.subject`, `dismissals.mr`), one per
+/// source (F-17.1).
 pub fn subject(source_json: &str) -> Result<String, StepContextError> {
-    match serde_json::from_str::<Source>(source_json)? {
-        Source::Mr { iid, .. } => Ok(plan_cache::mr_subject(iid)),
-        _ => Err(StepContextError::NotMr),
-    }
+    let source: Source = serde_json::from_str(source_json)?;
+    Ok(plan_cache::subject(&source))
 }
 
 /// Every file of `base → head` with its hunks (`Hunk.mechanical` set).
@@ -111,11 +115,7 @@ pub async fn files(
     head: &str,
     cancel: &Cancel,
 ) -> Result<Vec<FileDiff>, GitError> {
-    let mut out = Vec::new();
-    for file in diff::range_files(git, base, head, cancel).await? {
-        out.push(diff::range_file_diff(git, base, head, &file, cancel).await?);
-    }
-    Ok(out)
+    source_files::range(git, base, head, cancel).await
 }
 
 /// Loads the session `session_id`; `threads` fetches the MR's threads (empty when GitLab
@@ -143,7 +143,8 @@ pub struct SessionInputs {
     pub session_id: String,
     pub repo_id: i64,
     pub source: PlanSource,
-    pub mr: MrRef,
+    pub project: String,
+    pub mr: Option<MrRef>,
     pub base_sha: String,
     pub head_sha: String,
     pub cwd: PathBuf,
@@ -157,7 +158,7 @@ impl SessionInputs {
     pub fn plan_request(&self) -> PlanRequest<'_> {
         PlanRequest {
             repo_id: self.repo_id,
-            project: &self.mr.project,
+            project: &self.project,
             source: self.source.clone(),
             base_sha: &self.base_sha,
             head_sha: &self.head_sha,
@@ -191,29 +192,50 @@ where
     let (Some(row), Some(folders)) = (row, folders) else {
         return Err(StepContextError::UnknownSession);
     };
-    let (Source::Mr { project, iid }, Some(mr_json)) = (
-        serde_json::from_str::<Source>(&row.source_json)?,
-        row.mr_json,
-    ) else {
-        return Err(StepContextError::NotMr);
+    let stored: Source = serde_json::from_str(&row.source_json)?;
+    let (source, mr, description, cwd) = match stored.clone() {
+        Source::Mr { project, iid } => {
+            let mr_json = row.mr_json.ok_or(StepContextError::NotMr)?;
+            let meta: MrMeta = serde_json::from_str(&mr_json)?;
+            let source = PlanSource::Mr {
+                iid,
+                title: meta.title,
+                source_branch: meta.source_branch,
+                target_branch: meta.target_branch,
+            };
+            let cwd = folders.worktree.unwrap_or(folders.checkout.clone());
+            (source, Some(MrRef { project, iid }), meta.description, cwd)
+        }
+        // F-17.1: commits and the user's own changes read the repository root, no worktree.
+        Source::Commits { from, to } => (
+            PlanSource::Commits { from, to },
+            None,
+            None,
+            folders.checkout.clone(),
+        ),
+        Source::Local { scope } => (
+            PlanSource::Local { scope },
+            None,
+            None,
+            folders.checkout.clone(),
+        ),
     };
-    let meta: MrMeta = serde_json::from_str(&mr_json)?;
-    let source = PlanSource::Mr {
-        iid,
-        title: meta.title,
-        source_branch: meta.source_branch,
-        target_branch: meta.target_branch,
+    let project = match &mr {
+        Some(mr) => mr.project.clone(),
+        None => repo_project(store, row.repo_id, &folders.checkout)?,
     };
-    let cwd = folders.worktree.unwrap_or(folders.checkout.clone());
     let git = Git::new(git_program, &folders.checkout);
     let rules = plan::team_rules(&git, &row.base_sha, cancel).await?;
-    let files = files(&git, &row.base_sha, &row.head_sha, cancel).await?;
-    let mr = MrRef { project, iid };
-    let threads = threads(mr.clone()).await;
+    let files = source_files::files(&git, &stored, &row.base_sha, &row.head_sha, cancel).await?;
+    let threads = match &mr {
+        Some(mr) => threads(mr.clone()).await,
+        None => Vec::new(),
+    };
     Ok(SessionInputs {
         session_id: session_id.to_owned(),
         repo_id: row.repo_id,
         source,
+        project,
         mr,
         base_sha: row.base_sha,
         head_sha: row.head_sha,
@@ -221,8 +243,23 @@ where
         files,
         threads,
         rules,
-        description: meta.description,
+        description,
     })
+}
+
+/// `{{project}}` of a session without an MR: the repository's GitLab project, else its name,
+/// else its folder name.
+fn repo_project(store: &Store, repo_id: i64, checkout: &Path) -> Result<String, StepContextError> {
+    let repo = store.with_conn(|conn| store::repos::get(conn, repo_id))?;
+    Ok(repo
+        .and_then(|r| r.gitlab_project.or(Some(r.name)))
+        .filter(|p| !p.trim().is_empty())
+        .unwrap_or_else(|| {
+            checkout
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default()
+        }))
 }
 
 impl StepContext {
@@ -231,6 +268,7 @@ impl StepContext {
             session_id: inputs.session_id,
             repo_id: inputs.repo_id,
             source: inputs.source,
+            project: inputs.project,
             mr: inputs.mr,
             base_sha: inputs.base_sha,
             head_sha: inputs.head_sha,

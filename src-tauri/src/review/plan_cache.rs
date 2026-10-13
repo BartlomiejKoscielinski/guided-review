@@ -13,6 +13,7 @@ use crate::claude::models::{self, TaskGroup};
 use crate::claude::prompts::{self, PROMPT_VERSION};
 use crate::gitlab::mrs::MrRow;
 use crate::settings::ClaudeSettings;
+use crate::source::model::{LocalScope, Source};
 use crate::store::StoreError;
 
 /// `claude_cache.task` of plans.
@@ -23,6 +24,25 @@ pub const STEP_TASK: &str = "step";
 /// `claude_cache.subject` of an MR.
 pub fn mr_subject(iid: u64) -> String {
     format!("mr:{iid}")
+}
+
+/// `claude_cache.subject` (and `dismissals.mr`) of any review source (F-17.1): `mr:<iid>`,
+/// `commit:<sha>`, `range:<from>..<to>` or `local:<scope>`, so plans, steps and dismissals of
+/// commits and local changes never mix with an MR's or with each other's.
+pub fn subject(source: &Source) -> String {
+    match source {
+        Source::Mr { iid, .. } => mr_subject(*iid),
+        Source::Commits { from: None, to } => format!("commit:{to}"),
+        Source::Commits {
+            from: Some(from),
+            to,
+        } => format!("range:{from}..{to}"),
+        Source::Local { scope } => match scope {
+            LocalScope::Uncommitted => "local:uncommitted".to_owned(),
+            LocalScope::Staged => "local:staged".to_owned(),
+            LocalScope::BranchVsTarget { target } => format!("local:branch:{target}"),
+        },
+    }
 }
 
 /// The settings that are part of the key: model and effort of the task's override group (`''`
@@ -347,6 +367,41 @@ mod tests {
                 Ok(())
             })
             .unwrap();
+    }
+
+    #[test]
+    fn f17_1_every_source_has_its_own_subject() {
+        let local = |scope| subject(&Source::Local { scope });
+        let subjects = [
+            subject(&Source::Mr {
+                project: "team/app".into(),
+                iid: 482,
+            }),
+            subject(&Source::Commits {
+                from: None,
+                to: "c2".into(),
+            }),
+            subject(&Source::Commits {
+                from: Some("c1".into()),
+                to: "c2".into(),
+            }),
+            local(LocalScope::Uncommitted),
+            local(LocalScope::Staged),
+            local(LocalScope::BranchVsTarget {
+                target: "origin/develop".into(),
+            }),
+        ];
+        assert_eq!(
+            subjects,
+            [
+                "mr:482",
+                "commit:c2",
+                "range:c1..c2",
+                "local:uncommitted",
+                "local:staged",
+                "local:branch:origin/develop"
+            ]
+        );
     }
 
     #[test]
