@@ -24,7 +24,7 @@ use crate::git::model::FileDiff;
 use crate::gitlab::discussions::{self, Thread};
 use crate::os::process::Cancel;
 use crate::review::coverage::{self, HunkRef};
-use crate::review::plan_cache::{self, PlanKey, PlanSettings};
+use crate::review::plan_cache::{self, CacheKey, TaskSettings};
 use crate::review::plan_model::Plan;
 use crate::review::{config_risk, plan};
 use crate::settings::ClaudeSettings;
@@ -85,8 +85,9 @@ pub async fn team_rules(
 }
 
 /// The cache key of a request under the current settings.
-pub fn key(ctx: &Context<'_>, req: &PlanRequest<'_>) -> PlanKey {
-    PlanKey::new(
+pub fn key(ctx: &Context<'_>, req: &PlanRequest<'_>) -> CacheKey {
+    CacheKey::new(
+        plan_cache::TASK,
         req.repo_id,
         req.source.subject(),
         req.base_sha,
@@ -95,7 +96,7 @@ pub fn key(ctx: &Context<'_>, req: &PlanRequest<'_>) -> PlanKey {
             .into_iter()
             .map(|h| h.id.to_owned()),
         req.rules,
-        PlanSettings::from(ctx.settings),
+        TaskSettings::plan(ctx.settings),
     )
 }
 

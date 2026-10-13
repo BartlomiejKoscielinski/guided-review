@@ -22,7 +22,7 @@ use guided_review_lib::git::diff;
 use guided_review_lib::git::model::FileDiff;
 use guided_review_lib::gitlab::discussions;
 use guided_review_lib::os::process::Cancel;
-use guided_review_lib::review::plan_cache::{self, PlanSettings};
+use guided_review_lib::review::plan_cache::{self, TaskSettings};
 use guided_review_lib::settings::ClaudeSettings;
 use guided_review_lib::store::Store;
 use serde_json::{Value, json};
@@ -194,7 +194,7 @@ impl Setup {
     fn plan_ready(&self) -> bool {
         self.store
             .with_conn(|c| {
-                plan_cache::plan_ready(c, &PlanSettings::from(&self.settings), 1, 482, &self.head)
+                plan_cache::plan_ready(c, &TaskSettings::plan(&self.settings), 1, 482, &self.head)
             })
             .unwrap()
     }

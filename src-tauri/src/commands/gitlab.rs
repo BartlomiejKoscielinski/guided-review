@@ -18,7 +18,7 @@ use crate::gitlab::project::project_from_remote;
 use crate::gitlab::tls::TlsBackend;
 use crate::os::credentials::{Keyring, TokenStore};
 use crate::os::process::Cancel;
-use crate::review::plan_cache::{self, PlanSettings};
+use crate::review::plan_cache::{self, TaskSettings};
 use crate::store::{self, Store};
 
 const TLS: TlsBackend = TlsBackend::Platform;
@@ -134,7 +134,7 @@ pub async fn gitlab_list_mrs(
         if let Some(repo) = store::repos::active(conn)? {
             plan_cache::mark_ready(
                 conn,
-                &PlanSettings::from(&settings.claude),
+                &TaskSettings::plan(&settings.claude),
                 repo.id,
                 &mut list.rows,
             )?;
