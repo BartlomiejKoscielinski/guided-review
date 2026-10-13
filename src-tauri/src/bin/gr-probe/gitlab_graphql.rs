@@ -36,6 +36,7 @@ pub const EXPECTED: &[&str] = &[
     "MergeRequest.webUrl",
     "MergeRequest.createdAt",
     "MergeRequest.updatedAt",
+    "MergeRequest.diffHeadSha",
     "MergeRequest.author",
     "MergeRequest.diffStatsSummary",
     "MergeRequest.headPipeline",

@@ -65,6 +65,7 @@ function row(
     mine: false,
     createdAt: ago(age),
     updatedAt: ago(age),
+    headSha: String(iid).padStart(40, 'f'),
     additions,
     deletions,
     files,
@@ -73,6 +74,7 @@ function row(
     reviewer: false,
     approved: false,
     note,
+    planReady: false,
     ...extra,
   };
 }
