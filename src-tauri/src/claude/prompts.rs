@@ -11,6 +11,8 @@ pub const SYSTEM_COMMON: &str = include_str!("../../resources/prompts/system-com
 pub const COMMIT_MESSAGE: &str = include_str!("../../resources/prompts/commit-message.md");
 pub const COMMIT_MESSAGE_SCHEMA: &str =
     include_str!("../../resources/schemas/commit-message.schema.json");
+pub const PLAN: &str = include_str!("../../resources/prompts/plan.md");
+pub const PLAN_SCHEMA: &str = include_str!("../../resources/schemas/plan.schema.json");
 
 /// Fills `{{name}}` placeholders; unknown placeholders stay as they are.
 pub fn render(template: &str, values: &[(&str, &str)]) -> String {
@@ -58,6 +60,8 @@ mod tests {
     fn schemas_are_json() {
         let schema: serde_json::Value = serde_json::from_str(COMMIT_MESSAGE_SCHEMA).unwrap();
         assert_eq!(schema["properties"]["summary"]["maxLength"], 72);
+        let plan: serde_json::Value = serde_json::from_str(PLAN_SCHEMA).unwrap();
+        assert_eq!(plan["title"], "ReviewPlan");
     }
 
     /// The compiled-in copies must equal docs/claude (the spec).
