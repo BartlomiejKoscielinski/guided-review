@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { mockClient, renderWithIpc } from '../../test/render';
+import { renderWithIpc } from '../../test/render';
 import { IpcError } from '../errors';
 import { usePlan, useReorderSteps, useSetStrategy } from './usePlan';
 
@@ -47,7 +47,18 @@ describe('usePlan', () => {
   });
 
   it('F-06.2 a failed plan shows the error', async () => {
-    renderWithIpc(<Probe />, mockClient({}, { review: { planFails: true } }));
+    const error = {
+      code: 'CLAUDE_FAILED',
+      message: 'Claude Code failed.',
+      retryable: true,
+    } as const;
+    renderWithIpc(<Probe />, {
+      reviewPlan: (_session, onEvent) => {
+        onEvent({ kind: 'queued' });
+        onEvent({ kind: 'failed', error });
+        return Promise.reject(new IpcError(error));
+      },
+    });
     expect(await screen.findByText('Claude Code failed.')).toBeInTheDocument();
     expect(screen.getByTestId('phase')).toHaveTextContent('failed');
   });

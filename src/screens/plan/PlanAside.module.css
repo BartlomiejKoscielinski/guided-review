@@ -1,0 +1,137 @@
+/* S-02 aside (Overview.dc.html): Risks to check, MR description vs code, Already discussed, Coverage. */
+.aside {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card {
+  padding: 18px 20px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.risks,
+.claims {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.claims {
+  gap: 10px;
+}
+
+.risk {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.riskSquare {
+  width: 12px;
+  height: 12px;
+  margin-top: 5px;
+}
+
+.fix {
+  background: var(--orange);
+}
+
+.question {
+  background: var(--blue);
+}
+
+.riskText,
+.claimText,
+.text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.refs {
+  color: var(--text-muted);
+}
+
+.claim {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.mark {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.found {
+  background: var(--green);
+}
+
+.issue {
+  background: var(--orange);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* Already discussed has an 8px gap, Coverage 10px (Overview.dc.html). */
+.card:has(> .text) {
+  gap: 8px;
+}
+
+.card:has(> .coverageBar) {
+  gap: 10px;
+}
+
+.coverageHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.coverageNumbers {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.coverageBar {
+  display: block;
+  height: 10px;
+  background: var(--line);
+}
+
+.coverageBar > span {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+
+.note {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}

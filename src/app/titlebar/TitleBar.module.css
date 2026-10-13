@@ -82,3 +82,13 @@
   background: var(--caption-close-hover);
   color: var(--text);
 }
+
+/* S-02 plan status (Overview.dc.html): square and text, no chip fill. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}

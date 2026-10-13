@@ -154,7 +154,7 @@ export const MOCK_ORDERS: Record<Strategy, string[]> = {
 export function mockPlan(): Plan {
   return {
     intent:
-      'Delivery photos no longer get lost without network. Instead of uploading right away, the app stores them in a local SQLite queue, and UploadWorker sends them with retries once the network is back. A banner shows how many photos are waiting.',
+      'Delivery photos no longer get lost without network. Instead of uploading right away, the app stores them in a local SQLite queue, and `UploadWorker` sends them with retries once the network is back. A banner shows how many photos are waiting.',
     steps: STEPS.map((s) => s.step),
     orders: { contractToUi: MOCK_ORDERS.contractToUi, testsFirst: MOCK_ORDERS.testsFirst },
     skim: [
@@ -178,7 +178,7 @@ export function mockPlan(): Plan {
         app: false,
       },
       {
-        text: 'Worker starts in App: what happens when the app resumes from background?',
+        text: 'Worker starts in `App`: what happens when the app resumes from background?',
         severity: 'q',
         steps: ['s6'],
         app: false,

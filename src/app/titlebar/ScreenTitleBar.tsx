@@ -12,6 +12,7 @@ import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
 import { GitlabStatusControl } from './GitlabStatusControl';
 import { PlanContext } from './PlanContext';
+import { PlanStatus } from './PlanStatus';
 import { PLACEHOLDER } from './placeholders';
 import { SettingsContext } from './SettingsContext';
 import { TaskModelChip } from './TaskModelChip';
@@ -94,8 +95,15 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
       );
     case 'S-02':
       return (
-        // The plan status (F-06.12) comes with Claude's plan in M3.
-        <TitleBar context={<PlanContext />} controls={<TaskModelChip group="plan" />} />
+        <TitleBar
+          context={<PlanContext />}
+          controls={
+            <>
+              <PlanStatus />
+              <TaskModelChip group="plan" />
+            </>
+          }
+        />
       );
     case 'S-03':
       return (
