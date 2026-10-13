@@ -51,6 +51,21 @@ async function openMr482(page: Page) {
   await input.press('Enter');
 }
 
+/** Review.dc.html's step 4 of !482 in the given layout (the mock keeps MR sessions in memory). */
+async function step4(page: Page, layout: 'A' | 'B' | 'C') {
+  await openMr482(page);
+  await page.getByRole('button', { name: /Start step 1/ }).click();
+  await page
+    .getByRole('navigation', { name: 'Steps' })
+    .getByRole('button', { name: /ViewModel/ })
+    .click();
+  await page.getByText('Fields and constructor: 3 new dependencies').waitFor();
+  await page.getByText('Kick() is called on the UI thread.', { exact: false }).waitFor();
+  await waitForHighlight(page, 'RelayCommand');
+  await page.keyboard.press(`Control+${{ A: '1', B: '2', C: '3' }[layout]}`);
+  await page.getByText('Fields and constructor: 3 new dependencies').waitFor();
+}
+
 const SHOTS: Shot[] = [
   { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' }, prepare: startMock },
   {
@@ -165,19 +180,19 @@ const SHOTS: Shot[] = [
     screen: 'S03',
     state: 'focus-layout-A',
     lastRoute: { screen: 'S-01' },
-    // Review.dc.html's default state: step 4 of !482 (the mock keeps MR sessions in memory, so
-    // the step is reached from S-01 › plan › step 1 › the steps list).
-    prepare: async (page) => {
-      await openMr482(page);
-      await page.getByRole('button', { name: /Start step 1/ }).click();
-      await page
-        .getByRole('navigation', { name: 'Steps' })
-        .getByRole('button', { name: /ViewModel/ })
-        .click();
-      await page.getByText('Fields and constructor: 3 new dependencies').waitFor();
-      await page.getByText('Kick() is called on the UI thread.', { exact: false }).waitFor();
-      await waitForHighlight(page, 'RelayCommand');
-    },
+    prepare: (page) => step4(page, 'A'),
+  },
+  {
+    screen: 'S03',
+    state: 'focus-layout-B',
+    lastRoute: { screen: 'S-01' },
+    prepare: (page) => step4(page, 'B'),
+  },
+  {
+    screen: 'S03',
+    state: 'focus-layout-C',
+    lastRoute: { screen: 'S-01' },
+    prepare: (page) => step4(page, 'C'),
   },
   { screen: 'S06', state: 'changes-local', lastRoute: { screen: 'S-06' }, prepare: changesLocal },
   {
