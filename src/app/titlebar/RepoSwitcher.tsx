@@ -1,29 +1,13 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ChevronDownIcon } from '../../components/icons';
 import { cx } from '../../components/cx';
+import { moveMenuFocus } from '../../components/menuFocus';
 import { useAddRepo, useRepos, useSwitchRepo } from '../../ipc/hooks/useRepos';
 import styles from './parts.module.css';
 
 export interface RepoSwitcherProps {
   name: string;
   path: string;
-}
-
-/** Moves focus between the menu's items with the arrow keys, Home and End. */
-function moveFocus(menu: HTMLElement, key: string): boolean {
-  const items = [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')];
-  const at = items.indexOf(document.activeElement as HTMLElement);
-  const last = items.length - 1;
-  const next: Partial<Record<string, number>> = {
-    ArrowDown: at >= last ? 0 : at + 1,
-    ArrowUp: at <= 0 ? last : at - 1,
-    Home: 0,
-    End: last,
-  };
-  const index = next[key];
-  if (index === undefined) return false;
-  items[index]?.focus();
-  return true;
 }
 
 /**
@@ -61,7 +45,7 @@ export function RepoSwitcher({ name, path }: RepoSwitcherProps) {
       close();
       return;
     }
-    if (menu.current && moveFocus(menu.current, event.key)) event.preventDefault();
+    if (menu.current && moveMenuFocus(menu.current, event.key)) event.preventDefault();
   };
 
   return (

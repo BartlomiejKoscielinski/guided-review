@@ -5,7 +5,8 @@ import styles from './Tag.module.css';
 export interface TagProps {
   /** Native tooltip (RENAMED: the old path). */
   title?: string;
-  color: BlockColor;
+  /** `muted`: a minor note (Main.dc.html SEV.nit), grey text-muted fill. */
+  color: BlockColor | 'muted';
   /** "ring" for allowed failures and manual jobs; "filled" otherwise. */
   look?: 'filled' | 'ring';
   /** xs = file status in the S-06 tree (11px, 16px line). */
