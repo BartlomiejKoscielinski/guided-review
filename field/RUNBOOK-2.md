@@ -1,4 +1,4 @@
-# Field visit 2 · runbook (end of M2; runs field visit 1 first)
+# Field visit 2 · runbook (runs field visit 1 first; both postponed to field visit 3, ADR-025)
 
 Checks on the company laptop what M2 can't prove on the development PC (ADR-019, `docs/09-testing.md` › Field kit, `docs/07-roadmap.md` › M2): the S-01 MR lists through **GraphQL** on the on-prem GitLab (ADR-024), and the portable app on real MRs, read-only: token setup through the internal CA, repository, MR lists, fetch and worktree, **Open in Rider**.
 

@@ -38,7 +38,7 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 - Features: F-01 (all), F-02.1, F-02.2, F-02.3, F-02.4, F-03 (all), F-05.1, F-05.4, F-05.6, F-19.2, F-19.5, F-19.6, F-24.1, F-24.4, F-30.7. F-02.4 refreshes on focus and on a fixed timer here; it is wired to the poller in M10.
 - Screens: S-01, S-07 (GitLab).
 - Demo (stand-in GitLab): paste an MR link → worktree created → Browse files shows the MR diff; Open in Rider jumps to a line.
-- **Field visit 2:** MR lists and filters, fetch, worktree and Open in Rider on real MRs (read-only). The same visit first runs `field/RUNBOOK-1.md` (field visit 1, postponed from M0). Its Claude Enterprise results (S1–S3) gate M3, which builds the review flow on Claude: M3 doesn't start before this report is merged.
+- **Field visit 2:** MR lists and filters, fetch, worktree and Open in Rider on real MRs (read-only); it first runs `field/RUNBOOK-1.md` (field visit 1, postponed from M0). **Postponed to field visit 3 by ADR-025:** M2 closes on the stand-in and M3 starts on the PC/Max results of S1–S3.
 
 ## M3 · Plan and Focus review
 **Goal:** the core experience: plan, steps, notes, drafts (local), in Focus mode with all three layouts; self-review on local changes.
@@ -59,7 +59,7 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 - Features: F-11 (all), F-12 (all), F-13 (all), F-14 (all).
 - Screens: S-05, thread cards in S-03/S-04.
 - Demo (stand-in GitLab): publish 5 drafts (author gets one notification), resolve a thread, approve; show that approving published nothing.
-- **Field visit 3** (after M5 or M6): publish, approve and resolve in the on-prem sandbox project.
+- **Field visit 3** (after M5 or M6): first `field/RUNBOOK-1.md` and `field/RUNBOOK-2.md` (field visits 1 and 2, postponed by ADR-025), then publish, approve and resolve in the on-prem sandbox project.
 
 ## M6 · Pipelines
 **Goal:** see and run the MR's pipeline and jobs from the app; understand failures.

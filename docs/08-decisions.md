@@ -92,11 +92,16 @@ Context: the REST MR lists lack `+add −del`, the file count, the head pipeline
 Decision (owner, 2026-10-12): S-01's lists use one GraphQL query per tab (`POST /api/graphql`, same `PRIVATE-TOKEN`, query in `gitlab/queries/mr_list.graphql`): `project.mergeRequests(state: opened, reviewerUsername | authorUsername, not: {approvedBy: [me]})` with `diffStatsSummary`, `headPipeline.status`, `approvedBy`, `reviewers { mergeRequestInteraction { approved } }`, `resolvableDiscussionsCount`, `resolvedDiscussionsCount`; the counts of all three tabs come in the same request as aliased `count` fields. Introspection and live queries on the stand-in (17.11.7, unlicensed, 2026-10-12) found every field, and `not: {approvedBy}` **does** filter there. A field missing on-prem falls back to REST for that field only and is recorded in `05`. Everything else stays REST.
 Consequences: no per-MR approvals fallback; a GraphQL `errors` entry (HTTP 200) maps to `INTERNAL` with GitLab's message; field visit 2 checks the query on-prem (key-set diff from `gr-probe`). The Free tier keeps one reviewer per MR (a second `reviewer_ids` entry is dropped), so multi-reviewer rows are only seen on a licensed instance.
 
+### ADR-025 Field visits 1 and 2 postponed; M2 closes on the stand-in (owner, 2026-10-13)
+Context: field visits 1 and 2 (`field/RUNBOOK-1.md`, `field/RUNBOOK-2.md`) were to gate the end of M2 and the start of M3. The owner doesn't want a laptop visit now; the stand-in runs the on-prem version (17.11.7-ee).
+Decision: M2 is done on layers 1–2 and the stand-in: gr-probe GraphQL schema 41/41 and all tabs pass (`field/baseline/standin-keysets.*`), the real-app smoke and F-24.1 of session 2h-1. M3 starts on the PC/Max results of S1–S4 (ADR-022). Visits 1 and 2 run at **field visit 3** (after M5 or M6), before its own steps; the kit is ready (release `field-visit-2`).
+Consequences: until then these stay unproven: `--restricted` and the profiles on Claude Enterprise (S1–S3; if refused, ADR-022's fallback, a change in `claude/runner.rs` only), TLS through the internal CA (S6), on-prem tier and instance settings (S5, the GraphQL fields of ADR-024; a missing field falls back to REST for that field), and the `[field]` items of `09` for M2. M3–M5 work that depends on them is built against the stand-in and PC/Max as before and is rechecked at field visit 3.
+
 ---
 
 ## Spike notes (fill in during M0)
 
-Every result names where it was measured: **PC/Max** (development PC, personal Claude Max, stand-in GitLab), **Laptop/Enterprise** (field visit, Claude Enterprise, on-prem GitLab), and the tool versions. S1–S3 count as done only with a Laptop/Enterprise result (field visit 1, postponed to the end of M2 and done with field visit 2; M3 doesn't start before it).
+Every result names where it was measured: **PC/Max** (development PC, personal Claude Max, stand-in GitLab), **Laptop/Enterprise** (field visit, Claude Enterprise, on-prem GitLab), and the tool versions. S1–S3 count as done only with a Laptop/Enterprise result (field visit 1, postponed with field visit 2 to field visit 3 by ADR-025; until then M3–M5 build on the PC/Max results).
 
 | Spike | Question | Where | Result | Date |
 | - | - | - | - | - |
