@@ -21,6 +21,7 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 - `npm run verify` = typecheck + eslint + `prettier --check` + vitest + `cargo fmt --check` + `cargo clippy -- -D warnings` + `cargo test`
 - `npm run e2e` (Playwright against the mock backend) · `npm run gen:types` (ts-rs → `src/ipc/types/`)
 - `node tools/mock-preview/render-mock.mjs <Mock.dc.html> --state '<json>' --out <png>` (render a design mock)
+- `node tools/mock-preview/design-check.mjs S06` (/design-check data in one run: shots, mock render, pixel heatmap, DOM/style comparison)
 - `node tools/audit.mjs [--milestone M3]` (acceptance criteria vs PROGRESS vs tests)
 - `node tools/app-driver/app.mjs start | snap | click <selector> | shot | stop` (drive the real app over WebView2 CDP; skill `/app`)
 

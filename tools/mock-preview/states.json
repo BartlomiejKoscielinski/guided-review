@@ -1,0 +1,23 @@
+{
+  "_comment": "Design-shot state (tests/e2e/design-shots.spec.ts) → mock and state preset (docs/design/README.md). Add a row when you add a shot.",
+  "S01-start": { "mock": "Start.dc.html", "state": {} },
+  "S01-start-mine-tab": { "mock": "Start.dc.html", "state": { "tab": "mine" } },
+  "S02-plan": { "mock": "Overview.dc.html", "state": {} },
+  "S03-focus-layout-A": { "mock": "Review.dc.html", "state": {} },
+  "S03-focus-layout-B": { "mock": "Review.dc.html", "state": { "layout": "B" } },
+  "S03-focus-layout-C": { "mock": "Review.dc.html", "state": { "layout": "C" } },
+  "S04-detailed": { "mock": "Main.dc.html", "state": {}, "height": 1040 },
+  "S06-changes-local": { "mock": "Changes.dc.html", "state": {} },
+  "S06-changes-commit": { "mock": "Changes.dc.html", "state": { "source": "commit" } },
+  "S06-changes-committed": {
+    "mock": "Changes.dc.html",
+    "state": { "committed": true, "message": "Enable compiled bindings in app pages" }
+  },
+  "S07-settings-general": { "mock": "Settings.dc.html", "state": { "section": "general" } },
+  "S07-settings-claude": { "mock": "Settings.dc.html", "state": { "section": "claude" } },
+  "S07-settings-gitlab": { "mock": "Settings.dc.html", "state": { "section": "gitlab" } },
+  "S07-settings-integrations": { "mock": "Settings.dc.html", "state": { "section": "integrations" } },
+  "S07-settings-notifications": { "mock": "Settings.dc.html", "state": { "section": "notifications" } },
+  "S07-settings-rules": { "mock": "Settings.dc.html", "state": { "section": "rules" } },
+  "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } }
+}

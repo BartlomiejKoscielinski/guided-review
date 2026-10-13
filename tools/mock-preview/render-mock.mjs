@@ -4,7 +4,9 @@
 //
 // Usage:
 //   node tools/mock-preview/render-mock.mjs <Mock.dc.html> [--state '<json>'] [--props '<json>']
-//        [--width 1600] [--height 1000] [--out path.png] [--text]
+//        [--width 1600] [--height 1000] [--out path.png] [--text] [--styles]
+// --text writes the page text to <out>.txt; --styles writes text elements with computed styles
+// (collect-dom.js) to <out>.json for compare-dom.mjs.
 //
 // Requires dev dependencies: playwright, @fontsource/barlow, @fontsource/barlow-condensed,
 // @fontsource/jetbrains-mono. The mock's own runtime is not needed: dc-shim.js expands the
@@ -27,6 +29,7 @@ const state = opt('state', null);
 const props = opt('props', null);
 const out = resolve(opt('out', join(root, '.design-check', basename(mockPath).replace('.dc.html', '') + '.png')));
 const wantText = args.includes('--text');
+const wantStyles = args.includes('--styles');
 
 const shim = readFileSync(join(here, 'dc-shim.js'), 'utf8');
 const fontDir = join(root, 'node_modules', '@fontsource');
@@ -53,6 +56,7 @@ await page.waitForFunction(() => window.__DONE === true, null, { timeout: 5000 }
 await page.evaluate(() => document.fonts.ready);
 await page.screenshot({ path: out });
 if (wantText) writeFileSync(out.replace(/\.png$/, '.txt'), await page.evaluate(() => document.body.innerText));
+if (wantStyles) writeFileSync(out.replace(/\.png$/, '.json'), JSON.stringify(await page.evaluate(readFileSync(join(here, 'collect-dom.js'), 'utf8'))));
 const missing = await page.evaluate(() => [...new Set(window.__MISSING || [])]);
 await browser.close();
 unlinkSync(tmp);

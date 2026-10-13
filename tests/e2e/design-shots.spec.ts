@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { test, type Page } from '@playwright/test';
 
 // /design-check captures (docs/09 › Visual): each screen state at 1600×1000 with the mock
@@ -208,6 +208,9 @@ const SHOTS: Shot[] = [
 
 mkdirSync('.design-check', { recursive: true });
 
+/** Text elements with computed styles, compared with the mock's by tools/mock-preview/design-check.mjs. */
+const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
+
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
     await page.addInitScript(({ lastRoute, sessions, review }) => {
@@ -224,6 +227,8 @@ for (const shot of SHOTS) {
     await page.getByTestId('title-bar').waitFor();
     if (shot.prepare) await shot.prepare(page);
     await page.evaluate(() => document.fonts.ready);
-    await page.screenshot({ path: `.design-check/impl-${shot.screen}-${shot.state}.png` });
+    const base = `.design-check/impl-${shot.screen}-${shot.state}`;
+    await page.screenshot({ path: `${base}.png` });
+    writeFileSync(`${base}.json`, JSON.stringify(await page.evaluate(collectDom)));
   });
 }
