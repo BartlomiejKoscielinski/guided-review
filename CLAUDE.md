@@ -38,7 +38,7 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 8. If you are not sure about a library or CLI API (Tauri plugins, csharp-ls, GitLab endpoint, Claude Code flag): read its current docs before writing code and note the version in the commit message or spike notes.
 9. Don't add dependencies without saying why in the plan.
 10. Keep sessions short: one phase per session (plan · core · one screen with its design-check · wrap-up). When a phase ends with a commit, run `/handoff` and suggest a new session instead of continuing. Read docs by section (grep headings, Read with offset/limit); filter command output (`tools/verify.mjs`, `grep`, `tail`); open images only as crops.
-11. Parallel lanes (E4): the plan's `## Lanes` table plus the IPC types is the contract, committed before `/fanout Mx` (worktrees `../gr-<lane>`, `tools/lanes.mjs`); `/integrate Mx` merges them back here. Lanes never change IPC types; a type change goes through the integrator.
+11. Parallel lanes (E4): the plan's `## Lanes` table plus the IPC types is the contract, committed before `/fanout Mx` (worktrees `../gr-<lane>`, `tools/lanes.mjs`). `/fanout` runs each lane as a background subagent in its worktree and then an integrator subagent that does the `/integrate Mx` steps here; no owner step in between. Lanes never change IPC types; a type change goes through the integrator.
 12. In a lane (`.lanes/<lane>/lane.json` exists): read only `.lanes/<lane>/context.md`, no `/app` or `tauri dev`, never write `docs/PROGRESS.md` or `.metrics/`; end with a commit and `/handoff`, which writes `.lanes/<lane>/report.md`.
 
 ## Non-negotiables
