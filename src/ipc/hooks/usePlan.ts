@@ -26,7 +26,11 @@ const setOrder = (queryClient: QueryClient, sessionId: string, order: StepOrder)
  * S-02's plan (F-06.2), cached per session; `phase` drives the Planning state and the title bar
  * status (F-06.12), `refetch` is Retry.
  */
-export function usePlan(sessionId: string): {
+export function usePlan(
+  sessionId: string,
+  /** False on a screen restored on start: it starts no Claude work (F-30.4). */
+  enabled = true,
+): {
   query: UseQueryResult<PlanView, IpcError>;
   phase: TaskPhase;
 } {
@@ -44,7 +48,7 @@ export function usePlan(sessionId: string): {
         void queryClient.invalidateQueries({ queryKey: CLAUDE_STATUS_KEY });
       }
     },
-    enabled: sessionId !== '',
+    enabled: enabled && sessionId !== '',
     staleTime: Infinity,
     retry: false,
   });

@@ -1,0 +1,373 @@
+/* S-03 Focus mode, layout A (Review.dc.html; docs/03). Colors only from tokens. */
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+}
+
+/* Steps list */
+.steps {
+  flex: 0 0 236px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 12px;
+  background: var(--panel);
+  overflow: auto;
+}
+
+.stepsHead {
+  padding: 0 8px 10px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.stepRow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stepRow:hover {
+  background: var(--panel-2);
+}
+
+.stepNo {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1.5px var(--ring-2);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.stepCurrent,
+.stepCurrent:hover {
+  background: var(--yellow);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.stepCurrent .stepNo {
+  background: var(--ink);
+  box-shadow: none;
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.skim {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 36px;
+  padding: 0 10px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+/* Main column: scrolls as a whole; the diff virtualizes against it. */
+.main {
+  flex: 999 1 640px;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 32px 36px 40px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-bottom: 26px;
+}
+
+.heading {
+  flex: 1 1 480px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kicker {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
+.description {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.headActions {
+  display: flex;
+  gap: 6px;
+}
+
+.markReviewed {
+  font-size: 15px;
+}
+
+.next {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: var(--raised);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.next:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.notesState {
+  margin-bottom: 20px;
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* File */
+.file + .file {
+  margin-top: 28px;
+}
+
+.fileHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.fileName {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.path {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}
+
+.stats {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.add {
+  color: var(--diff-add-text);
+}
+
+.del {
+  color: var(--diff-del-text);
+}
+
+.noteCount {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.noteSquare {
+  width: 9px;
+  height: 9px;
+  background: var(--orange);
+}
+
+/* Gutter markers (F-07.5) */
+.noteMark {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+.fix {
+  background: var(--orange);
+}
+.q {
+  background: var(--blue);
+}
+.nit {
+  background: var(--text-muted);
+}
+.draft {
+  background: var(--yellow);
+}
+.dismissed {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+.focusedMark {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.threadMark {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--line);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.threadResolved {
+  background: transparent;
+  color: var(--text-lineno);
+}
+
+/* Inline cards under a line */
+.inlineCard {
+  padding: 10px 24px 16px 56px;
+  background: var(--bg);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+.thread {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--panel-2);
+}
+
+.threadNote {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--orange);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.avatar[data-color='green'] {
+  background: var(--green);
+}
+.avatar[data-color='blue'] {
+  background: var(--blue);
+}
+.avatar[data-color='purple'] {
+  background: var(--purple);
+}
+
+.noteText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.byline {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.byline b {
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.firstBody,
+.replyBody {
+  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.firstBody {
+  color: var(--text);
+}
+
+.replyBody {
+  color: var(--text-3);
+}
+
+.resolved {
+  align-self: flex-start;
+  margin-left: 38px;
+  padding: 2px 8px;
+  background: var(--green);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
