@@ -124,3 +124,15 @@ export function skillCosts(records) {
     }
   return [...g.values()].sort((a, b) => b.cacheRead - a.cacheRead);
 }
+
+/**
+ * Sessions started after `Last retro:` in docs/process/IMPROVEMENTS.md (`text`). The stamp is UTC
+ * with minutes (2026-10-14T09:30Z); a bare date counts as the end of that day, so later sessions of
+ * the same day are not "since". Due at 5 sessions.
+ */
+export function retroStatus(text, records) {
+  const found = /Last retro:\s*(\d{4}-\d{2}-\d{2})(T\d{2}:\d{2}(?::\d{2})?Z)?/.exec(text);
+  const last = found ? new Date(found[1] + (found[2] ?? 'T23:59:59Z')).toISOString() : '1970-01-01';
+  const since = records.filter((r) => (r.start ?? '') > last).length;
+  return { last, since, due: since >= 5 };
+}

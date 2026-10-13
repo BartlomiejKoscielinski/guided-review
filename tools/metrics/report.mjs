@@ -15,7 +15,7 @@ import { homedir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { projectDirs, sessionRecord } from './transcript.mjs';
-import { crossSuggestions, sessionSuggestions, skillCosts } from './suggest.mjs';
+import { crossSuggestions, retroStatus, sessionSuggestions, skillCosts } from './suggest.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ledgerFile = join(root, '.metrics', 'sessions.jsonl');
@@ -197,9 +197,8 @@ function lastReport(records) {
 
 function retroDue(records) {
   const text = existsSync(improvements) ? readFileSync(improvements, 'utf8') : '';
-  const last = text.match(/Last retro:\s*(\d{4}-\d{2}-\d{2}T?[\d:]*)/)?.[1] ?? '1970-01-01';
-  const since = records.filter((r) => (r.start ?? '') > last).length;
-  return `${since} sessions since the last retro (${last.slice(0, 10)})${since >= 5 ? ': retro due, run /retro' : ''}`;
+  const { last, since, due } = retroStatus(text, records);
+  return `${since} sessions since the last retro (${last.slice(0, 16)})${due ? ': retro due, run /retro' : ''}`;
 }
 
 const records = ingest();

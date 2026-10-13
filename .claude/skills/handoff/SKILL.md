@@ -9,7 +9,7 @@ Next session focus (optional): $ARGUMENTS
 1. State: `git status --short`, `git log --oneline -15`, current branch. If there are uncommitted changes that belong to this session's work, ask whether to commit them first.
 2. PROGRESS, by section only (`grep -n '^## \|^- \[ \]' docs/PROGRESS.md`; never read the whole file):
    - tick criteria finished in this session with their SHAs, `(sha)` or `(sha, sha)`; mark partial ones `— partial: <what is missing>`;
-   - append one session-log row: date · milestone and session · what was done with SHAs, deviations, open issues · Next (who does what). Keep the row under ~150 words; details belong in commits and docs.
+   - append one session-log row: date · milestone and session · what was done with SHAs, deviations, open issues · `Tasks x/y` (numbered prompt tasks done / planned, and `guard at 120k before task n` if the warning came first; E5) · Next (who does what). Keep the row under ~150 words; details belong in commits and docs.
    - run `node tools/audit.mjs --milestone <Mx>` and fix any SHA gap you introduced.
 3. Process metrics (one call): `node tools/metrics/report.mjs && node tools/metrics/report.mjs --retro-due`. Keep its numbers for the final message (turns, max context, cache read, top tax). If a retro is due, make `/retro` the first task of the next prompt (or run it now if the user agrees).
 4. Commit: `<Mx>: PROGRESS session log <session>` with `.metrics/sessions.jsonl` (no Co-Authored-By trailer).

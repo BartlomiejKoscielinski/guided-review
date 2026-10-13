@@ -7,7 +7,7 @@ import {
   resultTokens,
   tokenTotals,
 } from './metrics/transcript.mjs';
-import { sessionSuggestions } from './metrics/suggest.mjs';
+import { retroStatus, sessionSuggestions } from './metrics/suggest.mjs';
 
 test('commandKey names the program and what it runs', () => {
   assert.equal(
@@ -103,4 +103,17 @@ test('E4 transcript folders: the checkout, worktrees under it and lanes next to 
     { name: 'c--repos-guided-review--claude-worktrees-x', lane: null },
     { name: 'C--Repos-gr-focus-b', lane: 'focus-b' },
   ]);
+});
+
+test('retro due: sessions after the stamp; a bare date counts as the end of that day', () => {
+  const records = [
+    '2026-10-13T19:00:00.000Z',
+    '2026-10-13T21:00:00.000Z',
+    '2026-10-14T08:00:00.000Z',
+  ].map((start) => ({ start }));
+  assert.equal(retroStatus('Last retro: 2026-10-13T20:19Z (17 sessions)', records).since, 2);
+  assert.equal(retroStatus('Last retro: 2026-10-13', records).since, 1);
+  assert.deepEqual(retroStatus('', records), { last: '1970-01-01', since: 3, due: false });
+  const many = Array.from({ length: 5 }, () => ({ start: '2026-10-15T08:00:00.000Z' }));
+  assert.equal(retroStatus('Last retro: 2026-10-13T20:19Z', many).due, true);
 });
