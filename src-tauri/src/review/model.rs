@@ -23,6 +23,17 @@ pub enum Layout {
     C,
 }
 
+/// Step order on S-02 (F-06.4). Stored in `sessions.strategy` as "contractToUi", …
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub enum Strategy {
+    #[default]
+    ContractToUi,
+    TestsFirst,
+    FileOrder,
+}
+
 /// Lifecycle of a review session; stored in `sessions.status` as "preparing", "planning", …
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
