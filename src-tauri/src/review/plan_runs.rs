@@ -49,6 +49,23 @@ pub struct PlanView {
     pub fallback: Option<AppError>,
 }
 
+/// Claude Code can't run at all (not found): the fallback view right away, `queued` → `done`.
+pub fn unavailable(
+    inputs: &SessionInputs,
+    error: ClaudeError,
+    emit: &(dyn Fn(ClaudeTaskEvent<PlanView>) + Sync),
+) -> Planned {
+    emit(ClaudeTaskEvent::Queued);
+    let view = fallback_view(&inputs.files, &inputs.threads, &error);
+    emit(ClaudeTaskEvent::Done {
+        result: view.clone(),
+    });
+    Planned {
+        view,
+        claude_error: Some(error),
+    }
+}
+
 /// The plan task's result: the view, and the Claude error behind a fallback view.
 #[derive(Debug, Clone)]
 pub struct Planned {

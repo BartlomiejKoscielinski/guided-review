@@ -1,7 +1,7 @@
 //! `review_*` commands of S-02: the plan (F-06.2, F-06.12) with its task events on `ch`, the
 //! strategy toggle (F-06.4, no Claude call) and the dragged order (F-06.5).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use tauri::State;
@@ -11,6 +11,8 @@ use super::claude::{ClaudeApp, after_task, executable};
 use super::gitlab::GitlabApp;
 use super::review::{ReviewApp, mr_threads, plan_context, sender, step_context};
 use super::with_store;
+use crate::claude::ClaudeError;
+use crate::claude::discover::{DiscoveryInput, discover};
 use crate::claude::tasks::events::ClaudeTaskEvent;
 use crate::error::AppResult;
 use crate::os::process::Cancel;
@@ -32,20 +34,25 @@ pub async fn review_plan(
     ch: Channel<ClaudeTaskEvent<PlanView>>,
 ) -> AppResult<PlanView> {
     let settings = with_store(&store, |c| store::settings::load(c)).await?;
-    let exe = executable(&store).await?;
-    let ctx = plan_context(&claude, &store, &exe, &settings.claude);
     let git_program = settings.git.path.as_deref().map(Path::new);
     let threads = |mr: MrRef| mr_threads(&gitlab, &store, mr);
     let cancel = Cancel::new();
     let inputs = context::load_inputs(&store, git_program, &session, threads, &cancel).await?;
     let emit = sender(ch);
-    let planned = match plan_runs::plan(&ctx, &inputs, &cancel, &emit).await {
-        Ok(planned) => planned,
-        Err(error) => {
-            if let Some(claude_error) = error.claude() {
-                after_task(&claude, &store, Err(claude_error)).await;
+    let configured = settings.claude.path.clone().map(PathBuf::from);
+    let planned = match discover(&DiscoveryInput::from_env(configured)) {
+        None => plan_runs::unavailable(&inputs, ClaudeError::NotFound, &emit),
+        Some(exe) => {
+            let ctx = plan_context(&claude, &store, &exe, &settings.claude);
+            match plan_runs::plan(&ctx, &inputs, &cancel, &emit).await {
+                Ok(planned) => planned,
+                Err(error) => {
+                    if let Some(claude_error) = error.claude() {
+                        after_task(&claude, &store, Err(claude_error)).await;
+                    }
+                    return Err(error.into());
+                }
             }
-            return Err(error.into());
         }
     };
     let plan = planned.view.plan.clone();

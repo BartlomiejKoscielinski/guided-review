@@ -14,6 +14,7 @@ use std::sync::Mutex;
 
 use fake_claude::FakeClaude;
 use fixture_repo::FixtureRepo;
+use guided_review_lib::claude::ClaudeError;
 use guided_review_lib::claude::discover::ClaudeExecutable;
 use guided_review_lib::claude::queue::Queue;
 use guided_review_lib::claude::tasks::events::ClaudeTaskEvent;
@@ -333,4 +334,27 @@ async fn f06_5_review_plan_returns_the_stored_order() {
     assert_eq!(order.strategy, Strategy::TestsFirst);
     assert!(!order.custom);
     assert_eq!(order.order, ["s2", "s1"]);
+}
+
+#[tokio::test]
+async fn f06_4_fallback_when_claude_code_is_not_found_without_started() {
+    let s = setup();
+    let inputs = s.inputs().await;
+    let events = Mutex::new(Vec::new());
+    let emit = |e: ClaudeTaskEvent<PlanView>| events.lock().unwrap().push(e);
+    let planned = plan_runs::unavailable(&inputs, ClaudeError::NotFound, &emit);
+    let kinds: Vec<_> = events
+        .into_inner()
+        .unwrap()
+        .iter()
+        .map(|e| serde_json::to_value(e).unwrap()["kind"].clone())
+        .collect();
+    assert_eq!(kinds, [json!("queued"), json!("done")]);
+    assert!(matches!(planned.claude_error, Some(ClaudeError::NotFound)));
+    assert_eq!(
+        planned.view.fallback.unwrap().code,
+        ErrorCode::ClaudeNotFound
+    );
+    assert_eq!(planned.view.order.order, ["f1", "f2"]);
+    assert!(s.fake.calls().is_empty());
 }
