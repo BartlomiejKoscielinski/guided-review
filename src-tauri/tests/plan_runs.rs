@@ -171,6 +171,14 @@ async fn f06_2_review_plan_runs_claude_with_the_session_inputs() {
     assert_eq!(view.plan.intent, "Uploads go through a queue.");
     assert_eq!(view.cached_at, None);
     assert_eq!(view.order.order, ["s1", "s2"]);
+    // F-06.3: s1 adds a line to IQueue, s2 replaces one in the ViewModel.
+    let stats: Vec<_> = view
+        .step_stats
+        .iter()
+        .map(|s| (s.files, s.additions, s.deletions))
+        .collect();
+    assert_eq!(stats, [(1, 1, 0), (1, 1, 1)]);
+    assert!(view.skim_stats.is_empty());
     let calls = s.fake.calls();
     assert_eq!(calls.len(), 1);
     assert_eq!(
