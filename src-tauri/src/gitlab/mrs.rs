@@ -9,7 +9,8 @@ use super::account::GitlabUser;
 use super::client::GitlabClient;
 use super::error::GitlabError;
 
-const QUERY: &str = include_str!("queries/mr_list.graphql");
+/// The S-01 list query; also run by `gr-probe gitlab read` for its key sets (field visit 2).
+pub const QUERY: &str = include_str!("queries/mr_list.graphql");
 /// Rows per GraphQL page (GitLab's maximum).
 pub const PAGE_SIZE: u32 = 100;
 /// Pages followed per list; more rows set `truncated`.
@@ -120,7 +121,8 @@ pub fn note(unresolved_threads: u32, files: u32, reviewer: bool) -> Option<Strin
     }
 }
 
-fn variables(project: &str, me: &str, tab: MrTab, first: u32, after: Option<&str>) -> Value {
+/// The query variables of one tab.
+pub fn variables(project: &str, me: &str, tab: MrTab, first: u32, after: Option<&str>) -> Value {
     let mut vars = json!({ "project": project, "me": me, "first": first, "after": after });
     match tab {
         MrTab::Waiting => {

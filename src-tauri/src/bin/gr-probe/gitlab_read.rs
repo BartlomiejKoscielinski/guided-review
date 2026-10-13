@@ -1,6 +1,7 @@
 //! `gitlab read` (S5 read, field visit 1): version and tier, the current user, the token's
 //! scopes, MR list filters (F-02.1), pagination headers, and the key sets of MR detail,
-//! approvals, versions, discussions, draft notes, pipelines and jobs. Read-only.
+//! approvals, versions, discussions, draft notes, pipelines and jobs, and the GraphQL schema and
+//! MR list key sets (`gitlab_graphql.rs`, field visit 2). Read-only.
 //!
 //! The report holds statuses, booleans and key sets; values (names, titles, counts) never.
 
@@ -147,6 +148,7 @@ pub async fn run(args: &Args) -> Result<(Vec<Check>, Sanitizer), String> {
     }
     checks.extend(mr_filters(&session).await);
     checks.extend(latest_mr_shapes(&session).await);
+    checks.extend(crate::gitlab_graphql::checks(&session).await);
     Ok((checks, session.sanitizer))
 }
 
