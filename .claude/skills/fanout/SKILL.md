@@ -64,7 +64,7 @@ You are a background subagent of the integrator session (Agent tool); nobody els
 - An action the permission mode blocks goes into the report; don't work around it with another command.
 - Never touch the main checkout or other ../gr-* worktrees.
 - Long steps (cargo, Playwright, design-check) only through node tools/verify.mjs and tools/mock-preview, in the foreground; leave no background process (stop your dev server) at the end.
-- The last step is always a commit and /handoff (the report), also when something stays open. Final answer, at most 8 lines: commits (short SHA + subject), report path, open items, contract requests.
+- The last step is always a commit and /handoff in lane mode, also when something stays open. Don't write .lanes/<lane>/report.md (the Write tool refuses report files in a subagent): your final answer is the full report (Commits with short SHAs, Done, Tests, Deviations, Contract requests, Open); the integrator saves it.
 
 Tasks:
 1. Build the ACs in the order of the plan rows in context.md; commit after each coherent piece.
@@ -76,7 +76,7 @@ Then stop; the integrator runs /integrate <Mx> in the main checkout.
 ## 5. Run the lanes (skip with `--dry-run`)
 Nothing here needs the owner; this session only orchestrates (its context stays small).
 1. All lanes in one message, one Agent call each: `subagent_type` general-purpose, `model` from the lane's model (Opus → opus, Sonnet → sonnet, Haiku → haiku, Fable → fable), `effort` from its `## Lanes` row, `run_in_background` true, `description` `lane <lane>`, `prompt` = the text of `.lanes/<lane>/prompt.md`. Note the UTC start time. Don't poll; each lane's completion notification wakes you.
-2. When every lane has finished: `node tools/lanes.mjs list`. Then one foreground subagent integrates (`model` opus, `effort` medium, `description` `integrate <Mx>`), prompt: "Integrator for <Mx> (E4) in the main checkout <main path>, branch <milestone branch>. Read .claude/skills/integrate/SKILL.md and do steps 1–7 for the lanes <lanes> (the skill is not model-invocable; you run its steps). Step 2: the code-review skill if you can invoke it, else review `git diff <milestone branch>...<mx>/<lane>` yourself for correctness and the CLAUDE.md non-negotiables. Step 5: port 1420 busy → GR_PORT=1500. Nobody answers questions: a refusal or a spec question goes into your answer. Answer with the step 8 report (no /handoff)."
+2. Each lane's final answer is its report: save it as `.lanes/<lane>/report.md` in the main checkout (a header line with the run time, tool uses and subagent tokens from the notification); `lanes.mjs list` finds it there. When every lane has finished: `node tools/lanes.mjs list`. Then one foreground subagent integrates (`model` opus, `effort` medium, `description` `integrate <Mx>`), prompt: "Integrator for <Mx> (E4) in the main checkout <main path>, branch <milestone branch>. Read .claude/skills/integrate/SKILL.md and do steps 1–7 for the lanes <lanes> (the skill is not model-invocable; you run its steps). Step 2: the code-review skill if you can invoke it, else review `git diff <milestone branch>...<mx>/<lane>` yourself for correctness and the CLAUDE.md non-negotiables. Step 5: port 1420 busy → GR_PORT=1500. Nobody answers questions: a refusal or a spec question goes into your answer. Answer with the step 8 report (no /handoff)."
 3. Its report goes into this session's `/handoff` (session-log row: lanes, start → merge time, merge SHAs, deviations, contract requests).
 
 ## 6. Report
