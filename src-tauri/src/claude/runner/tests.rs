@@ -273,3 +273,45 @@ fn nfr04_restricted_fallback_only_swaps_the_isolation_flags() {
     assert_eq!(fallback, expected);
     assert!(!fallback.iter().any(|a| a == "--restricted"));
 }
+
+/// Every file under `src/` with the extension `.rs`, recursively.
+fn rust_files(dir: &Path, out: &mut Vec<PathBuf>) {
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let path = entry.unwrap().path();
+        if path.is_dir() {
+            rust_files(&path, out);
+        } else if path.extension().is_some_and(|e| e == "rs") {
+            out.push(path);
+        }
+    }
+}
+
+#[test]
+fn adr025_only_runner_builds_profile_flags() {
+    // M3 plan, ADR-025 risk: one switch point for the invocation profiles. This module's own
+    // files (runner.rs and runner/) are the only ones allowed to spell the flags.
+    let src = Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+    let runner = src.join("claude").join("runner");
+    let flags =
+        ["--tools", "--restricted", "--permission-mode", "--resume"].map(|f| format!("\"{f}\""));
+    let mut files = Vec::new();
+    rust_files(&src, &mut files);
+    assert!(files.len() > 50, "walked {} files", files.len());
+    let offenders: Vec<String> = files
+        .iter()
+        .filter(|p| p.with_extension("") != runner && !p.starts_with(&runner))
+        .filter_map(|p| {
+            let text = std::fs::read_to_string(p).unwrap();
+            let hits: Vec<&str> = flags
+                .iter()
+                .filter(|f| text.contains(f.as_str()))
+                .map(String::as_str)
+                .collect();
+            (!hits.is_empty()).then(|| format!("{}: {}", p.display(), hits.join(" ")))
+        })
+        .collect();
+    assert!(
+        offenders.is_empty(),
+        "flags outside claude/runner.rs: {offenders:?}"
+    );
+}
