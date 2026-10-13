@@ -15,6 +15,7 @@ use super::patch::{self, PatchFile};
 use super::runner::Git;
 use crate::os::process::Cancel;
 use crate::review::layer::layer_of;
+use crate::review::mechanical;
 
 /// Arguments of every patch: no colors or external diff tools, full blob IDs (stable
 /// file-level hunk IDs), renames, 3 lines of context and fixed `a/`/`b/` prefixes whatever
@@ -201,6 +202,7 @@ pub fn to_model(patch: &PatchFile, utf8: bool) -> FileDiff {
             lines: Vec::new(),
             file_level: true,
             staged_differs: false,
+            mechanical: None,
         }]
     } else {
         patch
@@ -230,11 +232,12 @@ pub fn to_model(patch: &PatchFile, utf8: bool) -> FileDiff {
                     lines,
                     file_level: false,
                     staged_differs: false,
+                    mechanical: None,
                 }
             })
             .collect()
     };
-    FileDiff {
+    let mut file = FileDiff {
         old_path: patch.old_path.clone(),
         new_path: patch.new_path.clone(),
         status: patch.status,
@@ -245,7 +248,9 @@ pub fn to_model(patch: &PatchFile, utf8: bool) -> FileDiff {
         layer: layer_of(patch.path()),
         hunks,
         line_staging: utf8 && !patch.binary,
-    }
+    };
+    mechanical::mark(&mut file);
+    file
 }
 
 fn add_emphasis(lines: &mut [Line]) {

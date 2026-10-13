@@ -1,6 +1,7 @@
 //! Review sessions: plan model, coverage invariant (`coverage.rs`), steps, decisions, drafts.
 
 pub mod layer;
+pub mod mechanical;
 pub mod model;
 pub mod mr_summary;
 pub mod open_mr;

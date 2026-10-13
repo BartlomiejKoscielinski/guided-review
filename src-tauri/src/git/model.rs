@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::review::layer::Layer;
+use crate::review::mechanical::MechanicalReason;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -83,6 +84,10 @@ pub struct Hunk {
     pub file_level: bool,
     /// Local changes: the index holds a version of these lines that isn't in the file.
     pub staged_differs: bool,
+    /// Why the hunk is mechanical (F-05.5), set by `review::mechanical::mark`.
+    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mechanical: Option<MechanicalReason>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
