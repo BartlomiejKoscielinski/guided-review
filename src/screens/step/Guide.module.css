@@ -1,0 +1,244 @@
+/* S-03 layout C guide panel and layout B toolbar (Review.dc.html). Colors only from tokens. */
+.guide {
+  flex: 1 1 384px;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 30px 28px 24px;
+  background: var(--panel);
+  overflow: auto;
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.segments {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kicker {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--yellow);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
+.description {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+.worth {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.worthHead {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.badge {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.fix {
+  background: var(--orange);
+}
+.q {
+  background: var(--blue);
+}
+.nit {
+  background: var(--text-muted);
+}
+.draft {
+  background: var(--yellow);
+}
+.dismissed {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--ring);
+  color: var(--text-muted);
+}
+
+.noteOff {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.noteOff:hover {
+  background: var(--panel-2);
+}
+
+.noteOn {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 12px;
+  background: var(--raised);
+}
+
+.noteText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.noteTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.noteSub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.minor {
+  align-self: flex-start;
+  margin-left: 46px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.markReviewed {
+  width: 100%;
+  font-size: 15px;
+}
+
+.askForm {
+  display: flex;
+}
+
+.askInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.askInput::placeholder {
+  color: var(--text-muted);
+}
+
+/* Layout B: floating toolbar centered at the bottom of the screen area. */
+.toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: var(--raised);
+  box-shadow: var(--shadow-hover);
+  white-space: nowrap;
+}
+
+.arrow {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.arrow:disabled {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.position {
+  padding: 0 6px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.positionNow {
+  color: var(--yellow);
+}
+
+.divider {
+  width: 2px;
+  height: 24px;
+  margin: 0 6px;
+  background: var(--ring-2);
+}

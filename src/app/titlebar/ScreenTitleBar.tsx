@@ -1,7 +1,3 @@
-import type { ReactNode } from 'react';
-import { Button } from '../../components/Button';
-import { LayoutGuideIcon, LayoutMinimalIcon, LayoutSidebarIcon } from '../../components/icons';
-import { Segmented } from '../../components/Segmented';
 import { StatusChip } from '../../components/StatusChip';
 import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
@@ -14,65 +10,13 @@ import { GitlabStatusControl } from './GitlabStatusControl';
 import { PlanContext } from './PlanContext';
 import { PlanStatus } from './PlanStatus';
 import { PLACEHOLDER } from './placeholders';
+import { SessionContext, StepControls } from './StepControls';
+import { StepTitleBar } from './StepTitleBar';
 import { SettingsContext } from './SettingsContext';
 import { TaskModelChip } from './TaskModelChip';
 import { TitleBar } from './TitleBar';
 
 const P = PLACEHOLDER;
-const noop = () => undefined;
-
-const MODE_OPTIONS = [
-  { value: 'focus', label: 'Focus' },
-  { value: 'detailed', label: 'Detailed' },
-] as const;
-
-const LAYOUT_OPTIONS = [
-  {
-    value: 'A',
-    label: 'Sidebar layout (Ctrl+1)',
-    title: 'Sidebar · Ctrl+1',
-    icon: <LayoutSidebarIcon />,
-  },
-  {
-    value: 'B',
-    label: 'Minimal layout (Ctrl+2)',
-    title: 'Minimal · Ctrl+2',
-    icon: <LayoutMinimalIcon />,
-  },
-  {
-    value: 'C',
-    label: 'Guide layout (Ctrl+3)',
-    title: 'Guide · Ctrl+3',
-    icon: <LayoutGuideIcon />,
-  },
-] as const;
-
-function SessionContext({ iid = P.mr.iid, title = P.mr.title }: { iid?: string; title?: string }) {
-  return (
-    <>
-      <ContextText kind="repo">{P.repo.name}</ContextText>
-      <ContextText kind="iid">{iid}</ContextText>
-      <ContextText kind="title">{title}</ContextText>
-    </>
-  );
-}
-
-/** Focus/Detailed toggle (F-08.1, M4) and Finish review (F-30.3, M4): static until then. */
-function StepControls({ mode, model }: { mode: 'focus' | 'detailed'; model: ReactNode }) {
-  return (
-    <>
-      <Segmented label="Mode" size="bar" options={MODE_OPTIONS} value={mode} onChange={noop} />
-      {mode === 'focus' && (
-        <Segmented label="Layout" size="bar" options={LAYOUT_OPTIONS} value="A" onChange={noop} />
-      )}
-      {model}
-      <Button variant="primary" size={28}>
-        Finish review
-      </Button>
-    </>
-  );
-}
-
 export interface ScreenTitleBarProps {
   screen: ScreenId;
 }
@@ -106,12 +50,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
         />
       );
     case 'S-03':
-      return (
-        <TitleBar
-          context={<SessionContext />}
-          controls={<StepControls mode="focus" model={<TaskModelChip group="step" />} />}
-        />
-      );
+      return <StepTitleBar />;
     case 'S-04':
       return (
         <TitleBar

@@ -9,25 +9,30 @@ export interface NoteMarkProps {
   number: number;
   focused: boolean;
   onFocus: () => void;
+  /** Layout C: the square carries the note's number, as in the guide panel. */
+  numbered?: boolean;
 }
 
 /**
- * A note's 12px gutter square in layouts A and B (F-07.5): severity color, yellow once drafted,
- * an outline once dismissed; the focused note has a yellow ring.
+ * A note's gutter square (F-07.5): 12px in layouts A and B, numbered in C; severity color, yellow
+ * once drafted, an outline once dismissed; the focused note has a yellow ring.
  */
-export function NoteMark({ finding, number, focused, onFocus }: NoteMarkProps) {
+export function NoteMark({ finding, number, focused, onFocus, numbered = false }: NoteMarkProps) {
   return (
     <button
       type="button"
       className={cx(
         styles.noteMark,
+        numbered && styles.numberedMark,
         styles[finding.decision === 'open' ? finding.severity : finding.decision],
         focused && styles.focusedMark,
       )}
       aria-label={`Note ${String(number)}: ${finding.title}`}
       aria-pressed={focused}
       onClick={onFocus}
-    />
+    >
+      {numbered ? String(number) : null}
+    </button>
   );
 }
 

@@ -17,6 +17,8 @@ export interface AnswerCardProps {
   selfReview?: boolean;
   /** B's Ask Claude and More › Ask Claude open the card with the input focused. */
   autoFocus?: boolean;
+  /** A question typed in the guide panel (layout C): asked once when the card opens. */
+  initialQuestion?: string;
 }
 
 /** A draft from an answer sits on the selection's last line, or on the MR without one. */
@@ -34,6 +36,7 @@ export function AnswerCard({
   selection,
   selfReview = false,
   autoFocus = false,
+  initialQuestion,
 }: AnswerCardProps) {
   const { mutation, text, phase } = useAsk(sessionId, stepId);
   const createDraft = useCreateDraft();
@@ -48,14 +51,25 @@ export function AnswerCard({
     if (autoFocus) field.current?.focus();
   }, [autoFocus]);
 
-  const ask = () => {
-    const q = input.trim();
-    if (q === '' || answering) return;
+  const send = (q: string) => {
     setQuestion(q);
     setInput('');
     createDraft.reset();
     mutation.mutate({ question: q, selection });
   };
+  const ask = () => {
+    const q = input.trim();
+    if (q === '' || answering) return;
+    send(q);
+  };
+  const initial = useRef(initialQuestion);
+  useEffect(() => {
+    const q = initial.current?.trim();
+    initial.current = undefined;
+    if (q) send(q);
+    // Once, when the card opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <article className={styles.card} aria-label="Claude answer">

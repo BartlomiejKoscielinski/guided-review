@@ -1,0 +1,11 @@
+/* Progress segments button in the middle of the bar (Review.dc.html, layout B). */
+.segments {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
