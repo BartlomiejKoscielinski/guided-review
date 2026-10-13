@@ -2,6 +2,7 @@
 
 pub mod config_risk;
 pub mod coverage;
+pub mod decisions;
 pub mod drafts;
 pub mod finding_model;
 pub mod findings;
