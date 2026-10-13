@@ -1,10 +1,10 @@
 //! Step order per strategy (F-06.4): Contract to UI and Tests first come from Claude's
-//! `orders`, File order is computed (F-05.4 layer order, then path). No Claude call.
+//! `orders`, File order is computed (GitLab's diff path order). No Claude call.
 
+use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 
 use super::coverage::HunkRef;
-use super::layer::Layer;
 use super::model::Strategy;
 use super::plan_model::{Plan, Step};
 
@@ -32,45 +32,56 @@ pub fn complete_order(order: &mut Vec<String>, steps: &[Step]) {
     );
 }
 
-/// Layer order of F-05.4.
-const fn layer_rank(layer: Layer) -> u8 {
-    match layer {
-        Layer::Core => 0,
-        Layer::Infrastructure => 1,
-        Layer::App => 2,
-        Layer::Xaml => 3,
-        Layer::Platforms => 4,
-        Layer::Tests => 5,
-        Layer::Resources => 6,
-        Layer::Build => 7,
-        Layer::Other => 8,
+/// GitLab's diff order (`Gitlab::Diff::FileCollectionSorter`, 17.11): segment by segment,
+/// byte-wise and case-sensitive, a directory before a file at the same depth; `\` counts as `/`.
+fn gitlab_path_cmp(a: &str, b: &str) -> Ordering {
+    let a: Vec<&str> = a.split(['/', '\\']).collect();
+    let b: Vec<&str> = b.split(['/', '\\']).collect();
+    for (i, (x, y)) in a.iter().zip(&b).enumerate() {
+        let (a_file, b_file) = (i + 1 == a.len(), i + 1 == b.len());
+        if a_file != b_file {
+            return if a_file {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            };
+        }
+        match x.cmp(y) {
+            Ordering::Equal => {}
+            other => return other,
+        }
     }
+    a.len().cmp(&b.len())
 }
 
-/// By the step's layer, then by the first path among its hunks (case-insensitive, `\` as `/`);
-/// ties keep plan order.
+/// By each step's first file in GitLab's diff order; steps without known files go last, ties
+/// keep plan order.
 fn file_order(steps: &[Step], hunks: &[HunkRef]) -> Vec<String> {
     let file_of: HashMap<&str, &str> = hunks.iter().map(|h| (h.id, h.file)).collect();
-    let mut keyed: Vec<(u8, String, &str)> = steps
+    let mut keyed: Vec<(Option<&str>, &str)> = steps
         .iter()
         .map(|s| {
             let first = s
                 .hunk_ids
                 .iter()
-                .filter_map(|id| file_of.get(id.as_str()))
-                .map(|f| f.replace('\\', "/").to_lowercase())
-                .min()
-                .unwrap_or_default();
-            (layer_rank(s.layer), first, s.id.as_str())
+                .filter_map(|id| file_of.get(id.as_str()).copied())
+                .min_by(|a, b| gitlab_path_cmp(a, b));
+            (first, s.id.as_str())
         })
         .collect();
-    keyed.sort_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
-    keyed.into_iter().map(|(_, _, id)| id.to_owned()).collect()
+    keyed.sort_by(|a, b| match (a.0, b.0) {
+        (Some(x), Some(y)) => gitlab_path_cmp(x, y),
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => Ordering::Equal,
+    });
+    keyed.into_iter().map(|(_, id)| id.to_owned()).collect()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::review::layer::Layer;
     use crate::review::plan_model::{Coverage, Orders};
 
     fn step(id: &str, layer: Layer, hunk_ids: &[&str]) -> Step {
@@ -161,11 +172,49 @@ mod tests {
     }
 
     #[test]
-    fn f06_4_file_order_is_layer_then_first_path() {
-        // Core (s2), App by path: AuthViewModel (s5) before QueueViewModel (s4), XAML, Tests.
+    fn f06_4_file_order_is_gitlab_path_order_ignoring_layers() {
+        // src/App: AuthViewModel (s5), QueueViewModel (s4), Views (s1); src/Mobile.Core; tests.
         assert_eq!(
             step_order(&sample(), Strategy::FileOrder, &HUNKS),
-            ids(&["s2", "s5", "s4", "s1", "s3"])
+            ids(&["s5", "s4", "s1", "s2", "s3"])
+        );
+    }
+
+    #[test]
+    fn f06_4_gitlab_path_order_puts_directories_first_and_is_case_sensitive() {
+        let mut paths = vec![
+            "src/App/app.json",
+            "README.md",
+            "src/App/MauiProgram.cs",
+            "src/App/Views/Page.xaml",
+            "src/App/Platforms/Android/AndroidManifest.xml",
+        ];
+        paths.sort_by(|a, b| gitlab_path_cmp(a, b));
+        assert_eq!(
+            paths,
+            [
+                "src/App/Platforms/Android/AndroidManifest.xml",
+                "src/App/Views/Page.xaml",
+                "src/App/MauiProgram.cs",
+                "src/App/app.json",
+                "README.md",
+            ]
+        );
+    }
+
+    #[test]
+    fn f06_4_file_order_puts_steps_without_known_files_last() {
+        let p = plan(
+            vec![
+                step("s1", Layer::Other, &["unknown"]),
+                step("s2", Layer::Core, &["h2"]),
+            ],
+            &[],
+            &[],
+        );
+        assert_eq!(
+            step_order(&p, Strategy::FileOrder, &HUNKS),
+            ids(&["s2", "s1"])
         );
     }
 

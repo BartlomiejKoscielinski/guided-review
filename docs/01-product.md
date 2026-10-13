@@ -80,7 +80,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-05.1** For an MR, the app fetches `refs/merge-requests/<iid>/head` and creates (or reuses) a worktree at the head SHA in the review worktree folder. The user's own checkout is never modified.
 - **F-05.2** The diff is computed between the MR's merge base and head with rename detection; binary files are listed but not rendered.
 - **F-05.3** Every hunk gets a stable ID (same content → same ID across sessions).
-- **F-05.4** Files are pre-grouped by MAUI layer from their path to help the plan and the "File order" strategy: Core, Infrastructure, App (ViewModels, services, app logic), XAML (views), Platforms, Tests, Resources, Build; anything else is Other. The plan and the UI tags use the same names.
+- **F-05.4** Files are pre-grouped by MAUI layer from their path to help the plan and the file-order fallback without Claude: Core, Infrastructure, App (ViewModels, services, app logic), XAML (views), Platforms, Tests, Resources, Build; anything else is Other. The plan and the UI tags use the same names.
 - **F-05.5** Mechanical hunks are detected without AI where possible (whitespace-only, `.csproj` package bumps, `.resx` key additions, generated files) and proposed for Skim.
 - **F-05.6** Preparation progress is visible ("Fetching", "Creating worktree", "Computing diff") and can be cancelled.
 - **F-05.7** Changes without text hunks (rename-only, mode-only, binary, empty file added or deleted) get one file-level hunk with a stable ID, so every changed file belongs to exactly one step or skim group.
@@ -89,8 +89,8 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-06.1** Header: MR title as the page heading, author · age, branch block (`source → target`), `N files +add −del · N commits`, pipeline status (links to S-08).
 - **F-06.2** "What this change does": 2–4 sentences from Claude (purple square marks Claude content).
 - **F-06.3** Plan · N steps: each row has a drag handle, number, title, layer tag, one-line reason ("Everything else builds on this."), `N files · +add −del` and a small add/delete bar.
-- **F-06.4** Strategy toggle: **Contract to UI** (default), **Tests first**, **File order**. Switching reorders steps instantly without a new Claude call; the caption explains the strategy ("Contract to UI: start with what everything else builds on.").
-- **F-06.5** Rows can be reordered by drag and drop; the custom order is saved in the session.
+- **F-06.4** Strategy toggle: **Contract to UI** (default), **Tests first**, **File order**. Switching reorders steps instantly without a new Claude call; the caption explains the strategy ("Contract to UI: start with what everything else builds on."). **File order** follows GitLab's diff order: each step sits where its first file is in the MR's file list (path segment by segment, directories before files, case-sensitive); the caption reads "File order, as in GitLab: the UI shows up before the contract it relies on."
+- **F-06.5** Rows can be reordered by drag and drop; the custom order is saved in the session. A dragged order replaces the strategy order; picking a strategy clears it.
 - **F-06.6** Skim row: "Skim: N mechanical files" with a short reason and **Show**.
 - **F-06.7** Aside **Risks to check**: each risk with severity square and step references.
 - **F-06.8** Aside **MR description vs code**: each claim from the description with ✓ found in step N, or ! missing/contradicted.

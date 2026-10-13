@@ -10,7 +10,7 @@ import { ANSWER_PARTS, stepAnalysis } from './fixtures/review';
 
 /** Variations of S-02's and S-03's Claude tasks (`MOCK_REVIEW_KEY`). */
 export interface ReviewScenario {
-  /** The plan task fails: S-02's Claude failed state (F-06.13 risk still shown). */
+  /** The plan task fails: S-02's Claude failed state with the file-order fallback plan. */
   planFails?: boolean;
   /** The first plan comes from the cache: "Plan from cache · <age>" (F-06.12). */
   planCached?: boolean;

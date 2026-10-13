@@ -95,8 +95,8 @@ fn f06_4_set_strategy_reorders_and_is_stored() {
             Strategy::TestsFirst
         );
         let files = set_strategy(c, "r1", Strategy::FileOrder, &plan(), &HUNKS).unwrap();
-        // F-05.4 layer order: Core, XAML, Tests.
-        assert_eq!(files.order, ids(&["s2", "s1", "s3"]));
+        // GitLab path order: src/App, src/Mobile.Core, tests.
+        assert_eq!(files.order, ids(&["s1", "s2", "s3"]));
         assert_eq!(load(c, "r1", &plan(), &HUNKS).unwrap(), files);
         let missing = set_strategy(c, "nope", Strategy::FileOrder, &plan(), &HUNKS).unwrap_err();
         assert!(matches!(missing, StepOrderError::UnknownSession));

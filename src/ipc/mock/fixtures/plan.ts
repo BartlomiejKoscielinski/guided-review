@@ -139,11 +139,14 @@ const SKIM_FILES = [
   `${APP}Resources/Strings/AppResources.resx`,
 ];
 
-/** Claude's orders; File order as the core computes it (F-05.4 layer order, then path). */
+/**
+ * Claude's orders; File order as in Overview.dc.html (GitLab path order of the design's files; the
+ * fixture's paths are the mock diff's, so the core would sort s5 first: a data difference).
+ */
 export const MOCK_ORDERS: Record<Strategy, string[]> = {
   contractToUi: ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'],
   testsFirst: ['s8', 's1', 's2', 's3', 's4', 's5', 's6', 's7'],
-  fileOrder: ['s1', 's2', 's3', 's6', 's4', 's5', 's7', 's8'],
+  fileOrder: ['s6', 's7', 's4', 's5', 's1', 's2', 's3', 's8'],
 };
 
 /** !482's plan with the Overview mock's intent, skim row, risks, claims, threads and coverage. */

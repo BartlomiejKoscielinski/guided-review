@@ -4,6 +4,7 @@ import type { PlanView } from '../types/PlanView';
 import type { StepOrder } from '../types/StepOrder';
 import type { Strategy } from '../types/Strategy';
 import { MOCK_ORDERS, MOCK_SKIM_STATS, MOCK_STEP_STATS, mockPlan } from './fixtures/plan';
+import { mockFallbackView } from './fixtures/planFallback';
 import type { ReviewScenario } from './review';
 
 type PlanClient = Pick<IpcClient, 'reviewPlan' | 'reviewSetStrategy' | 'reviewReorderSteps'>;
@@ -21,8 +22,8 @@ interface SessionPlan {
 
 /**
  * S-02's plan of the mock backend (F-06.2, F-06.4, F-06.5, F-06.12): every MR shows !482's plan,
- * with the core's event order (`queued`, `started` unless cached, `done`/`failed`), the strategy
- * clearing a dragged order, and the same error copy.
+ * with the core's event order (`queued`, `started` unless cached, `done`; `planFails` is done
+ * with the file-order fallback), the strategy clearing a dragged order, and the same error copy.
  */
 export function createPlanBackend(
   scenario: ReviewScenario,
@@ -60,16 +61,14 @@ export function createPlanBackend(
         onEvent({ kind: 'started' });
         await pause(MOCK_PLAN_MS);
         if (scenario.planFails) {
-          const failure = new IpcError({
+          // The app's file-order fallback; not stored, so Retry runs Claude again.
+          const fallback = mockFallbackView({
             code: 'CLAUDE_FAILED',
             message: 'Claude Code failed.',
             retryable: true,
           });
-          onEvent({
-            kind: 'failed',
-            error: { code: failure.code, message: failure.message, retryable: true },
-          });
-          throw failure;
+          onEvent({ kind: 'done', result: structuredClone(fallback) });
+          return respond(fallback);
         }
         s = { strategy: 'contractToUi', custom: null, cachedAt: null };
       }

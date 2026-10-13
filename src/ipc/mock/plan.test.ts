@@ -64,13 +64,32 @@ describe('mock plan backend', () => {
     expect(view.cachedAt).toBe(MOCK_CACHED_AT);
   });
 
-  it('F-06.2 planFails: failed, then rejects with CLAUDE_FAILED (retryable)', async () => {
+  it('F-06.4 planFails: the file-order fallback, one step per layer group in GitLab order', async () => {
+    const mock = client({ planFails: true });
     const run = recorder();
-    await expect(client({ planFails: true }).reviewPlan(SESSION, run.push)).rejects.toMatchObject({
-      code: 'CLAUDE_FAILED',
-      retryable: true,
-    });
-    expect(run.kinds()).toEqual(['queued', 'started', 'failed']);
+    const view = await mock.reviewPlan(SESSION, run.push);
+    expect(run.kinds()).toEqual(['queued', 'started', 'done']);
+    expect(view.fallback).toMatchObject({ code: 'CLAUDE_FAILED', retryable: true });
+    expect(view.plan.steps.map((s) => s.title)).toEqual([
+      'App',
+      'Platforms',
+      'Resources',
+      'XAML',
+      'Build',
+      'Core',
+      'Infrastructure',
+      'Tests',
+    ]);
+    expect(view.plan.steps[0]?.reason).toBe(
+      'PendingCountConverter.cs, PhotoUploadService.cs, DeliveryPhotoViewModel.cs',
+    );
+    expect(view.order).toMatchObject({ strategy: 'fileOrder', custom: false });
+    expect(view.plan.coverage).toEqual({ files: 16, filesTotal: 16, hunks: 16, hunksTotal: 16 });
+    expect(view.plan.alreadyDiscussed).toBe('2 open threads.');
+    // Never cached: Retry runs Claude again.
+    const again = recorder();
+    await mock.reviewPlan(SESSION, again.push);
+    expect(again.kinds()).toEqual(['queued', 'started', 'done']);
   });
 
   it('F-06.4 strategies reorder without Claude; refused before the plan', async () => {

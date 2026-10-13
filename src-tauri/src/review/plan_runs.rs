@@ -34,6 +34,12 @@ pub struct PlanView {
     pub step_stats: Vec<ChangeStats>,
     /// The same for each skim group (F-06.6), in the order of `plan.skim`.
     pub skim_stats: Vec<ChangeStats>,
+    /// Why Claude couldn't plan (S-02 Claude failed): the plan is then the app's file-order
+    /// fallback, one step per layer group in GitLab file order, with config risks (F-06.13),
+    /// "N open threads." and coverage; no intent, orders, skim or claims. Never cached.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub fallback: Option<AppError>,
 }
 
 /// Files touched and lines added and deleted by a set of hunks.
@@ -111,6 +117,7 @@ fn view(
         plan,
         cached_at,
         order,
+        fallback: None,
     })
 }
 
