@@ -60,11 +60,14 @@ describe('mock step backend', () => {
     );
   });
 
-  it('F-06.9 the two open threads are context in step 2 only', async () => {
+  it('F-06.9 open threads are context in the step whose hunks hold them', async () => {
     const mock = await planned();
     const s2 = await mock.reviewStep(SESSION, 's2');
     expect(s2.threads.map((t) => t.position?.newPath)).toEqual([QUEUE, QUEUE]);
     expect(s2.threads[0]?.notes[0]?.author.name).toBe('Paweł S.');
     expect((await mock.reviewStep(SESSION, 's1')).threads).toEqual([]);
+    const s4 = await mock.reviewStep(SESSION, 's4');
+    expect(s4.threads.map((t) => t.position?.newLine)).toEqual([48]);
+    expect(s4.files[0]?.hunks).toHaveLength(3);
   });
 });

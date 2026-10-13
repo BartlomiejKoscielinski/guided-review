@@ -9,8 +9,13 @@ import { gitlabPathCmp } from './planFallback';
 const QUEUE = 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs';
 const PAWEL = { username: 'pawel.s', name: 'Paweł S.' };
 const ANNA = { username: 'anna.k', name: 'Anna K.' };
+const MARTA = { username: 'marta.k', name: 'Marta K.' };
+const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
 
-/** !482's two open threads from Paweł S., both in step 2 (the plan's "Already discussed"). */
+/**
+ * !482's three open threads from Paweł S. (the plan's "Already discussed"): two in step 2, one in
+ * step 4 at `_worker.Kick()` with Marta K.'s reply (Review.dc.html).
+ */
 export const MOCK_THREADS: Thread[] = [
   {
     id: 'd-482-1',
@@ -43,6 +48,26 @@ export const MOCK_THREADS: Thread[] = [
         author: PAWEL,
         body: 'What happens to a photo that keeps failing? I don’t see a limit on attempts.',
         createdAt: '2026-10-12T09:20:00.000Z',
+      },
+    ],
+  },
+  {
+    id: 'd-482-3',
+    resolvable: true,
+    resolved: false,
+    position: { oldPath: VM, newPath: VM, newLine: 48, headSha: '9c41e07' },
+    notes: [
+      {
+        id: 48204,
+        author: PAWEL,
+        body: 'Kick() is called on the UI thread. Does the worker block anything here?',
+        createdAt: '2026-10-12T09:31:00.000Z',
+      },
+      {
+        id: 48205,
+        author: MARTA,
+        body: 'Kick only releases a semaphore, the upload runs in the background.',
+        createdAt: '2026-10-13T06:40:00.000Z',
       },
     ],
   },

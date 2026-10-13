@@ -45,7 +45,7 @@ export function gitlabPathCmp(a: string, b: string): number {
 
 /**
  * S-02's Claude-failed state (02 › S-02): the app's file-order fallback of !482, one step per
- * layer group in GitLab file order, "2 open threads." and full coverage of the mock diff.
+ * layer group in GitLab file order, "3 open threads." and full coverage of the mock diff.
  */
 export function mockFallbackView(error: AppError): PlanView {
   const files = mrFiles().sort((a, b) => gitlabPathCmp(a.path, b.path));
@@ -86,7 +86,7 @@ export function mockFallbackView(error: AppError): PlanView {
       skim: [],
       risks: [],
       descriptionCheck: [],
-      alreadyDiscussed: '2 open threads.',
+      alreadyDiscussed: '3 open threads.',
       coverage: { files: files.length, filesTotal: files.length, hunks, hunksTotal: hunks },
     },
     order: { strategy: 'fileOrder', custom: false, order },

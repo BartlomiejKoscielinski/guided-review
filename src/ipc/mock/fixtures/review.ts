@@ -101,10 +101,10 @@ export function stepAnalysis(stepId: string): StepAnalysis {
     folds: [
       {
         file: VM,
-        newStart: 25,
-        newEnd: 38,
-        title: 'Constructor',
-        reason: '3 new dependencies assigned to fields.',
+        newStart: 12,
+        newEnd: 31,
+        title: 'Fields and constructor',
+        reason: '3 new dependencies',
       },
     ],
   };

@@ -3,9 +3,13 @@ import type { Layer } from '../../types/Layer';
 import type { Plan } from '../../types/Plan';
 import type { Step } from '../../types/Step';
 import type { Strategy } from '../../types/Strategy';
+import { mrFiles } from './mr';
 
-/** A file of !482 (`fixtures/mr.ts`) as a hunk ID; every mock file has one hunk. */
-const hunk = (path: string) => `${path}#h1`;
+/** The hunk IDs of a file of !482 (`fixtures/mr.ts`). */
+const hunks = (path: string): string[] =>
+  mrFiles()
+    .find((f) => f.path === path)
+    ?.hunks.map((h) => h.id) ?? [`${path}#h1`];
 
 const CORE = 'src/Mobile.Core/Uploads/';
 const INFRA = 'src/Mobile.Infrastructure/';
@@ -34,7 +38,7 @@ const step = (
     reason,
     description,
     layer,
-    hunkIds: files.map(hunk),
+    hunkIds: files.flatMap(hunks),
     buildsOn,
   },
   stats: { files: files.length, additions, deletions },
@@ -159,7 +163,7 @@ export function mockPlan(): Plan {
     orders: { contractToUi: MOCK_ORDERS.contractToUi, testsFirst: MOCK_ORDERS.testsFirst },
     skim: [
       {
-        hunkIds: MOCK_SKIM_FILES.map(hunk),
+        hunkIds: MOCK_SKIM_FILES.flatMap(hunks),
         reason:
           'Formatting (3), csproj with a new package, 3 keys in Strings.resx. Checked: no logic changes.',
       },
@@ -190,7 +194,7 @@ export function mockPlan(): Plan {
       { claim: 'the new AndroidManifest permission', status: 'notInDescription', step: 's7' },
     ],
     alreadyDiscussed:
-      '2 open threads from Paweł S. in step 2. Claude won’t repeat them and shows them in that step as context.',
+      '3 open threads from Paweł S. in steps 2 and 4. Claude won’t repeat them and shows them in those steps as context.',
     coverage: { files: 16, filesTotal: 16, hunks: 31, hunksTotal: 31 },
   };
 }

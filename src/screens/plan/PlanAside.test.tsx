@@ -65,7 +65,7 @@ describe('S-02 PlanAside', () => {
   it('F-06.9 already discussed shows the summary', () => {
     renderAside();
     expect(section('Already discussed')).toHaveTextContent(
-      '2 open threads from Paweł S. in step 2.',
+      '3 open threads from Paweł S. in steps 2 and 4.',
     );
   });
 

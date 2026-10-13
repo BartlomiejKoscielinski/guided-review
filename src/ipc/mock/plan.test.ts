@@ -84,8 +84,8 @@ describe('mock plan backend', () => {
       'PendingCountConverter.cs, PhotoUploadService.cs, DeliveryPhotoViewModel.cs',
     );
     expect(view.order).toMatchObject({ strategy: 'fileOrder', custom: false });
-    expect(view.plan.coverage).toEqual({ files: 16, filesTotal: 16, hunks: 16, hunksTotal: 16 });
-    expect(view.plan.alreadyDiscussed).toBe('2 open threads.');
+    expect(view.plan.coverage).toEqual({ files: 16, filesTotal: 16, hunks: 18, hunksTotal: 18 });
+    expect(view.plan.alreadyDiscussed).toBe('3 open threads.');
     // Never cached: Retry runs Claude again.
     const again = recorder();
     await mock.reviewPlan(SESSION, again.push);
