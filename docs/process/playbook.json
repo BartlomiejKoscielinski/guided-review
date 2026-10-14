@@ -1,5 +1,5 @@
 {
-  "items": 4,
+  "items": 5,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -117,7 +117,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -186,6 +186,51 @@
       "created": "2026-10-14T14:19:12.128Z",
       "lastUsedItem": 3,
       "source": "F-05.5"
+    },
+    {
+      "id": "P-013",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:47:55.168Z",
+      "lastUsedItem": 4,
+      "source": "F-06.5"
+    },
+    {
+      "id": "P-014",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Parse computed CSS offsets in e2e helpers with a decimal-aware pattern (for example -?[0-9.]+px on translate3d), because the F-06.5 liftedOffset regex matched only whole pixels and silently returned 0 for a 36.5px row, which would time out a keyboard drag.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:47:55.231Z",
+      "lastUsedItem": 4,
+      "source": "F-06.5"
+    },
+    {
+      "id": "P-015",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:47:55.295Z",
+      "lastUsedItem": 4,
+      "source": "F-06.5"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T14:19:12.517Z",
+  "updated": "2026-10-14T14:47:55.658Z",
   "items": [
     {
       "id": "F-02.5",
@@ -71,9 +71,15 @@
       "title": "Rows can be reordered by drag and drop; the custom order is saved in the session.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "custom order + reset rule (7da45d0, 79e1527, docs 7aa235d); dnd-kit rows with keyboard sensor (95ba9b0); e2e keyboard drag (7367e08); real backend: S-02 checked in `tauri dev` (3d-3), drag not yet tried live"
+      "status": "done",
+      "attempts": 1,
+      "note": "live mouse drag in tauri dev (/app) not tried yet",
+      "lockSha": "7e0176f",
+      "tests": [
+        "tests/e2e/plan.spec.ts",
+        "src/ipc/mock/plan.test.ts",
+        "src/ipc/tauri.test.ts"
+      ]
     },
     {
       "id": "F-06.6",
