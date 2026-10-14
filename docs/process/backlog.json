@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T21:00:08.095Z",
+  "updated": "2026-10-14T21:07:59.870Z",
   "items": [
     {
       "id": "F-02.5",
@@ -216,9 +216,17 @@
       "title": "Decisions: Add to drafts (creates a draft from the suggested comment), Edit and add (opens the text for…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "`review/decisions.rs` decide + undo (1f1e6c5), local drafts `review/drafts.rs` (b645db8); `review_decide` + `drafts_*` commands (b42a11c), mock + hooks (4772c33); NoteCard Add to drafts / Edit and add / Dismiss / Undo (87b700d); e2e in 3e"
+      "status": "impl",
+      "attempts": 1,
+      "note": "`review/decisions.rs` decide + undo (1f1e6c5), local drafts `review/drafts.rs` (b645db8); `review_decide` + `drafts_*` commands (b42a11c), mock + hooks (4772c33); NoteCard Add to drafts / Edit and add / Dismiss / Undo (87b700d); e2e in 3e",
+      "lockSha": "afc8617",
+      "tests": [
+        "src-tauri/src/review/decisions_tests.rs",
+        "src/ipc/mock/review.test.ts",
+        "src/screens/step/NoteCard.test.tsx",
+        "src/screens/step/StepLayouts.test.tsx",
+        "tests/e2e/step.spec.ts"
+      ]
     },
     {
       "id": "F-09.4",
