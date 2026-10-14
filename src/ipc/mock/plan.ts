@@ -80,6 +80,18 @@ export function createPlanBackend(
     store.save();
   };
 
+  /** The session's plan for the toggle and a drag; the fallback plan refuses both, as the core. */
+  const ordered = (sessionId: string): SessionPlan => {
+    if (fallbacks.has(sessionId)) {
+      throw new IpcError({
+        code: 'INVALID_INPUT',
+        message: "Claude isn't available. You can review in file order.",
+        retryable: false,
+      });
+    }
+    return planned(sessionId);
+  };
+
   const planned = (sessionId: string): SessionPlan => {
     const s = data.plans[sessionId];
     if (!s) {
@@ -154,7 +166,7 @@ export function createPlanBackend(
     },
     reviewSetStrategy: (sessionId, strategy) => {
       try {
-        const s = { ...planned(sessionId), strategy, custom: null };
+        const s = { ...ordered(sessionId), strategy, custom: null };
         keep(sessionId, s);
         return respond(orderOf(s));
       } catch (e: unknown) {
@@ -163,7 +175,7 @@ export function createPlanBackend(
     },
     reviewReorderSteps: (sessionId, stepIds) => {
       try {
-        const s = planned(sessionId);
+        const s = ordered(sessionId);
         const steps = MOCK_ORDERS.contractToUi;
         const unique = new Set(stepIds);
         if (stepIds.length !== steps.length || !steps.every((id) => unique.has(id))) {
