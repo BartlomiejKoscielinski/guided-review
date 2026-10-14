@@ -15,6 +15,8 @@ interface Shot {
   sessions?: Record<string, unknown>[];
   /** The mock's S-02/S-03 variations (`MOCK_REVIEW_KEY`, e.g. `planFails`). */
   review?: Record<string, unknown>;
+  /** Steps marked reviewed per session id, as the mock draws them (S-03's done checks). */
+  reviewed?: Record<string, string[]>;
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -66,6 +68,9 @@ async function step4(page: Page, layout: 'A' | 'B' | 'C') {
   await page.keyboard.press(`Control+${{ A: '1', B: '2', C: '3' }[layout]}`);
   await page.getByText('Fields and constructor: 3 new dependencies').waitFor();
 }
+
+/** Review.dc.html is on step 4 with steps 1 to 3 done; !482 is the first MR session of an empty mock. */
+const MR_482_REVIEWED = { 'mock-mr-session-1': ['s1', 's2', 's3'] };
 
 const SHOTS: Shot[] = [
   {
@@ -188,18 +193,21 @@ const SHOTS: Shot[] = [
     screen: 'S03',
     state: 'focus-layout-A',
     lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_REVIEWED,
     prepare: (page) => step4(page, 'A'),
   },
   {
     screen: 'S03',
     state: 'focus-layout-B',
     lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_REVIEWED,
     prepare: (page) => step4(page, 'B'),
   },
   {
     screen: 'S03',
     state: 'focus-layout-C',
     lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_REVIEWED,
     prepare: (page) => step4(page, 'C'),
   },
   { screen: 'S06', state: 'changes-local', lastRoute: { screen: 'S-06' }, prepare: changesLocal },
@@ -236,8 +244,11 @@ const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
 
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
-    await page.addInitScript(({ lastRoute, sessions, review }) => {
+    await page.addInitScript(({ lastRoute, sessions, review, reviewed }) => {
       if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
+      if (reviewed) {
+        localStorage.setItem('guided-review.mock.sessionData', JSON.stringify({ marks: reviewed }));
+      }
       if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
       localStorage.setItem(
         'guided-review.mock.settings',
