@@ -27,6 +27,17 @@ export function sizeParts(row: MrRow): { add: string; del: string; files: string
   };
 }
 
+/**
+ * The note line (F-02.2) with " · plan is ready" when a plan is cached for the head (F-02.5);
+ * just "plan is ready" without another note; `null` when neither applies.
+ */
+export function noteText(row: MrRow): string | null {
+  const parts = [row.note, row.planReady ? 'plan is ready' : null].filter((part): part is string =>
+    Boolean(part),
+  );
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 /** "pipeline passed" etc. (F-02.2). */
 export function pipelineText(state: PipelineState): string {
   return `pipeline ${state}`;
