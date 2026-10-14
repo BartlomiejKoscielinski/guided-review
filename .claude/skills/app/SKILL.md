@@ -13,6 +13,7 @@ node tools/app-driver/app.mjs status | logs [n] | stop [--all]
 node tools/app-driver/app.mjs snap [target]    # accessibility tree: read this first, it's cheap
 node tools/app-driver/app.mjs click <target> [--shot .app-driver/x.png]
 node tools/app-driver/app.mjs fill <target> <text> | press <key> | type <text> | hover | dblclick <target>
+node tools/app-driver/app.mjs drag <source> <target>   # real mouse drag in small moves (drag-and-drop lists)
 node tools/app-driver/app.mjs wait <target> [--state hidden] [--timeout ms] | text <target>
 node tools/app-driver/app.mjs eval "<js expression>" | goto </path>
 node tools/app-driver/app.mjs shot [out.png] [--target t] [--full]

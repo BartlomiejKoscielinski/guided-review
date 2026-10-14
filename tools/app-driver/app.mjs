@@ -222,6 +222,24 @@ async function act(page, argv) {
     case 'hover':
       await loc().hover();
       break;
+    case 'drag': {
+      // A real mouse drag in small moves, so pointer sensors with an activation distance start it.
+      if (!b) throw new Error('drag needs a source and a target');
+      const center = async (l) => {
+        const box = await l.boundingBox();
+        if (!box) throw new Error('drag: an element is not visible');
+        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      };
+      const from = await center(loc());
+      const to = await center(page.locator(b));
+      await page.mouse.move(from.x, from.y);
+      await page.mouse.down();
+      await page.mouse.move(from.x, from.y + 8, { steps: 4 });
+      await page.mouse.move(to.x, to.y, { steps: 20 });
+      await sleep(150);
+      await page.mouse.up();
+      break;
+    }
     case 'fill':
       await loc().fill(b ?? '');
       break;
