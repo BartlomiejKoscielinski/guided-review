@@ -2,12 +2,14 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { CommitList } from '../types/CommitList';
 import type { DetectedSource } from '../types/DetectedSource';
+import type { Layout } from '../types/Layout';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { Route } from '../types/Route';
 import { BRANCH } from './fixtures/changes';
 import { BRANCHES, branchCommits, STATUS_SUMMARY } from './fixtures/sources';
 import { MOCK_SERVER } from './gitlab';
 import type { MockRepos } from './repos';
+import { stateOf, type MockSessionData } from './session-data';
 
 type SourcesClient = Pick<
   IpcClient,
@@ -32,20 +34,28 @@ const MR_PATH = /^\/(.+?)\/-\/merge_requests\/(\d+)(?:[/?#]|$)/;
 const HEX = /^[0-9a-f]{7,40}$/i;
 const WINDOWS_PATH = /^(?:[A-Za-z]:\\|\\\\)/;
 
-/** The S-01 sources part of the mock backend: detection, commits, scope counts, sessions. */
+/**
+ * The S-01 sources part of the mock backend: detection, commits, scope counts, sessions (kept in
+ * `store`, in the layout `ui.focusLayout` names).
+ */
 export function createSourcesBackend(
   respond: <T>(value: T) => Promise<T>,
   repos: MockRepos,
+  store: MockSessionData,
+  focusLayout: () => Layout,
 ): SourcesClient {
   const commits = branchCommits();
   const head = commits[0]?.sha ?? '';
-  let sessions = 0;
+  const { data } = store;
   const requireRepo = () => {
     if (!repos.active()) throw invalid('Pick a repository first.');
   };
   const opened = (route: (sessionId: string) => Route): Promise<OpenedSession> => {
-    sessions += 1;
-    const sessionId = `mock-session-${String(sessions)}`;
+    data.localCount += 1;
+    const sessionId = `mock-session-${String(data.localCount)}`;
+    data.local.push(sessionId);
+    stateOf(data, sessionId).layout = focusLayout();
+    store.save();
     return respond({ sessionId, route: route(sessionId) });
   };
   const step = (sessionId: string): Route => ({ screen: 'S-03', sessionId });

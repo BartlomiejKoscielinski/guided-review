@@ -8,9 +8,12 @@ import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
+import type { Layout } from './types/Layout';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { PlanView } from './types/PlanView';
+import type { ResumedSession } from './types/ResumedSession';
+import type { SessionState } from './types/SessionState';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
 import type { Strategy } from './types/Strategy';
@@ -151,6 +154,24 @@ export interface IpcClient {
    * and progress segments (F-07.1). No Claude.
    */
   reviewMarkStep(sessionId: string, stepId: string, reviewed: boolean): Promise<string[]>;
+
+  // S-03 session state (F-04.3): read when S-03 opens, written on change; database only.
+  /** The step S-03 was on, the session's layout, scroll per step and checklist ticks. */
+  sessionState(sessionId: string): Promise<SessionState>;
+  /** The step S-03 is on. */
+  sessionSetStep(sessionId: string, stepId: string): Promise<void>;
+  /** The layout chosen for the session (F-07.1). */
+  sessionSetLayout(sessionId: string, layout: Layout): Promise<void>;
+  /** Where the step was scrolled, in pixels (written debounced). */
+  sessionSetScroll(sessionId: string, stepId: string, top: number): Promise<void>;
+  /** The step's ticked "For you to judge" items (F-08.7); an empty list unticks all. */
+  sessionSetChecklist(sessionId: string, stepId: string, ticked: string[]): Promise<void>;
+  /**
+   * S-03 restored on start (F-30.4): the cached plan, the step the session was on without the
+   * MR's threads, and its notes when they are cached; null when the plan isn't cached. Starts
+   * no Claude or GitLab work.
+   */
+  sessionResume(sessionId: string): Promise<ResumedSession | null>;
 
   // Drafts (F-09.2, F-10.3): kept on this PC; nothing reaches GitLab without Publish.
   draftsList(sessionId: string): Promise<Draft[]>;

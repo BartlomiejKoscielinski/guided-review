@@ -7,6 +7,7 @@ import type { Draft } from '../types/Draft';
 import type { Finding } from '../types/Finding';
 import type { StepAnalysis } from '../types/StepAnalysis';
 import { ANSWER_PARTS, stepAnalysis } from './fixtures/review';
+import type { MockSessionData, SessionData } from './session-data';
 
 /** Variations of S-02's and S-03's Claude tasks (`MOCK_REVIEW_KEY`). */
 export interface ReviewScenario {
@@ -37,38 +38,57 @@ export const MOCK_DELTA_MS = 120;
 const error = (code: IpcError['code'], message: string, retryable = false) =>
   new IpcError({ code, message, retryable });
 
+const analyzedKey = (sessionId: string, stepId: string) => `${sessionId}\0${stepId}`;
+
+/** The step's notes with the decisions made on them (a note keeps its decision across runs). */
+function decided(data: SessionData, sessionId: string, stepId: string): StepAnalysis {
+  const analysis = stepAnalysis(stepId);
+  return {
+    ...analysis,
+    findings: analysis.findings.map((f) => {
+      const stored = data.notes[f.id];
+      if (stored) return stored.finding;
+      data.notes[f.id] = { finding: f, sessionId };
+      return f;
+    }),
+  };
+}
+
+/** The step's notes from Claude's cache with their decisions; null when it was never analyzed. */
+export function cachedFindings(
+  data: SessionData,
+  sessionId: string,
+  stepId: string,
+): StepAnalysis | null {
+  return data.analyzed.includes(analyzedKey(sessionId, stepId))
+    ? decided(data, sessionId, stepId)
+    : null;
+}
+
 /**
  * Steps, questions, decisions and local drafts of the mock backend (F-09, F-10): the core's
  * event order (`queued`, `started` unless already analyzed, `partialText`, `done`/`failed`),
- * the same decision rules and the same error copy. Nothing reaches GitLab.
+ * the same decision rules and the same error copy. Nothing reaches GitLab. Analyzed steps,
+ * decisions and drafts are kept in `store`, so they survive a restart (F-04.3).
  */
 export function createReviewBackend(
   scenario: ReviewScenario,
   respond: <T>(value: T) => Promise<T>,
   pause: (ms: number) => Promise<void>,
+  store: MockSessionData,
 ): ReviewClient {
-  const analyzed = new Set<string>();
+  const { data } = store;
   const asked = new Set<string>();
-  const notes = new Map<string, { finding: Finding; sessionId: string }>();
-  let drafts: Draft[] = [];
-  let nextDraft = 1;
-
-  const withDecision = (sessionId: string, finding: Finding): Finding => {
-    const stored = notes.get(finding.id);
-    if (stored) return stored.finding;
-    notes.set(finding.id, { finding, sessionId });
-    return finding;
-  };
 
   const setDecision = (id: string, decision: Decision): Finding => {
-    const stored = notes.get(id);
+    const stored = data.notes[id];
     if (!stored) throw error('INVALID_INPUT', 'This note no longer exists.');
     stored.finding = { ...stored.finding, decision };
     return stored.finding;
   };
 
   const findDraft = (id: string): Draft => {
-    const draft = drafts.find((d) => d.id === id);
+    const draft = data.drafts.find((d) => d.id === id);
     if (!draft) throw error('INVALID_INPUT', 'This draft no longer exists.');
     if (draft.publishedNoteId !== null) {
       throw error('CONFLICT', 'This draft is already on GitLab; change it there.');
@@ -80,20 +100,31 @@ export function createReviewBackend(
     if (draft.body.trim() === '') throw error('INVALID_INPUT', 'Write a comment first.');
     const created: Draft = {
       ...draft,
-      id: `mock-draft-${String(nextDraft++)}`,
+      id: `mock-draft-${String(data.nextDraft++)}`,
       include: true,
       publishedNoteId: null,
       error: null,
     };
-    drafts = [...drafts, created];
+    data.drafts = [...data.drafts, created];
     return created;
+  };
+
+  /** Runs a change of the stored data and keeps it; a refused change keeps nothing new. */
+  const change = <T>(apply: () => T): Promise<T> => {
+    try {
+      const result = apply();
+      store.save();
+      return respond(result);
+    } catch (e: unknown) {
+      return Promise.reject(e instanceof Error ? e : new Error(String(e)));
+    }
   };
 
   return {
     reviewFindings: async (sessionId, stepId, onEvent) => {
-      const key = `${sessionId}\0${stepId}`;
+      const key = analyzedKey(sessionId, stepId);
       onEvent({ kind: 'queued' });
-      if (!analyzed.has(key)) {
+      if (!data.analyzed.includes(key)) {
         onEvent({ kind: 'started' });
         await pause(MOCK_STEP_MS);
         if (scenario.stepFails) {
@@ -104,19 +135,16 @@ export function createReviewBackend(
           });
           throw failure;
         }
-        analyzed.add(key);
+        if (!data.analyzed.includes(key)) data.analyzed.push(key);
       }
-      const analysis = stepAnalysis(stepId);
-      const result: StepAnalysis = {
-        ...analysis,
-        findings: analysis.findings.map((f) => withDecision(sessionId, f)),
-      };
+      const result = decided(data, sessionId, stepId);
+      store.save();
       onEvent({ kind: 'done', result: structuredClone(result) });
       return respond(result);
     },
     reviewAsk: async (sessionId, stepId, question, _selection, onEvent) => {
       if (question.trim() === '') throw error('INVALID_INPUT', 'Type a question first.');
-      const key = `${sessionId}\0${stepId}`;
+      const key = analyzedKey(sessionId, stepId);
       const events: ClaudeTaskEvent<AskAnswer>[] = [{ kind: 'queued' }, { kind: 'started' }];
       for (const event of events) onEvent(event);
       for (const text of ANSWER_PARTS) {
@@ -128,12 +156,12 @@ export function createReviewBackend(
       onEvent({ kind: 'done', result: answer });
       return respond(answer);
     },
-    reviewDecide: (findingId, decision) => {
-      const stored = notes.get(findingId);
-      if (!stored) return Promise.reject(error('INVALID_INPUT', 'This note no longer exists.'));
-      const { finding, sessionId } = stored;
-      const changed = () => error('CONFLICT', 'This note changed in the meantime.');
-      try {
+    reviewDecide: (findingId, decision) =>
+      change(() => {
+        const stored = data.notes[findingId];
+        if (!stored) throw error('INVALID_INPUT', 'This note no longer exists.');
+        const { finding, sessionId } = stored;
+        const changed = () => error('CONFLICT', 'This note changed in the meantime.');
         switch (decision.kind) {
           case 'addToDrafts':
           case 'editAndAdd': {
@@ -145,30 +173,21 @@ export function createReviewBackend(
               position: { file: finding.file, side: finding.side, line: finding.line },
               severity: finding.severity,
             });
-            return respond({ finding: setDecision(findingId, 'draft'), draft });
+            return { finding: setDecision(findingId, 'draft'), draft };
           }
           case 'dismiss':
             if (finding.decision !== 'open') throw changed();
-            return respond({ finding: setDecision(findingId, 'dismissed'), draft: null });
+            return { finding: setDecision(findingId, 'dismissed'), draft: null };
           case 'undo':
             if (finding.decision === 'open') throw changed();
-            drafts = drafts.filter((d) => d.findingId !== findingId);
-            return respond({ finding: setDecision(findingId, 'open'), draft: null });
+            data.drafts = data.drafts.filter((d) => d.findingId !== findingId);
+            return { finding: setDecision(findingId, 'open'), draft: null };
         }
-      } catch (e: unknown) {
-        return Promise.reject(e instanceof Error ? e : changed());
-      }
-    },
-    draftsList: (sessionId) => respond(drafts.filter((d) => d.sessionId === sessionId)),
-    draftsCreate: (draft) => {
-      try {
-        return respond(createDraft(draft));
-      } catch (e: unknown) {
-        return Promise.reject(e instanceof Error ? e : new Error(String(e)));
-      }
-    },
-    draftsUpdate: (id, patch) => {
-      try {
+      }),
+    draftsList: (sessionId) => respond(data.drafts.filter((d) => d.sessionId === sessionId)),
+    draftsCreate: (draft) => change(() => createDraft(draft)),
+    draftsUpdate: (id, patch) =>
+      change(() => {
         const draft = findDraft(id);
         if (patch.body !== null && patch.body.trim() === '') {
           throw error('INVALID_INPUT', 'Write a comment first.');
@@ -178,20 +197,14 @@ export function createReviewBackend(
           body: patch.body ?? draft.body,
           include: patch.include ?? draft.include,
         };
-        drafts = drafts.map((d) => (d.id === id ? updated : d));
-        return respond(updated);
-      } catch (e: unknown) {
-        return Promise.reject(e instanceof Error ? e : new Error(String(e)));
-      }
-    },
-    draftsDelete: (id) => {
-      try {
+        data.drafts = data.drafts.map((d) => (d.id === id ? updated : d));
+        return updated;
+      }),
+    draftsDelete: (id) =>
+      change(() => {
         findDraft(id);
-        drafts = drafts.filter((d) => d.id !== id);
-        return respond(undefined);
-      } catch (e: unknown) {
-        return Promise.reject(e instanceof Error ? e : new Error(String(e)));
-      }
-    },
+        data.drafts = data.drafts.filter((d) => d.id !== id);
+        return undefined;
+      }),
   };
 }

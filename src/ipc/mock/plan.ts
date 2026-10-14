@@ -3,7 +3,6 @@ import { IpcError } from '../errors';
 import type { Plan } from '../types/Plan';
 import type { PlanView } from '../types/PlanView';
 import type { StepOrder } from '../types/StepOrder';
-import type { Strategy } from '../types/Strategy';
 import {
   MOCK_ORDERS,
   MOCK_SKIM_FILES,
@@ -14,6 +13,7 @@ import {
 import { mockFallbackView } from './fixtures/planFallback';
 import { mockStepView } from './fixtures/step';
 import type { ReviewScenario } from './review';
+import type { MockSessionData, SessionData, SessionPlan } from './session-data';
 
 type PlanClient = Pick<
   IpcClient,
@@ -25,10 +25,29 @@ export const MOCK_PLAN_MS = 1500;
 /** When the cached plan of `planCached` was stored: "Plan from cache · <age>". */
 export const MOCK_CACHED_AT = '2026-10-13T08:12:00.000Z';
 
-interface SessionPlan {
-  strategy: Strategy;
-  custom: string[] | null;
-  cachedAt: string | null;
+/** The session's steps marked reviewed, in the plan's order. */
+export const reviewedIn = (data: SessionData, sessionId: string, plan: Plan): string[] =>
+  plan.steps.filter((s) => data.marks[sessionId]?.includes(s.id) === true).map((s) => s.id);
+
+/** The reader's order: the dragged one, else the strategy's. */
+export const orderOf = (s: SessionPlan): StepOrder => ({
+  strategy: s.strategy,
+  custom: s.custom !== null,
+  order: [...(s.custom ?? MOCK_ORDERS[s.strategy])],
+});
+
+/** S-02's data of a planned session (the plan is !482's for every session). */
+export function plannedView(data: SessionData, sessionId: string, s: SessionPlan): PlanView {
+  const plan = mockPlan();
+  return {
+    plan,
+    order: orderOf(s),
+    stepStats: MOCK_STEP_STATS,
+    skimStats: MOCK_SKIM_STATS,
+    skimFiles: [[...MOCK_SKIM_FILES]],
+    reviewed: reviewedIn(data, sessionId, plan),
+    ...(s.cachedAt === null ? {} : { cachedAt: s.cachedAt }),
+  };
 }
 
 /**
@@ -36,21 +55,18 @@ interface SessionPlan {
  * with the core's event order (`queued`, `started` unless cached, `done`; `planFails` is done
  * with the file-order fallback), the strategy clearing a dragged order, and the same error copy.
  * S-03's steps (F-07.2, F-07.3) follow the session's order, a fallback plan's too; Mark reviewed
- * keeps the reviewed steps per session (F-07.1, F-07.2).
+ * keeps the reviewed steps per session (F-07.1, F-07.2). Plans, orders and marks are kept in
+ * `store`, so they survive a restart (F-04.3); a fallback plan is never kept.
  */
 export function createPlanBackend(
   scenario: ReviewScenario,
   respond: <T>(value: T) => Promise<T>,
   pause: (ms: number) => Promise<void>,
+  store: MockSessionData,
 ): PlanClient {
-  const sessions = new Map<string, SessionPlan>();
+  const { data } = store;
   /** The last plan of a session whose plan task failed (the file-order fallback). */
   const fallbacks = new Map<string, PlanView>();
-  /** Steps marked reviewed per session. */
-  const marks = new Map<string, Set<string>>();
-
-  const reviewedIn = (sessionId: string, plan: Plan): string[] =>
-    plan.steps.filter((s) => marks.get(sessionId)?.has(s.id) === true).map((s) => s.id);
 
   const notInPlan = () =>
     new IpcError({
@@ -59,14 +75,13 @@ export function createPlanBackend(
       retryable: false,
     });
 
-  const order = (s: SessionPlan): StepOrder => ({
-    strategy: s.strategy,
-    custom: s.custom !== null,
-    order: [...(s.custom ?? MOCK_ORDERS[s.strategy])],
-  });
+  const keep = (sessionId: string, s: SessionPlan) => {
+    data.plans[sessionId] = s;
+    store.save();
+  };
 
   const planned = (sessionId: string): SessionPlan => {
-    const s = sessions.get(sessionId);
+    const s = data.plans[sessionId];
     if (!s) {
       throw new IpcError({
         code: 'INVALID_INPUT',
@@ -80,7 +95,7 @@ export function createPlanBackend(
   return {
     reviewPlan: async (sessionId, onEvent) => {
       onEvent({ kind: 'queued' });
-      let s = sessions.get(sessionId);
+      let s = data.plans[sessionId];
       if (!s && scenario.planCached) {
         s = { strategy: 'contractToUi', custom: null, cachedAt: MOCK_CACHED_AT };
       }
@@ -94,36 +109,27 @@ export function createPlanBackend(
             message: 'Claude Code failed.',
             retryable: true,
           });
-          fallback.reviewed = reviewedIn(sessionId, fallback.plan);
+          fallback.reviewed = reviewedIn(data, sessionId, fallback.plan);
           fallbacks.set(sessionId, fallback);
           onEvent({ kind: 'done', result: structuredClone(fallback) });
           return respond(fallback);
         }
         s = { strategy: 'contractToUi', custom: null, cachedAt: null };
       }
-      const plan = mockPlan();
-      const view: PlanView = {
-        plan,
-        order: order(s),
-        stepStats: MOCK_STEP_STATS,
-        skimStats: MOCK_SKIM_STATS,
-        skimFiles: [[...MOCK_SKIM_FILES]],
-        reviewed: reviewedIn(sessionId, plan),
-        ...(s.cachedAt === null ? {} : { cachedAt: s.cachedAt }),
-      };
+      const view = plannedView(data, sessionId, s);
       // Opening S-02 again reads the plan from the cache.
       fallbacks.delete(sessionId);
-      sessions.set(sessionId, { ...s, cachedAt: s.cachedAt ?? new Date().toISOString() });
+      keep(sessionId, { ...s, cachedAt: s.cachedAt ?? new Date().toISOString() });
       onEvent({ kind: 'done', result: structuredClone(view) });
       return respond(view);
     },
     reviewStep: (sessionId, stepId) => {
       try {
         const fallback = fallbacks.get(sessionId);
-        const reviewed = marks.get(sessionId)?.has(stepId) === true;
+        const reviewed = data.marks[sessionId]?.includes(stepId) === true;
         const view = fallback
           ? mockStepView(fallback.plan, fallback.order.order, stepId, reviewed, true)
-          : mockStepView(mockPlan(), order(planned(sessionId)).order, stepId, reviewed, false);
+          : mockStepView(mockPlan(), orderOf(planned(sessionId)).order, stepId, reviewed, false);
         if (!view) throw notInPlan();
         return respond(view);
       } catch (e: unknown) {
@@ -136,11 +142,12 @@ export function createPlanBackend(
         if (!fallback) planned(sessionId); // "The plan isn't ready yet."
         const plan = fallback?.plan ?? mockPlan();
         if (!plan.steps.some((s) => s.id === stepId)) throw notInPlan();
-        const set = marks.get(sessionId) ?? new Set<string>();
-        if (reviewed) set.add(stepId);
-        else set.delete(stepId);
-        marks.set(sessionId, set);
-        return respond(reviewedIn(sessionId, plan));
+        const marked = new Set(data.marks[sessionId] ?? []);
+        if (reviewed) marked.add(stepId);
+        else marked.delete(stepId);
+        data.marks[sessionId] = [...marked];
+        store.save();
+        return respond(reviewedIn(data, sessionId, plan));
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));
       }
@@ -148,8 +155,8 @@ export function createPlanBackend(
     reviewSetStrategy: (sessionId, strategy) => {
       try {
         const s = { ...planned(sessionId), strategy, custom: null };
-        sessions.set(sessionId, s);
-        return respond(order(s));
+        keep(sessionId, s);
+        return respond(orderOf(s));
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));
       }
@@ -167,8 +174,8 @@ export function createPlanBackend(
           });
         }
         const next = { ...s, custom: [...stepIds] };
-        sessions.set(sessionId, next);
-        return respond(order(next));
+        keep(sessionId, next);
+        return respond(orderOf(next));
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));
       }

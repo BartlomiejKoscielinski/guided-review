@@ -11,6 +11,8 @@ import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { PlanView } from './types/PlanView';
+import type { ResumedSession } from './types/ResumedSession';
+import type { SessionState } from './types/SessionState';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
@@ -105,6 +107,17 @@ export function createTauriClient(): IpcClient {
       call<DecisionOutcome>('review_decide', { finding: findingId, decision }),
     reviewMarkStep: (sessionId, stepId, reviewed) =>
       call<string[]>('review_mark_step', { session: sessionId, step: stepId, reviewed }),
+    sessionState: (sessionId) => call<SessionState>('session_state', { session: sessionId }),
+    sessionSetStep: (sessionId, stepId) =>
+      call<undefined>('session_set_step', { session: sessionId, step: stepId }),
+    sessionSetLayout: (sessionId, layout) =>
+      call<undefined>('session_set_layout', { session: sessionId, layout }),
+    sessionSetScroll: (sessionId, stepId, top) =>
+      call<undefined>('session_set_scroll', { session: sessionId, step: stepId, top }),
+    sessionSetChecklist: (sessionId, stepId, ticked) =>
+      call<undefined>('session_set_checklist', { session: sessionId, step: stepId, ticked }),
+    sessionResume: (sessionId) =>
+      call<ResumedSession | null>('session_resume', { session: sessionId }),
     draftsList: (sessionId) => call<Draft[]>('drafts_list', { sessionId }),
     draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
     draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),

@@ -2,13 +2,14 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
-import type { MrRow } from '../types/MrRow';
+import type { Layout } from '../types/Layout';
 import type { SessionMr } from '../types/SessionMr';
 import type { TreeFile } from '../types/TreeFile';
 import { groupFiles } from './changes';
 import { lineCounts, MR_BRANCHES, mrFiles } from './fixtures/mr';
 import { findMockMr } from './gitlab';
 import type { MockRepos } from './repos';
+import { stateOf, type MockSessionData } from './session-data';
 
 type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel' | 'sessionMr'>;
 
@@ -23,15 +24,17 @@ const error = (code: IpcError['code'], message: string) =>
 /**
  * MR preparation of the mock backend (F-05.1, F-05.6): the repository of the project (switched
  * to, decision 7), an MR of the mock lists (else the F-01.5 copy), the three stages with pauses,
- * and cancel by task ID.
+ * and cancel by task ID. Opened sessions are kept in `store`, in the layout `ui.focusLayout` names
+ * (the core's `sessions.layout`).
  */
 export function createPrepareBackend(
   repos: MockRepos,
   pause: (ms: number) => Promise<void>,
+  store: MockSessionData,
+  focusLayout: () => Layout,
 ): PrepareClient {
   const cancelled = new Set<string>();
-  let sessions = 0;
-  const opened = new Map<string, MrRow>();
+  const { data } = store;
 
   const resolveProject = (project: string | null): string => {
     if (project !== null && project.trim() !== '') {
@@ -77,14 +80,16 @@ export function createPrepareBackend(
       } finally {
         cancelled.delete(task);
       }
-      sessions += 1;
-      const sessionId = `${MR_SESSION}${String(sessions)}`;
-      opened.set(sessionId, mr);
+      data.mrCount += 1;
+      const sessionId = `${MR_SESSION}${String(data.mrCount)}`;
+      data.mrs[sessionId] = mr;
+      stateOf(data, sessionId).layout = focusLayout();
+      store.save();
       const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
       return result;
     },
     sessionMr: async (sessionId) => {
-      const mr = opened.get(sessionId);
+      const mr = data.mrs[sessionId];
       // Commit and local sessions of the sources mock have no MR.
       if (!mr && !sessionId.startsWith(MR_SESSION)) return null;
       if (!mr) throw error('INVALID_INPUT', 'Unknown session.');
