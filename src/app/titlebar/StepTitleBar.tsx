@@ -1,5 +1,7 @@
 import { useMatches, useNavigate, useSearchParams } from 'react-router';
 import { usePlan } from '../../ipc/hooks/usePlan';
+import { useSessionState } from '../../ipc/hooks/useSessionState';
+import { currentStep } from '../../screens/step/currentStep';
 import { ProgressSegments } from '../../screens/step/ProgressSegments';
 import { useFocusStore } from '../../state/focus';
 import { pathFor } from '../routes';
@@ -21,8 +23,9 @@ export function StepTitleBar() {
   const navigate = useNavigate();
   // Cached by the screen; this never starts a plan (F-30.4).
   const plan = usePlan(sessionId, false).query.data;
+  const kept = useSessionState(sessionId).data?.currentStep;
   const order = plan?.order.order ?? [];
-  const index = Math.max(0, order.indexOf(params.get('step') ?? order[0] ?? ''));
+  const index = Math.max(0, order.indexOf(currentStep(params.get('step'), kept, order) ?? ''));
 
   const center =
     layout === 'B' && order.length > 0 ? (

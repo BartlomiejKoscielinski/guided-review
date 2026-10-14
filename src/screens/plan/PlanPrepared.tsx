@@ -39,6 +39,11 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
   const firstStep = view && !fallback ? (view.order.order[0] ?? '') : '';
   useStepFindings(sessionId, firstStep);
   const canStart = Boolean(session.data && view);
+  // Step 1 even when the session was on another step before (S-03 opens there otherwise).
+  const stepOne = view?.order.order[0];
+  const startPath = `${pathFor({ screen: 'S-03', sessionId })}${
+    stepOne === undefined ? '' : `?step=${encodeURIComponent(stepOne)}`
+  }`;
 
   useEffect(() => {
     if (!canStart) return undefined;
@@ -47,13 +52,13 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
         return;
       if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
       event.preventDefault();
-      void navigate(pathFor({ screen: 'S-03', sessionId }));
+      void navigate(startPath);
     };
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
     };
-  }, [canStart, navigate, sessionId]);
+  }, [canStart, navigate, startPath]);
 
   if (session.isPending) return <div className={styles.screen} aria-busy="true" />;
   if (session.error) {
@@ -84,7 +89,7 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
                 variant="primary"
                 size={46}
                 disabled={!canStart}
-                onClick={() => void navigate(pathFor({ screen: 'S-03', sessionId }))}
+                onClick={() => void navigate(startPath)}
               >
                 Start step 1 <span className={styles.enter}>↵</span>
               </Button>

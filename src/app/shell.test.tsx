@@ -159,8 +159,10 @@ describe('Shell', () => {
     await waitFor(() => {
       expect(calls).toContain('sessionsListUnfinished');
     });
-    // Reading the cached Claude status and the model table starts no Claude work.
-    const allowed = /^(app|sessions|window|onWindow|claudeStatus$|claudeModels$)/;
+    // Reading the cached Claude status and the model table starts no Claude work; S-03 reads its
+    // stored state and resumes from stored data only (F-04.3: no Claude run, no GitLab call).
+    const allowed =
+      /^(app|sessions|sessionState$|sessionResume$|window|onWindow|claudeStatus$|claudeModels$)/;
     expect(calls.filter((name) => !allowed.test(name))).toEqual([]);
     expect(calls).not.toContain('appSettingsSet');
   });

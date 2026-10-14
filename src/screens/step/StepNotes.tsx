@@ -3,6 +3,7 @@ import { SpinnerIcon } from '../../components/icons';
 import { useStepFindings } from '../../ipc/hooks/useReview';
 import type { Finding } from '../../ipc/types/Finding';
 import { NoteCard } from './NoteCard';
+import { useNotesRequest } from './notesRequest';
 import styles from './Notes.module.css';
 
 export interface StepNotesProps {
@@ -18,8 +19,10 @@ export interface StepNotesProps {
  * yourself, though." with no notes, else the note cards in diff order.
  */
 export function StepNotes({ sessionId, stepId, selfReview = false, onAsk }: StepNotesProps) {
-  const { query } = useStepFindings(sessionId, stepId);
+  const { query } = useStepFindings(sessionId, stepId, useNotesRequest());
 
+  // Not asked for (S-03 restored on start without cached notes): no state to show.
+  if (query.data === undefined && query.isPending && query.fetchStatus === 'idle') return null;
   if (query.data === undefined && (query.isPending || query.isFetching)) {
     return (
       <div className={styles.state} role="status">

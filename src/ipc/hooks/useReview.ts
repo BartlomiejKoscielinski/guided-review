@@ -45,11 +45,13 @@ export type TaskPhase = ClaudeTaskEvent<unknown>['kind'] | 'idle';
 
 /**
  * A step's notes (F-09.6), cached per session and step; `refetch` is Retry. The core prefetches
- * the next step, so opening it is usually instant.
+ * the next step, so opening it is usually instant. With `request` false only notes already in
+ * the cache show (S-03 restored on start runs no step task, F-30.4).
  */
 export function useStepFindings(
   sessionId: string,
   stepId: string,
+  request = true,
 ): { query: UseQueryResult<StepAnalysis, IpcError>; phase: TaskPhase } {
   const ipc = useIpc();
   const queryClient = useQueryClient();
@@ -65,7 +67,7 @@ export function useStepFindings(
         void queryClient.invalidateQueries({ queryKey: CLAUDE_STATUS_KEY });
       }
     },
-    enabled: sessionId !== '' && stepId !== '',
+    enabled: request && sessionId !== '' && stepId !== '',
     staleTime: Infinity,
     retry: false,
   });
