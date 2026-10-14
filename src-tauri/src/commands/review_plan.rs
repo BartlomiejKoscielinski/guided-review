@@ -7,9 +7,9 @@ use std::sync::Arc;
 use tauri::State;
 use tauri::ipc::Channel;
 
-use super::claude::{ClaudeApp, after_task, executable};
+use super::claude::{ClaudeApp, after_task};
 use super::gitlab::GitlabApp;
-use super::review::{ReviewApp, mr_threads, plan_context, sender, step_context};
+use super::review::{ReviewApp, loaded, mr_threads, plan_context, sender};
 use super::with_store;
 use crate::claude::ClaudeError;
 use crate::claude::discover::{DiscoveryInput, discover};
@@ -90,7 +90,7 @@ pub async fn review_set_strategy(
     session: String,
     strategy: Strategy,
 ) -> AppResult<StepOrder> {
-    let cx = planned(&review, &claude, &store, &gitlab, &session).await?;
+    let cx = loaded(&review, &claude, &store, &gitlab, &session).await?;
     with_store(&store, move |c| Ok(cx.set_strategy(c, strategy)))
         .await?
         .map_err(Into::into)
@@ -107,23 +107,8 @@ pub async fn review_reorder_steps(
     session: String,
     order: Vec<String>,
 ) -> AppResult<StepOrder> {
-    let cx = planned(&review, &claude, &store, &gitlab, &session).await?;
+    let cx = loaded(&review, &claude, &store, &gitlab, &session).await?;
     with_store(&store, move |c| Ok(cx.reorder(c, &order)))
         .await?
         .map_err(Into::into)
-}
-
-/// The session with its plan; "The plan isn't ready yet." before `review_plan` succeeded.
-async fn planned(
-    review: &ReviewApp,
-    claude: &ClaudeApp,
-    store: &Store,
-    gitlab: &GitlabApp,
-    session: &str,
-) -> AppResult<Arc<StepContext>> {
-    let settings = with_store(store, |c| store::settings::load(c)).await?;
-    let exe = executable(store).await?;
-    let ctx = plan_context(claude, store, &exe, &settings.claude);
-    let git_program = settings.git.path.as_deref().map(Path::new);
-    step_context(review, &ctx, gitlab, git_program, session).await
 }

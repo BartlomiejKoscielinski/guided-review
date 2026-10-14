@@ -147,3 +147,47 @@ fn f06_5_custom_order_of_an_older_plan_keeps_known_steps() {
         assert_eq!(order.order, ids(&["s3", "s1", "s2"]));
     });
 }
+
+/// A session holding the app's fallback plan (02 › S-02 Claude failed).
+fn fallback_context() -> crate::review::step_context::StepContext {
+    use crate::claude::tasks::plan_inputs::PlanSource;
+    use crate::review::step_context::{SessionInputs, StepContext};
+    let inputs = SessionInputs {
+        session_id: "r1".into(),
+        repo_id: 1,
+        source: PlanSource::Commits {
+            from: None,
+            to: "head".into(),
+        },
+        project: String::new(),
+        mr: None,
+        base_sha: "base".into(),
+        head_sha: "head".into(),
+        cwd: std::path::PathBuf::new(),
+        files: Vec::new(),
+        threads: Vec::new(),
+        rules: None,
+        description: None,
+    };
+    StepContext::fallback(inputs, plan())
+}
+
+#[test]
+fn f06_5_fallback_plan_refuses_a_dragged_order_and_keeps_file_order() {
+    with(|c| {
+        let cx = fallback_context();
+        let error = cx.reorder(c, &ids(&["s3", "s2", "s1"])).unwrap_err();
+        assert!(matches!(error, StepOrderError::Fallback));
+        let error = AppError::from(error);
+        assert_eq!(error.code, ErrorCode::InvalidInput);
+        assert_eq!(
+            error.message,
+            "Claude isn't available. You can review in file order."
+        );
+        assert_eq!(store::plans::custom_order(c, "r1").unwrap(), None);
+        let order = cx.step_order(c).unwrap();
+        assert!(!order.custom);
+        assert_eq!(order.strategy, Strategy::FileOrder);
+        assert_eq!(order.order, ids(&["s1", "s2", "s3"]));
+    });
+}

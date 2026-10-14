@@ -123,8 +123,10 @@ where
     }
 }
 
-/// The session's remembered context, else loaded from its cached plan (no Claude run).
-async fn loaded(
+/// The session's remembered context, else loaded from its cached plan (no Claude run); "The
+/// plan isn't ready yet." before `review_plan` succeeded. A session planned in this run (a
+/// fallback plan too) needs no Claude Code, so S-02's toggle and drag don't look it up.
+pub(super) async fn loaded(
     review: &ReviewApp,
     claude: &ClaudeApp,
     store: &Store,
