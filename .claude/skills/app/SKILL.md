@@ -26,6 +26,7 @@ Targets are Playwright selectors. Prefer roles from `snap`: `role=button[name="P
 
 1. `status`. If it is not reachable, run `start`. If `start` says an app without CDP is running (the owner's `tauri dev`, or one left over), run `stop --all` and then `start` again. It is the same dev build.
 2. Understand the screen with `snap` (text) before you take screenshots. Open screenshots as crops (`shot --target <region>`), and keep them in `.app-driver/` (gitignored).
+   Three or more steps in a row (click, wait, text, shot) go into one `run .app-driver/<check>.json`, not one call each: one connection, one tool call (E13).
 3. `tauri dev` hot-reloads both the UI and the Rust code. After a Rust change, wait (`logs 5` shows `Running target\debug\GuidedReview.exe`), then reconnect. The webview reloads, so `snap` again.
 4. Rust tracing and build errors appear in `logs`. UI errors: `eval "..."`, or check what is on screen.
 5. When you finish, leave the app running if the owner may look at it. Otherwise `stop`.
