@@ -1,17 +1,22 @@
 //! New sessions from S-01 (F-01.3), unfinished sessions for the Review dock tile (F-30.2) and
-//! where to resume them.
+//! "Pick up where you left off" (F-04.1), and where to resume them.
+
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 use ts_rs::TS;
 
 use super::model::{Layout, Mode, SessionStatus};
+use crate::git::{Git, refs};
+use crate::os::process::Cancel;
 use crate::route::Route;
 use crate::source::Source;
 use crate::source::open::Resolved;
 use crate::store::sessions::NewSession;
 
-/// A session the Review tile can open. Progress and titles for "Pick up where you left off"
-/// (F-04.1) join in M3.
+/// A session the Review tile and a "Pick up where you left off" card open (F-30.2, F-04.1).
+/// The UI draws the card's progress line from the numbers.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -19,9 +24,69 @@ pub struct UnfinishedSession {
     pub id: String,
     pub status: SessionStatus,
     pub mode: Mode,
+    /// ISO 8601 UTC; the card's "saved yesterday 18:40".
     pub updated_at: String,
-    /// The screen the Review tile opens for this session.
+    /// The screen the Review tile and **Continue** open for this session.
     pub resume: Route,
+    /// The card's tag: `!iid` of an MR, `local` of a self-review.
+    pub source: Source,
+    /// The MR's title, the branch of a self-review, the commit or range of commits.
+    pub title: String,
+    /// Steps of the session's plan marked reviewed (F-07.2).
+    pub reviewed_steps: usize,
+    /// Steps of the session's plan; 0 while it has none.
+    pub total_steps: usize,
+    /// Drafts not published yet (F-09.2).
+    pub drafts: usize,
+}
+
+/// The stored title of a card: the MR's title (`sessions.mr_json`; the project without one),
+/// the repository's name for a self-review until [`name_self_reviews`] finds its branch, the
+/// short SHA or range of commits.
+pub fn card_title(source: &Source, mr_title: Option<String>, repo_name: Option<String>) -> String {
+    let short = |sha: &str| sha.chars().take(7).collect::<String>();
+    match source {
+        Source::Mr { project, .. } => mr_title.unwrap_or_else(|| project.clone()),
+        Source::Local { .. } => repo_name.unwrap_or_default(),
+        Source::Commits { from: None, to } => short(to),
+        Source::Commits {
+            from: Some(from),
+            to,
+        } => format!("{}..{}", short(from), short(to)),
+    }
+}
+
+/// Names self-review cards after the branch checked out in their repository (Start.dc.html:
+/// `local` · `chore/compiled-bindings`); `checkouts` maps session IDs to repository folders.
+/// Without a branch (detached HEAD, git failing) the stored title stays.
+pub async fn name_self_reviews(
+    sessions: &mut [UnfinishedSession],
+    checkouts: &HashMap<String, PathBuf>,
+    git_program: Option<&Path>,
+    cancel: &Cancel,
+) {
+    let mut branches: HashMap<&Path, Option<String>> = HashMap::new();
+    for session in sessions
+        .iter_mut()
+        .filter(|s| matches!(s.source, Source::Local { .. }))
+    {
+        let Some(checkout) = checkouts.get(&session.id) else {
+            continue;
+        };
+        if !branches.contains_key(checkout.as_path()) {
+            let git = Git::new(git_program, checkout);
+            let branch = refs::current_branch(&git, cancel)
+                .await
+                .unwrap_or_else(|error| {
+                    tracing::debug!(%error, "the branch of a self-review was not read");
+                    None
+                });
+            branches.insert(checkout.as_path(), branch);
+        }
+        if let Some(Some(branch)) = branches.get(checkout.as_path()) {
+            session.title.clone_from(branch);
+        }
+    }
 }
 
 /// A session just opened from S-01 and the screen to show (F-01.3).
@@ -137,5 +202,35 @@ mod tests {
             ),
             Route::Detailed { session_id: id() }
         );
+    }
+
+    #[test]
+    fn f04_1_card_titles_by_source() {
+        let mr = Source::Mr {
+            project: "mobile/mobile-app".into(),
+            iid: 471,
+        };
+        let title = |source: &Source, mr: Option<&str>| {
+            card_title(source, mr.map(str::to_owned), Some("mobile ąę".into()))
+        };
+        assert_eq!(
+            title(&mr, Some("Signature screen: field validation")),
+            "Signature screen: field validation"
+        );
+        assert_eq!(title(&mr, None), "mobile/mobile-app");
+        let local = Source::Local {
+            scope: crate::source::LocalScope::Staged,
+        };
+        assert_eq!(title(&local, None), "mobile ąę");
+        let commit = Source::Commits {
+            from: None,
+            to: "a3f9c12d4e5f60718293a4b5c6d7e8f901234567".into(),
+        };
+        assert_eq!(title(&commit, None), "a3f9c12");
+        let range = Source::Commits {
+            from: Some("e07d3f1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa".into()),
+            to: "9be0d47bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb".into(),
+        };
+        assert_eq!(title(&range, None), "e07d3f1..9be0d47");
     }
 }

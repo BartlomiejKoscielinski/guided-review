@@ -10,6 +10,11 @@ const session: UnfinishedSession = {
   mode: 'focus',
   updatedAt: '2026-10-11T09:00:00Z',
   resume: { screen: 'S-05', sessionId: 's-471' },
+  source: { kind: 'mr', project: 'mobile/mobile-app', iid: 471 },
+  title: 'Signature screen: field validation',
+  reviewedSteps: 5,
+  totalSteps: 9,
+  drafts: 3,
 };
 
 function dock() {

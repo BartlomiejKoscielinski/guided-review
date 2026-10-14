@@ -201,6 +201,26 @@ pub fn put(conn: &Connection, key: &CacheKey, output: &Value) -> Result<(), Stor
     Ok(())
 }
 
+/// The newest cached plan of `subject` at `head` in the repository, under any settings; a
+/// card's step count (F-04.1) needs no hunks. A row that doesn't parse counts as none.
+pub fn latest_plan(
+    conn: &Connection,
+    repo_id: i64,
+    subject: &str,
+    head: &str,
+) -> Result<Option<Value>, StoreError> {
+    let json: Option<String> = conn
+        .query_row(
+            "SELECT result_json FROM claude_cache
+             WHERE task = ?1 AND repo_id = ?2 AND subject = ?3 AND head_sha = ?4
+             ORDER BY created_at DESC LIMIT 1",
+            params![TASK, repo_id, subject, head],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(json.and_then(|j| serde_json::from_str(&j).ok()))
+}
+
 /// F-02.5: a plan of MR `iid` is cached for `head` under the current plan model and effort.
 pub fn plan_ready(
     conn: &Connection,

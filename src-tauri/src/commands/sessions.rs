@@ -22,12 +22,27 @@ use crate::source::open::{self, Resolved};
 use crate::source::{CommitRange, LocalScope};
 use crate::store::{self, Store};
 
-/// Unfinished sessions, most recent first; the Review tile resumes the first one (F-30.2).
+/// Unfinished sessions, most recent first, with their progress: the Review tile resumes the
+/// first one (F-30.2), S-01 shows them all as "Pick up where you left off" cards (F-04.1), a
+/// self-review named after the branch of its repository.
 #[tauri::command]
 pub async fn sessions_list_unfinished(
     store: State<'_, Store>,
 ) -> AppResult<Vec<UnfinishedSession>> {
-    with_store(&store, |conn| store::unfinished_sessions(conn)).await
+    let (mut list, checkouts, settings) = with_store(&store, |conn| {
+        let list = store::unfinished_sessions(conn)?;
+        let checkouts = store::sessions::self_review_checkouts(conn, &list)?;
+        Ok((list, checkouts, store::settings::load(conn)?))
+    })
+    .await?;
+    sessions::name_self_reviews(
+        &mut list,
+        &checkouts,
+        settings.git.path.as_deref().map(Path::new),
+        &Cancel::new(),
+    )
+    .await;
+    Ok(list)
 }
 
 /// Stores a resolved source as a new session of the active repository.
