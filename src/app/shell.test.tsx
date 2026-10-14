@@ -44,7 +44,8 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
     controls: ['Opus 5.5 · high'],
   },
   'S-03': {
-    text: ['!482', 'Offline queue for delivery photos'],
+    // The session of this test has no MR: the active repository, no `!iid` or title.
+    text: ['mobile-app'],
     controls: ['[Mode]', '[Layout]', 'Sonnet 5.5 · medium', 'Finish review'],
   },
   'S-04': {
@@ -161,8 +162,9 @@ describe('Shell', () => {
     });
     // Reading the cached Claude status and the model table starts no Claude work; S-03 reads its
     // stored state and resumes from stored data only (F-04.3: no Claude run, no GitLab call).
+    // The title bar reads the active repository and the session's stored MR (no GitLab call).
     const allowed =
-      /^(app|sessions|sessionState$|sessionResume$|window|onWindow|claudeStatus$|claudeModels$)/;
+      /^(app|sessions|sessionState$|sessionResume$|sessionMr$|repoActive$|window|onWindow|claudeStatus$|claudeModels$)/;
     expect(calls.filter((name) => !allowed.test(name))).toEqual([]);
     expect(calls).not.toContain('appSettingsSet');
   });

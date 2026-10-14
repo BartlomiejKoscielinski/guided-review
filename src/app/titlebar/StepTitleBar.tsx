@@ -6,7 +6,8 @@ import { useStepProgress } from '../../screens/step/useStepProgress';
 import { useFocusStore } from '../../state/focus';
 import { pathFor } from '../routes';
 import { TaskModelChip } from './TaskModelChip';
-import { SessionContext, StepControls } from './StepControls';
+import { ReviewContext } from './ReviewContext';
+import { StepControls } from './StepControls';
 import { TitleBar } from './TitleBar';
 import styles from './StepTitleBar.module.css';
 
@@ -48,7 +49,7 @@ export function StepTitleBar() {
 
   return (
     <TitleBar
-      context={<SessionContext />}
+      context={<ReviewContext />}
       center={center}
       controls={
         <StepControls
