@@ -256,6 +256,32 @@ pub fn session_of(conn: &Connection, finding_id: &str) -> Result<String, Decisio
     .ok_or_else(|| DecisionError::NotFound(finding_id.to_owned()))
 }
 
+/// The step's notes this session dismissed, in the order they were first recorded. The step
+/// task leaves dismissed fingerprints out (F-09.4), so a step shown again - from the cache after
+/// a restart (F-04.3) - gets them back from here: the reviewer still sees the decision and can
+/// undo it.
+pub fn dismissed_notes(
+    conn: &Connection,
+    session_id: &str,
+    step_id: &str,
+) -> Result<Vec<Finding>, DecisionError> {
+    let mut stmt = conn.prepare(
+        "SELECT json FROM findings
+         WHERE session_id = ?1 AND step_id = ?2 AND decision = 'dismissed' ORDER BY rowid",
+    )?;
+    let rows = stmt
+        .query_map(params![session_id, step_id], |row| row.get::<_, String>(0))?
+        .collect::<Result<Vec<_>, _>>()?;
+    rows.iter()
+        .map(|json| {
+            Ok(Finding {
+                decision: Decision::Dismissed,
+                ..serde_json::from_str(json)?
+            })
+        })
+        .collect()
+}
+
 /// The notes dismissed for `subject` (inputs of the step task, F-09.4), oldest first.
 pub fn dismissed(conn: &Connection, subject: &str) -> Result<Vec<Dismissal>, DecisionError> {
     let mut stmt = conn.prepare(

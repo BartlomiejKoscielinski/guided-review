@@ -137,8 +137,13 @@ fn cached_by_key(
 
 /// The cached plan of a request, validated again; never runs `claude` (S-03 opens after S-02).
 pub fn cached(ctx: &Context<'_>, req: &PlanRequest<'_>) -> Option<Plan> {
+    cached_outcome(ctx, req).map(|outcome| outcome.plan)
+}
+
+/// [`cached`] with when it was stored ("Plan from cache · <age>").
+pub fn cached_outcome(ctx: &Context<'_>, req: &PlanRequest<'_>) -> Option<PlanOutcome> {
     let hunks = coverage::hunk_refs(req.files);
-    cached_by_key(ctx.store, &key(ctx, req), &hunks, req.files).map(|outcome| outcome.plan)
+    cached_by_key(ctx.store, &key(ctx, req), &hunks, req.files)
 }
 
 /// The cached plan, or a run of `claude` that is cached on success. `on_started` runs once the

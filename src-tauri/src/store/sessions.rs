@@ -1,5 +1,11 @@
 //! Sessions repository (table `sessions`). Sessions are created from S-01 (F-01.3) and listed
-//! for the Review tile (F-30.2) and "Pick up where you left off" (F-04.1).
+//! for the Review tile (F-30.2) and "Pick up where you left off" (F-04.1); their layout and
+//! current step are kept for the next start (F-04.3, `sessions_state.rs`).
+
+#[path = "sessions_state.rs"]
+mod state;
+
+pub use state::{current_step, layout, set_current_step, set_layout};
 
 use std::collections::HashMap;
 use std::path::PathBuf;

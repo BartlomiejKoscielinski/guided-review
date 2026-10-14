@@ -143,6 +143,17 @@ fn cached(
     }
 }
 
+/// The cached analysis of a step, validated again; `None` when the step was never analyzed
+/// under the current settings. Never runs `claude` (S-03 restored on start, F-30.4).
+pub fn cached_analysis(
+    ctx: &Context<'_>,
+    req: &StepRequest<'_>,
+) -> Result<Option<StepAnalysis>, ClaudeError> {
+    let step = step(req)?;
+    let scope = StepScope::new(&step.id, req.files, &step.hunk_ids);
+    Ok(cached(ctx, &key(ctx, req)?, &scope, req))
+}
+
 /// The cached analysis, or a run of `claude` at `priority` that is cached on success.
 /// `on_started` runs once the queue lets the run start (never on a cache hit).
 pub async fn run(

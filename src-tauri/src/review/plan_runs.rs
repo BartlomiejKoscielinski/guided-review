@@ -161,6 +161,17 @@ pub async fn plan(
     result
 }
 
+/// The session's cached plan as S-02 shows it, without task events; `None` when it isn't cached
+/// under the current settings. Starts no `claude` run (S-03 restored on start, F-04.3, F-30.4).
+pub fn cached_view(
+    ctx: &Context<'_>,
+    inputs: &SessionInputs,
+) -> Result<Option<PlanView>, AppError> {
+    plan::cached_outcome(ctx, &inputs.plan_request())
+        .map(|outcome| view(ctx, inputs, outcome.plan, outcome.cached_at))
+        .transpose()
+}
+
 fn view(
     ctx: &Context<'_>,
     inputs: &SessionInputs,

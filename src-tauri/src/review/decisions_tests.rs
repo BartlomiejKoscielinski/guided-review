@@ -193,3 +193,26 @@ fn f09_2_decisions_survive_a_new_run_of_the_step() {
         Ok(())
     });
 }
+
+#[test]
+fn f04_3_dismissed_notes_of_a_step_are_kept_for_the_session() {
+    with(|c| {
+        decide(c, "f2", &FindingDecision::Dismiss, SUBJECT)?;
+        decide(c, "f1", &FindingDecision::AddToDrafts, SUBJECT)?;
+        let notes = dismissed_notes(c, "r1", "s1")?;
+        assert_eq!(
+            notes
+                .iter()
+                .map(|f| (f.id.as_str(), f.decision))
+                .collect::<Vec<_>>(),
+            [("f2", Decision::Dismissed)]
+        );
+        assert_eq!(notes[0].fingerprint, "bbbb");
+        // Another session or step has none; an undone dismissal is gone.
+        assert!(dismissed_notes(c, "r2", "s1")?.is_empty());
+        assert!(dismissed_notes(c, "r1", "s2")?.is_empty());
+        decide(c, "f2", &FindingDecision::Undo, SUBJECT)?;
+        assert!(dismissed_notes(c, "r1", "s1")?.is_empty());
+        Ok(())
+    });
+}

@@ -20,6 +20,8 @@ pub mod plan_runs;
 pub mod position;
 pub mod prepare;
 pub mod progress;
+pub mod resume;
+pub mod session_state;
 pub mod sessions;
 pub mod source_files;
 pub mod step_context;

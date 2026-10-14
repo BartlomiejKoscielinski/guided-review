@@ -9,7 +9,7 @@ use std::sync::Mutex;
 use tokio::sync::watch;
 
 use super::decisions;
-use super::finding_model::StepAnalysis;
+use super::finding_model::{Finding, StepAnalysis};
 use crate::claude::ClaudeError;
 use crate::claude::queue::Priority;
 use crate::claude::tasks::ask::{self, AskAnswer, AskRequest};
@@ -17,6 +17,7 @@ use crate::claude::tasks::events::ClaudeTaskEvent;
 use crate::claude::tasks::plan::Context;
 use crate::claude::tasks::step::{self, StepOutcome, StepRequest};
 use crate::error::AppError;
+use crate::git::model::FileDiff;
 use crate::os::process::Cancel;
 
 #[derive(Debug, Clone)]
@@ -157,7 +158,7 @@ pub async fn findings(
     let key = format!("{session_id}\u{0}{}", req.step_id);
     let started = || emit(ClaudeTaskEvent::Started);
     let result = match runs.run(&key, ctx, req, priority, &started, cancel).await {
-        Ok(outcome) => record(ctx, session_id, outcome.analysis).map_err(RunError::App),
+        Ok(outcome) => record(ctx, session_id, req.files, outcome.analysis).map_err(RunError::App),
         Err(error) => Err(RunError::Claude(error)),
     };
     emit(match &result {
@@ -171,19 +172,72 @@ pub async fn findings(
     result
 }
 
-/// The analysis with each note's stored decision.
+/// The notes of one step from Claude's cache with their decisions; `None` when the step was
+/// never analyzed under the current settings. Starts no `claude` run and no step task (S-03
+/// restored on start, F-04.3, F-30.4).
+pub fn cached_findings(
+    ctx: &Context<'_>,
+    req: &StepRequest<'_>,
+    session_id: &str,
+) -> Result<Option<StepAnalysis>, RunError> {
+    match step::cached_analysis(ctx, req) {
+        Ok(Some(analysis)) => record(ctx, session_id, req.files, analysis)
+            .map(Some)
+            .map_err(RunError::App),
+        Ok(None) => Ok(None),
+        Err(error) => Err(RunError::Claude(error)),
+    }
+}
+
+/// The analysis with each note's stored decision, and the step's notes this session dismissed
+/// back in their place (the task leaves dismissed fingerprints out, F-09.4).
 fn record(
     ctx: &Context<'_>,
     session_id: &str,
+    files: &[FileDiff],
     analysis: StepAnalysis,
 ) -> Result<StepAnalysis, AppError> {
-    let findings = ctx
-        .store
-        .with_conn(|conn| Ok(decisions::record(conn, session_id, &analysis)))??;
+    let (findings, dismissed) = ctx.store.with_conn(|conn| {
+        Ok(
+            decisions::record(conn, session_id, &analysis).and_then(|findings| {
+                let dismissed = decisions::dismissed_notes(conn, session_id, &analysis.step_id)?;
+                Ok((findings, dismissed))
+            }),
+        )
+    })??;
     Ok(StepAnalysis {
-        findings,
+        findings: with_dismissed(findings, dismissed, files),
         ..analysis
     })
+}
+
+/// `findings` with the dismissed notes they lack, in diff order: the change's file order, then
+/// the line (the order the step task's notes come in).
+fn with_dismissed(
+    mut findings: Vec<Finding>,
+    dismissed: Vec<Finding>,
+    files: &[FileDiff],
+) -> Vec<Finding> {
+    let missing: Vec<Finding> = dismissed
+        .into_iter()
+        .filter(|d| findings.iter().all(|f| f.id != d.id))
+        .collect();
+    if missing.is_empty() {
+        return findings;
+    }
+    findings.extend(missing);
+    let position = |file: &str| {
+        files
+            .iter()
+            .position(|f| {
+                [&f.new_path, &f.old_path]
+                    .iter()
+                    .any(|p| p.as_deref() == Some(file))
+            })
+            .unwrap_or(usize::MAX)
+    };
+    findings.sort_by_key(|f| (position(&f.file), f.line));
+    findings
 }
 
 /// A question (`review_ask`): `queued`, `started`, `partialText` deltas in order, then `done`
@@ -211,4 +265,80 @@ pub async fn ask(
         },
     });
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::git::model::FileStatus;
+    use crate::review::finding_model::{Decision, Severity, Side};
+    use crate::review::layer::layer_of;
+
+    const VM: &str = "src/App/Zażółć/Upload ViewModel.cs";
+    const QUEUE: &str = "src/Mobile.Core/Upload Queue.cs";
+
+    fn file(path: &str) -> FileDiff {
+        FileDiff {
+            old_path: Some(path.into()),
+            new_path: Some(path.into()),
+            status: FileStatus::Modified,
+            binary: false,
+            mode_change: None,
+            additions: 1,
+            deletions: 0,
+            layer: layer_of(path),
+            hunks: Vec::new(),
+            line_staging: true,
+        }
+    }
+
+    fn note(id: &str, file: &str, line: u32, decision: Decision) -> Finding {
+        Finding {
+            id: id.into(),
+            step_id: "s4".into(),
+            severity: Severity::Q,
+            kind: "unawaited-task".into(),
+            title: format!("Note {id}"),
+            body: String::new(),
+            file: file.into(),
+            side: Side::New,
+            line,
+            evidence: Vec::new(),
+            suggested_comment: String::new(),
+            fingerprint: id.into(),
+            decision,
+        }
+    }
+
+    fn ids(findings: &[Finding]) -> Vec<&str> {
+        findings.iter().map(|f| f.id.as_str()).collect()
+    }
+
+    #[test]
+    fn f04_3_dismissed_notes_go_back_in_diff_order() {
+        let files = [file(QUEUE), file(VM)];
+        let shown = vec![
+            note("q1", QUEUE, 12, Decision::Open),
+            note("v2", VM, 48, Decision::Draft),
+        ];
+        let dismissed = vec![
+            note("v1", VM, 20, Decision::Dismissed),
+            note("q2", QUEUE, 30, Decision::Dismissed),
+        ];
+        let merged = with_dismissed(shown, dismissed, &files);
+        assert_eq!(ids(&merged), ["q1", "q2", "v1", "v2"]);
+        assert_eq!(merged[2].decision, Decision::Dismissed);
+    }
+
+    #[test]
+    fn f04_3_a_note_already_shown_is_not_added_twice_and_the_order_stays() {
+        let files = [file(VM)];
+        // Claude's order stays as it is when nothing is missing.
+        let shown = vec![
+            note("v2", VM, 48, Decision::Open),
+            note("v1", VM, 20, Decision::Dismissed),
+        ];
+        let dismissed = vec![note("v1", VM, 20, Decision::Dismissed)];
+        assert_eq!(ids(&with_dismissed(shown, dismissed, &files)), ["v2", "v1"]);
+    }
 }
