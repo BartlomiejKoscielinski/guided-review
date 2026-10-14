@@ -23,8 +23,26 @@ test('autopilot hook: only the conductor of the run is continued, with the itera
   const go = decide({ run, text: 'AUTOPILOT ap-1 next', spentTokens: 10, nextItem: item });
   assert.equal(go.block, true);
   assert.equal(go.run.iterations, 1);
-  assert.match(go.reason, /next item F-07\.2 \(todo\), iteration 1\/3/);
+  assert.match(go.reason, /next item F-07\.2 \(todo\), iteration 2\/3/);
   assert.equal(decide({ run, text: 'AUTOPILOT ap-1 stop: done', nextItem: item }).block, false);
+});
+
+test('autopilot hook: --cap N runs N items, the first one started by the skill included', () => {
+  for (const cap of [1, 3, 6]) {
+    let state = { ...run, cap };
+    let items = 1;
+    for (let guard = 0; guard < 20; guard += 1) {
+      const d = decide({ run: state, text: 'AUTOPILOT ap-1 next', nextItem: item, spentTokens: 0 });
+      if (d.run.finalized) {
+        assert.match(d.reason, new RegExp(`cap ${cap} reached`));
+        break;
+      }
+      items += 1;
+      assert.match(d.reason, new RegExp(`iteration ${items}/${cap}`));
+      state = d.run;
+    }
+    assert.equal(items, cap);
+  }
 });
 
 test('autopilot hook: cap, budget, STOP and an empty backlog close the run once, then allow the stop', () => {

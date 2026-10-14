@@ -48,6 +48,8 @@ export const marker = (runId) => `AUTOPILOT ${runId}`;
 /**
  * Whether to block the conductor's stop. Returns `{ block, reason, run }` with the run state to
  * save (iterations counted on each continuation; `finalized` once the closing turn was asked for).
+ * The skill starts the first item itself, so a run has done `iterations + 1` items and `--cap N`
+ * means N items.
  */
 export function decide({ run, text, stopFile, spentTokens, nextItem }) {
   if (!run) return { block: false, reason: 'no autopilot run' };
@@ -56,7 +58,7 @@ export function decide({ run, text, stopFile, spentTokens, nextItem }) {
   if (text.includes(`${m} stop`)) return { block: false, reason: 'the conductor stopped' };
   let ending = null;
   if (stopFile) ending = 'the owner asked to stop (.autopilot/STOP)';
-  else if (run.iterations >= run.cap) ending = `iteration cap ${run.cap} reached`;
+  else if (run.iterations + 1 >= run.cap) ending = `iteration cap ${run.cap} reached`;
   else if (run.budgetTokens && spentTokens >= run.budgetTokens)
     ending = `token budget ${run.budgetTokens} spent (${spentTokens})`;
   else if (nextItem?.none) ending = nextItem.none;
@@ -72,7 +74,7 @@ export function decide({ run, text, stopFile, spentTokens, nextItem }) {
   return {
     block: true,
     run: { ...run, iterations },
-    reason: `Autopilot ${run.runId}: next item ${nextItem.id} (${nextItem.status}), iteration ${iterations}/${run.cap}. Follow "Loop body" of .claude/skills/autopilot/SKILL.md; end the turn with "${m} next".`,
+    reason: `Autopilot ${run.runId}: next item ${nextItem.id} (${nextItem.status}), iteration ${iterations + 1}/${run.cap}. Follow "Loop body" of .claude/skills/autopilot/SKILL.md; end the turn with "${m} next".`,
   };
 }
 
