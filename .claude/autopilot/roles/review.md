@@ -8,6 +8,7 @@ Look for, most important first:
 3. Bugs: wrong conditions, unhandled errors, races, data loss, Windows paths.
 4. Tests that pass without testing the behavior (tautologies, mocks of the unit under test).
 5. Conventions (file size, naming, one component per file, errors via thiserror → AppError).
+6. Where the spec and mock are silent, the UI/UX choices in the diff, judged by the principles in the common rules (nobody else reviews them before the merge): a clearly worse choice is a "normal" finding that names the better option and why.
 Severity: "severe" = 1 or 2 or a real bug; "normal" = should be fixed before merge; "nit" = optional. Report only findings you verified in the code; no style preferences.
 If the implementer disputed a locked test ({{testDispute}}), decide "accept" (the test is wrong against the spec) or "reject".
 

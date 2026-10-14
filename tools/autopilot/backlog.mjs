@@ -6,11 +6,11 @@
 //   node tools/autopilot/backlog.mjs set F-07.2 impl [--note t] [--attempt] [--lock sha --tests a,b] [--kind ui]
 //   node tools/autopilot/backlog.mjs list
 //   node tools/autopilot/backlog.mjs decision '<json: item, decisions: [{question, chosen, alternatives, reversible}]>'
-//     (all decisions of one item at once: one row per item, appended to its provisional row)
+//     (all decisions of one item at once, each with a "why"; one decided row per item)
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { addDecisions, next, parseDecisions, setItem, sync } from './backlog-lib.mjs';
+import { addDecisions, next, setItem, sync } from './backlog-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BACKLOG = join(root, 'docs', 'process', 'backlog.json');
@@ -56,7 +56,7 @@ try {
       `${milestone}: ${backlog.items.length} items, ${open} open → docs/process/backlog.json`,
     );
   } else if (cmd === 'next') {
-    console.log(JSON.stringify(next(loadBacklog(), parseDecisions(read(DECISIONS)))));
+    console.log(JSON.stringify(next(loadBacklog())));
   } else if (cmd === 'set') {
     const [id, status] = positional;
     const backlog = loadBacklog();

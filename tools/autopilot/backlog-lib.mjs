@@ -1,6 +1,7 @@
 // Autopilot backlog (docs/process/AUTOPILOT.md §3.1): the open acceptance criteria of a milestone
 // as machine-readable items, synced from docs/PROGRESS.md and the plan's AC table, plus the
-// provisional decisions of docs/process/DECISIONS-PENDING.md. Pure functions; I/O in backlog.mjs.
+// decision log of docs/process/DECISIONS-PENDING.md (a veto adds a rework item). Pure functions;
+// I/O in backlog.mjs.
 import { parseProgress } from '../audit-lib.mjs';
 import { isTest, tickProgress } from './gate-lib.mjs';
 
@@ -18,8 +19,6 @@ export const STATUSES = [
 ];
 /** Statuses the loop may (re)start: a run that stopped mid-item resumes it first. */
 const RESUMABLE = ['tests', 'impl', 'review'];
-/** More items than this with an unreviewed provisional decision row stop the loop (§3.2). */
-export const MAX_PENDING_ITEMS = 5;
 
 /** `| F-07.2 | build | test |` rows of a plan's AC table: id → { build, test }. */
 export function planRows(planMd) {
@@ -136,14 +135,8 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
   return { milestone, updated: now, items };
 }
 
-/** The next item to work on, or `{ none: reason }`. */
-export function next(backlog, decisions = []) {
-  const pending = new Set(decisions.filter((d) => d.status === 'provisional').map((d) => d.item));
-  if (pending.size > MAX_PENDING_ITEMS) {
-    return {
-      none: `${pending.size} items with provisional decisions wait for the owner (max ${MAX_PENDING_ITEMS})`,
-    };
-  }
+/** The next item to work on, or `{ none: reason }`. Decisions never wait for the owner (§3.2). */
+export function next(backlog) {
   const items = backlog?.items ?? [];
   const done = new Set(items.filter((i) => i.status === 'done').map((i) => i.id));
   const ready = (i) => i.deps.every((d) => done.has(d));
@@ -192,17 +185,18 @@ const numbered = (list) => list.map((p, i) => `(${i + 1}) ${p || '-'}`).join('<b
 const reversibleCell = (list) => (new Set(list).size === 1 ? list[0] : numbered(list));
 
 /**
- * Files the decisions of one item (§3.2): one row per item, each question a point (1), (2), … of
- * its cells. An item with a provisional row gets the new points appended (questions it already has
- * are skipped); else a new row `D-nn`. Returns { id, md, added, appended }.
+ * Logs the decisions of one item (§3.2) as final (`decided`): one row per item, each question a
+ * point (1), (2), … of its cells, the chosen option followed by its reason ("— why"). An item with a
+ * decided row gets the new points appended (questions it already has are skipped); else a new row
+ * `D-nn`. Returns { id, md, added, appended }.
  */
 export function addDecisions(md, { date, item, decisions }) {
   if (!item || !Array.isArray(decisions))
-    throw new Error('decision needs item and decisions: [{ question, chosen, … }]');
+    throw new Error('decision needs item and decisions: [{ question, chosen, why, … }]');
   if (decisions.some((d) => !d.question || !d.chosen))
     throw new Error('every decision needs question and chosen');
   const rows = parseDecisions(md);
-  const open = rows.find((d) => d.item === item && d.status === 'provisional');
+  const open = rows.find((d) => d.item === item && d.status === 'decided');
   const list = [];
   if (open) {
     const [q, c, a, r] = [open.question, open.chosen, open.alternatives, open.reversible].map(
@@ -225,7 +219,7 @@ export function addDecisions(md, { date, item, decisions }) {
     seen.add(question.toLowerCase());
     list.push({
       question,
-      chosen: cell(d.chosen),
+      chosen: cell(d.why ? `${d.chosen} — ${d.why}` : d.chosen),
       alternatives: cell(d.alternatives),
       reversible: d.reversible === false ? 'no' : 'yes',
     });
@@ -235,7 +229,7 @@ export function addDecisions(md, { date, item, decisions }) {
   const ids = rows.map((d) => Number(d.id.slice(2)));
   const id = open?.id ?? `D-${String((ids.length ? Math.max(...ids) : 0) + 1).padStart(2, '0')}`;
   const col = (key) => numbered(list.map((p) => p[key]));
-  const row = `| ${id} | ${open?.date ?? date} | ${cell(item)} | ${col('question')} | ${col('chosen')} | ${col('alternatives')} | ${reversibleCell(list.map((p) => p.reversible))} | provisional |`;
+  const row = `| ${id} | ${open?.date ?? date} | ${cell(item)} | ${col('question')} | ${col('chosen')} | ${col('alternatives')} | ${reversibleCell(list.map((p) => p.reversible))} | decided |`;
   if (!open) return { id, md: `${md.replace(/\s*$/, '')}\n${row}\n`, added, appended: false };
   const lines = md.split(/\r?\n/);
   const at = lines.findIndex((l) => l.split('|')[1]?.trim() === id);

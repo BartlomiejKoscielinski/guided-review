@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { next, parseDecisions } from './backlog-lib.mjs';
+import { next } from './backlog-lib.mjs';
 import { decide, lastAssistantText, spentByRun, transcriptTail } from './hook-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -24,12 +24,7 @@ try {
     text: lastAssistantText(transcriptTail(input.transcript_path)),
     stopFile: existsSync(join(root, '.autopilot', 'STOP')),
     spentTokens: spentByRun(read(join(root, '.metrics', 'items.jsonl')), run.runId),
-    nextItem: backlogText
-      ? next(
-          JSON.parse(backlogText),
-          parseDecisions(read(join(root, 'docs', 'process', 'DECISIONS-PENDING.md'))),
-        )
-      : { none: 'no backlog' },
+    nextItem: backlogText ? next(JSON.parse(backlogText)) : { none: 'no backlog' },
   });
   if (!result.block) process.exit(0);
   writeFileSync(runPath, `${JSON.stringify(result.run, null, 2)}\n`);

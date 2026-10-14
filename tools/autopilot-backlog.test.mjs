@@ -77,7 +77,7 @@ test('autopilot backlog: sync keeps the milestone open items, statuses and vetoe
   assert.equal(byId['F-07.2'].attempts, 1);
 });
 
-test('autopilot backlog: next resumes a started item, respects deps and the provisional cap', () => {
+test('autopilot backlog: next resumes a started item and respects deps', () => {
   const backlog = sync({
     progressMd: PROGRESS,
     planMd: PLAN,
@@ -92,12 +92,6 @@ test('autopilot backlog: next resumes a started item, respects deps and the prov
   assert.equal(next(backlog).id, 'F-17.1');
   setItem(backlog, 'F-17.1', { status: 'done' }, 't');
   assert.equal(next(backlog).id, 'F-07.1');
-  const six = Array.from({ length: 6 }, (_, i) => ({
-    id: `D-0${i}`,
-    item: `F-0${i}.1`,
-    status: 'provisional',
-  }));
-  assert.match(next(backlog, six).none, /6 items with provisional decisions/);
   for (const i of backlog.items) i.status = 'blocked';
   assert.match(next(backlog).none, /no ready item/);
   assert.throws(() => setItem(backlog, 'F-07.1', { status: 'nope' }, 't'), /status nope/);
@@ -157,16 +151,25 @@ test('autopilot backlog: decisions get the next id and escape pipes', () => {
   const out = addDecisions(DECISIONS, {
     date: '2026-10-14',
     item: 'F-07.2',
-    decisions: [{ question: 'Label a|b?', chosen: 'a', alternatives: 'b', reversible: true }],
+    decisions: [
+      {
+        question: 'Label a|b?',
+        chosen: 'a',
+        why: 'consistent with S-03',
+        alternatives: 'b',
+        reversible: true,
+      },
+    ],
   });
   assert.equal(out.id, 'D-03');
   const rows = parseDecisions(out.md);
   assert.equal(rows.at(-1).question, '(1) Label a/b?');
   assert.deepEqual(points(rows.at(-1).question), ['Label a/b?']);
-  assert.equal(rows.at(-1).status, 'provisional');
+  assert.equal(rows.at(-1).chosen, '(1) a — consistent with S-03');
+  assert.equal(rows.at(-1).status, 'decided');
 });
 
-test('autopilot backlog: one decision row per item, new points appended to its provisional row', () => {
+test('autopilot backlog: one decision row per item, new points appended to its decided row', () => {
   const q = (question, reversible = true) => ({ question, chosen: `c ${question}`, reversible });
   const first = addDecisions(DECISIONS, {
     date: '2026-10-14',
@@ -198,7 +201,7 @@ test('autopilot backlog: one decision row per item, new points appended to its p
   assert.deepEqual(points(merged.alternatives), ['-', '-', '-']);
   assert.equal(merged.reversible, '(1) yes<br>(2) yes<br>(3) no');
 
-  // An item whose row the owner already reviewed gets a new row; no decisions change nothing.
+  // An item whose row the owner accepted or vetoed gets a new row; no decisions change nothing.
   const other = addDecisions(second.md, { date: 'd', item: 'F-07.2', decisions: [q('Copy?')] });
   assert.equal(other.id, 'D-04');
   assert.deepEqual(addDecisions(other.md, { date: 'd', item: 'F-07.2', decisions: [] }), {
@@ -214,25 +217,24 @@ test('autopilot backlog: one decision row per item, new points appended to its p
   assert.throws(() => addDecisions(DECISIONS, { date: 'd', item: 'F-07.2' }), /decisions: \[/);
 });
 
-test('autopilot backlog: the provisional cap counts items, not rows or points', () => {
+test('autopilot backlog: decided rows never stop the loop; only a veto adds work', () => {
+  const decided = Array.from(
+    { length: 8 },
+    (_, i) => `| D-1${i} | d | F-0${i}.1 | (1) q | (1) c — why | - | yes | decided |`,
+  ).join('\n');
   const backlog = sync({
     progressMd: PROGRESS,
     planMd: PLAN,
-    decisionsMd: '',
+    decisionsMd: `${DECISIONS}${decided}\n`,
     milestone: 'M3',
     previous: null,
     now: 't',
   });
-  const rows = (items) => items.map((item, i) => ({ id: `D-${i}`, item, status: 'provisional' }));
-  assert.equal(next(backlog, rows(Array(8).fill('F-04.1'))).id, 'F-07.1');
-  assert.equal(
-    next(backlog, rows(['F-01.1', 'F-01.2', 'F-01.3', 'F-01.4', 'F-01.5'])).id,
-    'F-07.1',
+  assert.deepEqual(
+    backlog.items.map((i) => i.id),
+    ['F-07.1', 'F-07.2', 'F-17.1', 'D-02'],
   );
-  const six = rows(['F-01.1', 'F-01.2', 'F-01.3', 'F-01.4', 'F-01.5', 'F-01.6', 'F-01.6']);
-  assert.match(next(backlog, six).none, /^6 items with provisional decisions .*max 5/);
-  const reviewed = six.map((d, i) => (i < 2 ? { ...d, status: 'accepted' } : d));
-  assert.equal(next(backlog, reviewed).id, 'F-07.1');
+  assert.equal(next(backlog).id, 'F-07.1');
 });
 
 test('autopilot backlog: a veto of some points of a row still adds one rework item', () => {

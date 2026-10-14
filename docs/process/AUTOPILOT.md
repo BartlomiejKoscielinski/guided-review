@@ -31,7 +31,7 @@ Success = the pilot (session A-3) meets all of:
 ## 3. Architecture
 
 ```
-owner ──(async: reads results, vetoes provisional decisions, answers needs-owner)──┐
+owner ──(optional, async: reads results, may veto a logged decision, answers needs-owner)──┐
                                                                                     v
 Conductor session (main checkout, milestone branch, Opus)            docs/process/DECISIONS-PENDING.md
   loop: backlog next → pipeline(item) → gate → reflect → record → (curate/retro every N)
@@ -54,14 +54,14 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 | - | - | - |
 | `docs/process/backlog.json` | yes | Items synced from `PROGRESS.md` + `plans/<Mx>.md`: `{id, milestone, title, kind: core\|ui\|docs\|mixed, deps[], status: todo\|tests\|impl\|review\|done\|partial\|live\|blocked\|needs-owner, attempts, lockSha?, branch?, note}`. JSON, not Markdown (agents mangle it less). Only the conductor and `backlog.mjs` write it. |
 | `docs/process/playbook.json` | yes | `[{id, tags[], text, helpful, harmful, created, lastUsed, source}]`; tags = path globs, item kinds, roles. |
-| `docs/process/DECISIONS-PENDING.md` | yes | Provisional decisions: `ID · date · item · question · chosen (recommended) · alternatives · reversible · status (provisional/accepted/vetoed)`. |
+| `docs/process/DECISIONS-PENDING.md` | yes | Decision log: `ID · date · item · question · chosen — why · alternatives · reversible · status (decided/accepted/vetoed)`. |
 | `.metrics/items.jsonl` | yes | One row per item attempt: tokens per role, wall time, gate first pass, rounds, findings by severity, result, escaped defects (filled later). |
 | `.autopilot/run.json` | no | `{runId, startedAt, iterations, cap, budgetTokens, milestone}`; `.autopilot/STOP` = kill switch. |
 | `.autopilot/items/<id>/` | no | Role verdicts (`tests.json`, `impl.json`, `review.json`, `gate.json`), the context pack. |
 
 ### 3.2 Decision policy (replaces "stop and ask" for the autopilot)
 
-- **Spec unclear or contradicting a mock, reversible**: pick the recommended option, record it, continue. Only questions that neither the spec nor the mock answers and that change what the user sees or how the app behaves; implementation choices go to the role's notes. The conductor collects the decisions of all roles of one item and files them once: one row per item in `DECISIONS-PENDING.md`, the questions as points (1), (2), …; a later round of the same item appends to its provisional row (owner decision, 2026-10-14). While more than 5 items have a provisional row the loop starts no new item (`backlog.mjs next` returns none).
+- **Spec unclear or contradicting a mock**: the autopilot decides and continues; the decision is final and nothing waits for the owner (owner, 2026-10-14, replacing the review of provisional rows and the cap of 5). Best option for the user, in order: what the spec and mocks imply; consistency with the existing screens and `03-design-system.md`; established UI/UX principles (Nielsen's heuristics, WCAG 2.2 AA, Windows conventions, least surprise, reversibility, fewest clicks on the frequent path); a one-sentence "why" per decision. The fresh reviewer judges UI/UX choices the spec leaves open (a clearly worse one is a normal finding). Only questions that neither the spec nor the mock answers and that change what the user sees or how the app behaves; implementation choices go to the role's notes. The conductor collects the decisions of all roles of one item and files them once: one row per item in `DECISIONS-PENDING.md`, the questions as points (1), (2), …; a later round of the same item appends to its `decided` row.
 - **Needs-owner** (item skipped, push notification): anything touching the non-negotiables of `CLAUDE.md` (Claude flags, security, secrets, company data, GitLab write actions without a click), real company data or a field visit (ADR-019), changing an ADR, new dependencies, deleting tests.
 - **Veto** by the owner (status `vetoed` in the file): the next sync adds a rework item.
 
@@ -77,7 +77,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 | # | Component | Files | Tests |
 | - | - | - | - |
-| B1 | Backlog: `sync` (PROGRESS unchecked + plan AC table → items, keep statuses), `next` (first `todo` with deps done, not blocked by >5 items with provisional decisions), `set <id> <status> [--note]`, `decision` (one row per item) | `tools/autopilot/backlog.mjs`, `tools/autopilot/backlog-lib.mjs` | `tools/autopilot-backlog.test.mjs` (fixture PROGRESS/plan) |
+| B1 | Backlog: `sync` (PROGRESS unchecked + plan AC table → items, keep statuses), `next` (first `todo` with deps done; decisions never block it), `set <id> <status> [--note]`, `decision` (one row per item) | `tools/autopilot/backlog.mjs`, `tools/autopilot/backlog-lib.mjs` | `tools/autopilot-backlog.test.mjs` (fixture PROGRESS/plan) |
 | B2 | Gate: verify (`--e2e <spec>` for UI), `audit --milestone`, locked tests unchanged since `lockSha` (`git diff --name-only lockSha..HEAD -- <test files>`), changed files within the item's kind, rule greps (`--bare`, `--dangerously-skip-permissions`, `unwrap()` outside tests, `glpat-` + 20 chars, hex colors in components), ff-merge, PROGRESS tick with SHA; JSON verdict | `tools/autopilot/gate.mjs` | `tools/autopilot-gate.test.mjs` (throwaway repo) |
 | B3 | Run state `tools/autopilot/run.mjs` (start, status, stop, end) and worktree `tools/autopilot/worktree.mjs` (ready, done, remove). Stop hook: binds to the conductor by the marker `AUTOPILOT <runId>` in the last assistant message (transcript tail, as in `context-guard.mjs`); blocks the stop with "next item" while the conditions hold; otherwise allows it. Context guard: in a marked session it says "write state, continue" instead of "/handoff" | `tools/autopilot/stop-hook.mjs`, `tools/metrics/context-guard.mjs`, `.claude/settings.json` | `tools/autopilot-hook.test.mjs` (fake transcripts) |
 | B4 | Conductor skill `/autopilot start\|status\|stop [Mx] [--cap N]`: run file, keep-awake, loop body, role calls with fixed prompts, verdict handling, notifications, curate every 5 items, retro every 10 | `.claude/skills/autopilot/SKILL.md` | dry run (B7) |
@@ -122,7 +122,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 | Risk | Mitigation |
 | - | - |
 | Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Haiku for reflect, Sonnet for tests and UI |
-| Provisional decisions pile up in the wrong direction | cap of 5 unreviewed; veto → rework item |
+| Decisions drift in the wrong direction | spec, mocks and design system first, then named UI/UX principles with a "why"; the fresh reviewer judges open UI/UX choices; logged in `DECISIONS-PENDING.md`; an owner veto at any time → rework item |
 | Classifier blocks stall the loop | allow rules; blocked commands are reported, never worked around |
 | Agents game the tests | lock + gate diff check; reviewer sees the tests and the diff |
 | Playbook bloat / context collapse | delta-only edits, tag selection ≤ 1.5k tokens, curate prunes |

@@ -15,6 +15,6 @@ If the criterion cannot be tested automatically (a live check in tauri dev, a fi
 Output:
 ```json
 { "tests": ["relative/path.test.ts"], "commands": ["npx vitest run …"], "failing": true,
-  "manual": null, "decisions": [{ "question": "", "chosen": "", "alternatives": "", "reversible": true }],
+  "manual": null, "decisions": [{ "question": "", "chosen": "", "why": "", "alternatives": "", "reversible": true }],
   "needsOwner": null, "notes": "" }
 ```
