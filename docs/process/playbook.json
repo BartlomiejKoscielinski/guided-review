@@ -1,5 +1,5 @@
 {
-  "items": 1,
+  "items": 2,
   "entries": [
     {
       "id": "P-001",
@@ -25,7 +25,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Before moving a suffix or other text out of a mock note into a UI helper, grep existing tests for the full old row string, since the F-02.2 mock assertion had to change when the suffix moved.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.521Z",
@@ -41,12 +41,57 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
       "lastUsedItem": 0,
       "source": "F-02.5"
+    },
+    {
+      "id": "P-004",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/store/**"
+      ],
+      "text": "Derive every count a card shows from the validated plan the screen uses (after coverage enforcement adds the Other step and drops duplicates), never from the raw cached model output.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T10:02:39.282Z",
+      "lastUsedItem": 1,
+      "source": "F-04.1"
+    },
+    {
+      "id": "P-005",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/store/**"
+      ],
+      "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T10:02:39.330Z",
+      "lastUsedItem": 1,
+      "source": "F-04.1"
+    },
+    {
+      "id": "P-006",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Before locking an e2e order or position assertion, check the mock's CSS layout (grid auto-fit puts cards side by side, not stacked), since a stacked-order assumption cost a test dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T10:02:39.379Z",
+      "lastUsedItem": 1,
+      "source": "F-04.1"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T08:53:35.093Z",
+  "updated": "2026-10-14T10:02:44.629Z",
   "items": [
     {
       "id": "F-02.5",
@@ -24,9 +24,15 @@
       "title": "\"Pick up where you left off\" lists unfinished sessions with progress (\"5 of 9 steps · 3 drafts\"…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "a9ff402",
+      "tests": [
+        "src-tauri/src/store/sessions_progress_tests.rs",
+        "src/screens/start/ResumeCards.test.tsx",
+        "tests/e2e/start.spec.ts"
+      ]
     },
     {
       "id": "F-04.3",
