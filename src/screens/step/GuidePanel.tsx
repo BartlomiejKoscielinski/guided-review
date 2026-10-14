@@ -10,6 +10,7 @@ import type { AskState } from './askState';
 import { NoteCard } from './NoteCard';
 import { ProgressSegments } from './ProgressSegments';
 import { StepNotes } from './StepNotes';
+import { useStepProgress } from './useStepProgress';
 import styles from './Guide.module.css';
 
 export interface GuidePanelProps {
@@ -50,6 +51,7 @@ export function GuidePanel({
   onAskQuestion,
   onAsk,
 }: GuidePanelProps) {
+  const { order, reviewed } = useStepProgress(sessionId);
   const [showMinor, setShowMinor] = useState(false);
   const [question, setQuestion] = useState('');
   const findings = analysis?.findings ?? [];
@@ -68,7 +70,7 @@ export function GuidePanel({
             aria-label={`Step ${String(view.number)} of ${String(view.total)}`}
             className={styles.segments}
           >
-            <ProgressSegments total={view.total} current={view.number} size="guide" />
+            <ProgressSegments order={order} current={stepId} reviewed={reviewed} size="guide" />
           </div>
           <span className={styles.kicker}>
             Step {view.number} of {view.total}

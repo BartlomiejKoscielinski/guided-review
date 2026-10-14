@@ -72,7 +72,13 @@ export function StepScreen() {
   return (
     <div className={styles.screen}>
       {ready && layout === 'A' && steps.length > 0 && stepId !== undefined && (
-        <StepsList steps={steps} current={stepId} skimFiles={skimFiles} onSelect={go} />
+        <StepsList
+          steps={steps}
+          current={stepId}
+          reviewed={view?.reviewed ?? []}
+          skimFiles={skimFiles}
+          onSelect={go}
+        />
       )}
       {/* review_step needs the plan's remembered context. */}
       {ready && view !== undefined && stepId !== undefined ? (
