@@ -128,20 +128,21 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 | Conductor context grows | heavy work in subagents; verdicts only; compaction; context guard in continue mode |
 | `/app` live checks clash on ports | not in the loop; a separate conductor step after a milestone's items are done |
 
-## 9. Build status (A-3c, 2026-10-14)
+## 9. Build status (A-4, 2026-10-14)
 
 **Built** (B1–B9; `node --test tools/autopilot-*.test.mjs`, 27 tests): backlog with one decision row per item, gate with `--dispute`, run state, worktree and Stop hook, the seven role prompts composed by `prompt.mjs`, playbook, outcome metrics with tokens per role from the subagent transcripts, judge, the conductor skill. The owner applied the Stop hook and the allow rules in `.claude/settings.json` (6917cfa) and allowed the role files (40f612b); CLAUDE.md "How to work" 11 and the memory "Go with recommended" (P-7).
 
 **Verified in the first run** (A-3, `ap-20261014-0830`): two items built and merged without the owner. F-02.5: tests → implement → review → gate, first pass. F-04.1: tests → implement → review (1 severe finding, an accepted test dispute) → fix round 1 → gate, first pass. Proven along the way: the Stop hook carrying the loop to the next item, `backlog sync/next/set`, `worktree ready/done`, the context pack offering playbook lessons, reflection with `playbook add/rate/tick`, `record.mjs`, and the stop on the decision cap. Gate first pass 2/2, 0 non-negotiable violations merged. Fixed after the run: token counting (f0c1f34), test disputes in the gate (88558bc), one decision row per item (88b2606), prompts from `prompt.mjs` instead of hand-filled placeholders (912bbde).
 
-**Never run yet** (the second run should show them working or they stay unproven):
+**Verified in the second run** (A-4, `ap-20261014-1246`, cap 6): six items built and merged without the owner (F-04.3, F-05.5, F-06.5, F-06.6, F-06.9, F-07.1), gate first pass 6/6, 0 fix rounds, 0 non-negotiable violations merged. Proven: purely screen (`ui`) items with the Sonnet implementer and the design-check structure mode inside the loop (F-06.6, F-07.1); `prompt.mjs` composing every role prompt (tests, implement, review, reflect, curate) with no missing field; one decision row per item (D-07…D-10, points (1), (2)); the curator called after 5 recorded items (it ran `playbook.mjs curate`, found nothing to prune, merge or promote and made no commit, reason in `.autopilot/curate/curate-1.json`). New in this run: the conductor skipped the implementer when the test author found the criterion already built and the new tests passed on the base (F-05.5, F-06.9); the fresh reviewer and the gate still ran. Found: the Stop hook counts continuations, so `--cap N` offers item N+1 (the conductor stopped at 6); `playbook add` raises `seen` only for an identical text and the reflector words every lesson anew, so the 3× promotion does not trigger in practice (24 entries, all seen ×1).
+
+**Never run yet** (still unproven after two runs):
 1. A second fix round, and the statuses `blocked` (gate failed twice) and `needs-owner` (with the push notification).
-2. The curator every 5 recorded items, including whether the permission mode lets it write the "Rules learned" of the role files.
+2. The curator writing the "Rules learned" of a role file (needs an entry seen 3×; whether the permission mode lets it write there is still open).
 3. The retro every 10 items with `judge.mjs` keep/revert verdicts.
 4. The planner (a milestone without `docs/plans/<Mx>.md`).
-5. A purely screen (`ui`) item: Sonnet implementer and the design-check structure mode inside the loop.
-6. The token budget `--budget`: it counts the tokens of the run (`items.jsonl` rows of the run id), not of a day; never set or reached.
-7. `prompt.mjs`, one-row decisions and a rework item after a veto in a real run.
+5. The token budget `--budget`: it counts the tokens of the run (`items.jsonl` rows of the run id), not of a day; never set or reached.
+6. A rework item after a veto in a real run.
 
 ## Sources
 
