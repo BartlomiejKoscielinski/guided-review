@@ -328,3 +328,7 @@ mod tests {
             .unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "sessions_progress_tests.rs"]
+mod progress_tests;

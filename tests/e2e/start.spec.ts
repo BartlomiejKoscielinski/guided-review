@@ -122,3 +122,96 @@ test('F-03.4 without a repository My changes offers Pick a repository', async ({
   await expect(mine(page).getByRole('button', { name: 'Pick a repository' })).toBeVisible();
   await expect(commits(page).getByText('Pick a repository first.')).toBeVisible();
 });
+
+// F-04.1 "Pick up where you left off": the sessions of Start.dc.html as the core reports them.
+const NOW = new Date(2026, 9, 14, 20, 0);
+
+function unfinishedSessions() {
+  return [
+    {
+      id: 'mr-471',
+      status: 'reviewing',
+      mode: 'focus',
+      updatedAt: new Date(2026, 9, 14, 8, 0).toISOString(),
+      resume: { screen: 'S-05', sessionId: 'mr-471' },
+      source: { kind: 'mr', project: 'mobile/mobile-app', iid: 471 },
+      title: 'Signature screen: field validation',
+      reviewedSteps: 5,
+      totalSteps: 9,
+      drafts: 3,
+    },
+    {
+      id: 'self-1',
+      status: 'reviewing',
+      mode: 'focus',
+      // Yesterday 18:40 in the browser's time zone, which is this machine's.
+      updatedAt: new Date(2026, 9, 13, 18, 40).toISOString(),
+      resume: { screen: 'S-05', sessionId: 'self-1' },
+      source: { kind: 'local', scope: { kind: 'uncommitted' } },
+      title: 'chore/compiled-bindings',
+      reviewedSteps: 2,
+      totalSteps: 6,
+      drafts: 0,
+    },
+  ];
+}
+
+async function openStartWithSessions(page: Page, sessions: unknown[]) {
+  await page.clock.setFixedTime(NOW);
+  await page.addInitScript((list) => {
+    localStorage.setItem('guided-review.mock.sessions', JSON.stringify(list));
+  }, sessions);
+  await page.goto('/');
+  await expect(page.getByTestId('title-bar')).toBeVisible();
+}
+
+const pickUp = (page: Page) => page.getByRole('region', { name: 'Pick up where you left off' });
+
+test('F-04.1 Start lists the unfinished sessions with their progress between the hero and the columns', async ({
+  page,
+}) => {
+  await openStartWithSessions(page, unfinishedSessions());
+  const cards = pickUp(page);
+  await expect(cards.getByRole('heading', { name: 'Pick up where you left off' })).toBeVisible();
+  await expect(cards.getByText('!471', { exact: true })).toBeVisible();
+  await expect(cards.getByText('Signature screen: field validation')).toBeVisible();
+  await expect(cards.getByText('5 of 9 steps · 3 drafts', { exact: true })).toBeVisible();
+  await expect(cards.getByText('local', { exact: true })).toBeVisible();
+  await expect(cards.getByText('chore/compiled-bindings')).toBeVisible();
+  await expect(
+    cards.getByText('Self-review · 2 of 6 steps · saved yesterday 18:40', { exact: true }),
+  ).toBeVisible();
+  // Newest first, as the core returns them.
+  const tops = await Promise.all(
+    [cards.getByText('!471', { exact: true }), cards.getByText('local', { exact: true })].map(
+      async (tag) => (await tag.boundingBox())?.y ?? 0,
+    ),
+  );
+  expect(tops[0]).toBeLessThan(tops[1] ?? 0);
+  // Region 2 of S-01: below the hero input, above the three columns.
+  const heroBottom = ((await source(page).boundingBox())?.y ?? 0) + 1;
+  const cardsTop = (await cards.boundingBox())?.y ?? 0;
+  const columnsTop = (await mrs(page).boundingBox())?.y ?? 0;
+  expect(cardsTop).toBeGreaterThan(heroBottom);
+  expect(cardsTop).toBeLessThan(columnsTop);
+});
+
+test('F-04.1 Continue opens the session of its card', async ({ page }) => {
+  await openStartWithSessions(page, unfinishedSessions());
+  await expect(pickUp(page).getByText('Continue', { exact: true })).toHaveCount(2);
+  await expect(pickUp(page).getByText('Only new changes')).toHaveCount(0);
+  await pickUp(page).getByText('Continue', { exact: true }).nth(1).click();
+  await expect(page.getByRole('main', { name: 'Summary' })).toBeVisible();
+  await expect(
+    page.getByRole('navigation', { name: 'App' }).getByRole('button', { name: /^Review/ }),
+  ).toHaveAttribute('aria-current', 'page');
+});
+
+test('F-04.1 without unfinished sessions Start has no "Pick up where you left off" section', async ({
+  page,
+}) => {
+  await openStartWithSessions(page, []);
+  await expect(mrs(page).getByRole('tab')).toHaveCount(3);
+  await expect(page.getByRole('region', { name: 'Pick up where you left off' })).toHaveCount(0);
+  await expect(page.getByText('Pick up where you left off')).toHaveCount(0);
+});
