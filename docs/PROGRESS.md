@@ -66,7 +66,7 @@ Rules for Claude Code:
 - [x] F-30.7 The repository switcher in the title bar lists the configured repositories and "Add repository…" (folder… (79b3e9f, f7fc763, c75b86a, e69fc9c, d13a0b0)
 
 ## M3 · Plan and Focus review
-- [ ] F-02.5 If a plan for an MR is already cached for its current head, the row says "plan is ready". — partial: `diffHeadSha` + `MrRow.planReady` (b0092de), `review/plan_cache.rs` + migration 004 + list command (5cfcb59, e207a9b); row note UI + Vitest
+- [x] F-02.5 If a plan for an MR is already cached for its current head, the row says "plan is ready". (b0092de, 5cfcb59, e207a9b, cd12450, 1c706e3)
 - [ ] F-04.1 "Pick up where you left off" lists unfinished sessions with progress ("5 of 9 steps · 3 drafts"…
 - [ ] F-04.3 Session state (reviewed steps, note decisions, drafts, layout, scroll position per step, "For you to…
 - [ ] F-05.5 Mechanical hunks are detected without AI where possible (whitespace-only, .csproj package bumps, .resx key… — partial: `review/mechanical.rs` → `Hunk.mechanical` (bd8d436); plan input `mechanical_file` (355331f); Skim row UI (3d); fold rows inside a step (2575c46)
