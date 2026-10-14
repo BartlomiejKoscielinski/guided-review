@@ -334,3 +334,87 @@ test('F-06.11 Enter starts step 1', async ({ page }) => {
   // The app routes in memory; S-03's title bar has Finish review.
   await expect(page.getByRole('button', { name: 'Finish review' })).toBeVisible();
 });
+
+// F-06.6 the Skim row and Show (M3 plan: Show opens the S-06-like browse of the MR filtered to the
+// row's files). The mock !482 skim row groups the 5 files of Overview.dc.html.
+
+const SKIM_FILES = [
+  'RetryPolicy.cs',
+  'DeliveryPhotoPage.xaml',
+  'RetryPolicyTests.cs',
+  'Mobile.App.csproj',
+  'AppResources.resx',
+];
+const OTHER_FILES = [
+  'QueuedPhoto.cs',
+  'IUploadQueue.cs',
+  'SqliteUploadQueue.cs',
+  'UploadWorker.cs',
+  'DependencyInjection.cs',
+  'DeliveryPhotoViewModel.cs',
+  'PhotoUploadService.cs',
+  'OfflineBanner.xaml',
+  'PendingCountConverter.cs',
+  'AndroidManifest.xml',
+  'SqliteUploadQueueTests.cs',
+];
+
+const skimRow = (page: Page) => page.locator('li', { hasText: 'Skim: 5 mechanical files' });
+const filesTree = (page: Page) => page.getByRole('tree', { name: 'Files' });
+/** A file row's button in the S-06 tree (the name starts with the file name). */
+const fileButton = (tree: Locator, name: string) =>
+  tree.getByRole('button', { name: new RegExp(`^${name.replace(/\./g, '\\.')}`) });
+
+/** The Skim row sits below the last step row. */
+async function expectBelowSteps(page: Page) {
+  const last = await stepRows(page).last().boundingBox();
+  const skim = await skimRow(page).boundingBox();
+  if (!last || !skim) throw new Error('The rows are not on the screen.');
+  expect(skim.y).toBeGreaterThanOrEqual(last.y + last.height);
+}
+
+test('F-06.6 the plan ends with the Skim row: "Skim: 5 mechanical files", the reason and Show', async ({
+  page,
+}) => {
+  await openPlan(page);
+  const skim = skimRow(page);
+  await expect(skim).toHaveCount(1);
+  await expect(skim.getByText('Skim: 5 mechanical files', { exact: true })).toBeVisible();
+  await expect(
+    skim.getByText(
+      'Formatting (3), csproj with a new package, 3 keys in Strings.resx. Checked: no logic changes.',
+    ),
+  ).toBeVisible();
+  await expect(skim.getByRole('button', { name: 'Show' })).toBeVisible();
+  // Below the steps, with no drag handle, whichever order the steps are in.
+  await expect(skim.getByRole('button', { name: /^Move step:/ })).toHaveCount(0);
+  await expectBelowSteps(page);
+  await page.getByRole('radio', { name: 'Tests first' }).click();
+  await expect(stepRows(page).first()).toContainText('Queue tests');
+  await expect(skim).toHaveCount(1);
+  await expectBelowSteps(page);
+});
+
+test('F-06.6 Show opens the MR browse with only the skim files', async ({ page }) => {
+  await openPlan(page);
+  await skimRow(page).getByRole('button', { name: 'Show' }).click();
+  const tree = filesTree(page);
+  await expect(tree).toBeVisible();
+  for (const name of SKIM_FILES) await expect(fileButton(tree, name)).toHaveCount(1);
+  for (const name of OTHER_FILES) await expect(fileButton(tree, name)).toHaveCount(0);
+  // The diff next to the tree is read-only, as in the MR browse.
+  await expect(page.getByRole('checkbox')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Open in Rider' })).toBeVisible();
+});
+
+test('F-06.6 Browse files instead still lists the whole change, the skim files with the rest', async ({
+  page,
+}) => {
+  await openPlan(page);
+  await page.getByRole('button', { name: 'Browse files instead' }).click();
+  const tree = filesTree(page);
+  await expect(tree).toBeVisible();
+  for (const name of [...SKIM_FILES, ...OTHER_FILES]) {
+    await expect(fileButton(tree, name)).toHaveCount(1);
+  }
+});

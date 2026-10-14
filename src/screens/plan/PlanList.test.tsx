@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -92,22 +92,18 @@ describe('S-02 PlanList', () => {
     expect(screen.getAllByRole('button', { name: /^Move step:/ })).toHaveLength(8);
   });
 
-  it('F-06.6 skim row: "Skim: N mechanical files", the reason, Show lists the files', async () => {
+  // What Show does (opens the MR browse with the skim files) is tested in SkimRow.test.tsx.
+  it('F-06.6 skim row: "Skim: N mechanical files", the reason and Show, after the steps', () => {
     renderList();
-    expect(screen.getByText('Skim: 5 mechanical files')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Formatting (3), csproj with a new package, 3 keys in Strings.resx. Checked: no logic changes.',
-      ),
-    ).toBeInTheDocument();
-    const show = screen.getByRole('button', { name: 'Show' });
-    expect(show).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.click(show);
-    const files = screen.getByRole('list', { name: 'Skim files' });
-    expect(within(files).getAllByRole('listitem')).toHaveLength(5);
-    expect(files).toHaveTextContent('src/Mobile.App/Mobile.App.csproj');
-    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
-    expect(screen.queryByRole('list', { name: 'Skim files' })).not.toBeInTheDocument();
+    const skim = screen.getByText('Skim: 5 mechanical files').closest('li') as HTMLElement;
+    expect(skim).toHaveTextContent(
+      'Formatting (3), csproj with a new package, 3 keys in Strings.resx. Checked: no logic changes.',
+    );
+    expect(within(skim).getByRole('button', { name: 'Show' })).toBeInTheDocument();
+    expect(skim.dataset.step).toBeUndefined();
+    expect(within(skim).queryByRole('button', { name: /^Move step:/ })).not.toBeInTheDocument();
+    const items = within(screen.getByRole('list')).getAllByRole('listitem');
+    expect(items.at(-1)).toBe(skim);
   });
 
   it('F-06.4 the fallback plan: File order only, rows without handles, no skim', () => {
