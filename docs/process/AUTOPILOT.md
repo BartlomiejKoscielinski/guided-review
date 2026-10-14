@@ -134,7 +134,7 @@ Built and tested (`node --test tools/autopilot-*.test.mjs`, 16 tests; gate on a 
 
 The auto mode classifier refused these writes (the agent may not change its own permissions, hooks or instructions); the owner applies them or allows them explicitly:
 1. `.claude/settings.json`: the Stop hook (`node "$CLAUDE_PROJECT_DIR/tools/autopilot/stop-hook.mjs"`, timeout 30) and the `allow` rules of B8. **Without the Stop hook the loop does one item per `/autopilot` call.**
-2. `.claude/autopilot/roles/_common.md`, `review.md`, `plan.md` (the conductor cannot run the roles without `_common.md` and `review.md`).
+2. ~~The three role files `_common.md`, `review.md`, `plan.md`~~: written after the owner allowed it (P-7).
 Done in P-7 as well: CLAUDE.md "How to work" 11 (decision 1) and the memory "Go with recommended" (decision 2).
 
 ## Sources
