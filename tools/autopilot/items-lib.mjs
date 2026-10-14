@@ -14,19 +14,52 @@ export const METRICS = {
 const WORSE = 0.1;
 
 const ROLE_OF = (name) => name.replace(/-\d+$/, '');
+/** Agent descriptions name the implementer `implement`; its verdict file is `impl`. */
+const ROLE_ALIAS = { implement: 'impl' };
+
+/**
+ * Tokens per role from the role subagents' transcripts: `subagents` = [{ description, start,
+ * totals }] (`description` "ap <role> <item>", `start` ms, `totals` from metrics/transcript.mjs
+ * tokenTotals). Every kind is summed (input, cache read and write, output), as the session ledger
+ * counts cost; the cache read is kept apart for the comparison with the P-x sessions. Only
+ * subagents of `item` started at or after `since` (ISO) count. Null when none matched.
+ */
+export function roleUsage(subagents, { item, since = null }) {
+  const from = since ? Date.parse(since) : null;
+  const tokens = { total: 0 };
+  let cacheRead = 0;
+  let matched = 0;
+  for (const s of subagents) {
+    const m = /^ap (\S+) (\S+)$/.exec(s.description ?? '');
+    if (!m || m[2] !== item) continue;
+    if (from !== null && s.start !== null && s.start < from) continue;
+    const role = ROLE_OF(ROLE_ALIAS[m[1]] ?? m[1]);
+    const t = s.totals;
+    const all = t.input + t.cacheRead + t.cacheWrite + t.output;
+    tokens[role] = (tokens[role] ?? 0) + all;
+    tokens.total += all;
+    cacheRead += t.cacheRead;
+    matched += 1;
+  }
+  return matched ? { tokens, cacheRead } : null;
+}
 
 /**
  * The row of one item attempt from its verdict files (`tests`, `impl`, `review`, `fix-1`, `gate-1`,
- * `reflect`…, each with an optional `tokens` number the conductor copied from the Agent result).
+ * `reflect`…). Tokens come from `usage` (roleUsage of the transcripts) when given, else from the
+ * optional `tokens` number the conductor copied from each Agent result (`tokenSource` says which).
  */
-export function buildRow({ item, run, result, verdicts, startedAt, endedAt }) {
-  const tokens = { total: 0 };
-  for (const [name, v] of Object.entries(verdicts)) {
-    const n = Number(v?.tokens ?? 0);
-    if (!n) continue;
-    const role = ROLE_OF(name);
-    tokens[role] = (tokens[role] ?? 0) + n;
-    tokens.total += n;
+export function buildRow({ item, run, result, verdicts, startedAt, endedAt, usage = null }) {
+  let tokens = { total: 0 };
+  if (usage) tokens = usage.tokens;
+  else {
+    for (const [name, v] of Object.entries(verdicts)) {
+      const n = Number(v?.tokens ?? 0);
+      if (!n) continue;
+      const role = ROLE_OF(name);
+      tokens[role] = (tokens[role] ?? 0) + n;
+      tokens.total += n;
+    }
   }
   const findings = { severe: 0, normal: 0, nit: 0 };
   for (const f of verdicts.review?.findings ?? []) {
@@ -47,6 +80,8 @@ export function buildRow({ item, run, result, verdicts, startedAt, endedAt }) {
     testDispute: verdicts.review?.testDispute ?? null,
     decisions: (verdicts.impl?.decisions ?? []).length + (verdicts.tests?.decisions ?? []).length,
     tokens,
+    tokenSource: usage ? 'transcript' : 'agent',
+    cacheRead: usage ? usage.cacheRead : null,
     wallMin: startedAt
       ? Math.round((Date.parse(endedAt) - Date.parse(startedAt)) / 6000) / 10
       : null,

@@ -10,7 +10,7 @@ const IMAGE_TOKENS = 1600;
 const IDLE_GAP_MS = 5 * 60 * 1000;
 const LABEL_MAX = 80;
 
-const readLines = (file) =>
+export const readLines = (file) =>
   readFileSync(file, 'utf8')
     .split('\n')
     .filter(Boolean)

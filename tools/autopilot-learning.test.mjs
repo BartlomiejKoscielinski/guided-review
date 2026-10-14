@@ -1,7 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { addEntry, curate, empty, rate, render, select, touch } from './autopilot/playbook-lib.mjs';
-import { buildRow, judge, summary } from './autopilot/items-lib.mjs';
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { buildRow, judge, roleUsage, summary } from './autopilot/items-lib.mjs';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('autopilot playbook: duplicates count, selection by word tag or path glob within budget', () => {
   const pb = empty();
@@ -85,6 +92,104 @@ test('autopilot metrics: a row from the verdicts, tokens per role', () => {
   assert.deepEqual(r.findings, { severe: 1, normal: 0, nit: 1 });
   assert.equal(r.decisions, 1);
   assert.equal(r.wallMin, 30);
+});
+
+const usageOf = (input, cacheRead, cacheWrite, output) => ({
+  input,
+  cacheRead,
+  cacheWrite,
+  output,
+});
+
+test('autopilot metrics: tokens per role from the role transcripts, attempt by start time', () => {
+  const since = '2026-10-14T10:00:00.000Z';
+  const at = (min) => Date.parse(since) + min * 60_000;
+  const subagents = [
+    { description: 'ap tests F-07.2', start: at(1), totals: usageOf(1, 100, 10, 2) },
+    { description: 'ap implement F-07.2', start: at(5), totals: usageOf(2, 300, 20, 5) },
+    { description: 'ap fix-1 F-07.2', start: at(9), totals: usageOf(1, 50, 0, 1) },
+    { description: 'ap fix-2 F-07.2', start: at(12), totals: usageOf(1, 40, 0, 1) },
+    // An earlier attempt, another item and a non-role agent do not count.
+    { description: 'ap tests F-07.2', start: at(-30), totals: usageOf(9, 900, 90, 9) },
+    { description: 'ap review F-07.3', start: at(3), totals: usageOf(9, 900, 90, 9) },
+    { description: 'design-check S03', start: at(4), totals: usageOf(9, 900, 90, 9) },
+  ];
+  const u = roleUsage(subagents, { item: 'F-07.2', since });
+  assert.deepEqual(u.tokens, { total: 534, tests: 113, impl: 327, fix: 94 });
+  assert.equal(u.cacheRead, 490);
+  assert.equal(roleUsage(subagents, { item: 'F-09.1', since }), null);
+  const row = buildRow({
+    item: 'F-07.2',
+    run: 'ap-1',
+    result: 'done',
+    verdicts: { tests: { tokens: 7 }, impl: { tokens: 8 } },
+    endedAt: since,
+    usage: u,
+  });
+  assert.deepEqual(row.tokens, u.tokens);
+  assert.equal(row.tokenSource, 'transcript');
+  assert.equal(row.cacheRead, 490);
+});
+
+test('autopilot metrics: record.mjs reads the conductor session transcripts, else the verdicts', () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'gr-record-'));
+  const slug = root.replace(/[^a-zA-Z0-9]/g, '-');
+  const sub = join(tmp, 'projects', slug, 'sess-1', 'subagents');
+  mkdirSync(sub, { recursive: true });
+  const turn = (id, ts, cacheRead) =>
+    JSON.stringify({
+      type: 'assistant',
+      timestamp: ts,
+      message: {
+        id,
+        model: 'm',
+        content: [],
+        usage: { input_tokens: 1, cache_read_input_tokens: cacheRead, output_tokens: 2 },
+      },
+    });
+  writeFileSync(
+    join(sub, 'agent-a1.jsonl'),
+    `${turn('m1', '2026-10-14T10:01:00Z', 1000)}\n${turn('m2', '2026-10-14T10:02:00Z', 3000)}\n`,
+  );
+  writeFileSync(
+    join(sub, 'agent-a1.meta.json'),
+    JSON.stringify({ description: 'ap review F-07.2' }),
+  );
+  const items = join(tmp, 'items');
+  mkdirSync(items);
+  writeFileSync(join(items, 'review.json'), JSON.stringify({ findings: [], tokens: 5 }));
+  const record = (session) => {
+    const out = join(tmp, `${session}.jsonl`);
+    const r = spawnSync(
+      process.execPath,
+      [
+        join(root, 'tools', 'autopilot', 'record.mjs'),
+        'F-07.2',
+        '--run',
+        'ap-1',
+        '--result',
+        'done',
+        '--dir',
+        items,
+        '--started',
+        '2026-10-14T10:00:00Z',
+        '--session',
+        session,
+        '--out',
+        out,
+      ],
+      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: tmp } },
+    );
+    assert.equal(r.status, 0, r.stderr);
+    return JSON.parse(readFileSync(out, 'utf8').trim());
+  };
+  const fromTranscript = record('sess-1');
+  assert.deepEqual(fromTranscript.tokens, { total: 4006, review: 4006 });
+  assert.equal(fromTranscript.cacheRead, 4000);
+  assert.equal(fromTranscript.tokenSource, 'transcript');
+  const fromVerdicts = record('sess-unknown');
+  assert.deepEqual(fromVerdicts.tokens, { total: 5, review: 5 });
+  assert.equal(fromVerdicts.tokenSource, 'agent');
 });
 
 test('autopilot metrics: judge waits for k rows, keeps or reverts by direction', () => {
