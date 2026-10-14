@@ -2,7 +2,8 @@
 //! `queued`, `started` unless cached, then `done` with the plan and the session's step order
 //! (F-06.2, F-06.12). When Claude fails or isn't signed in, `done` carries the app's fallback
 //! plan (`plan_fallback.rs`) with the error; `failed` only when cancelled or the app failed.
-//! A cached plan starts no `claude` process.
+//! A cached plan starts no `claude` process. The plan in `done` is kept as the session's plan
+//! (`plans.plan_json`): its "Pick up where you left off" card counts these steps (F-04.1).
 
 use std::collections::HashSet;
 
@@ -22,6 +23,7 @@ use crate::error::AppError;
 use crate::git::model::{FileDiff, LineKind};
 use crate::gitlab::discussions::Thread;
 use crate::os::process::Cancel;
+use crate::store::{Store, plans};
 
 /// S-02's data: the plan, where it came from and the reader's order.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -54,12 +56,14 @@ pub struct PlanView {
 
 /// Claude Code can't run at all (not found): the fallback view right away, `queued` → `done`.
 pub fn unavailable(
+    store: &Store,
     inputs: &SessionInputs,
     error: ClaudeError,
     emit: &(dyn Fn(ClaudeTaskEvent<PlanView>) + Sync),
 ) -> Planned {
     emit(ClaudeTaskEvent::Queued);
     let view = fallback_view(&inputs.files, &inputs.threads, &error);
+    plans::keep_plan(store, &inputs.session_id, &view.plan);
     emit(ClaudeTaskEvent::Done {
         result: view.clone(),
     });
@@ -143,6 +147,9 @@ pub async fn plan(
             claude_error: Some(error),
         }),
     };
+    if let Ok(planned) = &result {
+        plans::keep_plan(ctx.store, &inputs.session_id, &planned.view.plan);
+    }
     emit(match &result {
         Ok(planned) => ClaudeTaskEvent::Done {
             result: planned.view.clone(),
@@ -167,7 +174,7 @@ fn view(
     Ok(assemble(&inputs.files, plan, order, cached_at, None))
 }
 
-/// S-02 without Claude: the fallback plan in File order, never cached, nothing stored.
+/// S-02 without Claude: the fallback plan in File order, never cached, its order not stored.
 pub fn fallback_view(files: &[FileDiff], threads: &[Thread], error: &ClaudeError) -> PlanView {
     let plan = plan_fallback::plan(files, threads);
     let order = step_order::fallback(&plan);

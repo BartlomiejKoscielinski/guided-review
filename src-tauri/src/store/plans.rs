@@ -1,9 +1,34 @@
-//! Plans repository (table `plans`): the reader's dragged step order (F-06.5) in
-//! `custom_order_json`. The plan itself lives in `claude_cache` (M3 decision 7).
+//! Plans repository (table `plans`): the session's plan as S-02 and S-03 show it in `plan_json`
+//! (the "Pick up where you left off" card counts its steps, F-04.1) and the reader's dragged
+//! step order (F-06.5) in `custom_order_json`. Claude's raw plan output lives in `claude_cache`
+//! (M3 decision 7).
 
 use rusqlite::{Connection, OptionalExtension, params};
 
-use super::StoreError;
+use super::{Store, StoreError};
+use crate::review::plan_model::Plan;
+
+/// Stores the session's plan as S-02 and S-03 show it: Claude's plan after validation and the
+/// coverage invariant (an "Other" step included), or the app's fallback plan. Replaces the
+/// session's earlier plan; the dragged order stays.
+pub fn set_plan(conn: &Connection, session: &str, plan: &Plan) -> Result<(), StoreError> {
+    let json = serde_json::to_string(plan)
+        .map_err(|e| StoreError::Sql(rusqlite::Error::ToSqlConversionFailure(Box::new(e))))?;
+    conn.execute(
+        "INSERT INTO plans (session_id, plan_json) VALUES (?1, ?2)
+         ON CONFLICT(session_id) DO UPDATE SET plan_json = excluded.plan_json",
+        params![session, json],
+    )?;
+    Ok(())
+}
+
+/// [`set_plan`] where a failure only costs the session's card its step count: logged, the plan
+/// is still shown.
+pub fn keep_plan(store: &Store, session: &str, plan: &Plan) {
+    if let Err(error) = store.with_conn(|conn| set_plan(conn, session, plan)) {
+        tracing::warn!(%error, "the session's plan was not stored");
+    }
+}
 
 /// The session's custom step order; `None` when the reader hasn't dragged (or a strategy
 /// cleared it). A row that doesn't parse counts as none.

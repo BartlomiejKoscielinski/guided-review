@@ -9,10 +9,9 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::StoreError;
-use super::session_progress::{self, PlanOf};
+use super::session_progress;
 use crate::review::model::{Layout, Mode, SessionStatus, Strategy};
 use crate::review::mr_summary::MrMeta;
-use crate::review::plan_cache;
 use crate::review::sessions::{UnfinishedSession, card_title, resume_route};
 use crate::route::Route;
 use crate::source::Source;
@@ -29,8 +28,6 @@ struct ListedRow {
     updated_at: Option<String>,
     source_json: Option<String>,
     mr_json: Option<String>,
-    repo_id: Option<i64>,
-    head_sha: Option<String>,
     repo_name: Option<String>,
 }
 
@@ -42,8 +39,7 @@ pub fn list_unfinished(
     last_route: &Route,
 ) -> Result<Vec<UnfinishedSession>, StoreError> {
     let mut stmt = conn.prepare(
-        "SELECT s.id, s.status, s.mode, s.updated_at, s.source_json, s.mr_json, s.repo_id,
-                s.head_sha, r.name
+        "SELECT s.id, s.status, s.mode, s.updated_at, s.source_json, s.mr_json, r.name
          FROM sessions s LEFT JOIN repos r ON r.id = s.repo_id
          ORDER BY s.updated_at DESC, s.id",
     )?;
@@ -56,9 +52,7 @@ pub fn list_unfinished(
                 updated_at: row.get(3)?,
                 source_json: row.get(4)?,
                 mr_json: row.get(5)?,
-                repo_id: row.get(6)?,
-                head_sha: row.get(7)?,
-                repo_name: row.get(8)?,
+                repo_name: row.get(6)?,
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
@@ -98,15 +92,7 @@ fn unfinished(
         .as_deref()
         .and_then(parse::<Mode>)
         .unwrap_or_default();
-    let progress = session_progress::of(
-        conn,
-        &id,
-        &PlanOf {
-            repo_id: row.repo_id,
-            subject: &plan_cache::subject(&source),
-            head_sha: row.head_sha.as_deref().unwrap_or_default(),
-        },
-    )?;
+    let progress = session_progress::of(conn, &id)?;
     let mr_title = row
         .mr_json
         .as_deref()

@@ -133,6 +133,8 @@ where
 {
     let inputs = load_inputs(ctx.store, git_program, session_id, threads, cancel).await?;
     let plan = plan::cached(ctx, &inputs.plan_request()).ok_or(StepContextError::PlanNotReady)?;
+    // The session's card counts the steps S-03 shows (F-04.1).
+    store::plans::keep_plan(ctx.store, session_id, &plan);
     Ok(StepContext::new(inputs, plan))
 }
 

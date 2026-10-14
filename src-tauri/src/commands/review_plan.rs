@@ -42,7 +42,7 @@ pub async fn review_plan(
     let emit = sender(ch);
     let configured = settings.claude.path.clone().map(PathBuf::from);
     let planned = match discover(&DiscoveryInput::from_env(configured)) {
-        None => plan_runs::unavailable(&inputs, ClaudeError::NotFound, &emit),
+        None => plan_runs::unavailable(&store, &inputs, ClaudeError::NotFound, &emit),
         Some(exe) => {
             let ctx = plan_context(&claude, &store, &exe, &settings.claude);
             match plan_runs::plan(&ctx, &inputs, &cancel, &emit).await {

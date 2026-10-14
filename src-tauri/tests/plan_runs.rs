@@ -1,6 +1,7 @@
 //! `review_plan` below the Tauri layer (F-06.2, F-06.4, F-06.5, F-06.12): the inputs of a
 //! stored MR session, the channel events in order, the cache hit without `claude`, and the
-//! session's step order in the result; the file-order fallback when Claude fails (02 › S-02).
+//! session's step order in the result; the file-order fallback when Claude fails (02 › S-02);
+//! the plan shown kept for the session's "Pick up where you left off" card (F-04.1).
 //! Fake `claude`, synthetic data only (ADR-019).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
 
@@ -22,8 +23,11 @@ use guided_review_lib::claude::tasks::plan::Context;
 use guided_review_lib::error::{AppError, ErrorCode};
 use guided_review_lib::git::model::FileDiff;
 use guided_review_lib::os::process::Cancel;
+use guided_review_lib::review::coverage::OTHER_TITLE;
 use guided_review_lib::review::model::Strategy;
+use guided_review_lib::review::plan_model::Plan;
 use guided_review_lib::review::plan_runs::{self, PlanView};
+use guided_review_lib::review::progress;
 use guided_review_lib::review::step_context::{self, SessionInputs, StepContext};
 use guided_review_lib::review::step_order::{self, StepOrderError};
 use guided_review_lib::settings::ClaudeSettings;
@@ -45,12 +49,20 @@ struct Setup {
 
 /// A fixture repository and a stored MR session `r1` (!482, with a description), not planned.
 fn setup() -> Setup {
+    setup_with(&[])
+}
+
+/// [`setup`] where the head also adds the files `added` (one hunk each).
+fn setup_with(added: &[&str]) -> Setup {
     let repo = FixtureRepo::new("plan runs");
     repo.write(VM, "class Vm {\n    void Up() { Send(); }\n}\n");
     repo.write(QUEUE, "interface IQueue {\n}\n");
     let base = repo.commit_all("base");
     repo.write(VM, "class Vm {\n    void Up() { queue.Enqueue(); }\n}\n");
     repo.write(QUEUE, "interface IQueue {\n    void Enqueue();\n}\n");
+    for (n, path) in added.iter().enumerate() {
+        repo.write(path, &format!("class Added{n} {{\n}}\n"));
+    }
     let head = repo.commit_all("head");
     let store = Store::open_in_memory().unwrap();
     let path = repo.path.to_string_lossy().into_owned();
@@ -94,6 +106,11 @@ fn plan_response(files: &[FileDiff], valid: bool) -> Value {
     } else {
         "0000000000000000".to_owned()
     };
+    plan_placing(files, &[vm])
+}
+
+/// Claude's plan: s1 holds the IQueue hunk, s2 the hunks `s2`.
+fn plan_placing(files: &[FileDiff], s2: &[String]) -> Value {
     let output = json!({
         "intent": "Uploads go through a queue.",
         "steps": [
@@ -102,7 +119,7 @@ fn plan_response(files: &[FileDiff], valid: bool) -> Value {
               "layer": "Core", "hunk_ids": [hunk_of(files, QUEUE)], "builds_on": [] },
             { "id": "s2", "title": "ViewModel enqueues", "short_title": "ViewModel",
               "reason": "Uses the contract.", "description": "The ViewModel enqueues.",
-              "layer": "App", "hunk_ids": [vm], "builds_on": ["s1"] }
+              "layer": "App", "hunk_ids": s2, "builds_on": ["s1"] }
         ],
         "orders": { "contract_to_ui": ["s1", "s2"], "tests_first": ["s2", "s1"] },
         "skim": [], "risks": [], "description_check": [], "already_discussed": ""
@@ -342,7 +359,7 @@ async fn f06_4_fallback_when_claude_code_is_not_found_without_started() {
     let inputs = s.inputs().await;
     let events = Mutex::new(Vec::new());
     let emit = |e: ClaudeTaskEvent<PlanView>| events.lock().unwrap().push(e);
-    let planned = plan_runs::unavailable(&inputs, ClaudeError::NotFound, &emit);
+    let planned = plan_runs::unavailable(&s.store, &inputs, ClaudeError::NotFound, &emit);
     let kinds: Vec<_> = events
         .into_inner()
         .unwrap()
@@ -357,4 +374,108 @@ async fn f06_4_fallback_when_claude_code_is_not_found_without_started() {
     );
     assert_eq!(planned.view.order.order, ["f1", "f2"]);
     assert!(s.fake.calls().is_empty());
+}
+
+/// Nine more files: eleven hunks, so a plan that leaves one out still references 90% of them.
+const ADDED: [&str; 9] = [
+    "src/Core/Added 1.cs",
+    "src/Core/Added 2.cs",
+    "src/Core/Added 3.cs",
+    "src/Core/Added 4.cs",
+    "src/App/Dodane 5.cs",
+    "src/App/Dodane 6.cs",
+    "src/App/Zażółć 7.cs",
+    "src/App/Zażółć 8.cs",
+    "src/App/Zażółć 9.cs",
+];
+
+/// `r1` as a session in review and its card's (reviewed, total) steps (F-04.1).
+fn card(store: &Store) -> (usize, usize) {
+    store
+        .with_conn(|c| {
+            c.execute(
+                "UPDATE sessions SET status = 'reviewing' WHERE id = 'r1'",
+                [],
+            )?;
+            let list = store::unfinished_sessions(c)?;
+            let card = list.into_iter().find(|s| s.id == "r1").unwrap();
+            Ok((card.reviewed_steps, card.total_steps))
+        })
+        .unwrap()
+}
+
+fn mark(store: &Store, plan: &Plan, step: &str) {
+    store
+        .with_conn(|c| {
+            progress::mark(c, "r1", plan, step, true).unwrap();
+            Ok(())
+        })
+        .unwrap();
+}
+
+#[tokio::test]
+async fn f04_1_the_card_counts_the_validated_plan_with_its_other_step() {
+    let s = setup_with(&ADDED);
+    let inputs = s.inputs().await;
+    let mut placed = vec![hunk_of(&inputs.files, VM)];
+    placed.extend(ADDED[..8].iter().map(|p| hunk_of(&inputs.files, p)));
+    s.fake
+        .set_scenario(&json!({ "responses": [plan_placing(&inputs.files, &placed)] }));
+    let (_, view) = s.plan(&inputs).await;
+    let plan = view.unwrap().plan;
+    // Claude named two steps; the coverage invariant added the hunk it left out as s3.
+    let steps: Vec<_> = plan
+        .steps
+        .iter()
+        .map(|s| (s.id.as_str(), s.title.as_str()))
+        .collect();
+    assert_eq!(
+        steps,
+        [
+            ("s1", "Queue contract"),
+            ("s2", "ViewModel enqueues"),
+            ("s3", OTHER_TITLE)
+        ]
+    );
+    assert_eq!(card(&s.store), (0, 3));
+    mark(&s.store, &plan, "s3");
+    assert_eq!(card(&s.store), (1, 3));
+
+    // S-03 opened from the cache (after a restart) keeps the plan it shows for the card too.
+    s.store
+        .with_conn(|c| {
+            c.execute("DELETE FROM plans WHERE session_id = 'r1'", [])?;
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(card(&s.store), (0, 0), "a cached plan alone counts nothing");
+    let cx = step_context::load(
+        &s.ctx(),
+        None,
+        "r1",
+        |_| async { Vec::new() },
+        &Cancel::new(),
+    )
+    .await
+    .unwrap();
+    assert_eq!(cx.plan, plan);
+    assert_eq!(card(&s.store), (1, 3));
+    assert_eq!(s.fake.calls().len(), 1);
+}
+
+#[tokio::test]
+async fn f04_1_a_fallback_plan_replaces_the_cards_plan() {
+    let s = setup();
+    let inputs = s.inputs().await;
+    s.fake
+        .set_scenario(&json!({ "responses": [plan_response(&inputs.files, true)] }));
+    let (_, view) = s.plan(&inputs).await;
+    mark(&s.store, &view.unwrap().plan, "s1");
+    assert_eq!(card(&s.store), (1, 2));
+    // Claude Code is gone: S-02 and S-03 show the file-order plan, so the card counts f1 and f2.
+    let planned = plan_runs::unavailable(&s.store, &inputs, ClaudeError::NotFound, &|_| {});
+    assert_eq!(planned.view.order.order, ["f1", "f2"]);
+    assert_eq!(card(&s.store), (0, 2));
+    mark(&s.store, &planned.view.plan, "f2");
+    assert_eq!(card(&s.store), (1, 2));
 }
