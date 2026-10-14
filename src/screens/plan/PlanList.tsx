@@ -26,6 +26,8 @@ export interface PlanListProps {
   view: PlanView;
   onStrategy: (strategy: Strategy) => void;
   onReorder: (stepIds: string[]) => void;
+  /** A skim row's Show (F-06.6): the files of that row. */
+  onShowSkim?: (files: readonly string[]) => void;
 }
 
 /**
@@ -33,7 +35,7 @@ export interface PlanListProps {
  * order (drag by the handle, Space and arrows with the keyboard), then the skim rows. The
  * fallback plan (Claude failed) only has File order and doesn't drag.
  */
-export function PlanList({ view, onStrategy, onReorder }: PlanListProps) {
+export function PlanList({ view, onStrategy, onReorder, onShowSkim }: PlanListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -104,6 +106,7 @@ export function PlanList({ view, onStrategy, onReorder }: PlanListProps) {
                   group={group}
                   stats={stats}
                   files={view.skimFiles[i] ?? []}
+                  onShow={onShowSkim}
                 />
               ) : null;
             })}

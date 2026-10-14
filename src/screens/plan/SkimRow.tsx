@@ -1,4 +1,3 @@
-import { useId, useState } from 'react';
 import type { ChangeStats } from '../../ipc/types/ChangeStats';
 import type { SkimGroup } from '../../ipc/types/SkimGroup';
 import { plural } from './planText';
@@ -8,6 +7,8 @@ export interface SkimRowProps {
   group: SkimGroup;
   stats: ChangeStats;
   files: readonly string[];
+  /** Show: the S-06 browse of the MR with only these files. */
+  onShow?: (files: readonly string[]) => void;
 }
 
 function SkimIcon() {
@@ -27,10 +28,8 @@ function SkimIcon() {
   );
 }
 
-/** The skim row (F-06.6): "Skim: N mechanical files", Claude's reason, Show lists the files. */
-export function SkimRow({ group, stats, files }: SkimRowProps) {
-  const [open, setOpen] = useState(false);
-  const listId = useId();
+/** The skim row (F-06.6): "Skim: N mechanical files", Claude's reason, Show opens the files. */
+export function SkimRow({ group, stats, files, onShow }: SkimRowProps) {
   return (
     <li className={styles.skim}>
       <span />
@@ -44,21 +43,12 @@ export function SkimRow({ group, stats, files }: SkimRowProps) {
       <button
         type="button"
         className={styles.show}
-        aria-expanded={open}
-        aria-controls={listId}
         onClick={() => {
-          setOpen(!open);
+          onShow?.(files);
         }}
       >
-        {open ? 'Hide' : 'Show'}
+        Show
       </button>
-      {open && (
-        <ul id={listId} className={styles.skimFiles} aria-label="Skim files">
-          {files.map((path) => (
-            <li key={path}>{path}</li>
-          ))}
-        </ul>
-      )}
     </li>
   );
 }

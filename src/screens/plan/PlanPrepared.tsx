@@ -5,6 +5,7 @@ import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
 import { useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionMr } from '../../ipc/hooks/useSources';
+import { browseFilter } from '../changes/browseFilter';
 import { StubScreen } from '../StubScreen';
 import { FallbackBanner } from './FallbackBanner';
 import { MrMetaLine } from './MrMetaLine';
@@ -125,6 +126,11 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
                   }}
                   onReorder={(stepIds) => {
                     reorder.mutate(stepIds);
+                  }}
+                  onShowSkim={(paths) => {
+                    void navigate(pathFor({ screen: 'S-06', sessionId }), {
+                      state: browseFilter(paths),
+                    });
                   }}
                 />
               )}

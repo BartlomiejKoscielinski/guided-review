@@ -1,13 +1,14 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { pathFor } from '../../app/routes';
 import { formatAge } from '../../format/age';
 import { useFileDiff, useRiderOpen } from '../../ipc/hooks/useChanges';
 import { useSessionMr } from '../../ipc/hooks/useSources';
 import { useChangesStore } from '../../state/changes';
+import { browseFiles } from './browseFilter';
 import { DiffPane } from './DiffPane';
 import { MrDetails } from './MrDetails';
 import { files } from './operation';
-import { findFile, firstFile } from './tree';
+import { findFile, firstFile, onlyFiles } from './tree';
 import { TreePanel } from './TreePanel';
 import styles from './Changes.module.css';
 
@@ -17,7 +18,8 @@ export interface MrBrowseProps {
 
 /**
  * S-06 MR browse (F-06.11 Browse files instead, F-24.1): the files of a teammate's MR session,
- * read-only, with Open in Rider from the folder `rider.openFrom` picks.
+ * read-only, with Open in Rider from the folder `rider.openFrom` picks. A skim row's Show (F-06.6)
+ * opens it with only that row's files (the navigation state, `browseFilter`).
  */
 export function MrBrowse({ sessionId }: MrBrowseProps) {
   const navigate = useNavigate();
@@ -25,7 +27,8 @@ export function MrBrowse({ sessionId }: MrBrowseProps) {
   const source = `mr:${sessionId}`;
   const session = useSessionMr(sessionId);
   const data = session.data ?? null;
-  const groups = data?.groups ?? [];
+  const only = browseFiles(useLocation().state);
+  const groups = only && data ? onlyFiles(data.groups, only) : (data?.groups ?? []);
   const selectedFile = findFile(groups, store.selected[source]) ?? firstFile(groups);
   const diff = useFileDiff(
     { kind: 'session', sessionId },
@@ -42,8 +45,11 @@ export function MrBrowse({ sessionId }: MrBrowseProps) {
       </div>
     );
   }
+  const shown = groups.reduce((n, g) => n + g.files.length, 0);
+  const total = data ? files(data.totalFiles) : '';
+  const count = only ? `${String(shown)} of ${total}` : total;
   const summary = data
-    ? [files(data.totalFiles), data.mr.author, data.mr.createdAt && formatAge(data.mr.createdAt)]
+    ? [count, data.mr.author, data.mr.createdAt && formatAge(data.mr.createdAt)]
         .filter(Boolean)
         .join(' · ')
     : '';
