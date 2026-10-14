@@ -52,7 +52,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 | File | Committed | Content |
 | - | - | - |
-| `docs/process/backlog.json` | yes | Items synced from `PROGRESS.md` + `plans/<Mx>.md`: `{id, milestone, title, kind: core\|ui\|docs\|mixed, deps[], status: todo\|tests\|impl\|review\|done\|blocked\|needs-owner, attempts, lockSha?, branch?, note}`. JSON, not Markdown (agents mangle it less). Only the conductor and `backlog.mjs` write it. |
+| `docs/process/backlog.json` | yes | Items synced from `PROGRESS.md` + `plans/<Mx>.md`: `{id, milestone, title, kind: core\|ui\|docs\|mixed, deps[], status: todo\|tests\|impl\|review\|done\|partial\|live\|blocked\|needs-owner, attempts, lockSha?, branch?, note}`. JSON, not Markdown (agents mangle it less). Only the conductor and `backlog.mjs` write it. |
 | `docs/process/playbook.json` | yes | `[{id, tags[], text, helpful, harmful, created, lastUsed, source}]`; tags = path globs, item kinds, roles. |
 | `docs/process/DECISIONS-PENDING.md` | yes | Provisional decisions: `ID · date · item · question · chosen (recommended) · alternatives · reversible · status (provisional/accepted/vetoed)`. |
 | `.metrics/items.jsonl` | yes | One row per item attempt: tokens per role, wall time, gate first pass, rounds, findings by severity, result, escaped defects (filled later). |
@@ -96,6 +96,7 @@ No new npm or cargo dependencies (Node built-ins only).
 - **Implementer** reads the context pack (`context-pack.mjs <AC> --plan <Mx> --files … --playbook`), may not change locked test files (gate enforces; a wrong test → `testDispute` in its verdict, decided by the reviewer).
 - **Reviewer** gets `git diff <milestone>...ap/<item>`, the AC text and `CLAUDE.md` non-negotiables; returns `{findings: [{severity: severe|normal|nit, file, line, text}], testDispute?: accept|reject}`; UI items also run `/design-check` structure mode. Severe or normal findings → one fix round.
 - **Gate** is deterministic; its JSON verdict is the only thing that decides merge.
+- **Live checker** (Sonnet, main checkout, once per run at the start of "Closing"): the items with status `live` (built; only the check in `tauri dev` left: a PROGRESS note ending in `open: live check …`, or the conductor after a gate). It drives the real app with `tools/app-driver/app.mjs` (batches via `run`, ≤ 8 calls per criterion, Docker and the stand-in started if needed, real Claude only on Haiku · low), takes expected values from the seed and fixtures, and answers pass / fail / skip per criterion. `tools/autopilot/live.mjs pass` ticks PROGRESS with the commits of the note; `fail` sends the item back to todo ("live check failed: …"), and after its fix the gate runs without `--complete` and the item waits as `live` again.
 - **Reflector** gets the item's verdicts (not the transcripts) and answers: what went well, what was slow or wrong, what to do differently; writes 0–3 deltas with tags. A delta that duplicates an entry increments its count instead.
 
 ## 6. Owner decisions (recommended answers; approving this plan approves them)
@@ -126,7 +127,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 | Agents game the tests | lock + gate diff check; reviewer sees the tests and the diff |
 | Playbook bloat / context collapse | delta-only edits, tag selection ≤ 1.5k tokens, curate prunes |
 | Conductor context grows | heavy work in subagents; verdicts only; compaction; context guard in continue mode |
-| `/app` live checks clash on ports | not in the loop; a separate conductor step after a milestone's items are done |
+| `/app` live checks clash on ports | not in the loop: the live checker runs at the start of "Closing", after the run's items, in the main checkout (port 1420, CDP 9222; the loop's e2e use 1510) |
 
 ## 9. Build status (A-4, 2026-10-14)
 
@@ -143,6 +144,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 4. The planner (a milestone without `docs/plans/<Mx>.md`).
 5. The token budget `--budget`: it counts the tokens of the run (`items.jsonl` rows of the run id), not of a day; never set or reached.
 6. A rework item after a veto in a real run.
+7. The live checker (built in A-7, 2026-10-14, so that criteria waiting only for a check in `tauri dev` no longer need an interactive session): role `live.md`, status `live` in the backlog, `live.mjs pass|fail`, step 1 of "Closing". Its tokens are not yet recorded in `items.jsonl` (no item row; not counted against `--budget`).
 
 ## Sources
 

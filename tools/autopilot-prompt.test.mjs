@@ -45,6 +45,13 @@ const REVIEW = {
   testDisputeDetail: { test: 'tests/e2e/step.spec.ts:20', reason: 'cards sit side by side' },
   verdict: 'fix',
 };
+const LIVE = {
+  ...ITEM,
+  id: 'F-09.6',
+  title: 'Notes appear progressively.',
+  status: 'live',
+  note: 'step task (6692508); open: live check in `tauri dev`',
+};
 const args = (name, over = {}) => ({
   role: name,
   id: name === 'plan' ? 'M4' : 'F-04.3',
@@ -55,6 +62,7 @@ const args = (name, over = {}) => ({
   wt: 'C:\\Repos\\gr-ap',
   itemDir: 'C:\\Repos\\guided review ł\\.autopilot\\items\\F-04.3',
   files: { context: CONTEXT, impl: { testDispute: 'step.spec.ts:20 order' }, review: REVIEW },
+  live: [ITEM, LIVE],
   ...over,
 });
 
@@ -89,6 +97,18 @@ test('autopilot prompt: every role composes with no empty field', () => {
   const plan = composePrompt(COMMON, role('plan'), promptValues(args('plan', { run: null })));
   assert.match(plan, /run not started yet .* item M4 plan \(process, M4\)/);
   assert.match(plan, /Worktree C:\/Repos\/guided review ł, branch m3-plan-focus/);
+  const live = composePrompt(COMMON, role('live'), promptValues(args('live')));
+  assert.match(
+    live,
+    /role live · item M3 live checks \(process, M3\): check the waiting criteria in the real app/,
+  );
+  assert.match(
+    live,
+    /^- F-09\.6 Notes appear progressively\. — step task \(6692508\); open: live check/m,
+  );
+  assert.doesNotMatch(live, /^- F-04\.3/m);
+  assert.match(live, /Worktree C:\/Repos\/guided review ł, branch m3-plan-focus/);
+  assert.match(live, /run \.app-driver\/live-ap-20261015-0900\/<id>\.json/);
 });
 
 test('autopilot prompt: fix problems come from the last failed gate, else the review', () => {
@@ -127,6 +147,7 @@ test('autopilot prompt: a missing required field is an error', () => {
     /problems/,
   );
   assert.throws(compose('curate', { run: null }), /empty fields: runId, milestone$/);
+  assert.throws(compose('live', { live: [ITEM] }), /empty fields: checks$/);
   assert.throws(compose('plan', { id: undefined }), /empty fields: .*milestone/);
   assert.throws(compose('implement', { extra: { verify: ' ' } }), /empty fields: verify$/);
   assert.doesNotThrow(compose('fix', { files: { context: CONTEXT }, extra: { problems: '- x' } }));
@@ -137,7 +158,10 @@ test('autopilot prompt: the CLI prints the prompt or exits 1 on an empty field',
   try {
     mkdirSync(join(dir, 'docs', 'process'), { recursive: true });
     mkdirSync(join(dir, '.autopilot', 'items', 'F-04.3'), { recursive: true });
-    const backlog = { milestone: 'M3', items: [ITEM, { ...ITEM, id: 'F-04.4', tests: [] }] };
+    const backlog = {
+      milestone: 'M3',
+      items: [ITEM, { ...ITEM, id: 'F-04.4', tests: [] }, { ...LIVE, note: '' }],
+    };
     writeFileSync(join(dir, 'docs', 'process', 'backlog.json'), JSON.stringify(backlog));
     writeFileSync(join(dir, '.autopilot', 'run.json'), JSON.stringify(args('tests').run));
     writeFileSync(join(dir, '.autopilot', 'items', 'F-04.3', 'context.md'), CONTEXT);
@@ -152,6 +176,9 @@ test('autopilot prompt: the CLI prints the prompt or exits 1 on an empty field',
     const empty = cli('implement', 'F-04.4');
     assert.equal(empty.status, 1);
     assert.match(empty.stderr, /empty fields: context, tests/);
+    const live = cli('live');
+    assert.equal(live.status, 0, live.stderr);
+    assert.match(live.stdout, /^- F-09\.6 Notes appear progressively\.$/m);
     assert.equal(cli('nope', 'F-04.3').status, 2);
     assert.match(cli('tests', 'F-09.9').stderr, /no item F-09\.9/);
   } finally {

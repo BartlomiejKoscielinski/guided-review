@@ -4,13 +4,13 @@
 // docs/process/backlog.json, .autopilot/run.json, the worktree and .autopilot/items/<item>/.
 // Exit 1 when a field the prompt uses stays empty.
 //   node tools/autopilot/prompt.mjs tests|implement|review|fix|reflect F-07.2 [--extra '<json>']
-//   node tools/autopilot/prompt.mjs plan M4 · node tools/autopilot/prompt.mjs curate
+//   node tools/autopilot/prompt.mjs plan M4 · node tools/autopilot/prompt.mjs curate|live
 //   --extra '{"problems": "…"}' overrides or adds fields; --root <dir> reads the data from another checkout (tests).
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ROLES, composePrompt, promptValues } from './prompt-lib.mjs';
+import { MAIN_CHECKOUT, ROLES, composePrompt, promptValues } from './prompt-lib.mjs';
 import { worktreePath } from './worktree-lib.mjs';
 
 const tools = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -44,9 +44,9 @@ try {
   // The conductor runs on the milestone branch of the main checkout (SKILL step 1): that is the base.
   const base = extra.base ?? (branch.status === 0 ? branch.stdout.trim() : undefined);
   let values;
-  if (role === 'plan' || role === 'curate') {
+  if (MAIN_CHECKOUT.includes(role)) {
     const milestone = role === 'plan' ? (id ?? run?.milestone ?? backlog?.milestone) : null;
-    values = promptValues({ role, id: milestone, run, base, root, extra });
+    values = promptValues({ role, id: milestone, run, base, root, live: backlog?.items, extra });
   } else {
     if (!id) throw new Error(`${role} needs an item id`);
     const item = backlog?.items.find((i) => i.id === id);

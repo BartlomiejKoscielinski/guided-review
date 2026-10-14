@@ -2,7 +2,7 @@
 // as machine-readable items, synced from docs/PROGRESS.md and the plan's AC table, plus the
 // provisional decisions of docs/process/DECISIONS-PENDING.md. Pure functions; I/O in backlog.mjs.
 import { parseProgress } from '../audit-lib.mjs';
-import { isTest } from './gate-lib.mjs';
+import { isTest, tickProgress } from './gate-lib.mjs';
 
 export const STATUSES = [
   'todo',
@@ -11,6 +11,8 @@ export const STATUSES = [
   'review',
   'done',
   'partial',
+  // Built; only the live check in `tauri dev` is left (the live role in "Closing" does it).
+  'live',
   'blocked',
   'needs-owner',
 ];
@@ -48,6 +50,20 @@ function titleAndNote(progressMd, id) {
   return { title: title.trim(), note: note.trim() };
 }
 
+/** Whether a PROGRESS partial note leaves only a live check open (`…; open: live check in `tauri dev``). */
+export function liveOnly(note) {
+  return /(^|; )open: live check\b[^;]*$/.test(note ?? '');
+}
+
+/** PROGRESS with the line of a live-checked criterion ticked with the commits its partial note names. */
+export function liveTick(progressMd, id) {
+  const { title, note } = titleAndNote(progressMd, id);
+  if (!title) throw new Error(`PROGRESS has no open line for ${id}`);
+  if (!/\b[0-9a-f]{7,12}\b/.test(note))
+    throw new Error(`no commit SHA in the PROGRESS note of ${id}: tick it by hand`);
+  return tickProgress(progressMd, id, [], true);
+}
+
 /** Provisional decisions: `| D-01 | date | item | question | chosen | alternatives | reversible | status |`. */
 export function parseDecisions(md) {
   const rows = [];
@@ -70,7 +86,8 @@ export function parseDecisions(md) {
 
 /**
  * New backlog for `milestone`: every open PROGRESS criterion of it (statuses, attempts and notes of
- * known items kept; ticked ones become done), plus a rework item per vetoed decision.
+ * known items kept; ticked ones become done; todo ones whose note leaves only a live check become
+ * live), plus a rework item per vetoed decision.
  */
 export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now }) {
   const known = new Map((previous?.items ?? []).map((i) => [i.id, i]));
@@ -84,13 +101,15 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
       continue;
     }
     const { title, note } = titleAndNote(progressMd, id);
+    // A failed live check stays todo until the loop fixed it (the conductor sets it live again).
+    const waitsForLive = liveOnly(note) && !/^live check failed\b/.test(old?.note ?? '');
     items.push({
       id,
       milestone,
       title: title.length > 120 ? `${title.slice(0, 119)}…` : title,
       kind: old?.kind ?? kindOf(rows.get(id)),
       deps: old?.deps ?? [],
-      status: old?.status ?? 'todo',
+      status: old && old.status !== 'todo' ? old.status : waitsForLive ? 'live' : 'todo',
       attempts: old?.attempts ?? 0,
       note: old?.note ?? note,
       ...(old?.lockSha ? { lockSha: old.lockSha, tests: old.tests ?? [] } : {}),

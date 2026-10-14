@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   addDecisions,
   kindOf,
+  liveOnly,
+  liveTick,
   next,
   parseDecisions,
   planRows,
@@ -15,7 +17,7 @@ const PROGRESS = `## M2 · Before
 - [ ] F-01.1 Old milestone item.
 ## M3 · Plan and Focus review
 - [x] F-06.1 Header done. (95ba9b0)
-- [ ] F-07.1 Three layouts switchable. — partial: layout A (f604e59); open: live check
+- [ ] F-07.1 Three layouts switchable. — partial: layout A (f604e59); open: layout C; live check
 - [ ] F-07.2 Step header with Mark reviewed.
 - [ ] F-17.1 Same plan flow.
 ## M4 · Detailed
@@ -115,6 +117,40 @@ test('autopilot backlog: next resumes a started item, respects deps and the prov
     /not test files, lock only tests: .*store.sessions.rs$/,
   );
   setItem(backlog, 'F-07.1', { lockSha: 'a9ff402', tests: ['tests/e2e/start.spec.ts'] }, 't');
+});
+
+test('autopilot backlog: a criterion with only a live check open waits as live, not for the loop', () => {
+  const md = `## M3 · Plan and Focus review
+- [ ] F-07.4 Split diff. — partial: fold rows (2575c46, f604e59); open: live check in \`tauri dev\`
+- [ ] F-07.9 Layout memory. — partial: global (6c15e0f); open: live check in \`tauri dev\`
+- [ ] F-17.1 Same flow. — partial: plan (3558aee); open: decisions 12–15; live check in \`tauri dev\`
+- [ ] F-09.6 Progressive notes. — partial: step task; open: live check of prefetch
+`;
+  assert.equal(liveOnly('task (6692508); open: live check of prefetch in `tauri dev`'), true);
+  assert.equal(liveOnly('plan; open: decisions 12–15; live check'), false);
+  assert.equal(liveOnly(''), false);
+  const opts = { planMd: '', decisionsMd: '', milestone: 'M3', now: 't' };
+  const first = sync({ ...opts, progressMd: md, previous: null });
+  assert.deepEqual(
+    first.items.map((i) => [i.id, i.status]),
+    [
+      ['F-07.4', 'live'],
+      ['F-07.9', 'live'],
+      ['F-17.1', 'todo'],
+      ['F-09.6', 'live'],
+    ],
+  );
+  assert.equal(next(first).id, 'F-17.1');
+  // A failed live check goes back to the loop and stays todo until the conductor sets it live again.
+  setItem(first, 'F-07.9', { status: 'todo', note: 'live check failed: opens in A' }, 't');
+  const second = sync({ ...opts, progressMd: md, previous: first });
+  assert.equal(second.items.find((i) => i.id === 'F-07.9').status, 'todo');
+  const ticked = liveTick(md, 'F-07.4');
+  assert.match(ticked, /^- \[x\] F-07\.4 Split diff\. \(2575c46, f604e59\)$/m);
+  assert.throws(() => liveTick(md, 'F-09.6'), /no commit SHA in the PROGRESS note of F-09\.6/);
+  assert.throws(() => liveTick(md, 'F-01.1'), /no open line for F-01\.1/);
+  const third = sync({ ...opts, progressMd: ticked, previous: second });
+  assert.equal(third.items.find((i) => i.id === 'F-07.4').status, 'done');
 });
 
 test('autopilot backlog: decisions get the next id and escape pipes', () => {

@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T16:11:27.399Z",
+  "updated": "2026-10-14T20:22:08.487Z",
   "items": [
     {
       "id": "F-02.5",
@@ -138,7 +138,7 @@
       "title": "Step header: \"STEP 4 OF 8\", title, a one- or two-sentence description; Mark reviewed (Space) and next.",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "note": "review_step data core + mock (9748265, 530d516); header UI and next (f604e59); `review_mark_step` core, command, client, mock (ecc02ae); open: Mark reviewed (Space) wired in A/B/C"
     },
@@ -148,7 +148,7 @@
       "title": "File header: path, +add −del, number of notes in this file (\"3 notes\").",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "note": "step files with +add −del (9748265, 530d516); file header UI and notes count (f604e59); open: live check in `tauri dev`"
     },
@@ -158,7 +158,7 @@
       "title": "Split diff with old/new line numbers, intraline emphasis and syntax highlighting. Mechanical regions…",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "note": "fold rows + Show (2575c46, f604e59), S-03 gutters (d88eac2); open: live check in `tauri dev`"
     },
@@ -168,7 +168,7 @@
       "title": "Layout C shows \"Worth a look\": numbered notes in line order, the focused one expanded; \"+N minor\"…",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "note": "guide panel, numbered notes, +N minor, Ask input (3976bc2, 48cdbf3); `review_mark_step` (ecc02ae); open: Mark reviewed wired in C"
     },
@@ -178,7 +178,7 @@
       "title": "Layout B's toolbar: previous, \"Step 4 of 8\", next, Mark reviewed, Ask Claude.",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "note": "toolbar with previous, Step n of m, next, Ask Claude (3976bc2); `review_mark_step` (ecc02ae); open: Mark reviewed wired in B"
     },
@@ -188,7 +188,7 @@
       "title": "The chosen layout is remembered globally and per session.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "done",
       "attempts": 0,
       "note": ""
     },
@@ -238,7 +238,7 @@
       "title": "Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "live",
       "attempts": 0,
       "note": "step task + cache + CurrentStep/prefetch N+1 only (6692508, 513d0fa); in-flight dedupe + events (a39b778), `review_findings` with prefetch spawn (b42a11c), mock + `useStepFindings` (4772c33); S-03 states in StepNotes (87b700d), in the S-03 screen (f604e59); open: live check of prefetch in `tauri dev`"
     },

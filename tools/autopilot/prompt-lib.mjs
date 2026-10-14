@@ -3,9 +3,9 @@
 // Pure functions; I/O in prompt.mjs.
 import { AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
 
-export const ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'curate'];
+export const ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'curate', 'live'];
 /** Roles that work in the main checkout; the others in the autopilot worktree. */
-const MAIN_CHECKOUT = ['plan', 'curate'];
+export const MAIN_CHECKOUT = ['plan', 'curate', 'live'];
 /** Item results the reflector learns from (backlog statuses after the gate). */
 const RESULTS = ['done', 'partial', 'blocked', 'needs-owner'];
 /** Gate output longer than this is cut in a fix prompt (the full log stays in gate-N.json). */
@@ -22,6 +22,14 @@ export function fields(text) {
 export function offeredIds(contextMd) {
   const section = (contextMd ?? '').split(/^## /m).find((s) => s.startsWith('Playbook')) ?? '';
   return [...section.matchAll(/^- \[(P-\d+)\]/gm)].map((m) => m[1]);
+}
+
+/** The backlog items waiting for a live check, one line each: id, criterion, its note. */
+export function liveChecks(items) {
+  return (items ?? [])
+    .filter((i) => i.status === 'live')
+    .map((i) => `- ${i.id} ${i.title}${i.note ? ` — ${i.note}` : ''}`)
+    .join('\n');
 }
 
 /** The exact verify command of an item: its locked e2e specs on the autopilot port, else plain. */
@@ -66,9 +74,22 @@ function disputeVerdict(review, impl) {
 /**
  * The field values of one role prompt. `item` is the backlog item (null for plan and curate),
  * `files` the parsed contents of `.autopilot/items/<id>/` ({ context, impl, review, gates }),
- * `extra` overrides or adds fields (e.g. `problems`). Missing values stay undefined.
+ * `live` the backlog items (for the live role), `extra` overrides or adds fields (e.g. `problems`).
+ * Missing values stay undefined.
  */
-export function promptValues({ role, id, item, run, base, root, wt, itemDir, files = {}, extra }) {
+export function promptValues({
+  role,
+  id,
+  item,
+  run,
+  base,
+  root,
+  wt,
+  itemDir,
+  files = {},
+  live,
+  extra,
+}) {
   const port = AUTOPILOT_PORT;
   const common = { role, runId: run?.runId, base, port };
   let values;
@@ -80,16 +101,26 @@ export function promptValues({ role, id, item, run, base, root, wt, itemDir, fil
       // The planner runs before `run.mjs start` (SKILL step 2): no run yet.
       runId: run?.runId ?? (role === 'plan' ? 'not started yet' : undefined),
       milestone,
-      item: role === 'curate' ? 'playbook' : plan ? `${milestone} plan` : undefined,
+      item:
+        role === 'curate'
+          ? 'playbook'
+          : plan
+            ? `${milestone} plan`
+            : role === 'live' && milestone
+              ? `${milestone} live checks`
+              : undefined,
       kind: 'process',
       title:
         role === 'curate'
           ? 'curate the playbook'
           : plan
             ? `write the plan of ${milestone}`
-            : undefined,
+            : role === 'live'
+              ? 'check the waiting criteria in the real app'
+              : undefined,
       wt: slash(root),
       branch: base,
+      checks: role === 'live' ? liveChecks(live) : undefined,
     };
   } else {
     const tests = item?.tests ?? [];
