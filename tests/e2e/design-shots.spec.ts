@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { test, type Page } from '@playwright/test';
+import { startSessions } from '../../src/ipc/mock/fixtures/sessions';
 
 // /design-check captures (docs/09 › Visual): each screen state at 1600×1000 with the mock
 // backend, saved as .design-check/impl-<screen>-<state>.png next to docs/design/screens/*.png.
@@ -67,7 +68,13 @@ async function step4(page: Page, layout: 'A' | 'B' | 'C') {
 }
 
 const SHOTS: Shot[] = [
-  { screen: 'S01', state: 'start', lastRoute: { screen: 'S-01' }, prepare: startMock },
+  {
+    screen: 'S01',
+    state: 'start',
+    lastRoute: { screen: 'S-01' },
+    sessions: startSessions(),
+    prepare: startMock,
+  },
   {
     screen: 'S02',
     state: 'preparing',
@@ -145,6 +152,7 @@ const SHOTS: Shot[] = [
     screen: 'S01',
     state: 'start-mine-tab',
     lastRoute: { screen: 'S-01' },
+    sessions: startSessions(),
     prepare: async (page) => {
       await startMock(page);
       await page.getByRole('tab', { name: /^Mine/ }).click();
