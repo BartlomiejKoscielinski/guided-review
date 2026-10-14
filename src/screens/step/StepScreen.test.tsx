@@ -285,4 +285,51 @@ describe('S-03 layout A', () => {
     );
     expect(screen.queryByRole('button', { name: /^Note / })).toBeNull();
   });
+
+  it('F-09.1 a note sits under the line it names on the side it names: old 40 is the removed catch, new 40 the method signature', async () => {
+    const mock = mockClient();
+    const reviewFindings: IpcClient['reviewFindings'] = async (sessionId, stepId, onEvent) => {
+      const analysis = await mock.reviewFindings(sessionId, stepId, onEvent);
+      const base = analysis.findings[1];
+      if (!base) throw new Error('the mock has no note 2');
+      return {
+        ...analysis,
+        findings: [
+          { ...base, id: 'old40', side: 'old' as const, line: 40, title: 'Catch on the old side' },
+          {
+            ...base,
+            id: 'new40',
+            side: 'new' as const,
+            line: 40,
+            title: 'Signature on the new side',
+          },
+        ],
+      };
+    };
+    renderStep('s4', { reviewFindings });
+    // The diff row right above a note card (cards sit in a row of their own under their line).
+    const rowAbove = (card: HTMLElement) => {
+      const rows = Array.from(document.querySelectorAll('[data-index]'));
+      const at = rows.indexOf(card.closest('[data-index]') as Element);
+      return rows[at - 1];
+    };
+
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Note 1: Catch on the old side' }),
+    );
+    const onOld = await screen.findByRole('article', {
+      name: 'Claude note: Catch on the old side',
+    });
+    expect(rowAbove(onOld)?.querySelector('[data-kind="del"] [data-line-no="40"]')).not.toBeNull();
+    expect(rowAbove(onOld)).toHaveTextContent('catch (HttpRequestException ex)');
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Note 2: Signature on the new side' }),
+    );
+    const onNew = await screen.findByRole('article', {
+      name: 'Claude note: Signature on the new side',
+    });
+    expect(rowAbove(onNew)?.querySelector('[data-kind="ctx"] [data-line-no="40"]')).not.toBeNull();
+    expect(rowAbove(onNew)).toHaveTextContent('private async Task SendPhotoAsync()');
+  });
 });

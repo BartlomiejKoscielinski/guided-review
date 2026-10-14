@@ -259,3 +259,62 @@ test('F-04.3 after a restart the note decisions are still on the notes', async (
   await expect(dismissed.getByRole('button', { name: 'Add to drafts' })).toBeVisible();
   await expect(page.getByText('3 notes')).toBeVisible();
 });
+
+test('F-09.1 step 4: every note shows its severity word, title and body under its own line, with the suggested comment behind Edit and add', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await openStep(page, /ViewModel/, 4);
+  const notes = [
+    {
+      title: 'The whole photo goes into SQLite as byte[]',
+      word: 'Question',
+      line: 'var upload = new PendingUpload(DeliveryId, bytes, DateTimeOffset.UtcNow);',
+      body: 'A camera photo is usually several MB, so during a long offline period the database grows fast.',
+      comment:
+        'Did we consider saving the file in FileSystem.AppDataDirectory and keeping only the path in the queue?',
+    },
+    {
+      title: 'PendingCount won’t refresh after upload',
+      word: 'Should fix',
+      line: 'PendingCount = await _queue.CountAsync();',
+      body: 'UploadWorker from step 3 removes items from the queue but never notifies the ViewModel',
+      comment:
+        'Could IUploadQueue publish changes (an event or WeakReferenceMessenger) so the ViewModel refreshes PendingCount after each upload?',
+    },
+    {
+      title: 'Status texts are hardcoded',
+      word: 'Minor',
+      line: '? "Wysyłanie…"',
+      body: 'Keys for these texts already exist in Strings.resx',
+      comment: 'Nit: take StatusText from AppResources, the keys are already in Strings.resx.',
+    },
+    {
+      title: 'catch (Exception) also catches camera cancellation',
+      word: 'Should fix',
+      line: 'catch (Exception ex)',
+      body: 'When the user closes the camera, CaptureAsync throws OperationCanceledException.',
+      comment:
+        'Consider a separate catch (OperationCanceledException) without a message. Closing the camera isn’t a save error.',
+    },
+  ];
+  for (const [i, note] of notes.entries()) {
+    await page.getByRole('button', { name: `Note ${String(i + 1)}: ${note.title}` }).click();
+    const card = page.getByRole('article', { name: `Claude note: ${note.title}` });
+    await expect(card.getByText(note.word, { exact: true })).toBeVisible();
+    await expect(card.getByText(note.title, { exact: true })).toBeVisible();
+    await expect(card).toContainText(note.body);
+    // The card sits in a row of its own right under the line the note names.
+    const above = card.locator(
+      'xpath=ancestor::*[@data-index][1]/preceding-sibling::*[@data-index][1]',
+    );
+    await expect(above).toContainText(note.line);
+
+    await card.getByRole('button', { name: 'More' }).click();
+    await page.getByRole('menuitem', { name: 'Edit and add' }).click();
+    await expect(card.getByRole('textbox', { name: 'Suggested comment' })).toHaveValue(
+      note.comment,
+    );
+    await card.getByRole('button', { name: 'Cancel' }).click();
+  }
+});

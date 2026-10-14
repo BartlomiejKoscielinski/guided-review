@@ -289,3 +289,129 @@ fn f09_1_worktree_lines_and_relative_paths() {
     assert_eq!(relative(root, "/etc/hosts"), None);
     assert_eq!(relative(root, ""), None);
 }
+
+#[test]
+fn f09_1_body_and_evidence_notes_are_clamped() {
+    let mut out = output();
+    out["findings"][0]["body"] = json!("b".repeat(700));
+    out["findings"][0]["evidence"][1]["note"] = json!("n".repeat(200));
+    let analysis = check(&out, &HashSet::new()).unwrap();
+    // Claude listed the ViewModel note first; the step's diff order puts it second.
+    let long = &analysis.findings[1];
+    assert_eq!(long.body.chars().count(), 600);
+    assert!(long.body.ends_with('…'));
+    assert_eq!(long.evidence[1].note.chars().count(), 120);
+    assert!(long.evidence[1].note.ends_with('…'));
+    // Text within the limits is kept as it is.
+    assert_eq!(analysis.findings[0].body, "The token isn't passed.");
+    assert_eq!(analysis.findings[0].evidence[1].note, "the overload");
+}
+
+#[test]
+fn f09_1_a_note_names_one_to_four_places_it_checked() {
+    let places = |count: u32| -> Vec<Value> {
+        (1..=count)
+            .map(|line| json!({ "file": "src/Core/IClient.cs", "line": line, "note": format!("place {line}") }))
+            .collect()
+    };
+    for (count, valid) in [(0, false), (1, true), (4, true), (5, false)] {
+        let mut out = output();
+        out["findings"][0]["evidence"] = json!(places(count));
+        let result = check(&out, &HashSet::new());
+        assert_eq!(result.is_ok(), valid, "{count} places: {result:?}");
+        if let Err(error) = result {
+            assert!(
+                matches!(error, ClaudeError::Schema(_)),
+                "{count}: {error:?}"
+            );
+        }
+    }
+    // The list keeps Claude's order, each entry with file, line and what it showed.
+    let mut out = output();
+    out["findings"][0]["evidence"] = json!(places(4));
+    let analysis = check(&out, &HashSet::new()).unwrap();
+    let kept: Vec<_> = analysis.findings[1]
+        .evidence
+        .iter()
+        .map(|e| (e.file.as_str(), e.line, e.note.as_str()))
+        .collect();
+    assert_eq!(
+        kept,
+        [
+            ("src/Core/IClient.cs", 1, "place 1"),
+            ("src/Core/IClient.cs", 2, "place 2"),
+            ("src/Core/IClient.cs", 3, "place 3"),
+            ("src/Core/IClient.cs", 4, "place 4"),
+        ]
+    );
+    // A line 0 is not a place in a file.
+    let mut out = output();
+    out["findings"][0]["evidence"][1]["line"] = json!(0);
+    assert!(matches!(
+        check(&out, &HashSet::new()),
+        Err(ClaudeError::Schema(_))
+    ));
+}
+
+#[test]
+fn f09_1_the_note_keeps_its_severity_file_side_and_line() {
+    for (word, expected) in [
+        ("fix", Severity::Fix),
+        ("q", Severity::Q),
+        ("nit", Severity::Nit),
+    ] {
+        let mut out = output();
+        out["findings"][1]["severity"] = json!(word);
+        let analysis = check(&out, &HashSet::new()).unwrap();
+        assert_eq!(analysis.findings[0].severity, expected, "{word}");
+    }
+    // A note on a removed line is numbered on the old side and keeps that side.
+    let mut out = output();
+    out["findings"][1] = finding(UPLOADER, "old", 11);
+    let analysis = check(&out, &HashSet::new()).unwrap();
+    let old = &analysis.findings[0];
+    assert_eq!(
+        (old.file.as_str(), old.side, old.line),
+        (UPLOADER, Side::Old, 11)
+    );
+    // The other note stays on the new side of its own file.
+    assert_eq!(analysis.findings[1].side, Side::New);
+    assert_eq!(analysis.findings[1].file, VM);
+}
+
+#[test]
+fn f09_1_the_notes_own_line_is_evidence_even_where_the_worktree_has_no_such_line() {
+    let files = files();
+    let ids: Vec<String> = files[..2].iter().map(|f| f.hunks[0].id.clone()).collect();
+    let scope = StepScope::new("s2", &files, &ids);
+    let root = root();
+    // The worktree holds the new version: it has no file at all for the checks below.
+    let nothing = |_: &str| None;
+    let mut out = output();
+    out["findings"] = json!([{
+        "severity": "fix", "kind": "removed-await", "title": "The old call was awaited",
+        "body": "The removed line awaited the call.", "file": UPLOADER, "side": "old", "line": 11,
+        "evidence": [{ "file": UPLOADER, "line": 11, "note": "the removed call" }],
+        "suggested_comment": "Why is the await gone?"
+    }]);
+    let ok = validate(
+        Some(&out),
+        &scope,
+        &HashSet::new(),
+        |p| relative(&root, p),
+        nothing,
+    )
+    .unwrap();
+    assert_eq!(ok.findings[0].evidence[0].file, UPLOADER);
+    assert_eq!(ok.findings[0].evidence[0].line, 11);
+    // Another line of that file is only evidence where the worktree has it.
+    out["findings"][0]["evidence"][0]["line"] = json!(40);
+    let missing = validate(
+        Some(&out),
+        &scope,
+        &HashSet::new(),
+        |p| relative(&root, p),
+        nothing,
+    );
+    assert!(matches!(missing, Err(ClaudeError::Schema(_))));
+}

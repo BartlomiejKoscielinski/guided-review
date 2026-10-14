@@ -1,5 +1,5 @@
 use super::*;
-use crate::review::finding_model::{Severity, Side};
+use crate::review::finding_model::{Evidence, Severity, Side};
 use crate::store::Store;
 
 const SUBJECT: &str = "mr:482";
@@ -215,4 +215,57 @@ fn f04_3_dismissed_notes_of_a_step_are_kept_for_the_session() {
         assert!(dismissed_notes(c, "r1", "s1")?.is_empty());
         Ok(())
     });
+}
+
+#[test]
+fn f09_1_a_stored_note_keeps_every_field_through_a_decision() {
+    // Every field set, including the old side and the evidence list the other fixtures leave empty.
+    let full = Finding {
+        severity: Severity::Fix,
+        side: Side::Old,
+        line: 7,
+        evidence: vec![
+            Evidence {
+                file: "src/Core/IClient.cs".into(),
+                line: 12,
+                note: "the overload".into(),
+            },
+            Evidence {
+                file: VM.into(),
+                line: 7,
+                note: "the removed call".into(),
+            },
+        ],
+        ..finding("f9", "9999")
+    };
+    let store = Store::open_in_memory().unwrap();
+    store
+        .with_conn(|c| {
+            record(c, "r1", &analysis(vec![full.clone()])).unwrap();
+            let out = decide(c, "f9", &FindingDecision::Dismiss, SUBJECT).unwrap();
+            assert_eq!(
+                out.finding,
+                Finding {
+                    decision: Decision::Dismissed,
+                    ..full.clone()
+                }
+            );
+            let kept = dismissed_notes(c, "r1", "s1").unwrap();
+            assert_eq!(kept.len(), 1);
+            assert_eq!(kept[0].evidence, full.evidence);
+            assert_eq!(kept[0].suggested_comment, full.suggested_comment);
+            // Add to drafts on the old side keeps the side and the line in the draft's position.
+            decide(c, "f9", &FindingDecision::Undo, SUBJECT).unwrap();
+            let added = decide(c, "f9", &FindingDecision::AddToDrafts, SUBJECT).unwrap();
+            assert_eq!(
+                added.draft.unwrap().position,
+                Some(DiffPosition {
+                    file: VM.into(),
+                    side: Side::Old,
+                    line: 7
+                })
+            );
+            Ok(())
+        })
+        .unwrap();
 }

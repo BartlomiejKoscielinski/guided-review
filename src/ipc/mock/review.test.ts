@@ -33,6 +33,45 @@ describe('mock review backend', () => {
     expect((await mock.reviewFindings(SESSION, 's1', () => undefined)).findings).toEqual([]);
   });
 
+  it('F-09.1 each mock note has severity, title, body, line (file, side, line), evidence and a suggested comment, as in Main.dc.html', async () => {
+    const mock = client();
+    const { findings } = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    const vm = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
+    // Main.dc.html's F[]: severity, line, title and the "Checked in" chip of each note.
+    expect(
+      findings.map((f) => [f.severity, f.file, f.side, f.line, f.title, f.evidence.length]),
+    ).toEqual([
+      ['q', vm, 'new', 46, 'The whole photo goes into SQLite as byte[]', 1],
+      ['fix', vm, 'new', 49, 'PendingCount won’t refresh after upload', 1],
+      ['nit', vm, 'new', 51, 'Status texts are hardcoded', 1],
+      ['fix', vm, 'new', 54, 'catch (Exception) also catches camera cancellation', 1],
+    ]);
+    // The mock's chips abbreviate the folders; the file name and the line are what it shows.
+    const chips = findings.map((f) => {
+      const [first] = f.evidence;
+      return `${(first?.file ?? '').split('/').pop() ?? ''}:${String(first?.line)}`;
+    });
+    expect(chips[0]).toBe('PendingUpload.cs:5');
+    expect(chips[1]).toBe('UploadWorker.cs:58');
+    expect(chips[2]).toMatch(/\.resx:\d+$/);
+    expect(chips[3]).toBe('CameraService.cs:31');
+    for (const f of findings) {
+      expect(f.body.length).toBeGreaterThan(40);
+      expect(f.suggestedComment.length).toBeGreaterThan(20);
+      for (const e of f.evidence) {
+        expect(e.file).not.toMatch(/\\|^\//);
+        expect(e.line).toBeGreaterThanOrEqual(1);
+        expect(e.note.length).toBeGreaterThan(0);
+      }
+    }
+    expect(findings[1]?.body).toBe(
+      'The counter is only computed when adding. UploadWorker from step 3 removes items from the queue but never notifies the ViewModel, so the offline banner will show a stale number.',
+    );
+    expect(findings[1]?.suggestedComment).toBe(
+      'Could IUploadQueue publish changes (an event or WeakReferenceMessenger) so the ViewModel refreshes PendingCount after each upload?',
+    );
+  });
+
   it('F-09.6 a failing step task sends failed and rejects with CLAUDE_FAILED', async () => {
     const mock = client({ stepFails: true });
     const run = recorder();
