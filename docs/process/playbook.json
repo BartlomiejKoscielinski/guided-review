@@ -1,5 +1,5 @@
 {
-  "items": 7,
+  "items": 8,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -225,7 +225,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -240,7 +240,7 @@
         "src/screens/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, write the reading you chose as a tests-stage decision and make it the red test, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and the item then passed gate 1 without a fix round.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.675Z",
@@ -322,6 +322,51 @@
       "created": "2026-10-14T15:34:55.903Z",
       "lastUsedItem": 6,
       "source": "F-06.9"
+    },
+    {
+      "id": "P-022",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T16:11:26.716Z",
+      "lastUsedItem": 7,
+      "source": "F-07.1"
+    },
+    {
+      "id": "P-023",
+      "tags": [
+        "ui",
+        "implement",
+        "tests/e2e/**"
+      ],
+      "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T16:11:26.778Z",
+      "lastUsedItem": 7,
+      "source": "F-07.1"
+    },
+    {
+      "id": "P-024",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Enumerate the combinations a status colour or check can take (reviewed and current, skipped before current) during the tests stage and record each chosen reading as a decision with a red assertion, since F-07.1 found two undefined ones and both passed the gate with no fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T16:11:26.843Z",
+      "lastUsedItem": 7,
+      "source": "F-07.1"
     }
   ]
 }

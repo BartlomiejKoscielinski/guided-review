@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T15:34:56.245Z",
+  "updated": "2026-10-14T16:11:27.399Z",
   "items": [
     {
       "id": "F-02.5",
@@ -123,9 +123,14 @@
       "title": "Three layouts switchable in the title bar and with Ctrl+1/2/3, sharing all state: A Sidebar (steps list…",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "layout A on the mock (f604e59, d88eac2); B, C, title-bar switch + Ctrl+1/2/3 sharing step, note and scroll (3976bc2, 48cdbf3); `review_mark_step` core + mock, `PlanView.reviewed` (ecc02ae); open: done checks and segments in the UI, live check in `tauri dev`"
+      "status": "done",
+      "attempts": 1,
+      "note": "live check in tauri dev (Ctrl+1/2/3 in WebView2, checks, segments) not tried",
+      "lockSha": "19fdc34",
+      "tests": [
+        "src/screens/step/StepProgress.test.tsx",
+        "tests/e2e/step.spec.ts"
+      ]
     },
     {
       "id": "F-07.2",
