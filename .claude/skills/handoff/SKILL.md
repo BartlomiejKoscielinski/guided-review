@@ -15,12 +15,12 @@ Next session focus (optional): $ARGUMENTS
    - run `node tools/audit.mjs --milestone <Mx>` and fix any SHA gap you introduced.
 3. Process metrics (one call): `node tools/metrics/report.mjs && node tools/metrics/report.mjs --retro-due`. Keep its numbers for the final message (turns, max context, cache read, top tax). If a retro is due, make `/retro` the first task of the next prompt (or run it now if the user agrees).
 4. Commit: `<Mx>: PROGRESS session log <session>` with `.metrics/sessions.jsonl` (no Co-Authored-By trailer).
-5. Write the next-session prompt in a fenced block, in the user's language, at most ~25 lines:
+5. Write the next-session prompt in a fenced block, in the user's language and in plain words: full sentences, no shorthand, every internal name (an ID, a script, a role) with a few words of what it is. The owner reads it and must understand it. At most ~35 lines:
    - first line: branch, clean tree, last commit SHA;
-   - budget: the prompt plus everything it tells the session to read must fit in ~100k tokens of context (base is ~43k, so ~55k of reading and work; the context guard warns at 200k), and has at most 3 numbered tasks; if more is left, split and give only the first part;
-   - the one goal of the next session (one phase: plan, one core feature, one screen with its design-check, or wrap-up). If the remaining work is larger, split it and give only the first part;
+   - then the main goal, first and in one or two sentences: what the session achieves and why it matters (one phase: plan, one core feature, one screen with its design-check, or wrap-up). If the remaining work is larger, split it and give only the first part;
+   - budget: the prompt plus everything it tells the session to read must fit in ~100k tokens of context (base is ~43k, so ~55k of reading and work; the context guard warns at 200k), and has at most 3 numbered tasks;
    - what is already done that it must not redo, and what not to read;
    - exactly which files and sections to read (paths, `S-xx`/`F-xx` IDs, grep patterns), nothing more;
-   - numbered tasks (max 3) with the done-condition for each (tests, `/verify`, `/design-check S-xx`);
+   - numbered tasks (max 3), each with three parts: what to do, why (what it serves), and when it is done (tests, `/verify`, `/design-check S-xx`);
    - the last step: `/handoff`.
-6. Tell the user the session's numbers in one line and to start a new session and paste the prompt. Do not continue working in this session.
+6. Tell the user in plain language and full sentences, main point first: what works now, what is missing and what comes next. Then the session's numbers in one line, and that they should start a new session and paste the prompt. Do not continue working in this session.
