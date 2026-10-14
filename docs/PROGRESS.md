@@ -69,7 +69,7 @@ Rules for Claude Code:
 - [x] F-02.5 If a plan for an MR is already cached for its current head, the row says "plan is ready". (b0092de, 5cfcb59, e207a9b, cd12450, 1c706e3)
 - [x] F-04.1 "Pick up where you left off" lists unfinished sessions with progress ("5 of 9 steps · 3 drafts"… (a9ff402, 97a6400, 6cbb9ec, d53eb9a, 27e4848)
 - [x] F-04.3 Session state (reviewed steps, note decisions, drafts, layout, scroll position per step, "For you to… (4a20f66, 99de98a, f53e296, 0007519, 4c52a2d, 01ba969, e0a3616)
-- [ ] F-05.5 Mechanical hunks are detected without AI where possible (whitespace-only, .csproj package bumps, .resx key… — partial: `review/mechanical.rs` → `Hunk.mechanical` (bd8d436); plan input `mechanical_file` (355331f); Skim row UI (3d); fold rows inside a step (2575c46)
+- [x] F-05.5 Mechanical hunks are detected without AI where possible (whitespace-only, .csproj package bumps, .resx key… (bd8d436, 355331f, 2575c46, 451a89a)
 - [x] F-06.1 Header: MR title as the page heading, author · age, branch block (source → target), N files +add −del · N… (95ba9b0)
 - [x] F-06.2 "What this change does": 2–4 sentences from Claude (purple square marks Claude content). (355331f, 7da45d0, 79e1527, e0e5604, 95ba9b0, 5b58621)
 - [x] F-06.3 Plan · N steps: each row has a drag handle, number, title, layer tag, one-line reason ("Everything else… (df6afea, 355331f, 597f166, e0e5604, 95ba9b0)
