@@ -44,7 +44,7 @@ async function startMock(page: Page) {
   await page.getByLabel(/Paste a merge request link/).blur();
 }
 
-/** Opens !482 from S-01 (the mock keeps MR sessions in memory, so S-02 can't be restored). */
+/** Opens !482 from S-01 (each shot starts with an empty mock, so there is no session to restore). */
 async function openMr482(page: Page) {
   const input = page.getByLabel(/Paste a merge request link/);
   await input.fill('https://gitlab.local/mobile/mobile-app/-/merge_requests/482');
@@ -52,7 +52,7 @@ async function openMr482(page: Page) {
   await input.press('Enter');
 }
 
-/** Review.dc.html's step 4 of !482 in the given layout (the mock keeps MR sessions in memory). */
+/** Review.dc.html's step 4 of !482 in the given layout (opened from S-01, like `openMr482`). */
 async function step4(page: Page, layout: 'A' | 'B' | 'C') {
   await openMr482(page);
   await page.getByRole('button', { name: /Start step 1/ }).click();
