@@ -78,7 +78,7 @@ Rules for Claude Code:
 - [x] F-06.6 Skim row: "Skim: N mechanical files" with a short reason and Show. (597f166, bb292cd, 95ba9b0, 5db5191, 020312b, b96e261)
 - [x] F-06.7 Aside Risks to check: each risk with severity square and step references. (95ba9b0)
 - [x] F-06.8 Aside MR description vs code: each claim from the description with ✓ found in step N, or !… (7da45d0, 95ba9b0)
-- [ ] F-06.9 Aside Already discussed: existing threads summary; Claude does not repeat them and shows them in their… — partial: threads + "N open threads." (10aa2f0), plan input (355331f); aside UI (95ba9b0); step threads (9748265, 530d516); "N open threads." in the core fallback (81423f9); read-only thread cards in S-03 (47742bc, f604e59); open: live check on an MR with threads
+- [x] F-06.9 Aside Already discussed: existing threads summary; Claude does not repeat them and shows them in their… (10aa2f0, 355331f, 95ba9b0, 9748265, 530d516, 81423f9, 47742bc, f604e59, d6383ce)
 - [x] F-06.10 Aside Coverage: N/N files · N/N hunks with a bar. If Claude's plan misses hunks, the app adds them to an… (bc15516, df6afea, 95ba9b0)
 - [x] F-06.11 Actions: Browse files instead (S-06-like browse of the MR), Start step 1 (Enter). (95ba9b0, 7367e08)
 - [x] F-06.12 While steps are being analyzed, the title bar shows status ("Plan ready · Claude is analyzing step 1").… (7da45d0, 79e1527, 95ba9b0)
