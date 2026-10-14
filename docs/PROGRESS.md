@@ -83,7 +83,7 @@ Rules for Claude Code:
 - [x] F-06.11 Actions: Browse files instead (S-06-like browse of the MR), Start step 1 (Enter). (95ba9b0, 7367e08)
 - [x] F-06.12 While steps are being analyzed, the title bar shows status ("Plan ready · Claude is analyzing step 1").… (7da45d0, 79e1527, 95ba9b0)
 - [x] F-06.13 If the change touches review or Claude configuration (CLAUDE.md, AGENTS.md, .claude/, .mcp.json… (d951f6f, 355331f, 95ba9b0, 81423f9)
-- [ ] F-07.1 Three layouts switchable in the title bar and with Ctrl+1/2/3, sharing all state: A Sidebar (steps list… — partial: layout A on the mock (f604e59, d88eac2); B, C, title-bar switch + Ctrl+1/2/3 sharing step, note and scroll (3976bc2, 48cdbf3); `review_mark_step` core + mock, `PlanView.reviewed` (ecc02ae); open: done checks and segments in the UI, live check in `tauri dev`
+- [x] F-07.1 Three layouts switchable in the title bar and with Ctrl+1/2/3, sharing all state: A Sidebar (steps list… (f604e59, d88eac2, 3976bc2, 48cdbf3, ecc02ae, 19fdc34, b68e9e3, 4fd5c0d)
 - [ ] F-07.2 Step header: "STEP 4 OF 8", title, a one- or two-sentence description; Mark reviewed (Space) and next. — partial: review_step data core + mock (9748265, 530d516); header UI and next (f604e59); `review_mark_step` core, command, client, mock (ecc02ae); open: Mark reviewed (Space) wired in A/B/C
 - [ ] F-07.3 File header: path, +add −del, number of notes in this file ("3 notes"). — partial: step files with +add −del (9748265, 530d516); file header UI and notes count (f604e59); open: live check in `tauri dev`
 - [ ] F-07.4 Split diff with old/new line numbers, intraline emphasis and syntax highlighting. Mechanical regions… — partial: fold rows + Show (2575c46, f604e59), S-03 gutters (d88eac2); open: live check in `tauri dev`
