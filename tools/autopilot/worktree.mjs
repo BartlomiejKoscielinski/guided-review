@@ -7,10 +7,10 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
+import { AUTOPILOT_PORT, itemSlug, worktreePath } from './worktree-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const path = resolve(root, '..', 'gr-ap');
+const path = worktreePath(root);
 const [cmd, item] = process.argv.slice(2);
 const argv = process.argv.slice(2);
 const base = argv.includes('--base') ? argv[argv.indexOf('--base') + 1] : null;
