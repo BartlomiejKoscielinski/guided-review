@@ -61,7 +61,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 ### 3.2 Decision policy (replaces "stop and ask" for the autopilot)
 
-- **Spec unclear or contradicting a mock, reversible**: pick the recommended option, add a row to `DECISIONS-PENDING.md`, continue. While more than 5 rows are unreviewed the loop starts no new item (`backlog.mjs next` returns none).
+- **Spec unclear or contradicting a mock, reversible**: pick the recommended option, record it, continue. Only questions that neither the spec nor the mock answers and that change what the user sees or how the app behaves; implementation choices go to the role's notes. The conductor collects the decisions of all roles of one item and files them once: one row per item in `DECISIONS-PENDING.md`, the questions as points (1), (2), …; a later round of the same item appends to its provisional row (owner decision, 2026-10-14). While more than 5 items have a provisional row the loop starts no new item (`backlog.mjs next` returns none).
 - **Needs-owner** (item skipped, push notification): anything touching the non-negotiables of `CLAUDE.md` (Claude flags, security, secrets, company data, GitLab write actions without a click), real company data or a field visit (ADR-019), changing an ADR, new dependencies, deleting tests.
 - **Veto** by the owner (status `vetoed` in the file): the next sync adds a rework item.
 

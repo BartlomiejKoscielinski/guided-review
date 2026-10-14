@@ -13,7 +13,7 @@ Arguments: $ARGUMENTS. The design and its rules: `docs/process/AUTOPILOT.md` (re
 
 ## start <Mx>
 1. Preconditions, else report and stop: the main checkout (`git rev-parse --git-dir` is `.git`, not a worktree), branch `m<N>-…`, `git status --porcelain --untracked-files=no` empty.
-2. `node tools/autopilot/backlog.mjs sync --milestone <Mx>`. No `docs/plans/<Mx>.md` → planner role (`plan.md`, model opus) first, then sync again. Commit `docs/process/backlog.json` if it changed (`<Mx>: autopilot backlog sync`).
+2. `node tools/autopilot/backlog.mjs sync --milestone <Mx>`. No `docs/plans/<Mx>.md` → planner role (`plan.md`, model opus) first, its decisions in one `backlog.mjs decision` call with item `<Mx> plan`, then sync again. Commit `docs/process/backlog.json` if it changed (`<Mx>: autopilot backlog sync`).
 3. `node tools/autopilot/run.mjs start --milestone <Mx> [--cap N] [--budget B]` → prints the marker `AUTOPILOT <runId>`. Note `<runId>` and `<base>` (the branch).
 4. Keep the PC awake if the tool exists (`mcp__ccd_host__request_keep_awake`); load `PushNotification` with ToolSearch for the notifications below.
 5. Do one "Loop body", then end the turn with the line `AUTOPILOT <runId> next`. The Stop hook continues you with the next item; never ask the user anything.
@@ -29,11 +29,11 @@ d. **Roles** (Agent tool, `subagent_type` general-purpose, foreground, `descript
    2. `implement.md` (model opus for core/mixed, sonnet for ui). `backlog.mjs set <id> review`.
    3. `review.md` (model opus). Findings severe or normal, or an accepted test dispute → `fix.md` round 1 with those findings (same model as the implementer).
    Any role answering `needsOwner` → `backlog.mjs set <id> needs-owner --note "<why>"`, push notification "Autopilot: <id> needs you: <why>", go to g.
-   Every `decisions` entry → `node tools/autopilot/backlog.mjs decision '<json with item>'`.
+   Collect the `decisions` of every role answer of the item (tests, implement, fix rounds) in one list; step h files them once.
 e. **Gate**: `node tools/autopilot/gate.mjs <id> --base <base> --branch <branch> [--lock <lockSha> --tests <…>] [--e2e <specs> --port <port>] [--complete when impl/fix said complete] --out <dir>/gate-1.json`. An accepted test dispute: the fix round commits the disputed test change alone; add `--dispute <file>@<that sha>`. Failed → `fix.md` round 2 with the failed checks → gate again as `gate-2.json`. Failed again, or a third round needed → `backlog.mjs set <id> blocked --note "<failed checks>"`.
 f. Passed → `backlog.mjs set <id> done` (or `partial --note "<partialReason>"` when not complete) and `node tools/autopilot/worktree.mjs done <id>`.
 g. **Reflect**: `reflect.md` (model haiku) with `{{verdictsDir}}` = `<dir>`, `{{offered}}` = the playbook ids of the pack, `{{result}}`. For each lesson `node tools/autopilot/playbook.mjs add '<json + "source": "<id>">'`; `playbook.mjs rate <id> helpful|harmful` for its ratings; `playbook.mjs tick`.
-h. `node tools/autopilot/record.mjs <id> --run <runId> --result <done|partial|blocked|needs-owner> --started <start>`; `backlog.mjs sync` (keeps statuses, picks up PROGRESS ticks and vetoes). Commit `docs/process/backlog.json docs/process/playbook.json docs/process/DECISIONS-PENDING.md .metrics/items.jsonl` as `<Mx>: autopilot <id> <result>`.
+h. Decisions collected in d, if any, in one call: `node tools/autopilot/backlog.mjs decision '{"item":"<id>","decisions":[{question, chosen, alternatives, reversible}, …]}'` (one row per item, its questions as points (1), (2), …; a repeated question is skipped). Then `node tools/autopilot/record.mjs <id> --run <runId> --result <done|partial|blocked|needs-owner> --started <start>`; `backlog.mjs sync` (keeps statuses, picks up PROGRESS ticks and vetoes). Commit `docs/process/backlog.json docs/process/playbook.json docs/process/DECISIONS-PENDING.md .metrics/items.jsonl` as `<Mx>: autopilot <id> <result>`.
 i. Every 5 recorded items of the run: `curate.md` (model sonnet, in the main checkout). Every 10: the `retro` skill with the argument "autopilot: judge the open experiments with tools/autopilot/judge.mjs (metric and since = the experiment's date); revert a 'revert' verdict with git revert of its commit".
 j. End the turn with one short line of what happened and `AUTOPILOT <runId> next`.
 

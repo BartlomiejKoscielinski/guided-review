@@ -16,8 +16,8 @@ export const STATUSES = [
 ];
 /** Statuses the loop may (re)start: a run that stopped mid-item resumes it first. */
 const RESUMABLE = ['tests', 'impl', 'review'];
-/** More unreviewed provisional decisions than this stop the loop (§3.2). */
-export const MAX_PROVISIONAL = 5;
+/** More items than this with an unreviewed provisional decision row stop the loop (§3.2). */
+export const MAX_PENDING_ITEMS = 5;
 
 /** `| F-07.2 | build | test |` rows of a plan's AC table: id → { build, test }. */
 export function planRows(planMd) {
@@ -97,18 +97,20 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
     });
   }
   for (const d of parseDecisions(decisionsMd)) {
-    if (d.status !== 'vetoed') continue;
+    // `vetoed` or `vetoed (2)`: the whole row or only the points named.
+    if (!/^vetoed\b/.test(d.status ?? '')) continue;
     const old = known.get(d.id);
+    const title = `Rework after veto: ${d.question}`;
     items.push(
       old ?? {
         id: d.id,
         milestone,
-        title: `Rework after veto: ${d.question}`,
+        title: title.length > 120 ? `${title.slice(0, 119)}…` : title,
         kind: 'mixed',
         deps: [],
         status: 'todo',
         attempts: 0,
-        note: `vetoed: ${d.chosen}; item ${d.item}`,
+        note: `${d.status}: ${d.chosen}; item ${d.item}`,
       },
     );
   }
@@ -117,10 +119,10 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
 
 /** The next item to work on, or `{ none: reason }`. */
 export function next(backlog, decisions = []) {
-  const provisional = decisions.filter((d) => d.status === 'provisional').length;
-  if (provisional > MAX_PROVISIONAL) {
+  const pending = new Set(decisions.filter((d) => d.status === 'provisional').map((d) => d.item));
+  if (pending.size > MAX_PENDING_ITEMS) {
     return {
-      none: `${provisional} provisional decisions wait for the owner (max ${MAX_PROVISIONAL})`,
+      none: `${pending.size} items with provisional decisions wait for the owner (max ${MAX_PENDING_ITEMS})`,
     };
   }
   const items = backlog?.items ?? [];
@@ -154,14 +156,70 @@ export function setItem(backlog, id, { status, note, attempt, lockSha, tests, ki
   return item;
 }
 
-/** Appends a provisional decision row and returns its id (`D-01`, `D-02`, …). */
-export function addDecision(md, { date, item, question, chosen, alternatives, reversible }) {
-  const ids = parseDecisions(md).map((d) => Number(d.id.slice(2)));
-  const id = `D-${String((ids.length ? Math.max(...ids) : 0) + 1).padStart(2, '0')}`;
-  const cell = (s) =>
-    String(s ?? '')
-      .replace(/\|/g, '/')
-      .replace(/\r?\n/g, ' ');
-  const row = `| ${id} | ${date} | ${cell(item)} | ${cell(question)} | ${cell(chosen)} | ${cell(alternatives)} | ${reversible ? 'yes' : 'no'} | provisional |`;
-  return { id, md: `${md.replace(/\s*$/, '')}\n${row}\n` };
+const cell = (s) =>
+  String(s ?? '')
+    .replace(/\|/g, '/')
+    .replace(/<br\s*\/?>|\r?\n/gi, ' ')
+    .trim();
+
+/** The points of a cell, `(1) a<br>(2) b` → ['a', 'b']; an unnumbered cell is one point. */
+export function points(text) {
+  const t = String(text ?? '').trim();
+  return t ? t.split('<br>').map((p) => p.trim().replace(/^\(\d+\)\s*/, '')) : [];
+}
+
+const numbered = (list) => list.map((p, i) => `(${i + 1}) ${p || '-'}`).join('<br>');
+/** `yes` or `no` when all points agree, else one per point. */
+const reversibleCell = (list) => (new Set(list).size === 1 ? list[0] : numbered(list));
+
+/**
+ * Files the decisions of one item (§3.2): one row per item, each question a point (1), (2), … of
+ * its cells. An item with a provisional row gets the new points appended (questions it already has
+ * are skipped); else a new row `D-nn`. Returns { id, md, added, appended }.
+ */
+export function addDecisions(md, { date, item, decisions }) {
+  if (!item || !Array.isArray(decisions))
+    throw new Error('decision needs item and decisions: [{ question, chosen, … }]');
+  if (decisions.some((d) => !d.question || !d.chosen))
+    throw new Error('every decision needs question and chosen');
+  const rows = parseDecisions(md);
+  const open = rows.find((d) => d.item === item && d.status === 'provisional');
+  const list = [];
+  if (open) {
+    const [q, c, a, r] = [open.question, open.chosen, open.alternatives, open.reversible].map(
+      points,
+    );
+    q.forEach((question, i) =>
+      list.push({
+        question,
+        chosen: c[i] ?? '',
+        alternatives: a[i] ?? '',
+        reversible: r[i] ?? r[0],
+      }),
+    );
+  }
+  const seen = new Set(list.map((p) => p.question.toLowerCase()));
+  let added = 0;
+  for (const d of decisions) {
+    const question = cell(d.question);
+    if (seen.has(question.toLowerCase())) continue;
+    seen.add(question.toLowerCase());
+    list.push({
+      question,
+      chosen: cell(d.chosen),
+      alternatives: cell(d.alternatives),
+      reversible: d.reversible === false ? 'no' : 'yes',
+    });
+    added += 1;
+  }
+  if (!added) return { id: open?.id ?? null, md, added, appended: false };
+  const ids = rows.map((d) => Number(d.id.slice(2)));
+  const id = open?.id ?? `D-${String((ids.length ? Math.max(...ids) : 0) + 1).padStart(2, '0')}`;
+  const col = (key) => numbered(list.map((p) => p[key]));
+  const row = `| ${id} | ${open?.date ?? date} | ${cell(item)} | ${col('question')} | ${col('chosen')} | ${col('alternatives')} | ${reversibleCell(list.map((p) => p.reversible))} | provisional |`;
+  if (!open) return { id, md: `${md.replace(/\s*$/, '')}\n${row}\n`, added, appended: false };
+  const lines = md.split(/\r?\n/);
+  const at = lines.findIndex((l) => l.split('|')[1]?.trim() === id);
+  lines[at] = row;
+  return { id, md: lines.join('\n'), added, appended: true };
 }

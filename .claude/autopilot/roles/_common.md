@@ -11,7 +11,7 @@ You are a subagent of the autopilot conductor. Nobody answers questions and nobo
 - Never write docs/PROGRESS.md, docs/process/backlog.json, docs/process/playbook.json, .metrics/, CLAUDE.md, .claude/settings.json or docs/08-decisions.md.
 - Fake tokens in tests: never "glpat-" (or any "gl…-") followed by 20+ [0-9A-Za-z_-]; build such strings at runtime. Deleting in Node: fs.promises.rm or unlinkSync, never fs.rmSync.
 - No /app, no npm run tauri dev, no real `claude` runs, no network beyond what the tests already do.
-- Spec unclear or contradicting a mock, and the choice is reversible: take the option that best matches the spec and mocks, record it under "decisions" and continue.
+- Spec unclear or contradicting a mock, and the choice is reversible: take the option that best matches the spec and mocks, record it under "decisions" and continue. "decisions" is only for questions that neither the spec nor the mock answers and that change what the user sees or how the app behaves (the owner reviews each one); implementation choices (names, where code lives, how it is split or tested) go under "notes".
 - Needs the owner (stop, change nothing more, explain under "needsOwner"): touching a CLAUDE.md non-negotiable (claude flags, secrets, company data, GitLab write actions), a new dependency, changing an ADR, deleting or skipping tests, anything that needs real company data or the field laptop.
 - An action the permission mode blocks: report it under "notes"; do not work around it.
 

@@ -5,11 +5,12 @@
 //   node tools/autopilot/backlog.mjs next                      → JSON item or {"none": reason}
 //   node tools/autopilot/backlog.mjs set F-07.2 impl [--note t] [--attempt] [--lock sha --tests a,b] [--kind ui]
 //   node tools/autopilot/backlog.mjs list
-//   node tools/autopilot/backlog.mjs decision '<json: item, question, chosen, alternatives, reversible>'
+//   node tools/autopilot/backlog.mjs decision '<json: item, decisions: [{question, chosen, alternatives, reversible}]>'
+//     (all decisions of one item at once: one row per item, appended to its provisional row)
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { addDecision, next, parseDecisions, setItem, sync } from './backlog-lib.mjs';
+import { addDecisions, next, parseDecisions, setItem, sync } from './backlog-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BACKLOG = join(root, 'docs', 'process', 'backlog.json');
@@ -82,13 +83,15 @@ try {
     }
   } else if (cmd === 'decision') {
     const d = JSON.parse(positional[0] ?? '{}');
-    if (!d.item || !d.question || !d.chosen)
-      throw new Error('decision needs item, question, chosen');
     const base = read(DECISIONS);
     if (!base) throw new Error('no docs/process/DECISIONS-PENDING.md');
-    const out = addDecision(base, { ...d, date: now().slice(0, 10) });
-    writeFileSync(DECISIONS, out.md);
-    console.log(out.id);
+    const out = addDecisions(base, { ...d, date: now().slice(0, 10) });
+    if (out.added) writeFileSync(DECISIONS, out.md);
+    console.log(
+      out.added
+        ? `${out.id} ${out.appended ? 'appended' : 'new'}: ${out.added} point(s)`
+        : 'no new decisions',
+    );
   } else {
     console.error('usage: backlog.mjs sync|next|set|list|decision (see the header)');
     process.exit(2);
