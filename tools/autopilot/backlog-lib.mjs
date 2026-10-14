@@ -2,6 +2,7 @@
 // as machine-readable items, synced from docs/PROGRESS.md and the plan's AC table, plus the
 // provisional decisions of docs/process/DECISIONS-PENDING.md. Pure functions; I/O in backlog.mjs.
 import { parseProgress } from '../audit-lib.mjs';
+import { isTest } from './gate-lib.mjs';
 
 export const STATUSES = [
   'todo',
@@ -132,10 +133,13 @@ export function next(backlog, decisions = []) {
   return { none: `no ready item in ${backlog?.milestone ?? 'the backlog'}` };
 }
 
-/** Changes one item; unknown ids or statuses throw. */
+/** Changes one item; unknown ids or statuses, and locked "tests" that are not test files, throw. */
 export function setItem(backlog, id, { status, note, attempt, lockSha, tests, kind }, now) {
   const item = backlog.items.find((i) => i.id === id);
   if (!item) throw new Error(`no item ${id}`);
+  // Production files a test author touched (module wiring) stay unlocked: the implementer changes them.
+  const notTests = (tests ?? []).filter((t) => !isTest(t));
+  if (notTests.length) throw new Error(`not test files, lock only tests: ${notTests.join(', ')}`);
   if (status !== undefined) {
     if (!STATUSES.includes(status))
       throw new Error(`status ${status}: one of ${STATUSES.join(', ')}`);

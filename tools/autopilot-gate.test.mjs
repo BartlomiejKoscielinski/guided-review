@@ -7,6 +7,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   addedLines,
+  isTest,
+  lockProblems,
+  parseDisputes,
   protectedChanges,
   ruleViolations,
   tickProgress,
@@ -133,6 +136,78 @@ test('autopilot gate: changed locked tests, protected files and rule hits refuse
     assert.deepEqual(failed, ['protected', 'locked-tests', 'rules']);
     assert.equal(verdict.merged, null);
     assert.equal(r.git(['log', '--oneline']).split('\n').length, 1);
+  } finally {
+    await rm(r.dir, { recursive: true, force: true });
+  }
+});
+
+test('autopilot gate: test paths and accepted disputes of locked tests', () => {
+  assert.deepEqual(
+    [
+      'src-tauri/src/store/sessions_progress_tests.rs',
+      'src/screens/start/ResumeCards.test.tsx',
+      'tests/e2e/start.spec.ts',
+      'src-tauri/tests/plan_runs.rs',
+      'src-tauri\\tests\\sources.rs',
+      'src-tauri/src/store/sessions.rs',
+      'src/screens/start/ResumeCards.tsx',
+    ].map(isTest),
+    [true, true, true, true, true, false, false],
+  );
+  const disputes = parseDisputes('tests/e2e/start.spec.ts@27e4848');
+  assert.equal(disputes.get('tests/e2e/start.spec.ts'), '27e4848');
+  assert.throws(() => parseDisputes('tests/e2e/start.spec.ts'), /file@sha/);
+  const history = { 'tests/e2e/start.spec.ts': ['27e4848'], 'src/a.test.ts': ['1111111'] };
+  const filesOf = { '27e4848': ['tests/e2e/start.spec.ts'] };
+  const problems = (changed, d = disputes, h = history, f = filesOf) =>
+    lockProblems(
+      changed,
+      d,
+      (x) => h[x] ?? [],
+      (x) => f[x] ?? [],
+    );
+  assert.deepEqual(problems(['tests/e2e/start.spec.ts']), []);
+  assert.match(problems(['src/a.test.ts'])[0], /changed after the lock/);
+  assert.match(
+    problems(['tests/e2e/start.spec.ts'], disputes, {
+      'tests/e2e/start.spec.ts': ['27e4848', '2222222'],
+    })[0],
+    /the dispute allows only 27e4848/,
+  );
+  assert.match(
+    problems(['tests/e2e/start.spec.ts'], disputes, history, {
+      '27e4848': ['tests/e2e/start.spec.ts', 'src/a.ts'],
+    })[0],
+    /also changes src\/a\.ts/,
+  );
+});
+
+test('autopilot gate: a locked test changes only in its accepted dispute commit', async () => {
+  const r = repo();
+  try {
+    const lock = r.commit(
+      { 'src/a.test.ts': 'test("F-01.1 a");\n', 'src/b.test.ts': 'test("F-01.1 b");\n' },
+      'tests',
+    );
+    r.commit({ 'src/a.ts': 'export const a = 2;\n' }, 'impl');
+    const fix = r.commit({ 'src/a.test.ts': 'test("F-01.1 a, reading order");\n' }, 'dispute');
+    const tests = ['--lock', lock, '--tests', 'src/a.test.ts,src/b.test.ts', '--no-merge'];
+    const lockedCheck = (v) => v.checks.find((c) => c.name === 'locked-tests');
+    const refused = r.gate(...tests);
+    assert.equal(refused.code, 1);
+    assert.match(lockedCheck(refused.verdict).detail, /changed after the lock/);
+    const ok = r.gate(...tests, '--dispute', `src/a.test.ts@${fix}`);
+    assert.equal(lockedCheck(ok.verdict).ok, true, JSON.stringify(ok.verdict.checks));
+    assert.equal(lockedCheck(ok.verdict).detail, `disputed: src/a.test.ts@${fix}`);
+    const mixed = r.commit(
+      { 'src/b.test.ts': 'test("F-01.1 b, wider");\n', 'src/a.ts': 'export const a = 3;\n' },
+      'dispute and code',
+    );
+    const both = r.gate(...tests, '--dispute', `src/a.test.ts@${fix},src/b.test.ts@${mixed}`);
+    assert.match(
+      lockedCheck(both.verdict).detail,
+      /src\/b\.test\.ts: dispute commit \w+ also changes src\/a\.ts/,
+    );
   } finally {
     await rm(r.dir, { recursive: true, force: true });
   }

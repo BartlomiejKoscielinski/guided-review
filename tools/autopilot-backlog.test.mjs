@@ -94,6 +94,22 @@ test('autopilot backlog: next resumes a started item, respects deps and the prov
   for (const i of backlog.items) i.status = 'blocked';
   assert.match(next(backlog).none, /no ready item/);
   assert.throws(() => setItem(backlog, 'F-07.1', { status: 'nope' }, 't'), /status nope/);
+  assert.throws(
+    () =>
+      setItem(
+        backlog,
+        'F-07.1',
+        {
+          tests: [
+            'src-tauri/src/store/sessions_progress_tests.rs',
+            'src-tauri/src/store/sessions.rs',
+          ],
+        },
+        't',
+      ),
+    /not test files, lock only tests: .*store.sessions.rs$/,
+  );
+  setItem(backlog, 'F-07.1', { lockSha: 'a9ff402', tests: ['tests/e2e/start.spec.ts'] }, 't');
 });
 
 test('autopilot backlog: decisions get the next id and escape pipes', () => {

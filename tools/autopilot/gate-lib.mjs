@@ -6,7 +6,48 @@ export const PROTECTED = ['CLAUDE.md', '.claude/settings.json', 'docs/08-decisio
 
 const notProse = (file) => !/\.md$/i.test(file) && !file.startsWith('tools/autopilot/');
 const appCode = (file) => file.startsWith('src-tauri/src/') || file.startsWith('src/');
-const isTest = (file) => /(_tests\.rs|\.test\.[cm]?[jt]sx?|\.spec\.[jt]s)$|\/tests?\//.test(file);
+/** A test file by path: `*_tests.rs`, `*.test.ts(x)`, `*.spec.ts`, or anything under a `tests/` folder. */
+export const isTest = (file) =>
+  /(_tests\.rs|\.test\.[cm]?[jt]sx?|\.spec\.[jt]s)$|(^|\/)tests?\//.test(file.replace(/\\/g, '/'));
+
+/** Parses `--dispute a@sha1,b@sha2`: accepted test disputes, file → commit. */
+export function parseDisputes(text) {
+  const out = new Map();
+  for (const part of (text ?? '').split(',').filter(Boolean)) {
+    const at = part.lastIndexOf('@');
+    if (at <= 0 || at === part.length - 1) throw new Error(`--dispute ${part}: file@sha`);
+    out.set(part.slice(0, at), part.slice(at + 1));
+  }
+  return out;
+}
+
+const sameSha = (a, b) => a.startsWith(b) || b.startsWith(a);
+
+/**
+ * Problems of the locked tests: a locked file changed after the lock is fine only through an
+ * accepted dispute `file@sha` where `sha` is the only commit after the lock touching the file and
+ * changes nothing else. `history(file)` = the commits after the lock touching it, `filesOf(sha)` =
+ * the files of a commit. Empty = ok.
+ */
+export function lockProblems(changed, disputes, history, filesOf) {
+  const problems = [];
+  for (const file of changed) {
+    const sha = disputes.get(file);
+    if (!sha) {
+      problems.push(`${file} changed after the lock`);
+      continue;
+    }
+    const commits = history(file);
+    if (commits.length !== 1 || !sameSha(commits[0], sha)) {
+      problems.push(`${file}: changed in ${commits.join(', ')}, the dispute allows only ${sha}`);
+      continue;
+    }
+    const others = filesOf(sha).filter((f) => f !== file);
+    if (others.length)
+      problems.push(`${file}: dispute commit ${sha} also changes ${others.join(', ')}`);
+  }
+  return problems;
+}
 
 /**
  * Grep rules on added lines: the CLAUDE.md non-negotiables a diff can show. `clippy` and the tests
