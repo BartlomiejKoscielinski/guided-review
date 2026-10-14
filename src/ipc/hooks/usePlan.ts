@@ -11,9 +11,10 @@ import type { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
 import type { PlanView } from '../types/PlanView';
 import type { StepOrder } from '../types/StepOrder';
+import type { StepView } from '../types/StepView';
 import type { Strategy } from '../types/Strategy';
 import { CLAUDE_STATUS_KEY } from './useClaude';
-import { stepsKey, type TaskPhase } from './useReview';
+import { stepKey, stepsKey, type TaskPhase } from './useReview';
 
 export const planKey = (sessionId: string) => ['review', 'plan', sessionId] as const;
 
@@ -89,6 +90,33 @@ export function useReorderSteps(
     },
     onSuccess: (order) => {
       setOrder(queryClient, sessionId, order);
+    },
+  });
+}
+
+export interface MarkStepVariables {
+  stepId: string;
+  reviewed: boolean;
+}
+
+/**
+ * Mark reviewed (Space) or its undo (F-07.2): the step's flag, the steps list's checks and the
+ * progress segments (F-07.1) follow the session's stored marks the core returns. No Claude.
+ */
+export function useMarkStep(
+  sessionId: string,
+): UseMutationResult<string[], IpcError, MarkStepVariables> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  return useMutation<string[], IpcError, MarkStepVariables>({
+    mutationFn: ({ stepId, reviewed }) => ipc.reviewMarkStep(sessionId, stepId, reviewed),
+    onSuccess: (marked, { stepId }) => {
+      queryClient.setQueryData<PlanView>(planKey(sessionId), (old) =>
+        old ? { ...old, reviewed: marked } : old,
+      );
+      queryClient.setQueryData<StepView>(stepKey(sessionId, stepId), (old) =>
+        old ? { ...old, reviewed: marked.includes(stepId) } : old,
+      );
     },
   });
 }

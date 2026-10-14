@@ -6,6 +6,8 @@ import styles from './Guide.module.css';
 export interface StepToolbarProps {
   view: StepView;
   onGo: (stepId: string) => void;
+  /** Mark reviewed or its undo (F-07.2). */
+  onToggleReviewed: () => void;
   onAsk: () => void;
 }
 
@@ -13,7 +15,7 @@ export interface StepToolbarProps {
  * Layout B's floating toolbar (F-07.8): previous, "Step 4 of 8", next, Mark reviewed and Ask
  * Claude, centered at the bottom.
  */
-export function StepToolbar({ view, onGo, onAsk }: StepToolbarProps) {
+export function StepToolbar({ view, onGo, onToggleReviewed, onAsk }: StepToolbarProps) {
   const { prev, next } = view;
   return (
     <div role="toolbar" aria-label="Step navigation" className={styles.toolbar}>
@@ -43,8 +45,13 @@ export function StepToolbar({ view, onGo, onAsk }: StepToolbarProps) {
         <ChevronRightIcon size={16} strokeWidth={2.2} />
       </button>
       <span className={styles.divider} aria-hidden="true" />
-      {/* Wired with `review_mark_step` (sidebar checks, Space). */}
-      <Button variant="primary" size={38} aria-pressed={view.reviewed} disabled>
+      <Button
+        variant="primary"
+        size={38}
+        className={styles.reviewed}
+        aria-pressed={view.reviewed}
+        onClick={onToggleReviewed}
+      >
         <CheckIcon size={14} strokeWidth={2.6} />
         {view.reviewed ? 'Reviewed' : 'Mark reviewed'}
       </Button>

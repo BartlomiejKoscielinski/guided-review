@@ -439,3 +439,10 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+
+/* Mark reviewed once the step is reviewed: green with ink, hovered too (Review.dc.html). */
+.reviewed[aria-pressed='true'],
+.reviewed[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--green);
+  color: var(--ink);
+}

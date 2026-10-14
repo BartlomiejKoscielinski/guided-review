@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 import { Button } from '../../components/Button';
+import { cx } from '../../components/cx';
 import { CheckIcon, ChevronRightIcon } from '../../components/icons';
 import type { Finding } from '../../ipc/types/Finding';
 import type { StepAnalysis } from '../../ipc/types/StepAnalysis';
@@ -22,6 +23,8 @@ export interface StepMainProps {
   onFocus: (findingId: string) => void;
   mainRef: RefObject<HTMLElement | null>;
   onGo: (stepId: string) => void;
+  /** Mark reviewed or its undo (F-07.2). */
+  onToggleReviewed: () => void;
   ask: AskState | null;
   onAsk: (finding: Finding) => void;
 }
@@ -41,6 +44,7 @@ export function StepMain({
   onFocus,
   mainRef,
   onGo,
+  onToggleReviewed,
   ask,
   onAsk,
 }: StepMainProps) {
@@ -71,12 +75,11 @@ export function StepMain({
           </div>
           {layout === 'A' && (
             <div className={styles.headActions}>
-              {/* Wired with `review_mark_step` (sidebar checks, Space). */}
               <Button
                 size={38}
-                className={styles.markReviewed}
+                className={cx(styles.markReviewed, styles.reviewed)}
                 aria-pressed={view.reviewed}
-                disabled
+                onClick={onToggleReviewed}
               >
                 <CheckIcon size={14} strokeWidth={2.6} />
                 {view.reviewed ? 'Reviewed' : 'Mark reviewed'}

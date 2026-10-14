@@ -242,3 +242,10 @@
   margin: 0 6px;
   background: var(--ring-2);
 }
+
+/* Mark reviewed once the step is reviewed: green with ink, hovered too (Review.dc.html). */
+.reviewed[aria-pressed='true'],
+.reviewed[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--green);
+  color: var(--ink);
+}

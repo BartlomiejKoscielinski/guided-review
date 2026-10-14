@@ -10,6 +10,7 @@ import { GuidePanel } from './GuidePanel';
 import { NotesRequest } from './notesRequest';
 import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
+import { useMarkReviewed } from './useMarkReviewed';
 import { useStepScroll } from './useStepScroll';
 import styles from './Step.module.css';
 
@@ -50,6 +51,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   useStepScroll(mainRef, step.data !== undefined && !notes.isFetching, kept, (top) => {
     writer.setScroll(stepId, top);
   });
+  const toggleReviewed = useMarkReviewed(sessionId, stepId, step.data?.reviewed);
   const [focus, setFocus] = useState<string | null>(null);
   const [ask, setAsk] = useState<AskState | null>(null);
   // Picked once per set of notes, so deciding the focused note doesn't move the focus away.
@@ -97,6 +99,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             onFocus={setFocus}
             mainRef={mainRef}
             onGo={onGo}
+            onToggleReviewed={toggleReviewed}
             ask={ask}
             onAsk={(finding) => {
               openAsk(selectionOf(finding));
@@ -113,6 +116,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
           focused={focused}
           onFocus={setFocus}
           ask={ask}
+          onToggleReviewed={toggleReviewed}
           onAskQuestion={(question) => {
             openAsk(null, question);
           }}
@@ -125,6 +129,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
         <StepToolbar
           view={view}
           onGo={onGo}
+          onToggleReviewed={toggleReviewed}
           onAsk={() => {
             openAsk(null);
           }}

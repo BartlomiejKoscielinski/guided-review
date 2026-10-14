@@ -20,6 +20,8 @@ export interface GuidePanelProps {
   analysis: StepAnalysis | undefined;
   focused: string | null;
   onFocus: (findingId: string) => void;
+  /** Mark reviewed or its undo (F-07.2). */
+  onToggleReviewed: () => void;
   ask: AskState | null;
   /** A question typed in the panel's input opens the answer card with it. */
   onAskQuestion: (question: string) => void;
@@ -47,6 +49,7 @@ export function GuidePanel({
   analysis,
   focused,
   onFocus,
+  onToggleReviewed,
   ask,
   onAskQuestion,
   onAsk,
@@ -126,13 +129,12 @@ export function GuidePanel({
       </div>
 
       <div className={styles.bottom}>
-        {/* Wired with `review_mark_step` (sidebar checks, Space). */}
         <Button
           variant="primary"
           size={46}
-          className={styles.markReviewed}
+          className={cx(styles.markReviewed, styles.reviewed)}
           aria-pressed={view.reviewed}
-          disabled
+          onClick={onToggleReviewed}
         >
           <CheckIcon size={15} strokeWidth={2.6} />
           {view.reviewed ? 'Reviewed' : 'Mark reviewed'}

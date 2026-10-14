@@ -91,6 +91,60 @@ describe('S-03 layout A', () => {
     expect(screen.getByRole('button', { name: 'Next step' })).toBeDisabled();
   });
 
+  it('F-07.2 Mark reviewed marks the step and the steps list counts it; a second click takes it back', async () => {
+    const markStep = vi.fn<IpcClient['reviewMarkStep']>((_session, step, reviewed) =>
+      Promise.resolve(reviewed ? [step] : []),
+    );
+    renderStep('s4', { reviewMarkStep: markStep });
+    const list = await screen.findByRole('navigation', { name: 'Steps' });
+    await userEvent.click(await screen.findByRole('button', { name: 'Mark reviewed' }));
+    expect(await screen.findByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(markStep).toHaveBeenLastCalledWith(SESSION, 's4', true);
+    expect(list).toHaveTextContent('1/8');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Reviewed' }));
+    expect(await screen.findByRole('button', { name: 'Mark reviewed' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(markStep).toHaveBeenLastCalledWith(SESSION, 's4', false);
+    expect(markStep).toHaveBeenCalledTimes(2);
+    expect(list).toHaveTextContent('0/8');
+  });
+
+  it('F-07.2 Space marks the step and takes it back; on a control Space presses the control', async () => {
+    const markStep = vi.fn<IpcClient['reviewMarkStep']>((_session, step, reviewed) =>
+      Promise.resolve(reviewed ? [step] : []),
+    );
+    const router = renderStep('s4', { reviewMarkStep: markStep });
+    const list = await screen.findByRole('navigation', { name: 'Steps' });
+    await screen.findByRole('button', { name: 'Mark reviewed' });
+    await userEvent.keyboard(' ');
+    expect(await screen.findByRole('button', { name: 'Reviewed' })).toBeInTheDocument();
+    expect(list).toHaveTextContent('1/8');
+    await userEvent.keyboard(' ');
+    expect(await screen.findByRole('button', { name: 'Mark reviewed' })).toBeInTheDocument();
+    expect(list).toHaveTextContent('0/8');
+    expect(markStep.mock.calls.map((call) => call[2])).toEqual([true, false]);
+
+    // On the Reviewed button Space presses it once: no second toggle from the shortcut.
+    await userEvent.click(screen.getByRole('button', { name: 'Mark reviewed' }));
+    await screen.findByRole('button', { name: 'Reviewed' });
+    await userEvent.keyboard(' ');
+    expect(await screen.findByRole('button', { name: 'Mark reviewed' })).toBeInTheDocument();
+    expect(markStep).toHaveBeenCalledTimes(4);
+
+    // On the next arrow Space goes to the next step and marks nothing.
+    screen.getByRole('button', { name: 'Next step' }).focus();
+    await userEvent.keyboard(' ');
+    expect(await screen.findByText('Step 5 of 8')).toBeInTheDocument();
+    expect(router.state.location.search).toBe('?step=s5');
+    expect(markStep).toHaveBeenCalledTimes(4);
+  });
+
   it('F-07.3 file header: path, +add −del and the number of notes in the file', async () => {
     renderStep('s4');
     const file = await screen.findByRole('region', { name: VM });

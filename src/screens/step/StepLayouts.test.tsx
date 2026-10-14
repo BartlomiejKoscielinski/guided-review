@@ -77,6 +77,58 @@ describe('S-03 layouts B and C', () => {
     expect(await screen.findByText('Step 5 of 8', { selector: 'span' })).toBeInTheDocument();
   });
 
+  it('F-07.8 layout B: the toolbar’s Mark reviewed marks the step, Space takes it back', async () => {
+    await openStep4();
+    act(() => {
+      useFocusStore.getState().setLayout('B');
+    });
+    const bar = screen.getByRole('toolbar', { name: 'Step navigation' });
+    await userEvent.click(within(bar).getByRole('button', { name: 'Mark reviewed' }));
+    expect(await within(bar).findByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    // The layouts share the mark: A's steps list counts it.
+    act(() => {
+      useFocusStore.getState().setLayout('A');
+    });
+    expect(screen.getByRole('navigation', { name: 'Steps' })).toHaveTextContent('1/8');
+    act(() => {
+      useFocusStore.getState().setLayout('B');
+    });
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.keyboard(' ');
+    expect(
+      await within(screen.getByRole('toolbar', { name: 'Step navigation' })).findByRole('button', {
+        name: 'Mark reviewed',
+      }),
+    ).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('F-07.7 layout C: the large Mark reviewed marks the step; Space in the ask input types', async () => {
+    await openStep4();
+    act(() => {
+      useFocusStore.getState().setLayout('C');
+    });
+    const guide = await screen.findByRole('complementary', { name: 'Guide' });
+    const input = within(guide).getByRole('textbox', { name: 'Ask Claude about this step' });
+    await userEvent.type(input, 'why not');
+    expect(input).toHaveValue('why not');
+    expect(within(guide).getByRole('button', { name: 'Mark reviewed' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    await userEvent.click(within(guide).getByRole('button', { name: 'Mark reviewed' }));
+    expect(await within(guide).findByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    act(() => {
+      useFocusStore.getState().setLayout('A');
+    });
+    expect(screen.getByRole('navigation', { name: 'Steps' })).toHaveTextContent('1/8');
+  });
+
   it('F-07.5 F-07.6 layout B keeps the 12px squares and the note inline under its line', async () => {
     await openStep4();
     act(() => {

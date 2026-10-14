@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { isTypingOrControl } from '../../app/keyboard';
 import { pathFor } from '../../app/routes';
 import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
@@ -17,11 +18,6 @@ import styles from './Plan.module.css';
 
 export interface PlanPreparedProps {
   sessionId: string;
-}
-
-/** Enter outside controls and fields starts step 1 (F-06.11). */
-function isTypingOrControl(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest('button, a, input, textarea, select') !== null;
 }
 
 /**
@@ -46,6 +42,7 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
     stepOne === undefined ? '' : `?step=${encodeURIComponent(stepOne)}`
   }`;
 
+  // Enter outside controls and fields starts step 1 (F-06.11).
   useEffect(() => {
     if (!canStart) return undefined;
     const onKey = (event: KeyboardEvent) => {
