@@ -192,6 +192,11 @@
   margin-bottom: 20px;
 }
 
+/* Restored S-03 without cached notes shows no notes state (F-30.4). */
+.notesState:empty {
+  display: none;
+}
+
 .error {
   margin: 0;
   font-size: 14px;
