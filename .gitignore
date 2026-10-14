@@ -16,3 +16,6 @@ tools/standin/ssl/
 .metrics/guard/
 # Parallel lanes: registry, context packs, prompts, reports (tools/lanes.mjs, tools/context-pack.mjs)
 .lanes/
+
+# Autopilot run state and per-item verdicts (tools/autopilot/, docs/process/AUTOPILOT.md)
+.autopilot/

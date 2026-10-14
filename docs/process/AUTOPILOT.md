@@ -1,6 +1,6 @@
 # Autopilot · implementation plan (E10)
 
-Status: **draft, awaiting owner approval** (2026-10-14). Replaces E4 (parallel writer lanes) as the default way of building milestones. Cost of 3–4 agents per acceptance criterion: accepted by the owner.
+Status: **approved** by the owner with the decisions of §6 (2026-10-14); built in session P-7, see §9 for what still needs the owner. Replaces E4 (parallel writer lanes) as the default way of building milestones. Cost of 3–4 agents per acceptance criterion: accepted by the owner.
 
 ## 1. Goal
 
@@ -61,7 +61,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 ### 3.2 Decision policy (replaces "stop and ask" for the autopilot)
 
-- **Spec unclear or contradicting a mock, reversible**: pick the recommended option, add a row to `DECISIONS-PENDING.md`, continue. Items depending on a provisional decision are not started while more than 5 rows are unreviewed.
+- **Spec unclear or contradicting a mock, reversible**: pick the recommended option, add a row to `DECISIONS-PENDING.md`, continue. While more than 5 rows are unreviewed the loop starts no new item (`backlog.mjs next` returns none).
 - **Needs-owner** (item skipped, push notification): anything touching the non-negotiables of `CLAUDE.md` (Claude flags, security, secrets, company data, GitLab write actions without a click), real company data or a field visit (ADR-019), changing an ADR, new dependencies, deleting tests.
 - **Veto** by the owner (status `vetoed` in the file): the next sync adds a rework item.
 
@@ -79,11 +79,11 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 | - | - | - | - |
 | B1 | Backlog: `sync` (PROGRESS unchecked + plan AC table → items, keep statuses), `next` (first `todo` with deps done, not blocked by >5 provisional), `set <id> <status> [--note]` | `tools/autopilot/backlog.mjs`, `tools/autopilot/backlog-lib.mjs` | `tools/autopilot-backlog.test.mjs` (fixture PROGRESS/plan) |
 | B2 | Gate: verify (`--e2e <spec>` for UI), `audit --milestone`, locked tests unchanged since `lockSha` (`git diff --name-only lockSha..HEAD -- <test files>`), changed files within the item's kind, rule greps (`--bare`, `--dangerously-skip-permissions`, `unwrap()` outside tests, `glpat-` + 20 chars, hex colors in components), ff-merge, PROGRESS tick with SHA; JSON verdict | `tools/autopilot/gate.mjs` | `tools/autopilot-gate.test.mjs` (throwaway repo) |
-| B3 | Stop hook: binds to the conductor by the marker `AUTOPILOT <runId>` in the last assistant message (transcript tail, as in `context-guard.mjs`); blocks the stop with "next item" while the conditions hold; otherwise allows it. Context guard: in a marked session it says "write state, continue" instead of "/handoff" | `tools/autopilot/stop-hook.mjs`, `tools/metrics/context-guard.mjs`, `.claude/settings.json` | `tools/autopilot-hook.test.mjs` (fake transcripts) |
+| B3 | Run state `tools/autopilot/run.mjs` (start, status, stop, end) and worktree `tools/autopilot/worktree.mjs` (ready, done, remove). Stop hook: binds to the conductor by the marker `AUTOPILOT <runId>` in the last assistant message (transcript tail, as in `context-guard.mjs`); blocks the stop with "next item" while the conditions hold; otherwise allows it. Context guard: in a marked session it says "write state, continue" instead of "/handoff" | `tools/autopilot/stop-hook.mjs`, `tools/metrics/context-guard.mjs`, `.claude/settings.json` | `tools/autopilot-hook.test.mjs` (fake transcripts) |
 | B4 | Conductor skill `/autopilot start\|status\|stop [Mx] [--cap N]`: run file, keep-awake, loop body, role calls with fixed prompts, verdict handling, notifications, curate every 5 items, retro every 10 | `.claude/skills/autopilot/SKILL.md` | dry run (B7) |
 | B5 | Role prompts (objective, inputs, output JSON, boundaries, done condition): tests, implement, review, fix, reflect, curate, plan (milestone planning when the backlog of the milestone is empty) | `.claude/autopilot/roles/*.md` | dry run |
 | B6 | Playbook: `add`, `select --tags` (into the context pack, ≤ 1.5k tokens), `score <id> helpful\|harmful`, `curate` (dedupe, promote 3× recurring to a skill rule proposal, prune unused 30 items) | `tools/autopilot/playbook.mjs`, `tools/context-pack.mjs --playbook` | `tools/autopilot-playbook.test.mjs` |
-| B7 | Outcome metrics + judge: `items.jsonl` rows from verdicts; `judge.mjs` compares an experiment's metric over the next K = 5 items with the 5 before → keep / revert (`git revert <experiment sha>`) | `tools/autopilot/record.mjs`, `tools/autopilot/judge.mjs`, `tools/metrics/report.mjs --items` | `tools/autopilot-judge.test.mjs` |
+| B7 | Outcome metrics + judge: `items.jsonl` rows from verdicts; `judge.mjs` compares an experiment's metric over the next K = 5 items with the 5 before → keep / revert (`git revert <experiment sha>`) | `tools/autopilot/record.mjs`, `tools/autopilot/judge.mjs` (`--summary` per run) | `tools/autopilot-judge.test.mjs` |
 | B8 | Settings: Stop hook registration; `allow` rules: `git worktree remove ../gr-ap`, `git branch -d ap/*`, `git branch -d m*/*` merged lanes; `test:tools` glob covers the new tests | `.claude/settings.json`, `package.json` | `npm run test:tools` |
 | B9 | Docs: CLAUDE.md "How to work" (autopilot mode + decision policy), IMPROVEMENTS (E4 closed as replaced, E10 open), `/fanout` and `/integrate` marked legacy | `CLAUDE.md`, `docs/process/IMPROVEMENTS.md`, skills | `/audit` unaffected |
 
@@ -127,6 +127,15 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 | Playbook bloat / context collapse | delta-only edits, tag selection ≤ 1.5k tokens, curate prunes |
 | Conductor context grows | heavy work in subagents; verdicts only; compaction; context guard in continue mode |
 | `/app` live checks clash on ports | not in the loop; a separate conductor step after a milestone's items are done |
+
+## 9. Build status (P-7, 2026-10-14)
+
+Built and tested (`node --test tools/autopilot-*.test.mjs`, 16 tests; gate on a throwaway repo; Stop hook end to end on fake transcripts; `backlog.mjs sync --milestone M3` = 23 open items): B1, B2, B3 (scripts), B4, B5 (except three role files), B6, B7, B9 docs in `docs/`.
+
+The auto mode classifier refused these writes (the agent may not change its own permissions, hooks or instructions); the owner applies them or allows them explicitly:
+1. `.claude/settings.json`: the Stop hook (`node "$CLAUDE_PROJECT_DIR/tools/autopilot/stop-hook.mjs"`, timeout 30) and the `allow` rules of B8. **Without the Stop hook the loop does one item per `/autopilot` call.**
+2. `.claude/autopilot/roles/_common.md`, `review.md`, `plan.md` (the conductor cannot run the roles without `_common.md` and `review.md`).
+3. CLAUDE.md "How to work" (decision 1) and the memory "Go with recommended" (decision 2).
 
 ## Sources
 

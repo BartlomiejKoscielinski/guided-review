@@ -15,6 +15,7 @@ import {
 } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { transcriptTail } from '../autopilot/hook-lib.mjs';
 
 const LEVELS = [
   {
@@ -57,6 +58,17 @@ function lastContext(file) {
   return 0;
 }
 
+/** The autopilot conductor (docs/process/AUTOPILOT.md) has no owner to hand off to: it keeps going. */
+const CONDUCTOR_TEXT =
+  'autopilot conductor: finish the current item, commit its state (backlog, items, playbook), keep only verdicts in context and continue the loop; compaction keeps the run going';
+
+function isConductor(file) {
+  const runPath = join(root, '.autopilot', 'run.json');
+  if (!existsSync(runPath)) return false;
+  const { runId } = JSON.parse(readFileSync(runPath, 'utf8'));
+  return transcriptTail(file).some((l) => l.includes(`AUTOPILOT ${runId}`));
+}
+
 try {
   const input = JSON.parse(readFileSync(0, 'utf8'));
   const file = input.transcript_path;
@@ -70,7 +82,8 @@ try {
   if (level <= warned) process.exit(0);
   mkdirSync(stateDir, { recursive: true });
   writeFileSync(state, String(level));
-  const { at, text } = LEVELS[level - 1];
+  const { at } = LEVELS[level - 1];
+  const text = isConductor(file) ? CONDUCTOR_TEXT : LEVELS[level - 1].text;
   const message = `Context guard: this session's context is ${Math.round(ctx / 1000)}k tokens (over ${at / 1000}k): ${text}. (tools/metrics/context-guard.mjs, docs/process/IMPROVEMENTS.md E2)`;
   console.log(
     JSON.stringify({
