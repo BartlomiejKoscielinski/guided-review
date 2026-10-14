@@ -1,4 +1,52 @@
 {
-  "items": 0,
-  "entries": []
+  "items": 1,
+  "entries": [
+    {
+      "id": "P-001",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Keep per-head flags such as planReady equal across mock rows that share a headSha, even where the design mock omits the note on one tab, because the core derives them per head; the review flagged one headSha with planReady true on one tab and false on the other.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T08:53:29.473Z",
+      "lastUsedItem": 0,
+      "source": "F-02.5"
+    },
+    {
+      "id": "P-002",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**",
+        "src/ipc/mock/**"
+      ],
+      "text": "Before moving a suffix or other text out of a mock note into a UI helper, grep existing tests for the full old row string, since the F-02.2 mock assertion had to change when the suffix moved.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T08:53:29.521Z",
+      "lastUsedItem": 0,
+      "source": "F-02.5"
+    },
+    {
+      "id": "P-003",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**",
+        "tests/e2e/**"
+      ],
+      "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T08:53:29.568Z",
+      "lastUsedItem": 0,
+      "source": "F-02.5"
+    }
+  ]
 }

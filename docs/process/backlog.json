@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T08:29:49.000Z",
+  "updated": "2026-10-14T08:53:35.093Z",
   "items": [
     {
       "id": "F-02.5",
@@ -8,9 +8,15 @@
       "title": "If a plan for an MR is already cached for its current head, the row says \"plan is ready\".",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "`diffHeadSha` + `MrRow.planReady` (b0092de), `review/plan_cache.rs` + migration 004 + list command (5cfcb59, e207a9b); row note UI + Vitest"
+      "status": "done",
+      "attempts": 1,
+      "note": "`diffHeadSha` + `MrRow.planReady` (b0092de), `review/plan_cache.rs` + migration 004 + list command (5cfcb59, e207a9b); row note UI + Vitest",
+      "lockSha": "cd12450",
+      "tests": [
+        "src/screens/start/StartScreen.test.tsx",
+        "src/ipc/mock/gitlab.test.ts",
+        "tests/e2e/start.spec.ts"
+      ]
     },
     {
       "id": "F-04.1",

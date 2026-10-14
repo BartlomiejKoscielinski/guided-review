@@ -1,0 +1,1 @@
+{"ts":"2026-10-14T08:53:35.037Z","run":"ap-20261014-0830","item":"F-02.5","result":"done","gateFirstPass":true,"gates":1,"rounds":0,"findings":{"severe":0,"normal":0,"nit":1},"testDispute":null,"decisions":6,"tokens":{"total":275856,"impl":65153,"reflect":45345,"review":64861,"tests":100497},"wallMin":23.2}
