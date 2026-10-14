@@ -131,3 +131,48 @@ describe('S-03 session state (F-04.3)', () => {
     expect(calls.filter((name) => WORK.test(name))).toEqual([]);
   });
 });
+
+// F-07.9: the layout you pick is kept for the session and globally (`ui.focusLayout`, the layout a
+// new session opens in); a session you come back to opens in its own layout.
+describe('S-03 layout memory (F-07.9)', () => {
+  beforeEach(() => {
+    useFocusStore.setState({ layout: 'A' });
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(800);
+  });
+
+  it('F-07.9 the layout you pick is remembered globally: a new session opens in it', async () => {
+    const ipc = mockClient();
+    await onStep4(ipc);
+    await ipc.sessionSetLayout(SESSION, 'B');
+    renderStep(ipc);
+    expect(await screen.findByText('Step 4 of 8')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(useFocusStore.getState().layout).toBe('B');
+    });
+    useFocusStore.getState().setLayout('C');
+    await waitFor(async () => {
+      expect((await ipc.appSettingsGet()).ui.focusLayout).toBe('C');
+    });
+    expect((await ipc.sessionState(SESSION)).layout).toBe('C');
+    const { sessionId } = await ipc.sessionOpenMr(482, null, 'task', ignore);
+    expect((await ipc.sessionState(sessionId)).layout).toBe('C');
+  });
+
+  it('F-07.9 a session opens in its own layout and leaves the global one as it is', async () => {
+    const base = mockClient();
+    await onStep4(base);
+    await base.sessionSetLayout(SESSION, 'B');
+    await base.appSettingsSet({ ui: { focusLayout: 'C' } });
+    const { client, calls } = recordingClient(base);
+    renderStep(client);
+    expect(await screen.findByText('Step 4 of 8')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(useFocusStore.getState().layout).toBe('B');
+    });
+    expect(screen.queryByRole('navigation', { name: 'Steps' })).toBeNull();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(calls).not.toContain('appSettingsSet');
+    expect((await base.appSettingsGet()).ui.focusLayout).toBe('C');
+  });
+});

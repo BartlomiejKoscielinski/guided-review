@@ -183,6 +183,28 @@ test('F-04.3 after a restart S-03 keeps the layout you chose', async ({ page }) 
   await expect(stepsList(page)).toHaveCount(0);
 });
 
+test('F-07.9 a new session starts in the layout you chose last, also after a restart', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await page.keyboard.press('Control+3');
+  const guide = page.getByRole('complementary', { name: 'Guide' });
+  await expect(guide.getByText('Worth a look')).toBeVisible();
+
+  // After a restart S-03 is back in C; Ctrl+K › !482 again opens a second session: it starts in C,
+  // not in the default A.
+  await restartApp(page);
+  await expect(guide.getByText('Worth a look')).toBeVisible();
+  await page.keyboard.press('Control+k');
+  const source = page.getByLabel(/Paste a merge request link/);
+  await source.fill('!482');
+  await expect(page.getByText('Merge request !482', { exact: true })).toBeVisible();
+  await source.press('Enter');
+  await page.getByRole('button', { name: /Start step 1/ }).click();
+  await expect(guide.getByText('Worth a look')).toBeVisible();
+  await expect(stepsList(page)).toHaveCount(0);
+});
+
 test('F-04.3 after a restart each step reopens at its own scroll position', async ({ page }) => {
   await openStep1(page);
   await openStep(page, /ViewModel/, 4);
