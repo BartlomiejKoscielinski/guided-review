@@ -69,6 +69,15 @@ describe('S-02 PlanAside', () => {
     );
   });
 
+  it('F-06.9 Already discussed sits between the description check and Coverage', () => {
+    const aside = renderAside();
+    expect(
+      within(aside)
+        .getAllByRole('heading')
+        .map((h) => h.textContent),
+    ).toEqual(['Risks to check', 'MR description vs code', 'Already discussed', 'Coverage']);
+  });
+
   it('F-06.10 coverage: N/N files · N/N hunks with the rule text', () => {
     renderAside();
     const coverage = section('Coverage');

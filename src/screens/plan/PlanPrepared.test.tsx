@@ -126,6 +126,22 @@ describe('S-02 PlanPrepared', () => {
     });
   });
 
+  it('F-06.9 the aside’s Already discussed is Claude’s summary of the existing threads', async () => {
+    open({});
+    const heading = await screen.findByRole('heading', { name: 'Already discussed' });
+    expect(heading.closest('section')).toHaveTextContent(
+      '3 open threads from Paweł S. in steps 2 and 4.',
+    );
+  });
+
+  it('F-06.9 without Claude the aside says "N open threads." from the discussions count', async () => {
+    open(planOf({ planFails: true }));
+    const heading = await screen.findByRole('heading', { name: 'Already discussed' });
+    const discussed = heading.closest('section') as HTMLElement;
+    expect(within(discussed).getByText('3 open threads.', { exact: true })).toBeInTheDocument();
+    expect(screen.queryByText(/Paweł S\./)).not.toBeInTheDocument();
+  });
+
   it('F-06.4 the toggle reorders through the backend', async () => {
     open({});
     await userEvent.click(await screen.findByRole('radio', { name: 'Tests first' }));

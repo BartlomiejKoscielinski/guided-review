@@ -327,6 +327,49 @@ test('F-06.5 Start step 1 opens the first step of the dragged order, and Next fo
   await expect(page.getByRole('heading', { level: 1, name: 'Queue contract' })).toBeVisible();
 });
 
+// F-06.9 Already discussed in the aside (M3 decision 5): Claude's summary of the existing threads,
+// or "N open threads." without Claude. The steps it names show the threads (tests/e2e/step.spec.ts).
+
+test('F-06.9 the aside’s Already discussed says which steps hold the open threads', async ({
+  page,
+}) => {
+  await openPlan(page);
+  const aside = page.getByRole('complementary', { name: 'Plan details' });
+  await expect(aside.getByRole('heading')).toHaveText([
+    'Risks to check',
+    'MR description vs code',
+    'Already discussed',
+    'Coverage',
+  ]);
+  const discussed = aside.locator('section', {
+    has: page.getByRole('heading', { name: 'Already discussed' }),
+  });
+  await expect(discussed).toContainText('3 open threads from Paweł S. in steps 2 and 4.');
+  // The threads are context, not a plan step of their own.
+  await expect(stepRows(page)).toHaveCount(8);
+});
+
+test('F-06.9 without Claude the aside says "3 open threads." and the empty sections are gone', async ({
+  page,
+}) => {
+  await page.evaluate(() => {
+    localStorage.setItem('guided-review.mock.review', JSON.stringify({ planFails: true }));
+  });
+  await page.reload();
+  await expect(page.getByTestId('title-bar')).toBeVisible();
+  await openMr482(page);
+  await expect(
+    page.getByText("Claude isn't available. You can review in file order."),
+  ).toBeVisible();
+  const aside = page.getByRole('complementary', { name: 'Plan details' });
+  await expect(aside.getByRole('heading')).toHaveText(['Already discussed', 'Coverage']);
+  const discussed = aside.locator('section', {
+    has: page.getByRole('heading', { name: 'Already discussed' }),
+  });
+  await expect(discussed.getByText('3 open threads.', { exact: true })).toBeVisible();
+  await expect(aside.getByText(/Paweł S\./)).toHaveCount(0);
+});
+
 test('F-06.11 Enter starts step 1', async ({ page }) => {
   await openPlan(page);
   await page.getByRole('heading', { level: 1, name: TITLE }).click();

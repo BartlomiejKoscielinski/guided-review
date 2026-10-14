@@ -63,6 +63,46 @@ test('F-07.4 F-07.5 F-09.2 step 4: fold, thread, notes; Add to drafts and Undo',
   await expect(page.getByText('private readonly IUploadQueue _queue;')).toBeVisible();
 });
 
+test('F-06.9 the steps named in Already discussed (2 and 4) show their threads as context; step 1 shows none', async ({
+  page,
+}) => {
+  await openStep1(page);
+  const threads = page.getByRole('region', { name: /^Thread at line/ });
+  await expect(threads).toHaveCount(0);
+
+  // Step 2: the two open threads, the second one further down the file.
+  await page.getByRole('button', { name: 'Next step' }).click();
+  await expect(page.getByText('Step 2 of 8')).toBeVisible();
+  const first = page.getByRole('region', { name: 'Thread at line 24' });
+  await expect(first).toContainText('Is the table created on every start?');
+  await expect(first).toContainText(
+    'It runs once per connection; I can move it to the migration step.',
+  );
+  await page
+    .locator('main[class*="main"]')
+    .first()
+    .evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
+  const second = page.getByRole('region', { name: 'Thread at line 61' });
+  await expect(second).toContainText('What happens to a photo that keeps failing?');
+  // Read-only until F-11: no Resolve, Reply or Reopen on a thread.
+  await expect(first.getByRole('button')).toHaveCount(0);
+  await expect(second.getByRole('button')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Thread at line 48' })).toHaveCount(0);
+
+  // Step 3 has none; step 4 has the third, with the reply.
+  await page.getByRole('button', { name: 'Next step' }).click();
+  await expect(page.getByText('Step 3 of 8')).toBeVisible();
+  await expect(threads).toHaveCount(0);
+  await page.getByRole('button', { name: 'Next step' }).click();
+  await expect(page.getByText('Step 4 of 8')).toBeVisible();
+  await expect(threads).toHaveCount(1);
+  await expect(page.getByRole('region', { name: 'Thread at line 48' })).toContainText(
+    'Kick only releases a semaphore, the upload runs in the background.',
+  );
+});
+
 test('F-07.1 F-07.8 F-07.7 F-10.2 layouts B and C share the step, the note and the answer; Ctrl+1/2/3', async ({
   page,
 }) => {

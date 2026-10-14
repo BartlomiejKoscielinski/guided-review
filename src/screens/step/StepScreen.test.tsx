@@ -153,6 +153,31 @@ describe('S-03 layout A', () => {
     expect(screen.queryByRole('region', { name: 'Thread at line 48' })).toBeNull();
   });
 
+  it('F-06.9 a step shows the existing threads on its own lines as read-only context', async () => {
+    // The diff is virtualized and jsdom lays nothing out: only the first rows exist here, so
+    // step 2's thread at line 24 is checked; the one at line 61 is in the e2e (scrolled to).
+    renderStep('s2');
+    expect(
+      await screen.findByRole('button', { name: 'Thread by Paweł S. at line 24' }),
+    ).toHaveAttribute('aria-expanded', 'true');
+    const thread = screen.getByRole('region', { name: 'Thread at line 24' });
+    expect(thread).toHaveTextContent('Is the table created on every start?');
+    expect(thread).toHaveTextContent(
+      'It runs once per connection; I can move it to the migration step.',
+    );
+    expect(within(thread).getByText('Anna K.')).toBeInTheDocument();
+    // Step 4's thread is not here, and the card has no Resolve, Reply or Reopen before F-11.
+    expect(screen.queryByRole('region', { name: 'Thread at line 48' })).toBeNull();
+    expect(within(thread).queryByRole('button')).toBeNull();
+  });
+
+  it('F-06.9 a step with no thread on its lines shows no thread card', async () => {
+    renderStep('s1');
+    expect(await screen.findByText('Step 1 of 8')).toBeInTheDocument();
+    expect(screen.queryAllByRole('region', { name: /^Thread at line/ })).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: /^Thread by / })).toBeNull();
+  });
+
   it('F-07.6 the focused note card carries the decisions', async () => {
     renderStep('s4');
     const card = await screen.findByRole('article', {

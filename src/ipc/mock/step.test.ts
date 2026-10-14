@@ -70,4 +70,32 @@ describe('mock step backend', () => {
     expect(s4.threads.map((t) => t.position?.newLine)).toEqual([48]);
     expect(s4.files[0]?.hunks).toHaveLength(3);
   });
+
+  /** The open threads in each step of a plan, by the step's place in the order. */
+  const openByNumber = async (mock: Awaited<ReturnType<typeof planned>>, order: string[]) =>
+    Promise.all(
+      order.map(async (id) => {
+        const view = await mock.reviewStep(SESSION, id);
+        const open = view.threads.filter((t) => t.resolvable && !t.resolved).length;
+        return { number: view.number, open };
+      }),
+    );
+
+  it('F-06.9 Already discussed names the steps that hold the open threads', async () => {
+    const mock = createMockClient({ latencyMs: 0 });
+    const view = await mock.reviewPlan(SESSION, () => undefined);
+    const held = await openByNumber(mock, view.order.order);
+    expect(held.filter((h) => h.open > 0).map((h) => h.number)).toEqual([2, 4]);
+    expect(held.reduce((sum, h) => sum + h.open, 0)).toBe(3);
+    expect(view.plan.alreadyDiscussed).toMatch(/^3 open threads from Paweł S\. in steps 2 and 4\./);
+  });
+
+  it('F-06.9 without Claude the count is the open threads the steps show', async () => {
+    const mock = createMockClient({ latencyMs: 0, review: { planFails: true } });
+    const view = await mock.reviewPlan(SESSION, () => undefined);
+    const held = await openByNumber(mock, view.order.order);
+    const open = held.reduce((sum, h) => sum + h.open, 0);
+    expect(open).toBeGreaterThan(0);
+    expect(view.plan.alreadyDiscussed).toBe(`${String(open)} open threads.`);
+  });
 });
