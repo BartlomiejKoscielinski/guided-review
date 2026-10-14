@@ -18,11 +18,11 @@ import { fileURLToPath } from 'node:url';
 
 const LEVELS = [
   {
-    at: 120_000,
+    at: 200_000,
     text: 'finish the current item, commit it, then run /handoff instead of starting the next task',
   },
   {
-    at: 160_000,
+    at: 240_000,
     text: 'stop here: commit what is done and run /handoff now; every further turn re-reads this whole context',
   },
 ];

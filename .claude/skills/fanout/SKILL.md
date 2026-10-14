@@ -69,7 +69,7 @@ You are a background subagent of the integrator session (Agent tool); nobody els
 Tasks:
 1. Build the ACs in the order of the plan rows in context.md; commit after each coherent piece.
 2. /verify green, with e2e for your specs (node tools/verify.mjs --e2e <spec>); /design-check S-xx for each screen you touched.
-3. /handoff: in a lane it writes .lanes/<lane>/report.md instead of PROGRESS. At the 120k context warning: commit, /handoff with what is open.
+3. /handoff: in a lane it writes .lanes/<lane>/report.md instead of PROGRESS. At the first context-guard warning (200k): commit, /handoff with what is open.
 Then stop; the integrator runs /integrate <Mx> in the main checkout.
 ```
 
