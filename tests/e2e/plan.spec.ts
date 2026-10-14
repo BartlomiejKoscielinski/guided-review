@@ -95,6 +95,9 @@ test('F-06.5 a keyboard drag moves a step and clears the strategy', async ({ pag
   await expect(lifted).toHaveCount(1);
   await page.keyboard.press('ArrowDown');
   await expect(lifted).toHaveAttribute('style', /translate3d\(0px, [1-9]/);
+  // dnd-kit sets the row under the drag in an effect after the move; drop only once the next row
+  // has made room, or the drop lands on the lifted row itself and changes nothing.
+  await expect(stepRows(page).nth(1)).toHaveAttribute('style', /translate3d\(0px, -[1-9]/);
   await page.keyboard.press('Space');
   await expect(stepRows(page).nth(0)).toContainText('SqliteUploadQueue');
   await expect(stepRows(page).nth(1)).toContainText('Queue contract');
