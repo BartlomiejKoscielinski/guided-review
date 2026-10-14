@@ -18,6 +18,7 @@ const view = (order: Partial<PlanView['order']> = {}): PlanView => ({
   stepStats: MOCK_STEP_STATS,
   skimStats: MOCK_SKIM_STATS,
   skimFiles: [[...MOCK_SKIM_FILES]],
+  reviewed: [],
 });
 
 function renderList(v: PlanView = view()) {

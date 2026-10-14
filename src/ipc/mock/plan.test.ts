@@ -105,6 +105,26 @@ describe('mock plan backend', () => {
     expect((await mock.reviewPlan(SESSION, () => undefined)).order).toEqual(files);
   });
 
+  it('F-07.2 Mark reviewed and its undo; the plan and the step show the reviewed steps', async () => {
+    const mock = client();
+    await expect(mock.reviewMarkStep(SESSION, 's1', true)).rejects.toMatchObject({
+      message: "The plan isn't ready yet.",
+    });
+    const view = await mock.reviewPlan(SESSION, () => undefined);
+    expect(view.reviewed).toEqual([]);
+    const [s1, s2, s3] = view.plan.steps.map((s) => s.id);
+    if (s1 === undefined || s2 === undefined || s3 === undefined) throw new Error('no steps');
+    expect(await mock.reviewMarkStep(SESSION, s3, true)).toEqual([s3]);
+    expect(await mock.reviewMarkStep(SESSION, s1, true)).toEqual([s1, s3]);
+    expect(await mock.reviewMarkStep(SESSION, s3, false)).toEqual([s1]);
+    expect((await mock.reviewStep(SESSION, s1)).reviewed).toBe(true);
+    expect((await mock.reviewStep(SESSION, s2)).reviewed).toBe(false);
+    expect((await mock.reviewPlan(SESSION, () => undefined)).reviewed).toEqual([s1]);
+    await expect(mock.reviewMarkStep(SESSION, 'nope', true)).rejects.toMatchObject({
+      message: 'The step is not in the plan.',
+    });
+  });
+
   it('F-06.5 a dragged order is kept until a strategy is picked; bad orders are refused', async () => {
     const mock = client();
     await mock.reviewPlan(SESSION, () => undefined);

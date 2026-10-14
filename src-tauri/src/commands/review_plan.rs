@@ -18,6 +18,7 @@ use crate::error::AppResult;
 use crate::os::process::Cancel;
 use crate::review::model::Strategy;
 use crate::review::plan_runs::{self, PlanView};
+use crate::review::progress;
 use crate::review::step_context::{self as context, MrRef, StepContext};
 use crate::review::step_order::StepOrder;
 use crate::store::{self, Store};
@@ -56,6 +57,14 @@ pub async fn review_plan(
         }
     };
     let plan = planned.view.plan.clone();
+    let mut view = planned.view;
+    view.reviewed = {
+        let (session, plan) = (session.clone(), plan.clone());
+        with_store(&store, move |c| {
+            progress::reviewed_steps(c, &session, &plan)
+        })
+        .await?
+    };
     let cx = match &planned.claude_error {
         None => StepContext::new(inputs, plan),
         Some(_) => StepContext::fallback(inputs, plan),
@@ -67,7 +76,7 @@ pub async fn review_plan(
         planned.claude_error.as_ref().map_or(Ok(()), Err),
     )
     .await;
-    Ok(planned.view)
+    Ok(view)
 }
 
 /// Contract to UI, Tests first or File order (F-06.4): stored, the dragged order cleared.

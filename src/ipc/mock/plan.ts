@@ -1,5 +1,6 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
+import type { Plan } from '../types/Plan';
 import type { PlanView } from '../types/PlanView';
 import type { StepOrder } from '../types/StepOrder';
 import type { Strategy } from '../types/Strategy';
@@ -16,7 +17,7 @@ import type { ReviewScenario } from './review';
 
 type PlanClient = Pick<
   IpcClient,
-  'reviewPlan' | 'reviewSetStrategy' | 'reviewReorderSteps' | 'reviewStep'
+  'reviewPlan' | 'reviewSetStrategy' | 'reviewReorderSteps' | 'reviewStep' | 'reviewMarkStep'
 >;
 
 /** Pause while Claude plans, so S-02's Planning state is visible. */
@@ -34,7 +35,8 @@ interface SessionPlan {
  * S-02's plan of the mock backend (F-06.2, F-06.4, F-06.5, F-06.12): every MR shows !482's plan,
  * with the core's event order (`queued`, `started` unless cached, `done`; `planFails` is done
  * with the file-order fallback), the strategy clearing a dragged order, and the same error copy.
- * S-03's steps (F-07.2, F-07.3) follow the session's order, a fallback plan's too.
+ * S-03's steps (F-07.2, F-07.3) follow the session's order, a fallback plan's too; Mark reviewed
+ * keeps the reviewed steps per session (F-07.1, F-07.2).
  */
 export function createPlanBackend(
   scenario: ReviewScenario,
@@ -44,6 +46,18 @@ export function createPlanBackend(
   const sessions = new Map<string, SessionPlan>();
   /** The last plan of a session whose plan task failed (the file-order fallback). */
   const fallbacks = new Map<string, PlanView>();
+  /** Steps marked reviewed per session. */
+  const marks = new Map<string, Set<string>>();
+
+  const reviewedIn = (sessionId: string, plan: Plan): string[] =>
+    plan.steps.filter((s) => marks.get(sessionId)?.has(s.id) === true).map((s) => s.id);
+
+  const notInPlan = () =>
+    new IpcError({
+      code: 'INVALID_INPUT',
+      message: 'The step is not in the plan.',
+      retryable: false,
+    });
 
   const order = (s: SessionPlan): StepOrder => ({
     strategy: s.strategy,
@@ -80,18 +94,21 @@ export function createPlanBackend(
             message: 'Claude Code failed.',
             retryable: true,
           });
+          fallback.reviewed = reviewedIn(sessionId, fallback.plan);
           fallbacks.set(sessionId, fallback);
           onEvent({ kind: 'done', result: structuredClone(fallback) });
           return respond(fallback);
         }
         s = { strategy: 'contractToUi', custom: null, cachedAt: null };
       }
+      const plan = mockPlan();
       const view: PlanView = {
-        plan: mockPlan(),
+        plan,
         order: order(s),
         stepStats: MOCK_STEP_STATS,
         skimStats: MOCK_SKIM_STATS,
         skimFiles: [[...MOCK_SKIM_FILES]],
+        reviewed: reviewedIn(sessionId, plan),
         ...(s.cachedAt === null ? {} : { cachedAt: s.cachedAt }),
       };
       // Opening S-02 again reads the plan from the cache.
@@ -103,17 +120,27 @@ export function createPlanBackend(
     reviewStep: (sessionId, stepId) => {
       try {
         const fallback = fallbacks.get(sessionId);
+        const reviewed = marks.get(sessionId)?.has(stepId) === true;
         const view = fallback
-          ? mockStepView(fallback.plan, fallback.order.order, stepId, false, true)
-          : mockStepView(mockPlan(), order(planned(sessionId)).order, stepId, false, false);
-        if (!view) {
-          throw new IpcError({
-            code: 'INVALID_INPUT',
-            message: 'The step is not in the plan.',
-            retryable: false,
-          });
-        }
+          ? mockStepView(fallback.plan, fallback.order.order, stepId, reviewed, true)
+          : mockStepView(mockPlan(), order(planned(sessionId)).order, stepId, reviewed, false);
+        if (!view) throw notInPlan();
         return respond(view);
+      } catch (e: unknown) {
+        return Promise.reject(e instanceof Error ? e : new Error(String(e)));
+      }
+    },
+    reviewMarkStep: (sessionId, stepId, reviewed) => {
+      try {
+        const fallback = fallbacks.get(sessionId);
+        if (!fallback) planned(sessionId); // "The plan isn't ready yet."
+        const plan = fallback?.plan ?? mockPlan();
+        if (!plan.steps.some((s) => s.id === stepId)) throw notInPlan();
+        const set = marks.get(sessionId) ?? new Set<string>();
+        if (reviewed) set.add(stepId);
+        else set.delete(stepId);
+        marks.set(sessionId, set);
+        return respond(reviewedIn(sessionId, plan));
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));
       }

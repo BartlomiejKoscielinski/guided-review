@@ -24,6 +24,7 @@ use crate::os::process::Cancel;
 use crate::review::decisions::{self, DecisionOutcome, FindingDecision};
 use crate::review::finding_model::StepAnalysis;
 use crate::review::position::LineSelection;
+use crate::review::progress;
 use crate::review::step_context::{self, MrRef, StepContext};
 use crate::review::step_runs::{self, StepRuns};
 use crate::review::step_view::{self, StepView};
@@ -122,6 +123,24 @@ where
     }
 }
 
+/// The session's remembered context, else loaded from its cached plan (no Claude run).
+async fn loaded(
+    review: &ReviewApp,
+    claude: &ClaudeApp,
+    store: &Store,
+    gitlab: &GitlabApp,
+    session: &str,
+) -> AppResult<Arc<StepContext>> {
+    if let Some(cx) = review.remembered(session) {
+        return Ok(cx);
+    }
+    let settings = with_store(store, |c| store::settings::load(c)).await?;
+    let exe = executable(store).await?;
+    let ctx = plan_context(claude, store, &exe, &settings.claude);
+    let git_program = settings.git.path.as_deref().map(Path::new);
+    step_context(review, &ctx, gitlab, git_program, session).await
+}
+
 fn not_in_plan() -> AppError {
     AppError::new(ErrorCode::InvalidInput, "The step is not in the plan.")
 }
@@ -138,16 +157,7 @@ pub async fn review_step(
     session: String,
     step: String,
 ) -> AppResult<StepView> {
-    let cx = match review.remembered(&session) {
-        Some(cx) => cx,
-        None => {
-            let settings = with_store(&store, |c| store::settings::load(c)).await?;
-            let exe = executable(&store).await?;
-            let ctx = plan_context(&claude, &store, &exe, &settings.claude);
-            let git_program = settings.git.path.as_deref().map(Path::new);
-            step_context(&review, &ctx, &gitlab, git_program, &session).await?
-        }
-    };
+    let cx = loaded(&review, &claude, &store, &gitlab, &session).await?;
     let order = order(&store, cx.clone()).await?;
     let (session_id, step_id) = (session.clone(), step.clone());
     let reviewed = with_store(&store, move |c| {
@@ -320,6 +330,26 @@ pub async fn review_decide(
     decision: FindingDecision,
 ) -> AppResult<DecisionOutcome> {
     with_store(&store, move |c| Ok(decide(c, &finding, &decision))).await?
+}
+
+/// Mark reviewed (Space) and its undo (F-07.2): the step's flag in the session. Returns the plan's
+/// reviewed steps for the steps list checks and the progress segments (F-07.1). No Claude call.
+#[tauri::command]
+pub async fn review_mark_step(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    step: String,
+    reviewed: bool,
+) -> AppResult<Vec<String>> {
+    let cx = loaded(&review, &claude, &store, &gitlab, &session).await?;
+    with_store(&store, move |c| {
+        Ok(progress::mark(c, &cx.session_id, &cx.plan, &step, reviewed))
+    })
+    .await?
+    .map_err(Into::into)
 }
 
 #[cfg(test)]

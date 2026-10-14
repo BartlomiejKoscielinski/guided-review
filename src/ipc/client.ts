@@ -146,6 +146,11 @@ export interface IpcClient {
   ): Promise<AskAnswer>;
   /** Add to drafts, Edit and add, Dismiss or Undo on a note (F-09.2, F-09.4). Local only. */
   reviewDecide(findingId: string, decision: FindingDecision): Promise<DecisionOutcome>;
+  /**
+   * Mark reviewed (Space) or its undo (F-07.2); the plan's reviewed steps for the done checks
+   * and progress segments (F-07.1). No Claude.
+   */
+  reviewMarkStep(sessionId: string, stepId: string, reviewed: boolean): Promise<string[]>;
 
   // Drafts (F-09.2, F-10.3): kept on this PC; nothing reaches GitLab without Publish.
   draftsList(sessionId: string): Promise<Draft[]>;

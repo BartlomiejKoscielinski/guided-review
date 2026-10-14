@@ -103,6 +103,8 @@ export function createTauriClient(): IpcClient {
     },
     reviewDecide: (findingId, decision) =>
       call<DecisionOutcome>('review_decide', { finding: findingId, decision }),
+    reviewMarkStep: (sessionId, stepId, reviewed) =>
+      call<string[]>('review_mark_step', { session: sessionId, step: stepId, reviewed }),
     draftsList: (sessionId) => call<Draft[]>('drafts_list', { sessionId }),
     draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
     draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),

@@ -207,6 +207,7 @@ pub fn run() {
             commands::review::review_findings,
             commands::review::review_ask,
             commands::review::review_decide,
+            commands::review::review_mark_step,
             commands::drafts::drafts_list,
             commands::drafts::drafts_create,
             commands::drafts::drafts_update,

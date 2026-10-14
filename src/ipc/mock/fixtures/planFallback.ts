@@ -93,6 +93,7 @@ export function mockFallbackView(error: AppError): PlanView {
     stepStats,
     skimStats: [],
     skimFiles: [],
+    reviewed: [],
     fallback: error,
   };
 }

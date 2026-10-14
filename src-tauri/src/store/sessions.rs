@@ -189,6 +189,15 @@ pub fn set_strategy(conn: &Connection, id: &str, strategy: Strategy) -> Result<b
     Ok(changed > 0)
 }
 
+/// The session was used now: `updated_at` orders "Pick up where you left off" (F-04.1).
+pub fn touch(conn: &Connection, id: &str) -> Result<(), StoreError> {
+    conn.execute(
+        "UPDATE sessions SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
+        params![id],
+    )?;
+    Ok(())
+}
+
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {
     Ok(conn
         .query_row("SELECT 1 FROM sessions WHERE id = ?1", params![id], |_| {

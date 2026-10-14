@@ -26,6 +26,11 @@ skimStats: Array<ChangeStats>,
  */
 skimFiles: Array<Array<string>>, 
 /**
+ * The plan's steps marked reviewed in this session, in plan order (F-07.1 done checks and
+ * progress segments); `review_mark_step` returns the new list.
+ */
+reviewed: Array<string>, 
+/**
  * Why Claude couldn't plan (S-02 Claude failed): the plan is then the app's file-order
  * fallback, one step per layer group in GitLab file order, with config risks (F-06.13),
  * "N open threads." and coverage; no intent, orders, skim or claims. Never cached.
