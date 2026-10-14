@@ -2,7 +2,7 @@
 
 The feedback loop for how we build Guided Review (not the product). Data: `node tools/metrics/report.mjs` (ledger `.metrics/sessions.jsonl`, from the Claude Code transcripts; `.verify/timings.jsonl` for verify steps). `/retro` reads the numbers, judges the open experiments below, and adds at most three new ones. Every change to the process is an experiment with a metric and a baseline, so it can be kept or reverted on evidence.
 
-Last retro: 2026-10-13T20:19Z (17 sessions)
+Last retro: 2026-10-14T09:30Z (24 sessions)
 
 ## Baseline (2026-10-13, 10 M3 sessions 3b–3e)
 
@@ -16,13 +16,15 @@ Last retro: 2026-10-13T20:19Z (17 sessions)
 | ID | Date | Change | Metric (baseline → target) | Status |
 | - | - | - | - | - |
 | E1 | 2026-10-13 | `/design-check` structure mode by default (ADR-026) on the one-run script (bd9897a → dc775d4, 4900d5a) | design-check turns/run 66 → ≤ 15; cache read/run 5.5M → ≤ 1.5M | open |
-| E2 | 2026-10-13 | Context guard: PostToolUse hook warns at 120k (wrap up) and 160k (handoff now) (`tools/metrics/context-guard.mjs`) | sessions over 150k 10/10 → ≤ 3/10; cache read above 150k per session | open: reopened after review (the retro closed it on n=2, against its own < 3 rule). After 358ba79: P-2 137k, P-3 warned at 120k, handed off at 123k (a review fix continued it), one 51k session that never reached the guard. Judge at the next retro. |
 | E5 | 2026-10-13 | `/handoff` rule: next-session prompt fits ~100k context, max 3 tasks; the session-log row records `tasks x/y` (`.claude/skills/handoff/SKILL.md`) | prompt tasks done / planned per session (P-2: stopped by the guard before its last tasks; P-3, 5 tasks before E5: all but e2e on 1420, port busy) → all, before the 120k warning in ≥ 4 of 5 sessions. Not "sessions over 150k": the guard (E2) caps that by itself. | open |
 | E6 | 2026-10-13 | Playwright reporter always `line` (`playwright.config.ts`; was `list` outside CI); R2 hit 9× / 41k tax | `Bash: npx playwright` tax per session 41k → ≤ 10k | open |
-| E4 | 2026-10-13 | Context packs for lanes (`tools/context-pack.mjs`) and parallel lanes in worktrees (`tools/lanes.mjs`, `/fanout`, `/integrate`; contract = plan `## Lanes` + IPC types) | reading share of tax 84% → ≤ 50%; median cache read/session 12M → ≤ 7M; wall time per milestone | open: tooling done in P-2–P-4, first measured run = the pilot of 2 lanes on M3 (P-5) |
+| E4 | 2026-10-13 | Context packs for lanes (`tools/context-pack.mjs`) and parallel lanes in worktrees (`tools/lanes.mjs`, `/fanout`, `/integrate`; contract = plan `## Lanes` + IPC types) | reading share of tax 84% → ≤ 50%; median cache read/session 12M → ≤ 7M; wall time per milestone | open: pilot measured (2 lanes on M3): lanes 8 and 15 min, 1.5M cache read each, max context ≤ 105k, base 31k (tokens 155k/137k; 79k third): lanes meet the target. Integrator 7 min tool time but 68+107 turns, 17.4M cache read, max 178k, reading share 94%: the integrator eats the savings. P-6 gate rejected because P-5 never started the lanes; milestone wall time still unmeasured. Judge after a full run (E8 targets the integrator). |
+| E7 | 2026-10-14 | `/integrate` step 7: `lanes.mjs remove` without `--delete-branch`, no stash; branches listed for the owner (classifier blocks branch deletion and stash drops) (`.claude/skills/integrate/SKILL.md`) | failed tool calls per integration (R9: 14 in the pilot) → ≤ 3 | open |
+| E8 | 2026-10-14 | `/integrate` review budget: `/code-review medium` once per lane, `git diff --stat` first, handoff if context > ~120k before verify (same file) | integrator cache read 17.4M → ≤ 8M; sub-turns 107 → ≤ 50; max context 178k → ≤ 150k | open |
 
 ## Closed
 
 | ID | Result | Numbers |
 | - | - | - |
 | E3 | kept | Base context 53-54k (15 of 17 sessions; 71k in the first two) → 43k in both sessions after the deny list; target ≤ 45k met. |
+| E2 | kept | 8 sessions since 358ba79: over 150k in 1 of 8 (the integrator, 178k); P-3 147k, rest 50-105k; target ≤ 3/10 met. |

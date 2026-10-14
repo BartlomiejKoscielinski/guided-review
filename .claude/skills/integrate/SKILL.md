@@ -19,6 +19,7 @@ Runs in the main checkout on the milestone branch with `git status --porcelain -
 Lanes with `merged` = `yes` only need step 7. Then read each report (`.lanes/<lane>/report.md` in the lane worktree): keep its Done, Deviations, Contract requests and Open for steps 4, 6 and 8.
 
 ## 2. Review
+Budget (E8): the integrator is the most expensive step of a lane run. Review each lane once at `/code-review medium`, start from `git diff --stat` and read only flagged ranges; if context passes ~120k before step 5, commit what is merged and `/handoff` (verify and audit in a new session).
 For each lane: `/code-review <mx>/<lane>`; the diff that counts is `git diff <milestone branch>...<mx>/<lane>`. A finding that breaks a non-negotiable of `CLAUDE.md` or the contract (IPC types, files outside owns): do not merge that lane, report it. Other confirmed findings: fix them after the merge (step 4).
 
 ## 3. Merge
@@ -38,7 +39,7 @@ In `## Lanes` order: `git merge --no-ff <mx>/<lane> -m "<Mx>: merge lane <lane> 
 - `docs/PROGRESS.md` by section (`grep -n '^## \|^- \[ \]'`): tick the ACs each report lists as done with their lane commit SHAs (now in history); partial ones `— partial: <what is missing>`. `node tools/audit.mjs --milestone <Mx>` shows no SHA gap. The session-log row and the commit come from `/handoff` (step 8).
 
 ## 7. Remove the lanes
-Per merged lane: `node tools/lanes.mjs remove <lane> --delete-branch` (copies `report.md` into `.lanes/<lane>/` here, removes the worktree, `git branch -d`). It refuses a dirty lane or an unmerged branch: report, never add `--force` without the user's OK. `node tools/lanes.mjs list` and `git worktree list` no longer show them.
+Per merged lane: `node tools/lanes.mjs remove <lane>` WITHOUT `--delete-branch` (copies `report.md` into `.lanes/<lane>/` here, removes the worktree). The permission classifier blocks branch deletion (and stash drops), so do not try it: list the merged `<mx>/<lane>` branches in the step 8 report for the owner to prune (`git branch -d`). Never use `git stash` here; park work in a WIP commit. It refuses a dirty lane or an unmerged branch: report, never add `--force` without the user's OK. `node tools/lanes.mjs list` and `git worktree list` no longer show them.
 
 ## 8. Report and hand off
 Per lane: merged (merge SHA) or refused (why); review findings fixed; deviations and open items from the reports; contract changes; verify and e2e result (port). Then `/handoff` (session-log row: lanes, merge SHAs, deviations).
