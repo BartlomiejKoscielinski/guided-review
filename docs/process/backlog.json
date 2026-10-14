@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T12:46:22.342Z",
+  "updated": "2026-10-14T14:05:40.423Z",
   "items": [
     {
       "id": "F-02.5",
@@ -40,9 +40,16 @@
       "title": "Session state (reviewed steps, note decisions, drafts, layout, scroll position per step, \"For you to…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "checklist ticks stored; UI wiring comes with F-08.7 (M4); live restart check via /app not run",
+      "lockSha": "4a20f66",
+      "tests": [
+        "src-tauri/src/store/session_state_tests.rs",
+        "src-tauri/src/store/session_state_notes_tests.rs",
+        "src/ipc/mock/session-state.test.ts",
+        "tests/e2e/step.spec.ts"
+      ]
     },
     {
       "id": "F-05.5",

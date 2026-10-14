@@ -1,5 +1,5 @@
 {
-  "items": 2,
+  "items": 3,
   "entries": [
     {
       "id": "P-001",
@@ -71,7 +71,7 @@
         "src-tauri/src/store/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T10:02:39.330Z",
@@ -92,6 +92,53 @@
       "created": "2026-10-14T10:02:39.379Z",
       "lastUsedItem": 1,
       "source": "F-04.1"
+    },
+    {
+      "id": "P-007",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/**",
+        "src/ipc/**"
+      ],
+      "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:05:35.020Z",
+      "lastUsedItem": 2,
+      "source": "F-04.3"
+    },
+    {
+      "id": "P-008",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:05:35.078Z",
+      "lastUsedItem": 2,
+      "source": "F-04.3"
+    },
+    {
+      "id": "P-009",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**",
+        "src-tauri/src/store/**"
+      ],
+      "text": "Before showing restored per-step state keyed by step id (dismissed notes, cached findings), check it still belongs to the current plan's step, because with_dismissed restores every dismissed note for a session and step id and a re-plan that reuses step ids could surface old notes.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:05:35.142Z",
+      "lastUsedItem": 2,
+      "source": "F-04.3"
     }
   ]
 }
