@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T14:05:40.423Z",
+  "updated": "2026-10-14T14:19:12.517Z",
   "items": [
     {
       "id": "F-02.5",
@@ -57,9 +57,13 @@
       "title": "Mechanical hunks are detected without AI where possible (whitespace-only, .csproj package bumps, .resx key…",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "`review/mechanical.rs` → `Hunk.mechanical` (bd8d436); plan input `mechanical_file` (355331f); Skim row UI (3d); fold rows inside a step (2575c46)"
+      "status": "done",
+      "attempts": 1,
+      "note": "`review/mechanical.rs` → `Hunk.mechanical` (bd8d436); plan input `mechanical_file` (355331f); Skim row UI (3d); fold rows inside a step (2575c46)",
+      "lockSha": "451a89a",
+      "tests": [
+        "src-tauri/tests/mechanical.rs"
+      ]
     },
     {
       "id": "F-06.5",

@@ -1,5 +1,5 @@
 {
-  "items": 3,
+  "items": 4,
   "entries": [
     {
       "id": "P-001",
@@ -71,7 +71,7 @@
         "src-tauri/src/store/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T10:02:39.330Z",
@@ -139,6 +139,53 @@
       "created": "2026-10-14T14:05:35.142Z",
       "lastUsedItem": 2,
       "source": "F-04.3"
+    },
+    {
+      "id": "P-010",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:19:12.003Z",
+      "lastUsedItem": 3,
+      "source": "F-05.5"
+    },
+    {
+      "id": "P-011",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/git/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "For core parsers of git output, build fixtures from real git diffs and run the production to_model path with spaces, Polish characters and CRLF or missing-final-newline cases, because the review accepted this as non-tautological and independent of autocrlf (F-05.5, 6 integration tests, no findings).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:19:12.064Z",
+      "lastUsedItem": 3,
+      "source": "F-05.5"
+    },
+    {
+      "id": "P-012",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, because F-05.5 left it unset so the Skim row is not visible in dev:mock and has no e2e test until F-06.6.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:19:12.128Z",
+      "lastUsedItem": 3,
+      "source": "F-05.5"
     }
   ]
 }
