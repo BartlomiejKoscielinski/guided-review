@@ -14,6 +14,11 @@ pub mod settings;
 pub mod steps_state;
 pub mod worktrees;
 
+#[cfg(test)]
+mod session_state_notes_tests;
+#[cfg(test)]
+mod session_state_tests;
+
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
