@@ -175,6 +175,54 @@ describe('S-03 layouts B and C', () => {
     ).toBeInTheDocument();
   });
 
+  it('F-09.2 layout C: the focused note in the guide takes the decisions; the other rows say "in drafts" or "dismissed" until Undo', async () => {
+    await openStep4();
+    act(() => {
+      useFocusStore.getState().setLayout('C');
+    });
+    const guide = await screen.findByRole('complementary', { name: 'Guide' });
+    const FIRST = 'The whole photo goes into SQLite as byte[]';
+    const SECOND_TITLE = 'PendingCount won’t refresh after upload';
+    const row = (number: number, title: string) =>
+      within(guide).getByRole('button', { name: `Note ${String(number)}: ${title}` });
+    const note = (title: string) =>
+      within(guide).getByRole('article', { name: `Claude note: ${title}` });
+
+    await userEvent.click(row(1, FIRST));
+    await userEvent.click(within(note(FIRST)).getByRole('button', { name: 'Add to drafts' }));
+    expect(
+      await within(note(FIRST)).findByText(
+        'Added to drafts. It reaches GitLab only when you publish.',
+      ),
+    ).toBeInTheDocument();
+
+    await userEvent.click(row(2, SECOND_TITLE));
+    expect(row(1, FIRST)).toHaveTextContent('in drafts');
+    await userEvent.click(within(note(SECOND_TITLE)).getByRole('button', { name: 'Dismiss' }));
+    expect(
+      await within(note(SECOND_TITLE)).findByText(
+        "Dismissed. Claude won't raise it again for this commit.",
+      ),
+    ).toBeInTheDocument();
+
+    // Back on the first note: Undo takes the draft back; the second row says "dismissed".
+    await userEvent.click(row(1, FIRST));
+    expect(row(2, SECOND_TITLE)).toHaveTextContent('dismissed');
+    await userEvent.click(within(note(FIRST)).getByRole('button', { name: 'Undo' }));
+    expect(
+      await within(note(FIRST)).findByRole('button', { name: 'Add to drafts' }),
+    ).toBeInTheDocument();
+
+    await userEvent.click(row(2, SECOND_TITLE));
+    await userEvent.click(within(note(SECOND_TITLE)).getByRole('button', { name: 'Undo' }));
+    expect(
+      await within(note(SECOND_TITLE)).findByRole('button', { name: 'Dismiss' }),
+    ).toBeInTheDocument();
+    await userEvent.click(row(1, FIRST));
+    expect(row(2, SECOND_TITLE)).toHaveTextContent('should fix');
+    expect(within(guide).queryByText('in drafts')).not.toBeInTheDocument();
+  });
+
   it('F-10.1 F-10.2 F-10.3 layout C: a question in the guide streams an answer card, Add to drafts', async () => {
     await openStep4();
     act(() => {

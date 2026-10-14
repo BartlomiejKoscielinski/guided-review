@@ -119,6 +119,57 @@ fn f09_2_undo_add_to_drafts_deletes_the_draft() {
 }
 
 #[test]
+fn f09_2_undo_of_edit_and_add_deletes_only_its_own_draft() {
+    with(|c| {
+        decide(c, "f1", &FindingDecision::AddToDrafts, SUBJECT)?;
+        let edit = FindingDecision::EditAndAdd {
+            body: "Please await `Enqueue`.".into(),
+        };
+        let edited = decide(c, "f2", &edit, SUBJECT)?.draft.unwrap();
+        assert_eq!(drafts::list(c, "r1")?.len(), 2);
+
+        let out = decide(c, "f2", &FindingDecision::Undo, SUBJECT)?;
+        assert_eq!(out.finding.decision, Decision::Open);
+        assert!(out.draft.is_none());
+        let left = drafts::list(c, "r1")?;
+        assert_eq!(left.len(), 1, "the other note keeps its draft");
+        assert_eq!(left[0].finding_id.as_deref(), Some("f1"));
+        assert_ne!(left[0].id, edited.id);
+        assert_eq!(decision_of(c, "f1"), Decision::Draft);
+        assert_eq!(decision_of(c, "f2"), Decision::Open);
+
+        // Undone, the note takes Edit and add again, with the new text.
+        let again = FindingDecision::EditAndAdd {
+            body: "Second try.".into(),
+        };
+        assert_eq!(
+            decide(c, "f2", &again, SUBJECT)?.draft.unwrap().body,
+            "Second try."
+        );
+        Ok(())
+    });
+}
+
+#[test]
+fn f09_2_edit_and_add_with_blank_text_is_refused_and_the_note_stays_open() {
+    with(|c| {
+        for body in ["", "  \n\t "] {
+            let edit = FindingDecision::EditAndAdd { body: body.into() };
+            assert!(matches!(
+                decide(c, "f1", &edit, SUBJECT),
+                Err(DecisionError::Draft(DraftError::EmptyBody))
+            ));
+        }
+        assert_eq!(decision_of(c, "f1"), Decision::Open);
+        assert!(drafts::list(c, "r1")?.is_empty());
+        // Nothing was half done: the note still takes any decision.
+        decide(c, "f1", &FindingDecision::Dismiss, SUBJECT)?;
+        assert_eq!(decision_of(c, "f1"), Decision::Dismissed);
+        Ok(())
+    });
+}
+
+#[test]
 fn f09_2_undo_of_a_published_draft_is_refused() {
     with(|c| {
         let draft = decide(c, "f1", &FindingDecision::AddToDrafts, SUBJECT)?

@@ -19,7 +19,16 @@ function renderNotes(selfReview = false, onAsk = vi.fn()) {
   return { ipc, onAsk };
 }
 
+const SUGGESTED =
+  'Could IUploadQueue publish changes (an event or WeakReferenceMessenger) so the ViewModel refreshes PendingCount after each upload?';
+
 const card = async (name = COUNTER) => screen.findByRole('article', { name });
+
+/** More › Edit and add on a card. */
+async function openEditor(note: HTMLElement) {
+  await userEvent.click(within(note).getByRole('button', { name: 'More' }));
+  await userEvent.click(screen.getByRole('menuitem', { name: 'Edit and add' }));
+}
 
 describe('NoteCard', () => {
   it('F-07.6 shows the severity word, title, Claude label, body and Add to drafts, Dismiss, More', async () => {
@@ -90,6 +99,60 @@ describe('NoteCard', () => {
     await userEvent.click(within(note).getByRole('button', { name: 'Cancel' }));
     expect(within(note).queryByRole('textbox')).not.toBeInTheDocument();
     expect(within(note).getByRole('button', { name: 'Dismiss' })).toBeEnabled();
+  });
+
+  it('F-09.2 Edit and add can be undone: its draft goes, the note is open again and Edit and add starts from the suggested comment', async () => {
+    const { ipc } = renderNotes();
+    const note = await card();
+    await openEditor(note);
+    const text = within(note).getByRole('textbox', { name: 'Suggested comment' });
+    await userEvent.clear(text);
+    await userEvent.type(text, 'Refresh PendingCount after each upload?');
+    await userEvent.click(within(note).getByRole('button', { name: 'Add to drafts' }));
+    expect(await within(note).findByText(ADDED)).toBeInTheDocument();
+    expect(within(note).getByRole('button', { name: 'Undo' })).toHaveFocus();
+    expect(await ipc.draftsList(SESSION)).toHaveLength(1);
+
+    await userEvent.click(within(note).getByRole('button', { name: 'Undo' }));
+    expect(await within(note).findByRole('button', { name: 'Add to drafts' })).toBeInTheDocument();
+    expect(within(note).queryByText(ADDED)).not.toBeInTheDocument();
+    expect(await ipc.draftsList(SESSION)).toEqual([]);
+
+    await openEditor(note);
+    expect(within(note).getByRole('textbox', { name: 'Suggested comment' })).toHaveValue(SUGGESTED);
+  });
+
+  it('F-09.2 Cancel drops the edit: nothing is added and Edit and add opens with the suggested comment again', async () => {
+    const { ipc } = renderNotes();
+    const note = await card();
+    await openEditor(note);
+    const text = within(note).getByRole('textbox', { name: 'Suggested comment' });
+    await userEvent.clear(text);
+    await userEvent.type(text, 'Something else');
+    await userEvent.click(within(note).getByRole('button', { name: 'Cancel' }));
+    expect(within(note).queryByText(ADDED)).not.toBeInTheDocument();
+    expect(await ipc.draftsList(SESSION)).toEqual([]);
+
+    await openEditor(note);
+    expect(within(note).getByRole('textbox', { name: 'Suggested comment' })).toHaveValue(SUGGESTED);
+  });
+
+  it('F-09.2 Undo hands the keyboard focus back to Add to drafts, after a draft and after a dismissal', async () => {
+    renderNotes();
+    const note = await card();
+    await userEvent.click(within(note).getByRole('button', { name: 'Add to drafts' }));
+    await userEvent.click(await within(note).findByRole('button', { name: 'Undo' }));
+    const add = await within(note).findByRole('button', { name: 'Add to drafts' });
+    await waitFor(() => {
+      expect(add).toHaveFocus();
+    });
+
+    await userEvent.click(within(note).getByRole('button', { name: 'Dismiss' }));
+    await userEvent.click(await within(note).findByRole('button', { name: 'Undo' }));
+    const again = await within(note).findByRole('button', { name: 'Add to drafts' });
+    await waitFor(() => {
+      expect(again).toHaveFocus();
+    });
   });
 
   it('F-09.2 Dismiss and Undo; the dismissed title is struck through', async () => {

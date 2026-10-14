@@ -126,6 +126,31 @@ describe('mock review backend', () => {
     });
   });
 
+  it('F-09.2 undo of Edit and add removes its draft only; a blank edit is refused like the core does', async () => {
+    const mock = client();
+    await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+
+    await mock.reviewDecide('f2', { kind: 'addToDrafts' });
+    const edited = await mock.reviewDecide('f4', { kind: 'editAndAdd', body: 'Catch it apart?' });
+    expect(edited.finding.decision).toBe('draft');
+    const undone = await mock.reviewDecide('f4', { kind: 'undo' });
+    expect(undone).toMatchObject({ finding: { id: 'f4', decision: 'open' }, draft: null });
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2']);
+
+    // Undone, the note takes Edit and add again; its suggested comment is untouched.
+    const again = await mock.reviewDecide('f4', { kind: 'editAndAdd', body: 'Second try.' });
+    expect(again.draft?.body).toBe('Second try.');
+    expect(again.finding.suggestedComment).toBe(edited.finding.suggestedComment);
+
+    // Blank text is refused with the core's copy and leaves the note open (nothing half done).
+    await expect(mock.reviewDecide('f1', { kind: 'editAndAdd', body: '  ' })).rejects.toMatchObject(
+      { code: 'INVALID_INPUT', message: 'Write a comment first.' },
+    );
+    const { findings } = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    expect(findings.map((f) => f.decision)).toEqual(['open', 'draft', 'open', 'draft']);
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2', 'f4']);
+  });
+
   it('F-09.2 local drafts: create, update, delete with the core’s error copy', async () => {
     const mock = client();
     await expect(

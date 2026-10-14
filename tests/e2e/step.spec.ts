@@ -260,6 +260,54 @@ test('F-04.3 after a restart the note decisions are still on the notes', async (
   await expect(page.getByText('3 notes')).toBeVisible();
 });
 
+test('F-09.2 step 4: Edit and add opens the text first and adds it, Dismiss drops the note, and each decision can be undone', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await openStep(page, /ViewModel/, 4);
+  await expect(page.getByText('4 notes')).toBeVisible();
+  const suggested = /^Could IUploadQueue publish changes/;
+
+  // Edit and add: the suggested comment opens for editing, with the focus in it.
+  await page.getByRole('button', { name: `Note 2: ${SECOND}` }).click();
+  const edited = page.getByRole('article', { name: `Claude note: ${SECOND}` });
+  await edited.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('menuitem', { name: 'Edit and add' }).click();
+  const text = edited.getByRole('textbox', { name: 'Suggested comment' });
+  await expect(text).toBeFocused();
+  await expect(text).toHaveValue(suggested);
+  await text.fill('Refresh PendingCount after each upload?');
+  await edited.getByRole('button', { name: 'Add to drafts' }).click();
+  await expect(
+    edited.getByText('Added to drafts. It reaches GitLab only when you publish.'),
+  ).toBeVisible();
+  await expect(edited.getByRole('textbox')).toHaveCount(0);
+  await expect(page.getByText('3 notes')).toBeVisible();
+
+  // Undo takes the edited draft back; Edit and add then starts from the suggested comment again.
+  await edited.getByRole('button', { name: 'Undo' }).click();
+  await expect(edited.getByRole('button', { name: 'Add to drafts' })).toBeVisible();
+  await expect(page.getByText('4 notes')).toBeVisible();
+  await edited.getByRole('button', { name: 'More' }).click();
+  await page.getByRole('menuitem', { name: 'Edit and add' }).click();
+  await expect(edited.getByRole('textbox', { name: 'Suggested comment' })).toHaveValue(suggested);
+  await edited.getByRole('button', { name: 'Cancel' }).click();
+  await expect(edited.getByRole('button', { name: 'Dismiss' })).toBeVisible();
+  await expect(page.getByText('4 notes')).toBeVisible();
+
+  // Dismiss: the note leaves the count, Undo brings it back.
+  await page.getByRole('button', { name: `Note 1: ${FIRST}` }).click();
+  const dismissed = page.getByRole('article', { name: `Claude note: ${FIRST}` });
+  await dismissed.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(
+    dismissed.getByText("Dismissed. Claude won't raise it again for this commit."),
+  ).toBeVisible();
+  await expect(page.getByText('3 notes')).toBeVisible();
+  await dismissed.getByRole('button', { name: 'Undo' }).click();
+  await expect(dismissed.getByRole('button', { name: 'Add to drafts' })).toBeVisible();
+  await expect(page.getByText('4 notes')).toBeVisible();
+});
+
 test('F-09.1 step 4: every note shows its severity word, title and body under its own line, with the suggested comment behind Edit and add', async ({
   page,
 }) => {
