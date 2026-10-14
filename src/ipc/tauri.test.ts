@@ -119,6 +119,16 @@ describe('Tauri IPC client', () => {
     ]);
   });
 
+  it('F-06.5 a dragged order and a picked strategy go to the core by their contract names', async () => {
+    const client = createTauriClient();
+    await client.reviewReorderSteps('session-1', ['s2', 's1', 's3']);
+    await client.reviewSetStrategy('session-1', 'testsFirst');
+    expect(invokeMock.mock.calls).toEqual([
+      ['review_reorder_steps', { session: 'session-1', order: ['s2', 's1', 's3'] }],
+      ['review_set_strategy', { session: 'session-1', strategy: 'testsFirst' }],
+    ]);
+  });
+
   it('rejects with an IpcError carrying the AppError', async () => {
     invokeMock.mockRejectedValue({ code: 'INTERNAL', message: 'Broken.', retryable: false });
     await expect(createTauriClient().appHealth()).rejects.toMatchObject({

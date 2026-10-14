@@ -143,4 +143,38 @@ describe('mock plan backend', () => {
     expect(reset.custom).toBe(false);
     expect(reset.order[0]).toBe('s1');
   });
+
+  it('F-06.5 a dragged order belongs to its session only', async () => {
+    const mock = client();
+    const other = 'mock-mr-session-2';
+    await mock.reviewPlan(SESSION, () => undefined);
+    await mock.reviewPlan(other, () => undefined);
+    const dragged = ['s2', 's1', 's3', 's4', 's5', 's6', 's7', 's8'];
+    await mock.reviewReorderSteps(SESSION, dragged);
+    expect((await mock.reviewPlan(SESSION, () => undefined)).order.order).toEqual(dragged);
+    const untouched = (await mock.reviewPlan(other, () => undefined)).order;
+    expect(untouched).toEqual({
+      strategy: 'contractToUi',
+      custom: false,
+      order: ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'],
+    });
+    // Picking a strategy in one session doesn't clear the other's dragged order.
+    await mock.reviewReorderSteps(other, dragged);
+    await mock.reviewSetStrategy(SESSION, 'testsFirst');
+    expect((await mock.reviewPlan(other, () => undefined)).order).toMatchObject({
+      custom: true,
+      order: dragged,
+    });
+  });
+
+  it('F-06.5 the fallback plan refuses a dragged order, as the core does', async () => {
+    const mock = client({ planFails: true });
+    const view = await mock.reviewPlan(SESSION, () => undefined);
+    expect(view.fallback).toBeDefined();
+    const dragged = [...view.order.order].reverse();
+    await expect(mock.reviewReorderSteps(SESSION, dragged)).rejects.toMatchObject({
+      code: 'INVALID_INPUT',
+      message: "Claude isn't available. You can review in file order.",
+    });
+  });
 });
