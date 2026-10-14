@@ -74,7 +74,7 @@ Rules for Claude Code:
 - [x] F-06.2 "What this change does": 2–4 sentences from Claude (purple square marks Claude content). (355331f, 7da45d0, 79e1527, e0e5604, 95ba9b0, 5b58621)
 - [x] F-06.3 Plan · N steps: each row has a drag handle, number, title, layer tag, one-line reason ("Everything else… (df6afea, 355331f, 597f166, e0e5604, 95ba9b0)
 - [x] F-06.4 Strategy toggle: Contract to UI (default), Tests first, File order. Switching reorders steps instantly… (bc15516, 7aa235d, 79e1527, 95ba9b0, 7367e08, 81423f9, 33e24d6)
-- [ ] F-06.5 Rows can be reordered by drag and drop; the custom order is saved in the session. — partial: custom order + reset rule (7da45d0, 79e1527, docs 7aa235d); dnd-kit rows with keyboard sensor (95ba9b0); e2e keyboard drag (7367e08); real backend: S-02 checked in `tauri dev` (3d-3), drag not yet tried live
+- [x] F-06.5 Rows can be reordered by drag and drop; the custom order is saved in the session. (7da45d0, 79e1527, 7aa235d, 95ba9b0, 7367e08, 7e0176f, 4700e72, 2909095)
 - [ ] F-06.6 Skim row: "Skim: N mechanical files" with a short reason and Show. — partial: skimStats (597f166), `skimFiles` (bb292cd); row + Show (95ba9b0); real backend: S-02 checked in `tauri dev` (3d-3), no skim group in the stand-in MRs yet
 - [x] F-06.7 Aside Risks to check: each risk with severity square and step references. (95ba9b0)
 - [x] F-06.8 Aside MR description vs code: each claim from the description with ✓ found in step N, or !… (7da45d0, 95ba9b0)
