@@ -24,7 +24,8 @@ describe('mock GitLab backend', () => {
       deletions: 61,
       files: 16,
       pipeline: 'passed',
-      note: 'You’re a reviewer · plan is ready',
+      // Like the core's: " · plan is ready" is added by the row from `planReady` (F-02.5).
+      note: 'You’re a reviewer',
     });
     expect(large).toMatchObject({
       files: 61,
@@ -33,6 +34,21 @@ describe('mock GitLab backend', () => {
     });
     const [mine] = (await client().gitlabListMrs('mine')).rows;
     expect(mine?.note).toBe('2 unresolved threads from reviewers');
+  });
+
+  it('F-02.5 only !482 of Waiting for me has its plan cached (Start.dc.html)', async () => {
+    const { rows } = await client().gitlabListMrs('waiting');
+    expect(rows.map((r) => [r.iid, r.planReady])).toEqual([
+      [482, true],
+      [479, false],
+      [475, false],
+    ]);
+    // No note carries the suffix itself: the row adds it, as for the core's rows.
+    for (const tab of ['waiting', 'mine', 'all'] as const) {
+      for (const row of (await client().gitlabListMrs(tab)).rows) {
+        expect(row.note ?? '').not.toContain('plan is ready');
+      }
+    }
   });
 
   it('F-19.5 check and save returns only the masked token; remove clears it', async () => {

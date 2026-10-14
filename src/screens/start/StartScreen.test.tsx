@@ -30,6 +30,24 @@ function renderStart(
 const input = () => screen.getByLabelText(/Paste a merge request link/);
 const column = () => within(screen.getByRole('region', { name: 'Merge requests' }));
 
+/** The mock's lists with `note` and `planReady` replaced per iid (the core sets both, F-02.5). */
+function withRows(patch: Record<number, Partial<MrRow>>): Partial<IpcClient> {
+  const base = mockClient();
+  return {
+    gitlabListMrs: async (tab) => {
+      const list = await base.gitlabListMrs(tab);
+      return { ...list, rows: list.rows.map((r) => ({ ...r, ...patch[r.iid] })) };
+    },
+  };
+}
+
+/** The row (button) of the MR with this title in the Merge requests column. */
+function rowButton(title: string): HTMLElement {
+  const row = column().getByText(title).closest('button');
+  if (!row) throw new Error(`No row for “${title}”`);
+  return row;
+}
+
 describe('S-01 hero', () => {
   it('F-01.2 shows the detected type next to the input once typing pauses', async () => {
     const user = userEvent.setup();
@@ -215,6 +233,48 @@ describe('S-01 Merge requests', () => {
     await user.click(await column().findByRole('tab', { name: /^Mine/ }));
     expect(await column().findByText('You · 1 d')).toBeInTheDocument();
     expect(column().getByText('2 unresolved threads from reviewers')).toBeInTheDocument();
+  });
+
+  it('F-02.5 a row with a cached plan adds "plan is ready" to its note', async () => {
+    renderStart(
+      withRows({
+        482: { note: 'You’re a reviewer', planReady: true },
+        475: { planReady: true },
+      }),
+    );
+    await column().findByText('Offline queue for delivery photos');
+    expect(rowButton('Offline queue for delivery photos')).toHaveTextContent(
+      'You’re a reviewer · plan is ready',
+    );
+    expect(rowButton('Migrate to .NET 10')).toHaveTextContent(
+      'Large: the plan splits it by layer · plan is ready',
+    );
+  });
+
+  it('F-02.5 a row with a cached plan and no other note says just "plan is ready"', async () => {
+    renderStart(withRows({ 479: { note: null, planReady: true } }));
+    await column().findByText('Crash when rotating the signature screen');
+    const row = within(rowButton('Crash when rotating the signature screen'));
+    expect(row.getByText('plan is ready')).toBeInTheDocument();
+  });
+
+  it('F-02.5 only the rows whose plan is cached say "plan is ready"', async () => {
+    renderStart(
+      withRows({
+        482: { note: 'You’re a reviewer', planReady: true },
+        479: { note: null, planReady: false },
+        475: { planReady: false },
+      }),
+    );
+    await column().findByText('Offline queue for delivery photos');
+    expect(column().getAllByText(/plan is ready/)).toHaveLength(1);
+    expect(rowButton('Offline queue for delivery photos')).toHaveTextContent(/plan is ready/);
+    expect(rowButton('Crash when rotating the signature screen')).not.toHaveTextContent(
+      /plan is ready/,
+    );
+    const large = within(rowButton('Migrate to .NET 10'));
+    expect(large.queryByText(/plan is ready/)).toBeNull();
+    expect(large.getByText('Large: the plan splits it by layer')).toBeInTheDocument();
   });
 
   it("F-02.3 a teammate's MR opens the plan, my own opens author mode", async () => {

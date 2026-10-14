@@ -57,6 +57,19 @@ test('F-02.1 F-02.3 tabs with counts; my own MR opens author mode', async ({ pag
   await expect(page.getByRole('main', { name: 'Your MR' })).toBeVisible();
 });
 
+test('F-02.5 the row of an MR with a cached plan says "plan is ready", once', async ({ page }) => {
+  const row = (title: RegExp) => mrs(page).getByRole('button', { name: title });
+  const offline = row(/Offline queue for delivery photos/);
+  await expect(offline).toContainText('You’re a reviewer · plan is ready');
+  const said = ((await offline.textContent()) ?? '').match(/plan is ready/g);
+  expect(said).toHaveLength(1);
+  // The other rows of Waiting for me have no cached plan (Start.dc.html).
+  await expect(row(/Crash when rotating the signature screen/)).not.toContainText('plan is ready');
+  await expect(row(/Migrate to \.NET 10/)).toContainText('Large: the plan splits it by layer');
+  await expect(row(/Migrate to \.NET 10/)).not.toContainText('plan is ready');
+  await expect(mrs(page).getByText(/plan is ready/)).toHaveCount(1);
+});
+
 test('F-03.1 F-03.2 search, Shift+click range and Review opens the step review', async ({
   page,
 }) => {
