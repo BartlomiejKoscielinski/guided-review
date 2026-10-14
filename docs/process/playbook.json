@@ -1,5 +1,5 @@
 {
-  "items": 5,
+  "items": 6,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -225,12 +225,57 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
       "lastUsedItem": 4,
       "source": "F-06.5"
+    },
+    {
+      "id": "P-016",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When the plan row and the existing code disagree on what a control does, write the reading you chose as a tests-stage decision and make it the red test, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and the item then passed gate 1 without a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:13:07.675Z",
+      "lastUsedItem": 5,
+      "source": "F-06.6"
+    },
+    {
+      "id": "P-017",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:13:07.737Z",
+      "lastUsedItem": 5,
+      "source": "F-06.6"
+    },
+    {
+      "id": "P-018",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Before setting a core flag in the mock as P-012 asks, list the existing tests that read the unflagged rows, because F-06.6 skipped Hunk.mechanical to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:13:07.804Z",
+      "lastUsedItem": 5,
+      "source": "F-06.6"
     }
   ]
 }

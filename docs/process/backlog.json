@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T14:47:55.658Z",
+  "updated": "2026-10-14T15:13:08.272Z",
   "items": [
     {
       "id": "F-02.5",
@@ -87,9 +87,15 @@
       "title": "Skim row: \"Skim: N mechanical files\" with a short reason and Show.",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "skimStats (597f166), `skimFiles` (bb292cd); row + Show (95ba9b0); real backend: S-02 checked in `tauri dev` (3d-3), no skim group in the stand-in MRs yet"
+      "status": "done",
+      "attempts": 1,
+      "note": "Show in the real app (/app) not tried; stand-in MRs have no skim group",
+      "lockSha": "5db5191",
+      "tests": [
+        "src/screens/plan/SkimRow.test.tsx",
+        "src/screens/plan/PlanList.test.tsx",
+        "tests/e2e/plan.spec.ts"
+      ]
     },
     {
       "id": "F-06.9",
