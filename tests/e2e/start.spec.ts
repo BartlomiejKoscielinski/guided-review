@@ -181,13 +181,17 @@ test('F-04.1 Start lists the unfinished sessions with their progress between the
   await expect(
     cards.getByText('Self-review · 2 of 6 steps · saved yesterday 18:40', { exact: true }),
   ).toBeVisible();
-  // Newest first, as the core returns them.
-  const tops = await Promise.all(
+  // Newest first, as the core returns them, in reading order: Start.dc.html lays the cards out
+  // side by side (auto-fit grid), so a later card is to the right or on a lower row.
+  const [a, b] = await Promise.all(
     [cards.getByText('!471', { exact: true }), cards.getByText('local', { exact: true })].map(
-      async (tag) => (await tag.boundingBox())?.y ?? 0,
+      async (tag) => (await tag.boundingBox()) ?? { x: 0, y: 0 },
     ),
   );
-  expect(tops[0]).toBeLessThan(tops[1] ?? 0);
+  const first = a ?? { x: 0, y: 0 };
+  const second = b ?? { x: 0, y: 0 };
+  const sameRow = Math.abs(first.y - second.y) < 1;
+  expect(sameRow ? first.x < second.x : first.y < second.y).toBe(true);
   // Region 2 of S-01: below the hero input, above the three columns.
   const heroBottom = ((await source(page).boundingBox())?.y ?? 0) + 1;
   const cardsTop = (await cards.boundingBox())?.y ?? 0;
