@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T15:13:08.272Z",
+  "updated": "2026-10-14T15:34:56.245Z",
   "items": [
     {
       "id": "F-02.5",
@@ -103,9 +103,19 @@
       "title": "Aside Already discussed: existing threads summary; Claude does not repeat them and shows them in their…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "threads + \"N open threads.\" (10aa2f0), plan input (355331f); aside UI (95ba9b0); step threads (9748265, 530d516); \"N open threads.\" in the core fallback (81423f9); read-only thread cards in S-03 (47742bc, f604e59); open: live check on an MR with threads"
+      "status": "done",
+      "attempts": 1,
+      "note": "live check on an MR with threads (/app) open; stand-in !6 needs a DiffNote",
+      "lockSha": "d6383ce",
+      "tests": [
+        "src-tauri/tests/plan_threads.rs",
+        "src/ipc/mock/step.test.ts",
+        "src/screens/plan/PlanAside.test.tsx",
+        "src/screens/plan/PlanPrepared.test.tsx",
+        "src/screens/step/StepScreen.test.tsx",
+        "tests/e2e/plan.spec.ts",
+        "tests/e2e/step.spec.ts"
+      ]
     },
     {
       "id": "F-07.1",

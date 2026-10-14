@@ -1,5 +1,5 @@
 {
-  "items": 6,
+  "items": 7,
   "entries": [
     {
       "id": "P-001",
@@ -225,7 +225,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -276,6 +276,52 @@
       "created": "2026-10-14T15:13:07.804Z",
       "lastUsedItem": 5,
       "source": "F-06.6"
+    },
+    {
+      "id": "P-019",
+      "tags": [
+        "ui",
+        "tests",
+        "tools/standin/**"
+      ],
+      "text": "Before a UI item relies on a data shape that only the live stand-in can show, check that the stand-in seed data contains it: MR !6 had no DiffNote, so the F-06.9 thread cards could only be covered by the e2e mock and the real-app check went to the manual field.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:34:55.778Z",
+      "lastUsedItem": 6,
+      "source": "F-06.9"
+    },
+    {
+      "id": "P-020",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "For a fallback test, inject a fetcher that returns an error rather than an empty list, because an empty result never reaches the command's error branch (the review nit on src-tauri/tests/plan_threads.rs line 301).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:34:55.841Z",
+      "lastUsedItem": 6,
+      "source": "F-06.9"
+    },
+    {
+      "id": "P-021",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/src/**",
+        "src/screens/plan/**"
+      ],
+      "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:34:55.903Z",
+      "lastUsedItem": 6,
+      "source": "F-06.9"
     }
   ]
 }
