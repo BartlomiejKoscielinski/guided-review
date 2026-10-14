@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-14T20:41:13.081Z",
+  "updated": "2026-10-14T21:00:08.095Z",
   "items": [
     {
       "id": "F-02.5",
@@ -198,9 +198,17 @@
       "title": "Each note has severity, title, body, line (file, side, line), evidence (file:line list) and a suggested…",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "`review/findings.rs` validation → `StepAnalysis` (75dcfbd), model + types (8d92b37); findings table `review/decisions.rs` record (1f1e6c5); `review_findings` command + types + mock f1–f4 (b42a11c, 4772c33); NoteCard shows severity, title, body, suggested comment via Edit and add/Copy (87b700d); evidence chips with S-04"
+      "status": "done",
+      "attempts": 1,
+      "note": "`review/findings.rs` validation → `StepAnalysis` (75dcfbd), model + types (8d92b37); findings table `review/decisions.rs` record (1f1e6c5); `review_findings` command + types + mock f1–f4 (b42a11c, 4772c33); NoteCard shows severity, title, body, suggested comment via Edit and add/Copy (87b700d); evidence chips with S-04",
+      "lockSha": "fb9bfc6",
+      "tests": [
+        "src-tauri/src/review/findings_tests.rs",
+        "src-tauri/src/review/decisions_tests.rs",
+        "src/ipc/mock/review.test.ts",
+        "src/screens/step/StepScreen.test.tsx",
+        "tests/e2e/step.spec.ts"
+      ]
     },
     {
       "id": "F-09.2",

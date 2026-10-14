@@ -1,5 +1,5 @@
 {
-  "items": 8,
+  "items": 9,
   "entries": [
     {
       "id": "P-001",
@@ -149,7 +149,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -367,6 +367,36 @@
       "created": "2026-10-14T16:11:26.843Z",
       "lastUsedItem": 7,
       "source": "F-07.1"
+    },
+    {
+      "id": "P-025",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "When the pinned Playwright browser is missing on this PC, the tests role reports the e2e command as not run with the missing browser path instead of pointing Playwright at another binary, because F-09.1's tests verdict claimed an e2e run through a temporary config while the review could not run it and gate-1 verify never runs e2e.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T21:00:04.409Z",
+      "lastUsedItem": 8,
+      "source": "F-09.1"
+    },
+    {
+      "id": "P-026",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a locked test pins a data shape that a later item will extend, name that later item in the tests verdict (here evidence is stored as file:line with no side, which F-08.6 must extend) so the reviewer classifies the gap instead of raising a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T21:00:04.477Z",
+      "lastUsedItem": 8,
+      "source": "F-09.1"
     }
   ]
 }
