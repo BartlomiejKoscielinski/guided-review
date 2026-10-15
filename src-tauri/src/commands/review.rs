@@ -264,7 +264,6 @@ fn prefetch<R: Runtime>(
         match &result {
             Ok(_) => after_task(&claude, &store, Ok(())).await,
             Err(error) => {
-                tracing::info!(error = %AppError::from(error.clone()).message, "prefetch failed");
                 if let Some(claude_error) = error.claude() {
                     after_task(&claude, &store, Err(claude_error)).await;
                 }

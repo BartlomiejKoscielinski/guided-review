@@ -16,7 +16,7 @@ use crate::claude::tasks::ask::{self, AskAnswer, AskRequest};
 use crate::claude::tasks::events::ClaudeTaskEvent;
 use crate::claude::tasks::plan::Context;
 use crate::claude::tasks::step::{self, StepOutcome, StepRequest};
-use crate::error::AppError;
+use crate::error::{AppError, ErrorCode};
 use crate::git::model::FileDiff;
 use crate::os::process::Cancel;
 
@@ -165,11 +165,39 @@ pub async fn findings(
         Ok(analysis) => ClaudeTaskEvent::Done {
             result: analysis.clone(),
         },
-        Err(error) => ClaudeTaskEvent::Failed {
-            error: error.clone().into(),
-        },
+        Err(error) => {
+            let error: AppError = error.clone().into();
+            log_failure(req.step_id, priority, &error);
+            ClaudeTaskEvent::Failed { error }
+        }
     });
     result
+}
+
+/// The longest error detail a failed step logs.
+const LOGGED_DETAIL_MAX: usize = 200;
+
+/// A failed step analysis in the log (S-03 "Couldn't analyze this step."): the error code,
+/// message and detail (validation details never quote Claude's text; others are cut short).
+fn log_failure(step_id: &str, priority: Priority, error: &AppError) {
+    if error.code == ErrorCode::Cancelled {
+        return;
+    }
+    let detail: String = error
+        .detail
+        .as_deref()
+        .unwrap_or_default()
+        .chars()
+        .take(LOGGED_DETAIL_MAX)
+        .collect();
+    tracing::warn!(
+        step = %step_id,
+        ?priority,
+        code = ?error.code,
+        error = %error.message,
+        %detail,
+        "step analysis failed"
+    );
 }
 
 /// The notes of one step from Claude's cache with their decisions; `None` when the step was
