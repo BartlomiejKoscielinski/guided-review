@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T11:16:30.517Z",
+  "updated": "2026-10-15T11:47:52.000Z",
   "items": [
     {
       "id": "F-02.5",
@@ -291,9 +291,9 @@
       "title": "Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working…",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 1,
-      "note": "live check failed: live check failed: commit, range and second commit pass (S-02 source header, Commit messages vs code, Start step 1 -> S-03 with notes); local Uncommitted changes with untracked src/Delivery.App/Services/.idea/{.gitignore,encodings.xml}: S-03 shows Couldn't analyze this step. on every Retry, no step cache entry. Current-step failures are not logged; log the error detail, reproduce, fix (suspects findings.rs::validate or untracked files in a dot directory)",
+      "status": "live",
+      "attempts": 2,
+      "note": "Core and locked tests on base from attempt 1; attempt 2 logs every failed step as WARN 'step analysis failed' with code and reason (Claude detail never logged, NFR-08) and findings::validate accepts absolute/backslash paths of the step's files (8962057, 6a887df, 7d8dec4). Left: in tauri dev, re-run a local Uncommitted session with untracked files in a dot directory (.idea); S-03 must show notes; if it fails, read 'step analysis failed' in guided-review.log for the rule.",
       "lockSha": "efbb6ac",
       "tests": [
         "src-tauri/tests/self_review.rs",

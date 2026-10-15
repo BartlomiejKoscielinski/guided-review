@@ -1,5 +1,5 @@
 {
-  "items": 17,
+  "items": 18,
   "entries": [
     {
       "id": "P-001",
@@ -149,7 +149,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -165,7 +165,7 @@
         "src-tauri/tests/**"
       ],
       "text": "For core parsers of git output, build fixtures from real git diffs and run the production to_model path with spaces, Polish characters and CRLF or missing-final-newline cases, because the review accepted this as non-tautological and independent of autocrlf (F-05.5, 6 integration tests, no findings).",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.064Z",
@@ -196,7 +196,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -455,7 +455,7 @@
         "src-tauri/tests/**"
       ],
       "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T07:10:35.609Z",
@@ -501,7 +501,7 @@
         "src-tauri/tests/**"
       ],
       "text": "Before ticking a locked test of a rule that reads a context list (threads, cached notes), empty that list in a mutation check and confirm the tests fail, because F-09.5's empty thread list failed 4 of 6 Rust tests, which shows they go through the production loader rather than a stub.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T07:32:02.922Z",
@@ -719,6 +719,52 @@
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
       "source": "F-09.5"
+    },
+    {
+      "id": "P-050",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**",
+        "src/screens/**"
+      ],
+      "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:47:51.456Z",
+      "lastUsedItem": 17,
+      "source": "F-17.1"
+    },
+    {
+      "id": "P-051",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Put a test that installs a global tracing subscriber or log file in its own tests/*.rs binary (or use the thread-local set_default and match the line by a unique key), and run a new test binary several times before committing, because a 3-test binary sharing the global logger failed 6 of 7 runs in review.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:47:51.504Z",
+      "lastUsedItem": 17,
+      "source": "F-17.1"
+    },
+    {
+      "id": "P-052",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When logging a failed Claude step, write only code and message for Claude-originated errors (ClaudeFailed, ClaudeNotSignedIn, ClaudeLimited) and log the detail only for app-written errors, because that detail carries Claude's stderr or result text and NFR-08 keeps Claude output out of logs; cover one Claude code with a canary test.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:47:51.551Z",
+      "lastUsedItem": 17,
+      "source": "F-17.1"
     }
   ]
 }
