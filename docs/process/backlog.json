@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-15T19:52:40.755Z",
+  "updated": "2026-10-15T20:40:05.529Z",
   "items": [
     {
       "id": "F-08.1",
@@ -100,9 +100,14 @@
       "title": "Full note callout: tag, title, Claude label, body, \"Checked in\" evidence chips, Suggested comment, Add to…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "3b09fa2",
+      "tests": [
+        "src/screens/detailed/NoteCallout.test.tsx",
+        "tests/e2e/detailed.spec.ts"
+      ]
     },
     {
       "id": "F-08.7",

@@ -1,5 +1,5 @@
 {
-  "items": 24,
+  "items": 25,
   "entries": [
     {
       "id": "P-002",
@@ -27,7 +27,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -234,12 +234,14 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed",
+        "src/screens/detailed/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
-      "seen": 2,
+      "seen": 3,
       "created": "2026-10-14T15:13:07.675Z",
       "lastUsedItem": 7,
       "source": "F-06.6",
@@ -336,7 +338,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -398,7 +400,7 @@
         "src/screens/**"
       ],
       "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T06:36:00.066Z",
@@ -597,7 +599,7 @@
         "src/screens/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-15T09:26:23.811Z",
@@ -825,6 +827,21 @@
       "created": "2026-10-15T19:52:39.906Z",
       "lastUsedItem": 23,
       "source": "F-08.5"
+    },
+    {
+      "id": "P-061",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/detailed/**"
+      ],
+      "text": "When a Vitest test needs a diff line past the first screenful (about L41) to render a note, mock offsetHeight per element in jsdom (it has no layout) and put that in the tests notes, so the implementer does not chase an empty line list.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T20:40:04.671Z",
+      "lastUsedItem": 24,
+      "source": "F-08.6"
     }
   ]
 }
