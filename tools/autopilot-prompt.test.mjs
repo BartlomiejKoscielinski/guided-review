@@ -8,8 +8,10 @@ import { join } from 'node:path';
 import {
   ROLES,
   composePrompt,
+  contextFiles,
   fields,
   fixProblems,
+  itemHistory,
   offeredIds,
   promptValues,
   verifyCommand,
@@ -184,4 +186,123 @@ test('autopilot prompt: the CLI prints the prompt or exits 1 on an empty field',
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+test('autopilot prompt: tests, implement and fix start from the item note and earlier attempts', () => {
+  const dir = 'C:\\Repos\\guided review ł\\.autopilot\\items\\F-04.3';
+  const attempts = [
+    {
+      n: 2,
+      dir: `${dir}\\attempt-2`,
+      impl: { complete: false, partialReason: 'needs a live check in tauri dev' },
+      gates: [{ pass: true, merged: '9163bf3' }],
+    },
+    {
+      n: 1,
+      dir: `${dir}\\attempt-1`,
+      impl: { complete: true },
+      review: { findings: [{ severity: 'severe' }, { severity: 'nit' }] },
+      fixes: 1,
+      gates: [
+        {
+          pass: false,
+          checks: [
+            { name: 'clean', ok: true },
+            { name: 'locked-tests', ok: false },
+          ],
+        },
+        { pass: true, merged: 'abc1234' },
+      ],
+    },
+  ];
+  const note = 'live check failed: S-03 shows "Couldn\'t analyze this step."';
+  assert.equal(
+    itemHistory({ note, attempts }),
+    [
+      `- Item note: ${note}`,
+      '- Attempt 1 (verdicts in C:/Repos/guided review ł/.autopilot/items/F-04.3/attempt-1/): implement complete; review 1 severe, 0 normal; 1 fix round; gate failed (locked-tests), then passed (merged abc1234)',
+      '- Attempt 2 (verdicts in C:/Repos/guided review ł/.autopilot/items/F-04.3/attempt-2/): implement partial: needs a live check in tauri dev; gate passed (merged 9163bf3)',
+    ].join('\n'),
+  );
+  assert.equal(itemHistory({ note: ' ', attempts: [] }), 'none: first attempt, no note');
+  const files = { context: CONTEXT, review: REVIEW, attempts };
+  for (const name of ['tests', 'implement', 'fix']) {
+    const repeat = composePrompt(
+      COMMON,
+      role(name),
+      promptValues(args(name, { item: { ...ITEM, note }, files })),
+    );
+    assert.match(repeat, /^- Item note: live check failed: S-03 shows/m, name);
+    assert.match(repeat, /^- Attempt 2 \(verdicts in C:\/Repos\/guided review ł\/.*attempt-2\/\)/m);
+    const first = composePrompt(COMMON, role(name), promptValues(args(name)));
+    assert.match(first, /^none: first attempt, no note$/m, name);
+  }
+  const review = composePrompt(COMMON, role('review'), promptValues(args('review', { files })));
+  assert.doesNotMatch(review, /Item note|first attempt/);
+  const live = composePrompt(
+    COMMON,
+    role('reflect'),
+    promptValues(args('reflect', { item: { ...ITEM, status: 'live' } })),
+  );
+  assert.match(live, /result live\)/);
+});
+
+test('autopilot prompt: the CLI reads the attempt-N folders of the item', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'gr prompt ł-'));
+  try {
+    const items = join(dir, '.autopilot', 'items', 'F-04.3');
+    mkdirSync(join(items, 'attempt-1'), { recursive: true });
+    mkdirSync(join(dir, 'docs', 'process'), { recursive: true });
+    const note = 'live check failed: S-03 stays empty';
+    writeFileSync(
+      join(dir, 'docs', 'process', 'backlog.json'),
+      JSON.stringify({ milestone: 'M3', items: [{ ...ITEM, status: 'impl', note }] }),
+    );
+    writeFileSync(join(dir, '.autopilot', 'run.json'), JSON.stringify(args('tests').run));
+    writeFileSync(join(items, 'context.md'), CONTEXT);
+    writeFileSync(join(items, 'attempt-1', 'impl.json'), JSON.stringify({ complete: true }));
+    const failed = { pass: false, checks: [{ name: 'verify', ok: false, detail: 'FAIL e2e' }] };
+    writeFileSync(join(items, 'attempt-1', 'gate-1.json'), JSON.stringify(failed));
+    writeFileSync(join(items, 'attempt-1', 'gate-2.json'), JSON.stringify({ pass: true }));
+    const r = spawnSync(
+      process.execPath,
+      [PROMPT, 'implement', 'F-04.3', '--root', dir, '--extra', '{"base":"m3-x"}'],
+      { encoding: 'utf8' },
+    );
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /^- Item note: live check failed: S-03 stays empty$/m);
+    assert.match(
+      r.stdout,
+      /^- Attempt 1 \(verdicts in .*gr prompt ł-[^/]*\/\.autopilot\/items\/F-04\.3\/attempt-1\/\): implement complete; gate failed \(verify\), then passed$/m,
+    );
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('autopilot prompt E17: the reflector gets the existing lessons of the item kind and files', () => {
+  const entry = (id, tags, text) => ({ id, tags, text, helpful: 0, harmful: 0, seen: 1 });
+  const playbook = {
+    items: 3,
+    entries: [
+      entry('P-001', ['ui', 'implement'], 'One lesson.'),
+      entry('P-002', ['ui', 'tests', 'tests/e2e/**'], 'Assert the screen, not the URL.'),
+      entry('P-003', ['core', 'fix', 'src/a.ts'], 'Map store errors.'),
+      entry('P-004', ['core', 'review'], 'Not for this item.'),
+    ],
+  };
+  assert.deepEqual(contextFiles(CONTEXT), ['src/a.ts']);
+  assert.deepEqual(contextFiles('# x\n## Playbook\n- [P-001] y\n'), []);
+  const reflect = composePrompt(
+    COMMON,
+    role('reflect'),
+    promptValues(args('reflect', { item: { ...ITEM, kind: 'ui' }, playbook })),
+  );
+  assert.match(reflect, /^- \[P-001\] One lesson\.$/m);
+  assert.match(reflect, /^- \[P-002\] Assert the screen/m);
+  assert.match(reflect, /^- \[P-003\] Map store errors\.$/m);
+  assert.doesNotMatch(reflect, /P-004/);
+  assert.match(reflect, /"same": "P-003"/);
+  const none = composePrompt(COMMON, role('reflect'), promptValues(args('reflect')));
+  assert.match(none, /its files \(id and text\):\nnone\n/);
 });

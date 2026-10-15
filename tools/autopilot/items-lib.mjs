@@ -1,6 +1,12 @@
 // Autopilot outcome metrics (docs/process/AUTOPILOT.md §1, §4 B7): one row per item attempt in
 // .metrics/items.jsonl, and the judge that keeps or reverts a process experiment. Pure functions.
 
+/**
+ * Results of an item attempt (the backlog status after the gate): `live` = built and merged, only
+ * the check in the real app is left (the live role in "Closing" does it).
+ */
+export const RESULTS = ['done', 'partial', 'live', 'blocked', 'needs-owner'];
+
 /** Higher is better for rates, lower for costs and defects. */
 export const METRICS = {
   gateFirstPass: { better: 'higher', of: (r) => (r.gateFirstPass ? 1 : 0) },
@@ -65,20 +71,26 @@ export function buildRow({ item, run, result, verdicts, startedAt, endedAt, usag
   for (const f of verdicts.review?.findings ?? []) {
     if (f.severity in findings) findings[f.severity] += 1;
   }
+  // Every gate call has its own file (gate.mjs never overwrites one): the first call decides.
   const gates = Object.keys(verdicts)
     .filter((k) => /^gate-\d+$/.test(k))
-    .sort();
+    .sort((a, b) => Number(a.slice(5)) - Number(b.slice(5)));
   return {
     ts: endedAt,
     run,
     item,
     result,
-    gateFirstPass: verdicts['gate-1']?.pass === true,
+    gateFirstPass: gates.length > 0 && verdicts[gates[0]]?.pass === true,
     gates: gates.length,
     rounds: Object.keys(verdicts).filter((k) => /^fix-\d+$/.test(k)).length,
     findings,
     testDispute: verdicts.review?.testDispute ?? null,
     decisions: (verdicts.impl?.decisions ?? []).length + (verdicts.tests?.decisions ?? []).length,
+    // E17: the reflector's new lessons and its confirmations of existing ones (`same`).
+    lessons: {
+      new: (verdicts.reflect?.lessons ?? []).filter((l) => !l?.same).length,
+      same: (verdicts.reflect?.lessons ?? []).filter((l) => l?.same).length,
+    },
     tokens,
     tokenSource: usage ? 'transcript' : 'agent',
     cacheRead: usage ? usage.cacheRead : null,

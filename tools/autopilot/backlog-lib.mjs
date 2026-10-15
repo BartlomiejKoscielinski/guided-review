@@ -3,7 +3,7 @@
 // decision log of docs/process/DECISIONS-PENDING.md (a veto adds a rework item). Pure functions;
 // I/O in backlog.mjs.
 import { parseProgress } from '../audit-lib.mjs';
-import { isTest, tickProgress } from './gate-lib.mjs';
+import { isTest, parseDisputes, tickProgress } from './gate-lib.mjs';
 
 export const STATUSES = [
   'todo',
@@ -112,6 +112,7 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
       attempts: old?.attempts ?? 0,
       note: old?.note ?? note,
       ...(old?.lockSha ? { lockSha: old.lockSha, tests: old.tests ?? [] } : {}),
+      ...(old?.disputes?.length ? { disputes: old.disputes } : {}),
     });
   }
   for (const d of parseDecisions(decisionsMd)) {
@@ -147,8 +148,17 @@ export function next(backlog) {
   return { none: `no ready item in ${backlog?.milestone ?? 'the backlog'}` };
 }
 
-/** Changes one item; unknown ids or statuses, and locked "tests" that are not test files, throw. */
-export function setItem(backlog, id, { status, note, attempt, lockSha, tests, kind }, now) {
+/**
+ * Changes one item; unknown ids or statuses, and locked "tests" that are not test files, throw.
+ * `dispute` (`file@sha`, a locked test changed alone in a fix round after an accepted dispute) is
+ * remembered in `disputes`, one per file; the gate applies it in every later call (§3.3).
+ */
+export function setItem(
+  backlog,
+  id,
+  { status, note, attempt, lockSha, tests, kind, dispute },
+  now,
+) {
   const item = backlog.items.find((i) => i.id === id);
   if (!item) throw new Error(`no item ${id}`);
   // Production files a test author touched (module wiring) stay unlocked: the implementer changes them.
@@ -164,6 +174,11 @@ export function setItem(backlog, id, { status, note, attempt, lockSha, tests, ki
   if (lockSha !== undefined) item.lockSha = lockSha;
   if (tests !== undefined) item.tests = tests;
   if (kind !== undefined) item.kind = kind;
+  if (dispute !== undefined) {
+    const [[file]] = [...parseDisputes(dispute)];
+    const others = (item.disputes ?? []).filter((d) => !d.startsWith(`${file}@`));
+    item.disputes = [...others, dispute];
+  }
   backlog.updated = now;
   return item;
 }

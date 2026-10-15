@@ -2,6 +2,10 @@
 Objective: meet {{item}} so that the locked tests pass, following the spec, the mocks and the project conventions.
 
 Read: {{context}} (criterion, screen, mock, plan row, files, and "Playbook" lessons from earlier items: apply the ones that fit). Then only the files you change and what they call.
+
+Item history (the backlog note and earlier attempts; their verdicts are in the folders named). On a repeat attempt start from what it says failed or is left; the code of earlier attempts may already be on {{base}}:
+{{history}}
+
 Locked tests (written from the spec; you may not change them): {{tests}}. If one is wrong against the spec, leave it, set "testDispute" with the reason, and implement the spec.
 
 How (CLAUDE.md "How to work" 3–5): UI against the mock backend first, data matching the mocks; Rust: core module with unit tests, then the command, `npm run gen:types`, the mock implementation and the client in both src/ipc/tauri.ts and src/ipc/mock/. Small commits.

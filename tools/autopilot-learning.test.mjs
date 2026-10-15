@@ -1,8 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addEntry, curate, empty, rate, render, select, touch } from './autopilot/playbook-lib.mjs';
+import {
+  addEntry,
+  addRule,
+  curate,
+  empty,
+  existing,
+  merge,
+  rate,
+  render,
+  select,
+  touch,
+} from './autopilot/playbook-lib.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -208,4 +220,150 @@ test('autopilot metrics: judge waits for k rows, keeps or reverts by direction',
   assert.throws(() => judge(before, { since: 'x', metric: 'nope' }), /metric/);
   assert.equal(summary([...before, ...cheaper]).tokens, 90);
   assert.equal(summary([...before, row('2026-10-09', { run: 'ap-2' })], 'ap-2').items, 1);
+});
+
+test('autopilot metrics: the first gate call decides first pass; record.mjs takes the live result', () => {
+  const verdicts = {
+    'gate-10': { pass: true },
+    'gate-2': { pass: true },
+    'gate-1': { pass: false },
+  };
+  const r = buildRow({ item: 'F-17.1', run: 'ap-1', result: 'live', verdicts, endedAt: 't' });
+  assert.equal(r.gateFirstPass, false);
+  assert.equal(r.gates, 3);
+  assert.equal(r.result, 'live');
+  assert.equal(
+    buildRow({ item: 'F-17.1', run: 'ap-1', result: 'done', verdicts: {}, endedAt: 't' })
+      .gateFirstPass,
+    false,
+  );
+  const tmp = mkdtempSync(join(tmpdir(), 'gr-record-'));
+  const record = (result) =>
+    spawnSync(
+      process.execPath,
+      [
+        join(root, 'tools', 'autopilot', 'record.mjs'),
+        'F-17.1',
+        '--run',
+        'ap-1',
+        '--result',
+        result,
+        '--dir',
+        join(tmp, 'none'),
+        '--session',
+        'none',
+        '--out',
+        join(tmp, 'items.jsonl'),
+      ],
+      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: tmp } },
+    );
+  assert.equal(record('live').status, 0);
+  assert.equal(JSON.parse(readFileSync(join(tmp, 'items.jsonl'), 'utf8')).result, 'live');
+  const bad = record('built');
+  assert.equal(bad.status, 2);
+  assert.match(bad.stderr, /--result done\|partial\|live\|blocked\|needs-owner/);
+});
+
+test('autopilot playbook E17: promotion by helpful count, a lesson confirmed by id, merge, lessons to compare', () => {
+  const pb = empty();
+  addEntry(pb, { tags: ['core', 'tests'], text: 'Assert what can fail.' }, 't');
+  addEntry(pb, { tags: ['ui', 'implement', 'src/screens/**'], text: 'Seed the mock.' }, 't');
+  addEntry(
+    pb,
+    { tags: ['ui', 'tests'], text: 'Name the change that would fail the assertion.' },
+    't',
+  );
+  addEntry(pb, { tags: ['mixed', 'fix'], text: 'Run new test binaries several times.' }, 't');
+  for (let i = 0; i < 3; i++) rate(pb, 'P-002', 'helpful');
+  for (let i = 0; i < 4; i++) rate(pb, 'P-004', 'helpful');
+  rate(pb, 'P-004', 'harmful');
+  const again = addEntry(
+    pb,
+    { same: 'P-001', tags: ['src-tauri/tests/**'], source: 'F-09.5' },
+    't',
+  );
+  assert.deepEqual(again, { id: 'P-001', duplicate: true });
+  addEntry(pb, { same: 'P-001', tags: [] }, 't');
+  assert.deepEqual(pb.entries[0].tags, ['core', 'tests', 'src-tauri/tests/**']);
+  assert.throws(() => addEntry(pb, { same: 'P-099' }, 't'), /no entry P-099/);
+  assert.deepEqual(
+    curate(structuredClone(pb)).proposals.map((e) => e.id),
+    ['P-001', 'P-002'],
+  );
+  assert.deepEqual(
+    existing(pb, { kind: 'core', paths: ['src/screens/step/Step.tsx'], offered: ['P-004'] }).map(
+      (e) => e.id,
+    ),
+    ['P-002', 'P-001', 'P-004'],
+  );
+  assert.deepEqual(existing(pb, { kind: 'core' }, 3), []);
+  const kept = merge(pb, 'P-001', 'P-003');
+  assert.deepEqual(
+    [kept.seen, kept.helpful, kept.harmful, kept.tags],
+    [4, 0, 0, ['core', 'tests', 'src-tauri/tests/**', 'ui']],
+  );
+  assert.deepEqual(
+    pb.entries.map((e) => e.id),
+    ['P-001', 'P-002', 'P-004'],
+  );
+  assert.throws(() => merge(pb, 'P-001', 'P-001'), /two entries/);
+  assert.throws(() => merge(pb, 'P-001', 'P-003'), /two entries/);
+  const row = buildRow({
+    item: 'F-09.5',
+    run: 'ap-1',
+    result: 'live',
+    endedAt: 't',
+    verdicts: {
+      reflect: {
+        lessons: [{ text: 'x', tags: [] }, { same: 'P-001', tags: [] }, { same: 'P-002' }],
+      },
+    },
+  });
+  assert.deepEqual(row.lessons, { new: 1, same: 2 });
+});
+
+test('autopilot playbook E17: promote writes the rule into the role file through the CLI', async () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'gr playbook ł-'));
+  try {
+    const pb = empty();
+    addEntry(pb, { tags: ['core', 'tests'], text: 'Assert what can fail.' }, 't');
+    addEntry(pb, { tags: ['ui', 'implement'], text: 'Seed the mock.' }, 't');
+    for (let i = 0; i < 3; i++) rate(pb, 'P-001', 'helpful');
+    mkdirSync(join(tmp, 'docs', 'process'), { recursive: true });
+    mkdirSync(join(tmp, '.claude', 'autopilot', 'roles'), { recursive: true });
+    const pbFile = join(tmp, 'docs', 'process', 'playbook.json');
+    const roleFile = join(tmp, '.claude', 'autopilot', 'roles', 'tests.md');
+    writeFileSync(pbFile, JSON.stringify(pb));
+    writeFileSync(roleFile, 'Objective: x.\n\nOutput:\n```json\n{}\n```\n');
+    const cli = (...a) =>
+      spawnSync(
+        process.execPath,
+        [join(root, 'tools', 'autopilot', 'playbook.mjs'), ...a, '--root', tmp],
+        { encoding: 'utf8' },
+      );
+    const ok = cli('promote', 'P-001', 'tests', 'Name the change that would fail each assertion.');
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.equal(
+      readFileSync(roleFile, 'utf8'),
+      'Objective: x.\n\nOutput:\n```json\n{}\n```\n\n## Rules learned\n\n- Name the change that would fail each assertion. (P-001)\n',
+    );
+    const saved = JSON.parse(readFileSync(pbFile, 'utf8')).entries[0];
+    assert.deepEqual([saved.promoted, saved.promotedTo], [true, 'tests']);
+    assert.match(cli('promote', 'P-001', 'tests', 'Again.').stderr, /already promoted/);
+    assert.match(cli('promote', 'P-002', 'implement', 'Seed it.').stderr, /not a rule proposal/);
+    assert.match(cli('promote', 'P-001', 'curate', 'x').stderr, /role curate/);
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+});
+
+test('autopilot playbook E17: addRule appends to the rules list, once per entry, one line only', () => {
+  const md = 'Objective: x.\n\n## Rules learned\n\n- First. (P-001)\n\n## After\n\ny\n';
+  assert.equal(
+    addRule(md, 'P-002', 'Second.'),
+    'Objective: x.\n\n## Rules learned\n\n- First. (P-001)\n- Second. (P-002)\n\n## After\n\ny\n',
+  );
+  assert.equal(addRule(md, 'P-001', 'Again.'), md);
+  assert.throws(() => addRule(md, 'P-003', 'two\nlines'), /one line/);
+  assert.throws(() => addRule(md, 'P-003', 'uses {{wt}}'), /one line/);
 });

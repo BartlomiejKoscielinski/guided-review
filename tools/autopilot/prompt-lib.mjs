@@ -1,15 +1,17 @@
 // Autopilot role prompts (docs/process/AUTOPILOT.md §5): `_common.md` + the role file, every
 // `{{field}}` filled from the backlog, the run, the worktree and `.autopilot/items/<id>/`.
 // Pure functions; I/O in prompt.mjs.
+import { RESULTS } from './items-lib.mjs';
+import { existing, render } from './playbook-lib.mjs';
 import { AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
 
 export const ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'curate', 'live'];
 /** Roles that work in the main checkout; the others in the autopilot worktree. */
 export const MAIN_CHECKOUT = ['plan', 'curate', 'live'];
-/** Item results the reflector learns from (backlog statuses after the gate). */
-const RESULTS = ['done', 'partial', 'blocked', 'needs-owner'];
 /** Gate output longer than this is cut in a fix prompt (the full log stays in gate-N.json). */
 const MAX_DETAIL = 2000;
+/** A reason of an earlier attempt longer than this is cut in the item history. */
+const MAX_REASON = 300;
 
 const slash = (p) => String(p).replace(/\\/g, '/');
 
@@ -22,6 +24,12 @@ export function fields(text) {
 export function offeredIds(contextMd) {
   const section = (contextMd ?? '').split(/^## /m).find((s) => s.startsWith('Playbook')) ?? '';
   return [...section.matchAll(/^- \[(P-\d+)\]/gm)].map((m) => m[1]);
+}
+
+/** Paths of the context pack's "## Files" section (`- src/a.ts (120 lines)`). */
+export function contextFiles(contextMd) {
+  const section = (contextMd ?? '').split(/^## /m).find((s) => s.startsWith('Files')) ?? '';
+  return [...section.matchAll(/^- (\S+)/gm)].map((m) => m[1]);
 }
 
 /** The backlog items waiting for a live check, one line each: id, criterion, its note. */
@@ -71,10 +79,57 @@ function disputeVerdict(review, impl) {
   return 'none';
 }
 
+const cut = (s) => {
+  const t = String(s ?? '').trim();
+  return t.length > MAX_REASON ? `${t.slice(0, MAX_REASON)}…` : t;
+};
+
+/** One earlier attempt (`.autopilot/items/<id>/attempt-N/`) in a line: its verdicts in short. */
+function attemptLine({ n, dir, impl, review, fixes = 0, gates = [] }) {
+  const parts = [];
+  if (impl)
+    parts.push(
+      impl.complete ? 'implement complete' : `implement partial: ${cut(impl.partialReason)}`,
+    );
+  if (review) {
+    const count = (s) => (review.findings ?? []).filter((f) => f.severity === s).length;
+    parts.push(`review ${count('severe')} severe, ${count('normal')} normal`);
+  }
+  if (fixes) parts.push(`${fixes} fix round${fixes > 1 ? 's' : ''}`);
+  if (gates.length) {
+    const runs = gates.map((g) =>
+      g?.pass
+        ? `passed${g.merged ? ` (merged ${g.merged})` : ''}`
+        : `failed (${(g?.checks ?? [])
+            .filter((c) => !c.ok)
+            .map((c) => c.name)
+            .join(', ')})`,
+    );
+    parts.push(`gate ${runs.join(', then ')}`);
+  }
+  const owner = [impl, review].find((v) => v?.needsOwner)?.needsOwner;
+  if (owner) parts.push(`needs owner: ${cut(owner)}`);
+  return `- Attempt ${n} (verdicts in ${slash(dir)}/): ${parts.join('; ') || 'no verdicts'}`;
+}
+
+/**
+ * What the item went through before this attempt: the backlog note (e.g. "live check failed: …",
+ * or what PROGRESS says is built) and one line per `attempt-N` folder. The tests, implement and fix
+ * prompts start from it, so the conductor never copies it into context.md by hand.
+ */
+export function itemHistory({ note, attempts = [] }) {
+  const lines = [];
+  if (note?.trim()) lines.push(`- Item note: ${note.trim()}`);
+  for (const a of [...attempts].sort((x, y) => x.n - y.n)) lines.push(attemptLine(a));
+  return lines.length ? lines.join('\n') : 'none: first attempt, no note';
+}
+
 /**
  * The field values of one role prompt. `item` is the backlog item (null for plan and curate),
- * `files` the parsed contents of `.autopilot/items/<id>/` ({ context, impl, review, gates }),
- * `live` the backlog items (for the live role), `extra` overrides or adds fields (e.g. `problems`).
+ * `files` the parsed contents of `.autopilot/items/<id>/` ({ context, impl, review, gates,
+ * attempts: [{ n, dir, impl, review, fixes, gates }] from its `attempt-N` folders }),
+ * `live` the backlog items (for the live role), `playbook` docs/process/playbook.json (the reflector
+ * compares its lessons with the matching ones), `extra` overrides or adds fields (e.g. `problems`).
  * Missing values stay undefined.
  */
 export function promptValues({
@@ -88,6 +143,7 @@ export function promptValues({
   itemDir,
   files = {},
   live,
+  playbook,
   extra,
 }) {
   const port = AUTOPILOT_PORT;
@@ -141,8 +197,19 @@ export function promptValues({
           ? (files.impl?.testDispute ?? 'none')
           : disputeVerdict(files.review, files.impl),
       problems: fixProblems(files),
+      history: itemHistory({ note: item?.note, attempts: files.attempts }),
       verdictsDir: slash(itemDir),
       offered: offeredIds(files.context).join(', ') || 'none',
+      existing:
+        role === 'reflect'
+          ? render(
+              existing(playbook ?? { entries: [] }, {
+                kind: item?.kind,
+                paths: [...contextFiles(files.context), ...tests].map(slash),
+                offered: offeredIds(files.context),
+              }),
+            ) || 'none'
+          : undefined,
       result: RESULTS.includes(item?.status) ? item.status : undefined,
     };
   }

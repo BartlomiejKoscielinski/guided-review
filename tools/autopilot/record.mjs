@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Appends one item attempt to .metrics/items.jsonl from its verdict files (AUTOPILOT.md §4 B7).
-//   node tools/autopilot/record.mjs F-07.2 --run ap-20261014-1200 --result done|partial|blocked|needs-owner
+//   node tools/autopilot/record.mjs F-07.2 --run ap-20261014-1200 --result done|partial|live|blocked|needs-owner
 //        [--dir .autopilot/items/F-07.2] [--started <iso>] [--session <id>] [--out .metrics/items.jsonl]
 // Tokens per role come from the role subagents' transcripts of the conductor session (--session,
 // default $CLAUDE_CODE_SESSION_ID; Agent descriptions "ap <role> <item>"), else from the verdicts.
@@ -8,7 +8,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from
 import { homedir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildRow, roleUsage } from './items-lib.mjs';
+import { RESULTS, buildRow, roleUsage } from './items-lib.mjs';
 import { parseTranscript, projectDirs, readLines, tokenTotals } from '../metrics/transcript.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -19,8 +19,8 @@ const flag = (name, fallback = null) => {
 };
 const item = argv[0];
 const result = flag('result');
-if (!item || !flag('run') || !['done', 'partial', 'blocked', 'needs-owner'].includes(result)) {
-  console.error('usage: record.mjs <item> --run <runId> --result done|partial|blocked|needs-owner');
+if (!item || !flag('run') || !RESULTS.includes(result)) {
+  console.error(`usage: record.mjs <item> --run <runId> --result ${RESULTS.join('|')}`);
   process.exit(2);
 }
 const dir = resolve(root, flag('dir', join('.autopilot', 'items', item)));

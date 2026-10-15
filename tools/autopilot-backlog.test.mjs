@@ -254,3 +254,21 @@ test('autopilot backlog: a veto of some points of a row still adds one rework it
   assert.equal(rework.status, 'todo');
   assert.match(rework.note, /^vetoed \(2\): \(1\) a<br>\(2\) b; item F-17\.1$/);
 });
+
+test('autopilot backlog: an accepted test dispute is remembered per file and survives sync', () => {
+  const opts = { progressMd: PROGRESS, planMd: PLAN, decisionsMd: '', milestone: 'M3', now: 't' };
+  const backlog = sync({ ...opts, previous: null });
+  setItem(backlog, 'F-17.1', { status: 'review', dispute: 'tests/e2e/start.spec.ts@dcd5083' }, 't');
+  setItem(backlog, 'F-17.1', { dispute: 'src/a.test.ts@1111111' }, 't');
+  setItem(backlog, 'F-17.1', { dispute: 'tests/e2e/start.spec.ts@2222222' }, 't');
+  const item = () => backlog.items.find((i) => i.id === 'F-17.1');
+  assert.deepEqual(item().disputes, ['src/a.test.ts@1111111', 'tests/e2e/start.spec.ts@2222222']);
+  assert.equal(item().status, 'review');
+  assert.throws(
+    () => setItem(backlog, 'F-17.1', { dispute: 'tests/e2e/start.spec.ts' }, 't'),
+    /file@sha/,
+  );
+  const again = sync({ ...opts, previous: backlog });
+  assert.deepEqual(again.items.find((i) => i.id === 'F-17.1').disputes, item().disputes);
+  assert.equal(again.items.find((i) => i.id === 'F-07.2').disputes, undefined);
+});

@@ -1,22 +1,41 @@
 #!/usr/bin/env node
 // Autopilot playbook CLI (docs/process/playbook.json; docs/process/AUTOPILOT.md §4 B6).
 //   node tools/autopilot/playbook.mjs add '{"tags":["ui","src/screens/**"],"text":"…","source":"F-07.2"}'
+//   node tools/autopilot/playbook.mjs add '{"same":"P-003","tags":["core"],"source":"F-07.2"}'   (an existing lesson again: seen + 1)
 //   node tools/autopilot/playbook.mjs select --tags ui,implement [--paths a,b] [--max-tokens 1500] [--touch]
 //   node tools/autopilot/playbook.mjs rate P-003 helpful|harmful
 //   node tools/autopilot/playbook.mjs tick                (one more item done: ages the entries)
-//   node tools/autopilot/playbook.mjs curate [--dry-run] | promoted P-003 | list
+//   node tools/autopilot/playbook.mjs curate [--dry-run] | list
+//   node tools/autopilot/playbook.mjs merge P-003 P-018   (same advice: P-018's counts and tags into P-003, P-018 deleted)
+//   node tools/autopilot/playbook.mjs promote P-003 implement "<one-line rule>"
+//     (a rule proposal into the "## Rules learned" list of .claude/autopilot/roles/implement.md, entry
+//     marked promoted: the curator's only way to write a role file, through the allowed node tools/autopilot/* rule)
+//   --root <dir> reads and writes another checkout (tests).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { addEntry, curate, empty, rate, render, select, touch } from './playbook-lib.mjs';
+import {
+  addEntry,
+  addRule,
+  curate,
+  empty,
+  merge,
+  promote,
+  rate,
+  render,
+  select,
+  touch,
+} from './playbook-lib.mjs';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const FILE = join(root, 'docs', 'process', 'playbook.json');
 const argv = process.argv.slice(2);
 const flag = (name) => {
   const i = argv.indexOf(`--${name}`);
   return i < 0 ? null : (argv[i + 1] ?? null);
 };
+const root = flag('root')
+  ? resolve(flag('root'))
+  : resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const FILE = join(root, 'docs', 'process', 'playbook.json');
 const list = (name) => (flag(name) ?? '').split(',').filter(Boolean);
 const pb = existsSync(FILE) ? JSON.parse(readFileSync(FILE, 'utf8')) : empty();
 const save = () => writeFileSync(FILE, `${JSON.stringify(pb, null, 2)}\n`);
@@ -61,17 +80,29 @@ try {
       console.log(
         JSON.stringify({
           removed: out.removed,
-          proposals: out.proposals.map((e) => ({ id: e.id, text: e.text })),
+          proposals: out.proposals.map((e) => ({
+            id: e.id,
+            helpful: e.helpful,
+            seen: e.seen,
+            text: e.text,
+          })),
         }),
       );
       break;
     }
-    case 'promoted': {
-      const e = pb.entries.find((x) => x.id === argv[1]);
-      if (!e) throw new Error(`no entry ${argv[1]}`);
-      e.promoted = true;
+    case 'merge': {
+      const e = merge(pb, argv[1], argv[2]);
       save();
-      console.log(`${e.id} promoted`);
+      console.log(`${argv[2]} merged into ${e.id}: +${e.helpful} -${e.harmful} ×${e.seen}`);
+      break;
+    }
+    case 'promote': {
+      const [, id, role, rule] = argv;
+      const e = promote(pb, id, role);
+      const file = join(root, '.claude', 'autopilot', 'roles', `${role}.md`);
+      writeFileSync(file, addRule(readFileSync(file, 'utf8'), e.id, rule));
+      save();
+      console.log(`${e.id} promoted into .claude/autopilot/roles/${role}.md`);
       break;
     }
     case 'list':
@@ -82,7 +113,7 @@ try {
       }
       break;
     default:
-      console.error('usage: playbook.mjs add|select|rate|tick|curate|promoted|list');
+      console.error('usage: playbook.mjs add|select|rate|tick|curate|merge|promote|list');
       process.exit(2);
   }
 } catch (e) {

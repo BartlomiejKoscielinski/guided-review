@@ -21,6 +21,28 @@ export function parseDisputes(text) {
   return out;
 }
 
+/**
+ * The accepted disputes of an item: the ones the backlog remembers (`disputes` of the item, set by
+ * `backlog.mjs set <id> --dispute`), then `--dispute` (wins for the same file). File → commit.
+ */
+export function itemDisputes(backlog, item, cli) {
+  const remembered = (backlog?.items ?? []).find((i) => i.id === item)?.disputes ?? [];
+  return parseDisputes([...remembered, cli].filter(Boolean).join(','));
+}
+
+/**
+ * Where a verdict goes: `path`, or when that exists the next free number (`gate-1.json` →
+ * `gate-2.json`, `gate.json` → `gate-2.json`), so a later gate call never overwrites an earlier one.
+ */
+export function freePath(path, exists) {
+  if (!exists(path)) return path;
+  const [, stem, n, ext = ''] = path.match(/^(.*?)(?:-(\d+))?(\.[^./\\]+)?$/);
+  for (let i = Number(n ?? 1) + 1; ; i++) {
+    const next = `${stem}-${i}${ext}`;
+    if (!exists(next)) return next;
+  }
+}
+
 const sameSha = (a, b) => a.startsWith(b) || b.startsWith(a);
 
 /**
