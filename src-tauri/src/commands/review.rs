@@ -311,27 +311,34 @@ pub async fn review_ask(
     result.map_err(AppError::from)
 }
 
-/// A decision on a note (F-09.2, F-09.4); dismissals are kept per MR.
+/// A decision on a note of the session (F-09.2, F-09.4); dismissals are kept per MR. The session
+/// names the note: another review can hold a note with the same ID.
 pub(crate) fn decide(
     conn: &mut Connection,
+    session: &str,
     finding: &str,
     decision: &FindingDecision,
 ) -> AppResult<DecisionOutcome> {
-    let session = decisions::session_of(conn, finding)?;
-    let source = store::sessions::source_of(conn, &session)?
+    let source = store::sessions::source_of(conn, session)?
         .ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
     let subject = step_context::subject(&source.source_json)?;
-    Ok(decisions::decide(conn, finding, decision, &subject)?)
+    Ok(decisions::decide_in(
+        conn, session, finding, decision, &subject,
+    )?)
 }
 
 /// Add to drafts, Edit and add, Dismiss and Undo on a note card (F-09.2). Local only.
 #[tauri::command]
 pub async fn review_decide(
     store: State<'_, Store>,
+    session: String,
     finding: String,
     decision: FindingDecision,
 ) -> AppResult<DecisionOutcome> {
-    with_store(&store, move |c| Ok(decide(c, &finding, &decision))).await?
+    with_store(&store, move |c| {
+        Ok(decide(c, &session, &finding, &decision))
+    })
+    .await?
 }
 
 /// Mark reviewed (Space) and its undo (F-07.2): the step's flag in the session. Returns the plan's

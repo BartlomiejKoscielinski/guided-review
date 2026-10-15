@@ -9,6 +9,7 @@ pub fn migrations() -> Migrations<'static> {
         M::up(include_str!("migrations/002_app_state.sql")),
         M::up(include_str!("migrations/003_session_mr.sql")),
         M::up(include_str!("migrations/004_claude_cache_lookup.sql")),
+        M::up(include_str!("migrations/005_findings_per_session.sql")),
     ])
 }
 
@@ -90,6 +91,37 @@ mod tests {
         let version: i64 = conn
             .query_row("PRAGMA user_version", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(version, 4);
+        assert_eq!(version, 5);
+    }
+
+    #[test]
+    fn f09_4_migration_005_keeps_the_notes_and_keys_them_per_session() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        migrations().to_version(&mut conn, 4).unwrap();
+        conn.execute(
+            "INSERT INTO findings (id, session_id, step_id, json, kind, decision, fingerprint)
+             VALUES ('f1', 'r1', 's1', '{}', 'unawaited-task', 'dismissed', 'aaaa')",
+            [],
+        )
+        .unwrap();
+        migrations().to_latest(&mut conn).unwrap();
+        let kept: (String, String, String) = conn
+            .query_row(
+                "SELECT session_id, decision, fingerprint FROM findings WHERE id = 'f1'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(kept, ("r1".into(), "dismissed".into(), "aaaa".into()));
+        // Another review may hold a note with the same ID; the same session may not.
+        let insert = |session: &str| {
+            conn.execute(
+                "INSERT INTO findings (id, session_id, step_id, json, kind, decision, fingerprint)
+                 VALUES ('f1', ?1, 's1', '{}', 'unawaited-task', 'open', 'aaaa')",
+                [session],
+            )
+        };
+        insert("c1").unwrap();
+        assert!(insert("r1").is_err());
     }
 }

@@ -112,8 +112,9 @@ pub fn record(
         tx.execute(
             "INSERT INTO findings (id, session_id, step_id, json, kind, decision, fingerprint)
              VALUES (?1, ?2, ?3, ?4, ?5, 'open', ?6)
-             ON CONFLICT (id) DO UPDATE SET json = excluded.json, kind = excluded.kind,
-                 fingerprint = excluded.fingerprint, step_id = excluded.step_id",
+             ON CONFLICT (session_id, id) DO UPDATE SET json = excluded.json,
+                 kind = excluded.kind, fingerprint = excluded.fingerprint,
+                 step_id = excluded.step_id",
             params![
                 stored.id,
                 session_id,
@@ -124,8 +125,8 @@ pub fn record(
             ],
         )?;
         let decision: String = tx.query_row(
-            "SELECT decision FROM findings WHERE id = ?1",
-            [&stored.id],
+            "SELECT decision FROM findings WHERE session_id = ?1 AND id = ?2",
+            params![session_id, stored.id],
             |row| row.get(0),
         )?;
         findings.push(Finding {
@@ -137,44 +138,69 @@ pub fn record(
     Ok(findings)
 }
 
-/// A stored note with its decision, and its session.
+/// The note as the newest review holding it recorded it, with its decision, and that session.
+#[cfg(test)]
 fn load(conn: &Connection, id: &str) -> Result<(Finding, String), DecisionError> {
-    let row: Option<(String, String, String)> = conn
-        .query_row(
-            "SELECT json, decision, session_id FROM findings WHERE id = ?1",
-            [id],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
-        )
-        .optional()?;
-    let (json, decision, session) = row.ok_or_else(|| DecisionError::NotFound(id.to_owned()))?;
-    let finding: Finding = serde_json::from_str(&json)?;
-    Ok((
-        Finding {
-            decision: decision_from(&decision),
-            ..finding
-        },
-        session,
-    ))
+    let session = session_of(conn, id)?;
+    Ok((load_in(conn, &session, id)?, session))
 }
 
-fn set_decision(conn: &Connection, id: &str, decision: Decision) -> Result<(), DecisionError> {
+/// The session's note with its decision.
+fn load_in(conn: &Connection, session_id: &str, id: &str) -> Result<Finding, DecisionError> {
+    let row: Option<(String, String)> = conn
+        .query_row(
+            "SELECT json, decision FROM findings WHERE session_id = ?1 AND id = ?2",
+            [session_id, id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .optional()?;
+    let (json, decision) = row.ok_or_else(|| DecisionError::NotFound(id.to_owned()))?;
+    let finding: Finding = serde_json::from_str(&json)?;
+    Ok(Finding {
+        decision: decision_from(&decision),
+        ..finding
+    })
+}
+
+fn set_decision(
+    conn: &Connection,
+    session_id: &str,
+    id: &str,
+    decision: Decision,
+) -> Result<(), DecisionError> {
     conn.execute(
-        "UPDATE findings SET decision = ?2 WHERE id = ?1",
-        params![id, decision_text(decision)],
+        "UPDATE findings SET decision = ?3 WHERE session_id = ?1 AND id = ?2",
+        params![session_id, id, decision_text(decision)],
     )?;
     Ok(())
 }
 
-/// Applies a decision to a note. `subject` is the review's subject (`PlanSource::subject`):
-/// dismissals are kept per merge request (or commit) and fingerprint.
+/// Applies a decision to the note `finding_id` of the newest review holding it (see
+/// `decide_in`, which names the session).
 pub fn decide(
     conn: &mut Connection,
     finding_id: &str,
     decision: &FindingDecision,
     subject: &str,
 ) -> Result<DecisionOutcome, DecisionError> {
+    let session = session_of(conn, finding_id)?;
+    decide_in(conn, &session, finding_id, decision, subject)
+}
+
+/// Applies a decision to a note of `session` (F-09.2, F-09.4). A note's ID is a hash of its step,
+/// position and fingerprint, so another review can hold a note with the same ID: each keeps its
+/// own decision. `subject` is the session's subject (`plan_cache::subject`): dismissals are kept
+/// per merge request (or commit) and fingerprint, one row per dismissed note, and Undo takes
+/// back only one of them.
+pub fn decide_in(
+    conn: &mut Connection,
+    session: &str,
+    finding_id: &str,
+    decision: &FindingDecision,
+    subject: &str,
+) -> Result<DecisionOutcome, DecisionError> {
     let tx = conn.transaction()?;
-    let (finding, session) = load(&tx, finding_id)?;
+    let finding = load_in(&tx, session, finding_id)?;
     let (next, draft) = match decision {
         FindingDecision::AddToDrafts | FindingDecision::EditAndAdd { .. } => {
             if finding.decision != Decision::Open {
@@ -187,7 +213,7 @@ pub fn decide(
             let draft = drafts::create(
                 &tx,
                 &NewDraft {
-                    session_id: session,
+                    session_id: session.to_owned(),
                     finding_id: Some(finding.id.clone()),
                     body,
                     position: Some(DiffPosition {
@@ -225,8 +251,13 @@ pub fn decide(
                     }
                 }
                 Decision::Dismissed => {
+                    // Only this note's dismissal: another note with the same fingerprint that is
+                    // still dismissed keeps its row, so it stays out of the next run. Rows with
+                    // one fingerprint and subject differ only in their time; the newest goes.
                     tx.execute(
-                        "DELETE FROM dismissals WHERE fingerprint = ?1 AND mr = ?2",
+                        "DELETE FROM dismissals WHERE rowid = (
+                             SELECT rowid FROM dismissals WHERE fingerprint = ?1 AND mr = ?2
+                             ORDER BY rowid DESC LIMIT 1)",
                         params![finding.fingerprint, subject],
                     )?;
                 }
@@ -234,7 +265,7 @@ pub fn decide(
             (Decision::Open, None)
         }
     };
-    set_decision(&tx, finding_id, next)?;
+    set_decision(&tx, session, finding_id, next)?;
     tx.commit()?;
     Ok(DecisionOutcome {
         finding: Finding {
@@ -245,10 +276,10 @@ pub fn decide(
     })
 }
 
-/// The session a stored note belongs to.
+/// The newest session holding a stored note (the one that recorded it first most recently).
 pub fn session_of(conn: &Connection, finding_id: &str) -> Result<String, DecisionError> {
     conn.query_row(
-        "SELECT session_id FROM findings WHERE id = ?1",
+        "SELECT session_id FROM findings WHERE id = ?1 ORDER BY rowid DESC LIMIT 1",
         [finding_id],
         |row| row.get(0),
     )
