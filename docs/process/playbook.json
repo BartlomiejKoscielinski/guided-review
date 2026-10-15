@@ -1,5 +1,5 @@
 {
-  "items": 21,
+  "items": 22,
   "entries": [
     {
       "id": "P-001",
@@ -106,7 +106,7 @@
         "src/ipc/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.020Z",
@@ -121,7 +121,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -187,7 +187,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -234,7 +234,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -251,7 +251,7 @@
         "src/screens/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T15:13:07.675Z",
@@ -268,7 +268,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -350,7 +350,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -651,9 +651,9 @@
         "src/screens/detailed/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 14,
       "source": "F-17.2",
@@ -848,6 +848,36 @@
       "created": "2026-10-15T17:36:56.620Z",
       "lastUsedItem": 20,
       "source": "F-08.2"
+    },
+    {
+      "id": "P-057",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/**/*.module.css"
+      ],
+      "text": "Do not override :focus-visible in a component CSS module (keep the global docs/03 outside ring), and check any var(--yellow) element (ring, badge, mark) on the yellow current-row fill, because --focus equals --yellow and the inset yellow ring on Rail's current row was invisible (review severity normal, WCAG 2.4.7, fix round 1) while the structure-only design-check came back clean.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T18:37:59.862Z",
+      "lastUsedItem": 21,
+      "source": "F-08.3"
+    },
+    {
+      "id": "P-058",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/src/**/*_tests.rs"
+      ],
+      "text": "Check the line count of an existing Rust test file before appending new AC tests and open a sibling *_tests.rs when it would pass ~400 lines, because decisions_tests.rs grew to 476 lines and review raised it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T18:37:59.935Z",
+      "lastUsedItem": 21,
+      "source": "F-08.3"
     }
   ]
 }
