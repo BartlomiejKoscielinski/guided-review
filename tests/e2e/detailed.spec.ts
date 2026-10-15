@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { openStep, openStep1, restartApp } from './stepHelpers';
 
 // S-04 Step review · Detailed mode against the mock backend. F-08.1: the Focus | Detailed toggle
@@ -274,4 +274,49 @@ test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
   await page.keyboard.press('Space');
   await expect(mark).toHaveAttribute('aria-pressed', 'false');
   await expect(mark).toHaveText(/^Mark reviewed/);
+});
+
+// F-08.5: the file bar sits at the top of the main column while the step's diff scrolls under it;
+// Unified turns the diff unified; Open in Rider calls the mock without an error.
+test('F-08.5 the file bar stays on top while scrolling; Unified; Open in Rider', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await openStep(page, /ViewModel/, 4);
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const column = page.locator('main main');
+  const whitespace = column.getByRole('button', { name: 'Ignore whitespace' });
+  const yOf = async (locator: Locator) => (await locator.boundingBox())?.y ?? Number.NaN;
+
+  await expect(column.getByText('DeliveryPhotoViewModel.cs', { exact: true })).toBeVisible();
+  await expect(column.getByText('+34', { exact: true })).toBeVisible();
+  await expect(column.getByText('\u221222', { exact: true })).toBeVisible();
+  const top = await yOf(column);
+  // Before scrolling the bar is below the step header.
+  expect(await yOf(whitespace)).toBeGreaterThan(top + 100);
+
+  await column.hover();
+  await page.mouse.wheel(0, 600);
+  await expect.poll(() => yOf(page.getByRole('heading', { level: 1 }))).toBeLessThan(top);
+  await expect(whitespace).toBeInViewport();
+  await expect.poll(() => yOf(whitespace)).toBeGreaterThanOrEqual(top);
+  expect(await yOf(whitespace)).toBeLessThan(top + 48);
+  await expect(column.getByRole('button', { name: 'Open in Rider' })).toBeInViewport();
+
+  const layout = column.getByRole('radiogroup', { name: 'Diff layout' });
+  await expect(layout.getByRole('radio', { name: 'Split' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await layout.getByRole('radio', { name: 'Unified' }).click();
+  await expect(layout.getByRole('radio', { name: 'Unified' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await expect(column.locator('[class*="unified"][data-kind]').first()).toBeVisible();
+  await expect(column.locator('[class*="split"] [data-kind]')).toHaveCount(0);
+
+  await column.getByRole('button', { name: 'Open in Rider' }).click();
+  await expect(column.getByRole('alert')).toHaveCount(0);
 });
