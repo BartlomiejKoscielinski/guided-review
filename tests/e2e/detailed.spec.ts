@@ -156,3 +156,61 @@ test('F-08.2 the info header: branch block, author · age, files, step segments,
   await info.getByRole('link', { name: 'Pipeline passed' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Pipeline' })).toBeAttached();
 });
+
+// F-08.3: the rail. S-02 was shown on the way in, so "Change overview" is done; steps 1 to 3 are
+// reviewed (green check), step 4 is current (yellow), the rest show their number; a draft made on
+// step 4 shows as its count once another step is open; Skim and "Change coverage" close the rail.
+test('F-08.3 the rail: Change overview, step states and draft counts, Skim, Change coverage', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await page.getByRole('button', { name: 'Mark reviewed' }).click();
+  await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  for (const position of [2, 3]) {
+    await page.getByRole('button', { name: 'Next step' }).click();
+    await expect(page.getByText(`Step ${String(position)} of 8`)).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  }
+  await page.getByRole('button', { name: 'Next step' }).click();
+  await expect(page.getByText('Step 4 of 8')).toBeVisible();
+  await page.getByRole('button', { name: `Note 2: ${SECOND}` }).click();
+  const drafted = page.getByRole('article', { name: `Claude note: ${SECOND}` });
+  await drafted.getByRole('button', { name: 'Add to drafts' }).click();
+  await expect(drafted.getByText(/Added to drafts\./)).toBeVisible();
+
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const rail = page.getByRole('navigation', { name: 'Review plan' });
+  await expect(rail).toContainText('contract → UI');
+  const row = (name: RegExp) => rail.getByRole('button', { name });
+
+  const overview = row(/Change overview/);
+  await expect(overview).toContainText('intent, risks, plan');
+  await expect(overview.locator('svg')).toHaveCount(1);
+  for (const done of [/Queue contract/, /SqliteUploadQueue/, /UploadWorker with retries/]) {
+    await expect(row(done).locator('svg')).toHaveCount(1);
+  }
+  const current = row(/ViewModel: queue instead of upload/);
+  await expect(current).toHaveAttribute('aria-current', 'step');
+  await expect(current).toContainText('App · 1 file · +18 −9');
+  await expect.poll(() => backgroundOf(current)).toEqual([YELLOW]);
+  await expect(row(/Offline banner in the view/)).toContainText('5');
+  await expect(row(/Offline banner in the view/).locator('svg')).toHaveCount(0);
+
+  // Another step from the rail: step 4 now shows its one draft.
+  await row(/Offline banner in the view/).click();
+  await expect(row(/Offline banner in the view/)).toHaveAttribute('aria-current', 'step');
+  await expect(row(/ViewModel: queue instead of upload/).getByTitle('1 draft')).toHaveText('1');
+
+  await expect(rail).toContainText('Skim');
+  await expect(rail).toContainText('5 files');
+  await expect(rail).toContainText('Change coverage');
+  await expect(rail).toContainText('16/16 files');
+  await expect(rail).toContainText(
+    'Every hunk belongs to a step. The order can change, the scope can’t.',
+  );
+
+  await overview.click();
+  await expect(page.getByRole('heading', { name: 'Plan · 8 steps' })).toBeVisible();
+});
