@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-15T18:38:01.065Z",
+  "updated": "2026-10-15T19:08:46.883Z",
   "items": [
     {
       "id": "F-08.1",
@@ -63,9 +63,17 @@
       "title": "Step header: \"Step 4 / 8\", \"builds on\" chips (click jumps to that step), previous, Mark reviewed (Space)…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "d1eab46",
+      "tests": [
+        "src/screens/detailed/DetailedStepHeader.test.tsx",
+        "tests/e2e/detailed.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/detailed/DetailedStepHeader.test.tsx@083a2e8"
+      ]
     },
     {
       "id": "F-08.5",

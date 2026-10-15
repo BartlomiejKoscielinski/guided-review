@@ -1,5 +1,5 @@
 {
-  "items": 22,
+  "items": 23,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -234,7 +234,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -251,7 +251,7 @@
         "src/screens/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T15:13:07.675Z",
@@ -268,7 +268,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -878,6 +878,21 @@
       "created": "2026-10-15T18:37:59.935Z",
       "lastUsedItem": 21,
       "source": "F-08.3"
+    },
+    {
+      "id": "P-059",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/**/*.test.tsx"
+      ],
+      "text": "Run npm run typecheck (not only vitest) on the new test files before the tests commit, because vitest strips types and a helper like screen.getAllByRole(...)[0] is HTMLElement | undefined under noUncheckedIndexedAccess, which cost a test dispute and a test-only fix round (F-08.4 helper next()); destructure the first match and throw when it is missing.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T19:08:46.107Z",
+      "lastUsedItem": 22,
+      "source": "F-08.4"
     }
   ]
 }
