@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T06:36:08.480Z",
+  "updated": "2026-10-15T07:10:39.782Z",
   "items": [
     {
       "id": "F-02.5",
@@ -234,9 +234,14 @@
       "title": "Dismissed notes are fingerprinted (rule = the note's kind + file + normalized code: the line with…",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "`review/fingerprint.rs` (8d92b37), dismissed fingerprints filtered + kinds in `step.md` (75dcfbd, 513d0fa); `dismissals` written on Dismiss, removed on Undo, read by `decisions::dismissed` (1f1e6c5); `review_decide` command, subject per MR (b42a11c); Dismiss on the NoteCard (87b700d)"
+      "status": "done",
+      "attempts": 1,
+      "note": "`review/fingerprint.rs` (8d92b37), dismissed fingerprints filtered + kinds in `step.md` (75dcfbd, 513d0fa); `dismissals` written on Dismiss, removed on Undo, read by `decisions::dismissed` (1f1e6c5); `review_decide` command, subject per MR (b42a11c); Dismiss on the NoteCard (87b700d)",
+      "lockSha": "78ee197",
+      "tests": [
+        "src-tauri/src/review/decisions_tests.rs",
+        "src-tauri/tests/step_task.rs"
+      ]
     },
     {
       "id": "F-09.5",

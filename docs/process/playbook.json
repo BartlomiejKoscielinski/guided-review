@@ -1,5 +1,5 @@
 {
-  "items": 10,
+  "items": 11,
   "entries": [
     {
       "id": "P-001",
@@ -71,7 +71,7 @@
         "src-tauri/src/store/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T10:02:39.330Z",
@@ -149,7 +149,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -195,7 +195,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -316,7 +316,7 @@
         "src/screens/plan/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:34:55.903Z",
@@ -442,6 +442,54 @@
       "created": "2026-10-15T06:36:00.066Z",
       "lastUsedItem": 9,
       "source": "F-09.2"
+    },
+    {
+      "id": "P-030",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:10:35.512Z",
+      "lastUsedItem": 10,
+      "source": "F-09.4"
+    },
+    {
+      "id": "P-031",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "When a scoped core function replaces an ambiguous one (decide became decide_in), move every remaining caller, integration tests included, and narrow the old function's visibility in the same commit, because review found the old pub decide still used by tests/resume.rs and tests/step_runs.rs.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:10:35.562Z",
+      "lastUsedItem": 10,
+      "source": "F-09.4"
+    },
+    {
+      "id": "P-032",
+      "tags": [
+        "core",
+        "fix",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:10:35.609Z",
+      "lastUsedItem": 10,
+      "source": "F-09.4"
     }
   ]
 }
