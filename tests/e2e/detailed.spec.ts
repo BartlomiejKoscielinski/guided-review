@@ -102,3 +102,57 @@ test('F-08.1 after a restart the app opens Detailed again, on the step it was on
   await page.keyboard.press('Control+d');
   await expectFocus(page);
 });
+
+// F-08.2: the info header above the S-04 rail and main (Main.dc.html's <header>). The numbers are
+// the S-02 header's; the steps marked reviewed and the drafts are the session's, so they are made
+// in Focus first. --green, --yellow and --line of src/styles/tokens.css as the browser reports them.
+const GREEN = 'rgb(99, 214, 118)';
+const YELLOW = 'rgb(247, 207, 61)';
+const LINE = 'rgb(42, 42, 42)';
+const backgroundOf = (locator: ReturnType<Page['locator']>) =>
+  locator.evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
+
+test('F-08.2 the info header: branch block, author · age, files, step segments, drafts, pipeline to S-08', async ({
+  page,
+}) => {
+  await openStep1(page);
+  // Steps 1 to 3 marked reviewed in layout A, then step 4 is open.
+  await page.getByRole('button', { name: 'Mark reviewed' }).click();
+  await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  for (const position of [2, 3]) {
+    await page.getByRole('button', { name: 'Next step' }).click();
+    await expect(page.getByText(`Step ${String(position)} of 8`)).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  }
+  await page.getByRole('button', { name: 'Next step' }).click();
+  await expect(page.getByText('Step 4 of 8')).toBeVisible();
+  // One draft: note 2 goes to the drafts.
+  await page.getByRole('button', { name: `Note 2: ${SECOND}` }).click();
+  const drafted = page.getByRole('article', { name: `Claude note: ${SECOND}` });
+  await drafted.getByRole('button', { name: 'Add to drafts' }).click();
+  await expect(drafted.getByText(/Added to drafts\./)).toBeVisible();
+
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const info = page.getByTestId('info-header');
+  await expect(info).toBeVisible();
+
+  const branch = info.getByText('feature/offline-upload → develop', { exact: true });
+  await expect(branch).toBeVisible();
+  await expect.poll(() => backgroundOf(branch)).toEqual([GREEN]);
+  await expect(info.getByText('Marta K. · 2 h ago', { exact: true })).toBeVisible();
+  await expect(info).toContainText('16 files +462 −61');
+  await expect(info).not.toContainText('commits');
+
+  const segments = info.getByRole('img', { name: 'Step 4 of 8' }).locator('span');
+  await expect(segments).toHaveCount(8);
+  await expect
+    .poll(() => backgroundOf(segments))
+    .toEqual([GREEN, GREEN, GREEN, YELLOW, LINE, LINE, LINE, LINE]);
+  await expect(info).toContainText(/Steps\s*3\/8/);
+  await expect(info).toContainText(/Drafts\s*1/);
+
+  await info.getByRole('link', { name: 'Pipeline passed' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Pipeline' })).toBeAttached();
+});
