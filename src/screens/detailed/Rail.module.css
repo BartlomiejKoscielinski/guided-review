@@ -47,10 +47,8 @@
   background: var(--panel-2);
 }
 
-.row:focus-visible {
-  outline: 2px solid var(--yellow);
-  outline-offset: -2px;
-}
+/* Focus: the global outside ring from base.css (docs/03), like S-03's StepsList;
+   an inset yellow ring would vanish on the yellow current row (WCAG 2.4.7). */
 
 .mark {
   width: 20px;
