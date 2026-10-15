@@ -96,7 +96,7 @@ Rules for Claude Code:
 - [x] F-09.2 Decisions: Add to drafts (creates a draft from the suggested comment), Edit and add (opens the text for… (1f1e6c5, b645db8, b42a11c, 4772c33, 87b700d, f1f5aa2, de40ad0)
 - [x] F-09.3 After Add to drafts the card says "Added to drafts. It reaches GitLab only when you publish." After… (87b700d)
 - [x] F-09.4 Dismissed notes are fingerprinted (rule = the note's kind + file + normalized code: the line with… (8d92b37, 75dcfbd, 513d0fa, 1f1e6c5, b42a11c, 87b700d, 78ee197, cdfe51d, 5c8cf1b, a7e25d1)
-- [ ] F-09.5 Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as… — partial: threads on the step's lines in the step task (513d0fa); eval golden case (decision 6); autopilot (39c183c, c2d9e0d); autopilot (60c8232)
+- [ ] F-09.5 Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as… — partial: threads on the step's lines in the step task (513d0fa); eval golden case (decision 6); autopilot (39c183c, c2d9e0d); autopilot (60c8232); autopilot (a06cf62, 36e569b)
 - [x] F-09.6 Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the… (6692508, 513d0fa, a39b778, b42a11c, 4772c33, 87b700d, f604e59)
 - [x] F-10.1 Questions are asked in the context of the current step and, if any, the selected lines. (3ed3792, b42a11c, 4772c33, 0f656e9, 3976bc2, e5af190, 9f84351, f9601e0, 19b7f13)
 - [x] F-10.2 Answers stream in. Follow-up questions continue the same Claude session (--resume). (3ed3792, a39b778, b42a11c, 4772c33, 0f656e9, 3976bc2)
