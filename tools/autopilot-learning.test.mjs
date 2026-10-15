@@ -368,6 +368,7 @@ test('autopilot playbook E17: addRule appends to the rules list, once per entry,
   assert.equal(addRule(md, 'P-001', 'Again.'), md);
   assert.throws(() => addRule(md, 'P-003', 'two\nlines'), /one line/);
   assert.throws(() => addRule(md, 'P-003', 'uses {{wt}}'), /one line/);
+  assert.throws(() => addRule(md, 'P-003', 'an undefined state'), /undefined/);
 });
 
 test('autopilot playbook E17: an entry on hold is never a rule proposal', () => {

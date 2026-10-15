@@ -116,7 +116,7 @@ try {
     case 'list':
       for (const e of pb.entries) {
         console.log(
-          `${e.id} +${e.helpful} -${e.harmful} ×${e.seen} [${e.tags.join(',')}] ${e.text.slice(0, 90)}`,
+          `${e.id} +${e.helpful} -${e.harmful} ×${e.seen}${e.promoted ? ' promoted' : ''}${e.hold ? ' hold' : ''} [${e.tags.join(',')}] ${e.text.slice(0, 90)}`,
         );
       }
       break;

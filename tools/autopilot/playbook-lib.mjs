@@ -131,8 +131,10 @@ const RULES_HEADING = '## Rules learned';
  */
 export function addRule(roleMd, id, rule) {
   const text = String(rule ?? '').trim();
-  if (!text || /[\r\n]/.test(text) || text.length > 300 || /{{|}}|<!--/.test(text))
-    throw new Error('a rule is one line of at most 300 characters, without {{, }} or <!--');
+  if (!text || /[\r\n]/.test(text) || text.length > 300 || /{{|}}|<!--|undefined/.test(text))
+    throw new Error(
+      'a rule is one line of at most 300 characters, without {{, }}, <!-- or the word undefined (the prompt test reads it as an unfilled field)',
+    );
   if (roleMd.includes(`(${id})`)) return roleMd;
   const line = `- ${text} (${id})`;
   const body = roleMd.replace(/\s*$/, '');

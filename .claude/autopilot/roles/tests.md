@@ -28,5 +28,5 @@ Output:
 - Run each new Vitest AC test and confirm it is red because the behavior is missing; an e2e guard that counts occurrences passes at baseline, so never report it as the red signal. (P-003)
 - When the PROGRESS line lists commit SHAs for the item, check them first: if the criterion's code is already on base, add locked tests only and say under notes that the implementer can be skipped. (P-010)
 - Autopilot cannot run /app: cover a drag or other pointer behaviour with the e2e mock and write 'not tried in the real app' under manual, so the next interactive session runs that check. (P-015)
-- When the plan row, the existing code or an undefined state (status colour, check combination) leaves the reading open, record each reading you choose under decisions and lock it with a red assertion. (P-016)
+- When the plan row, the existing code or a state the spec leaves open (status colour, check combination) leaves the reading open, record each reading you choose under decisions and lock it with a red assertion. (P-016)
 - A gap that changes what the user sees or how the app behaves (data missing from a cache key, state shown in no step, a restored view without cards) goes under decisions, not only in notes. (P-021)
