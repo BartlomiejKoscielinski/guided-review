@@ -177,10 +177,34 @@ pub async fn findings(
 /// The longest error detail a failed step logs.
 const LOGGED_DETAIL_MAX: usize = 200;
 
-/// A failed step analysis in the log (S-03 "Couldn't analyze this step."): the error code,
-/// message and detail (validation details never quote Claude's text; others are cut short).
+/// Whether an error's detail is the app's own text. Claude Code's own failures carry its stderr
+/// or the `result` text of the error (claude/error.rs `map_output`), which stays out of the log
+/// (NFR-08); `ClaudeSchema` details are the app's validation messages and never quote Claude.
+const fn detail_is_app_text(code: ErrorCode) -> bool {
+    !matches!(
+        code,
+        ErrorCode::ClaudeNotFound
+            | ErrorCode::ClaudeNotSignedIn
+            | ErrorCode::ClaudeFailed
+            | ErrorCode::ClaudeGuardViolation
+            | ErrorCode::ClaudeLimited
+    )
+}
+
+/// A failed step analysis in the log (S-03 "Couldn't analyze this step."): the error code and
+/// message, and the detail (cut short) only when it is the app's own text.
 fn log_failure(step_id: &str, priority: Priority, error: &AppError) {
     if error.code == ErrorCode::Cancelled {
+        return;
+    }
+    if !detail_is_app_text(error.code) {
+        tracing::warn!(
+            step = %step_id,
+            ?priority,
+            code = ?error.code,
+            error = %error.message,
+            "step analysis failed"
+        );
         return;
     }
     let detail: String = error
