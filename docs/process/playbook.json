@@ -1,5 +1,5 @@
 {
-  "items": 14,
+  "items": 15,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -181,7 +181,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -196,7 +196,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -226,7 +226,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -256,7 +256,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -317,7 +317,7 @@
         "tests/e2e/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T16:11:26.716Z",
@@ -407,7 +407,7 @@
         "src/screens/**"
       ],
       "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T06:36:00.066Z",
@@ -598,6 +598,51 @@
       "created": "2026-10-15T08:58:46.352Z",
       "lastUsedItem": 13,
       "source": "F-17.1"
+    },
+    {
+      "id": "P-042",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Derive a mock flag from the same source field the core reads (session source kind), not from an id prefix or a second rule, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:26:23.718Z",
+      "lastUsedItem": 14,
+      "source": "F-17.2"
+    },
+    {
+      "id": "P-043",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/hooks/**"
+      ],
+      "text": "Before wiring a screen to an existing query hook, run the tests that prime the same cache key, because a second hook over the session-source cache broke PlanPrepared.test and forced a switch to useSessionMr.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:26:23.767Z",
+      "lastUsedItem": 14,
+      "source": "F-17.2"
+    },
+    {
+      "id": "P-044",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**"
+      ],
+      "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:26:23.811Z",
+      "lastUsedItem": 14,
+      "source": "F-17.2"
     }
   ]
 }

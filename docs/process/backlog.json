@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T08:58:46.849Z",
+  "updated": "2026-10-15T09:26:24.508Z",
   "items": [
     {
       "id": "F-02.5",
@@ -309,9 +309,15 @@
       "title": "No publish, approve or thread actions are shown. Notes can be turned into a \"fix list\" and into Fix with…",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "1f1c357",
+      "tests": [
+        "src/screens/step/SelfReview.test.tsx",
+        "src/ipc/mock/selfReview.test.ts",
+        "tests/e2e/step-self-review.spec.ts"
+      ]
     },
     {
       "id": "F-17.4",
