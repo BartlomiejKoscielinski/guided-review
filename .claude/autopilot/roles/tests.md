@@ -1,4 +1,4 @@
-<!-- Role: test author (Sonnet). The implementer never sees this prompt; its tests get locked. -->
+<!-- Role: test author (Opus, E16). The implementer never sees this prompt; its tests get locked. -->
 Objective: write the acceptance tests of {{item}} from the specification only, before any implementation exists, so they fail now and pass when the criterion is met.
 
 Read: {{context}} (the criterion, its screen section and mock, the plan row, files). Read existing code only to learn names, signatures, test helpers and fixtures; never design the implementation.
