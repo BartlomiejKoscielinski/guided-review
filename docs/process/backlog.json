@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T15:03:45.882Z",
+  "updated": "2026-10-15T15:05:45.510Z",
   "items": [
     {
       "id": "F-02.5",
@@ -249,7 +249,7 @@
       "title": "Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as…",
       "kind": "core",
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 3,
       "note": "Threads in the step task + prompt rule on base (513d0fa, 39c183c, c2d9e0d); eval seed fixed (60c8232); eval topic check counts the topic in the title and suggested comment, and in the body only in sentences that do not point at the open thread (a06cf62, 36e569b). Left: run npm run eval:claude (golden case: control raises async void, run with the thread does not).",
       "lockSha": "39c183c",
