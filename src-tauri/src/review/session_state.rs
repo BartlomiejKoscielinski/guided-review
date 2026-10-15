@@ -1,5 +1,5 @@
-//! What S-03 keeps of a session between app starts (F-04.3), read when it opens: the step it was
-//! on, its layout, where each step was scrolled and the ticked "For you to judge" items. Reviewed
+//! What S-03 and S-04 keep of a session between app starts (F-04.3), read when it opens: the step
+//! it was on, its layout and mode (F-08.1), where each step was scrolled and the ticked "For you to judge" items. Reviewed
 //! steps (`review_mark_step`), note decisions, drafts and the step order are kept by their own
 //! commands. Reads the database only.
 
@@ -9,7 +9,7 @@ use rusqlite::Connection;
 use serde::Serialize;
 use ts_rs::TS;
 
-use super::model::Layout;
+use super::model::{Layout, Mode};
 use crate::store::{StoreError, sessions, steps_state};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -20,6 +20,9 @@ pub struct SessionState {
     pub current_step: Option<String>,
     /// The last layout chosen for the session, else the one it was opened in (F-07.1).
     pub layout: Layout,
+    /// Focus or Detailed: the last one chosen with the toggle, else the one it was opened in
+    /// (F-08.1, M4 decision 4).
+    pub mode: Mode,
     /// Scroll offset in pixels of each scrolled step; a step not listed opens at the top.
     pub scroll: BTreeMap<String, u32>,
     /// The ticked "For you to judge" items of each step that has any (F-08.7).
@@ -34,6 +37,7 @@ pub fn load(conn: &Connection, session: &str) -> Result<Option<SessionState>, St
     Ok(Some(SessionState {
         current_step: sessions::current_step(conn, session)?,
         layout,
+        mode: sessions::mode(conn, session)?.unwrap_or_default(),
         scroll: steps_state::scrolls(conn, session)?,
         checklist: steps_state::checklists(conn, session)?,
     }))
