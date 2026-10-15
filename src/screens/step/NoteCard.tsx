@@ -29,22 +29,29 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(finding.suggestedComment);
   const undo = useRef<HTMLButtonElement>(null);
+  const add = useRef<HTMLButtonElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
-  const decidedHere = useRef(false);
+  /** Where the keyboard focus goes once a decision made on this card settles. */
+  const focusNext = useRef<'undo' | 'add' | null>(null);
   const copy = decisionCopy(selfReview);
   const tag = SEVERITY_TAG[finding.severity];
   const open = finding.decision === 'open';
+  const pending = decide.isPending;
 
+  // A decision hands the focus to Undo; Undo hands it back to Add to drafts (the buttons are
+  // disabled while the decision is pending, so wait for it to settle).
   useEffect(() => {
-    if (!open && decidedHere.current) undo.current?.focus();
-    decidedHere.current = false;
-  }, [open]);
+    if (pending) return;
+    if (focusNext.current === 'undo' && !open) undo.current?.focus();
+    if (focusNext.current === 'add' && open) add.current?.focus();
+    focusNext.current = null;
+  }, [open, pending]);
   useEffect(() => {
     if (editing) textarea.current?.focus();
   }, [editing]);
 
   const send = (decision: FindingDecision) => {
-    decidedHere.current = decision.kind !== 'undo';
+    focusNext.current = decision.kind === 'undo' ? 'add' : 'undo';
     decide.mutate(
       { findingId: finding.id, decision },
       {
@@ -133,6 +140,7 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
       {open && !editing && (
         <div className={styles.actions}>
           <Button
+            ref={add}
             variant="primary"
             disabled={decide.isPending}
             onClick={() => {
