@@ -75,7 +75,7 @@ test('F-08.1 switching modes keeps the step, decisions, focused note and answer'
     'false',
   );
   await expect(group).toContainText('Lines 50–52');
-  await expect(answer).toHaveText(answered);
+  await expect(answer).toHaveText(answered, { useInnerText: true });
   await expect(answer.getByRole('button', { name: 'Add to drafts' })).toBeVisible();
 
   // Ctrl+D again opens Detailed; the title bar toggle brings Focus back with the decision kept.
