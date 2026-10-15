@@ -95,15 +95,20 @@ describe('S-01 hero', () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
     });
+    // The plan itself, not only the route: S-02 labels <main> on any of its routes.
+    expect(await screen.findByRole('heading', { name: /^Plan · / })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Start step 1/ })).toBeEnabled();
     await user.keyboard('{Control>}k{/Control}');
     // Ctrl+K focuses and selects the input once S-01 is mounted; typing earlier gets replaced.
     await waitFor(() => {
       expect(input()).toHaveFocus();
     });
     await user.keyboard('chore/compiled-bindings{Enter}');
-    await waitFor(() => {
-      expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
-    });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Whole branch vs develop' }),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
+    expect(await screen.findByRole('heading', { name: /^Plan · / })).toBeInTheDocument();
   });
 
   it('F-01.4 Ctrl+K opens S-01 with the input focused from any screen', async () => {

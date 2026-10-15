@@ -2,6 +2,7 @@ import type { Draft } from '../types/Draft';
 import type { Finding } from '../types/Finding';
 import type { Layout } from '../types/Layout';
 import type { MrRow } from '../types/MrRow';
+import type { Source } from '../types/Source';
 import type { Strategy } from '../types/Strategy';
 
 /**
@@ -33,9 +34,10 @@ export interface SessionData {
   /** MR sessions opened from S-01 (the MR each one reviews) and how many were opened. */
   mrs: Record<string, MrRow>;
   mrCount: number;
-  /** Commit and local sessions opened from S-01. */
+  /** Commit and local sessions opened from S-01 and what each one reviews (F-17.1). */
   local: string[];
   localCount: number;
+  sources: Record<string, Source>;
   /** Planned sessions; a session without a plan here has never been planned. */
   plans: Record<string, SessionPlan>;
   /** Steps marked reviewed, per session. */
@@ -63,6 +65,7 @@ const empty = (): SessionData => ({
   mrCount: 0,
   local: [],
   localCount: 0,
+  sources: {},
   plans: {},
   marks: {},
   analyzed: [],

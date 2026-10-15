@@ -24,6 +24,7 @@ import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
+import type { Source } from './types/Source';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
@@ -76,6 +77,7 @@ export function createTauriClient(): IpcClient {
     },
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
+    sessionSource: (sessionId) => call<Source>('session_source', { sessionId }),
     reviewPlan: (sessionId, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<PlanView>>();
       ch.onmessage = onEvent;

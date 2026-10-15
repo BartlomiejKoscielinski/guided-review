@@ -19,7 +19,7 @@ use crate::review::open_mr::{self, OpenMr, OpenMrError, SessionDefaults};
 use crate::review::prepare::PrepareProgress;
 use crate::review::sessions::{self, OpenedSession, UnfinishedSession};
 use crate::source::open::{self, Resolved};
-use crate::source::{CommitRange, LocalScope};
+use crate::source::{CommitRange, LocalScope, Source};
 use crate::store::{self, Store};
 
 /// Unfinished sessions, most recent first, with their progress: the Review tile resumes the
@@ -260,4 +260,54 @@ pub async fn session_mr(
     )
     .await?;
     Ok(Some(summary))
+}
+
+/// What the session `id` reviews (F-17.1): S-02 titles a session of commits or local changes by
+/// it, since only an MR session has `session_mr`. Database only.
+#[tauri::command]
+pub async fn session_source(store: State<'_, Store>, session_id: String) -> AppResult<Source> {
+    let row = with_store(&store, move |conn| {
+        store::sessions::source_of(conn, &session_id)
+    })
+    .await?;
+    parse_source(row.map(|row| row.source_json))
+}
+
+/// The stored `sessions.source_json`; "Unknown session." without a row.
+fn parse_source(json: Option<String>) -> AppResult<Source> {
+    let json = json.ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
+    serde_json::from_str(&json).map_err(|e| {
+        AppError::internal("The session could not be read.").with_detail(e.to_string())
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn f17_1_session_source_reads_commits_and_local_sources() {
+        let commit = parse_source(Some(r#"{"kind":"commits","to":"a3f9c12"}"#.into())).unwrap();
+        assert_eq!(
+            commit,
+            Source::Commits {
+                from: None,
+                to: "a3f9c12".into()
+            }
+        );
+        let local = parse_source(Some(
+            r#"{"kind":"local","scope":{"kind":"branchVsTarget","target":"origin/main"}}"#.into(),
+        ))
+        .unwrap();
+        assert_eq!(
+            local,
+            Source::Local {
+                scope: LocalScope::BranchVsTarget {
+                    target: "origin/main".into()
+                }
+            }
+        );
+        let unknown = parse_source(None).unwrap_err();
+        assert_eq!(unknown.code, ErrorCode::InvalidInput);
+    }
 }

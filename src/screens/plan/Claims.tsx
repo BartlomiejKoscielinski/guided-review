@@ -6,6 +6,8 @@ import styles from './PlanAside.module.css';
 export interface ClaimsProps {
   claims: readonly Claim[];
   position: (stepId: string) => number;
+  /** "MR description vs code", or "Commit messages vs code" for commits (M3 decision 13). */
+  heading: string;
 }
 
 function CheckIcon() {
@@ -26,11 +28,11 @@ function CheckIcon() {
 }
 
 /** Aside "MR description vs code" (F-06.8): ✓ found in step N, or ! missing or contradicted. */
-export function Claims({ claims, position }: ClaimsProps) {
+export function Claims({ claims, position, heading }: ClaimsProps) {
   return (
     <section className={styles.card} aria-labelledby="claims-heading">
       <h2 id="claims-heading" className={styles.heading}>
-        MR description vs code
+        {heading}
       </h2>
       <ul className={styles.claims}>
         {claims.map((claim) => {

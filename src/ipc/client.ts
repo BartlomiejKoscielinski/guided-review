@@ -28,6 +28,7 @@ import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
+import type { Source } from './types/Source';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
@@ -106,6 +107,8 @@ export interface IpcClient {
    * Starts no GitLab work.
    */
   sessionMr(sessionId: string): Promise<SessionMr | null>;
+  /** What the session reviews (F-17.1): S-02's header of a commit or local session. */
+  sessionSource(sessionId: string): Promise<Source>;
 
   // S-02 plan (F-06). Claude task events go to `onEvent`.
   /**
