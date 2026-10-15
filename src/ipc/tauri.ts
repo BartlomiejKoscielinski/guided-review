@@ -114,6 +114,8 @@ export function createTauriClient(): IpcClient {
       call<undefined>('session_set_step', { session: sessionId, step: stepId }),
     sessionSetLayout: (sessionId, layout) =>
       call<undefined>('session_set_layout', { session: sessionId, layout }),
+    sessionSetMode: (sessionId, mode) =>
+      call<undefined>('session_set_mode', { session: sessionId, mode }),
     sessionSetScroll: (sessionId, stepId, top) =>
       call<undefined>('session_set_scroll', { session: sessionId, step: stepId, top }),
     sessionSetChecklist: (sessionId, stepId, ticked) =>

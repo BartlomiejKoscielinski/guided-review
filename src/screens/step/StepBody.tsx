@@ -1,10 +1,11 @@
-import { useCallback, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useState, type RefObject } from 'react';
 import { cx } from '../../components/cx';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
 import type { Finding } from '../../ipc/types/Finding';
 import type { Severity } from '../../ipc/types/Severity';
 import { useFocusStore } from '../../state/focus';
+import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf, type AskState } from './askState';
 import { GuidePanel } from './GuidePanel';
 import { NotesRequest } from './notesRequest';
@@ -39,10 +40,11 @@ export interface StepBodyProps {
 }
 
 /**
- * The step of S-03 in the shared layout (F-07.1). It owns the step's state - the focused note and
- * the open answer card - and stays mounted when the layout changes, so A, B and C show the same
- * step, note, scroll position and answer: A the main column, B the same with a floating toolbar,
- * C a guide panel on the right. The step opens where it was scrolled last (F-04.3).
+ * The step of S-03 in the shared layout (F-07.1). It stays mounted when the layout changes, so A,
+ * B and C show the same step, note, scroll position and answer: A the main column, B the same with
+ * a floating toolbar, C a guide panel on the right. The step's state - the focused note, the
+ * selected lines and the open answer card - is kept in `state/review.ts`, so S-04 and S-03 show
+ * the same state after a mode switch (F-08.1). The step opens where it was scrolled last (F-04.3).
  */
 export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }: StepBodyProps) {
   const layout = useFocusStore((s) => s.layout);
@@ -56,8 +58,17 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
     writer.setScroll(stepId, top);
   });
   const toggleReviewed = useMarkReviewed(sessionId, stepId, step.data?.reviewed);
-  const [focus, setFocus] = useState<string | null>(null);
-  const [ask, setAsk] = useState<AskState | null>(null);
+  const key = reviewKey(sessionId, stepId);
+  const claim = useReviewStore((s) => s.claim);
+  const change = useReviewStore((s) => s.change);
+  useEffect(() => {
+    claim(key);
+  }, [claim, key]);
+  const focus = useStepReview(key, 'focus');
+  const ask = useStepReview(key, 'ask');
+  const setFocus = (id: string) => {
+    change(key, () => ({ focus: id }));
+  };
   // Picked once per set of notes, so deciding the focused note doesn't move the focus away.
   const [initial, setInitial] = useState<{ ids: string; id: string | null } | null>(null);
   const ids = findings.map((f) => f.id).join(' ');
@@ -65,11 +76,13 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   const focused = focus ?? (initial?.ids === ids ? initial.id : firstFocus(findings));
 
   const openAsk = (selection: AskState['selection'], question?: string) => {
-    setAsk((old) => ({ selection, question, focusInput: true, nonce: (old?.nonce ?? 0) + 1 }));
+    change(key, (s) => ({
+      ask: { selection, question, focusInput: true, nonce: (s.ask?.nonce ?? 0) + 1 },
+    }));
   };
   // Questions from the toolbar, the guide and the "Selected lines" group are about the selected
   // lines, if any; otherwise about the whole step (F-10.1).
-  const lines = useLineSelection();
+  const lines = useLineSelection(key);
   const selected = lines.selection && {
     selection: lines.selection,
     bar: (

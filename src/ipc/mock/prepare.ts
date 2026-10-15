@@ -3,6 +3,7 @@ import { IpcError } from '../errors';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { SessionMr } from '../types/SessionMr';
 import type { TreeFile } from '../types/TreeFile';
 import { groupFiles } from './changes';
@@ -24,7 +25,7 @@ const error = (code: IpcError['code'], message: string) =>
 /**
  * MR preparation of the mock backend (F-05.1, F-05.6): the repository of the project (switched
  * to, decision 7), an MR of the mock lists (else the F-01.5 copy), the three stages with pauses,
- * and cancel by task ID. Opened sessions are kept in `store`, in the layout `ui.focusLayout` names
+ * and cancel by task ID. Opened sessions are kept in `store`, in the layout `ui.focusLayout` and the mode `ui.startIn` name
  * (the core's `sessions.layout`).
  */
 export function createPrepareBackend(
@@ -32,6 +33,7 @@ export function createPrepareBackend(
   pause: (ms: number) => Promise<void>,
   store: MockSessionData,
   focusLayout: () => Layout,
+  startIn: () => Mode,
 ): PrepareClient {
   const cancelled = new Set<string>();
   const { data } = store;
@@ -83,7 +85,7 @@ export function createPrepareBackend(
       data.mrCount += 1;
       const sessionId = `${MR_SESSION}${String(data.mrCount)}`;
       data.mrs[sessionId] = mr;
-      stateOf(data, sessionId).layout = focusLayout();
+      Object.assign(stateOf(data, sessionId), { layout: focusLayout(), mode: startIn() });
       store.save();
       const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
       return result;

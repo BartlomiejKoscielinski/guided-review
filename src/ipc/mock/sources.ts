@@ -3,6 +3,7 @@ import { IpcError } from '../errors';
 import type { CommitList } from '../types/CommitList';
 import type { DetectedSource } from '../types/DetectedSource';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { Route } from '../types/Route';
 import type { Source } from '../types/Source';
@@ -44,13 +45,14 @@ const WINDOWS_PATH = /^(?:[A-Za-z]:\\|\\\\)/;
 
 /**
  * The S-01 sources part of the mock backend: detection, commits, scope counts, sessions (kept in
- * `store`, in the layout `ui.focusLayout` names).
+ * `store`, in the layout `ui.focusLayout` and the mode `ui.startIn` name).
  */
 export function createSourcesBackend(
   respond: <T>(value: T) => Promise<T>,
   repos: MockRepos,
   store: MockSessionData,
   focusLayout: () => Layout,
+  startIn: () => Mode,
 ): SourcesClient {
   const commits = branchCommits();
   const head = commits[0]?.sha ?? '';
@@ -63,7 +65,7 @@ export function createSourcesBackend(
     const sessionId = `mock-session-${String(data.localCount)}`;
     data.local.push(sessionId);
     data.sources[sessionId] = source;
-    stateOf(data, sessionId).layout = focusLayout();
+    Object.assign(stateOf(data, sessionId), { layout: focusLayout(), mode: startIn() });
     store.save();
     return respond({ sessionId, route: route(sessionId) });
   };

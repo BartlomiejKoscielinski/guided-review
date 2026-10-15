@@ -5,14 +5,12 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import type { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
-import type { AskAnswer } from '../types/AskAnswer';
 import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
 import type { DecisionOutcome } from '../types/DecisionOutcome';
 import type { FindingDecision } from '../types/FindingDecision';
-import type { LineSelection } from '../types/LineSelection';
 import type { StepAnalysis } from '../types/StepAnalysis';
 import type { StepView } from '../types/StepView';
 import { CLAUDE_STATUS_KEY } from './useClaude';
@@ -72,45 +70,6 @@ export function useStepFindings(
     retry: false,
   });
   return { query, phase };
-}
-
-export interface AskVariables {
-  question: string;
-  selection: LineSelection | null;
-}
-
-/**
- * Questions on a step (F-10.1, F-10.2): `text` grows with each streamed piece and is replaced
- * by the whole answer at the end; asking again on the step is a follow-up.
- */
-export function useAsk(
-  sessionId: string,
-  stepId: string,
-): {
-  mutation: UseMutationResult<AskAnswer, IpcError, AskVariables>;
-  text: string;
-  phase: TaskPhase;
-} {
-  const ipc = useIpc();
-  const queryClient = useQueryClient();
-  const [text, setText] = useState('');
-  const [phase, setPhase] = useState<TaskPhase>('idle');
-  const onEvent = useCallback((event: ClaudeTaskEvent<AskAnswer>) => {
-    setPhase(event.kind);
-    if (event.kind === 'partialText') setText((t) => t + event.text);
-    if (event.kind === 'done') setText(event.result.text);
-  }, []);
-  const mutation = useMutation<AskAnswer, IpcError, AskVariables>({
-    mutationFn: ({ question, selection }) => {
-      setText('');
-      return ipc.reviewAsk(sessionId, stepId, question, selection, onEvent);
-    },
-    onError: () => {
-      setPhase('failed');
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: CLAUDE_STATUS_KEY }),
-  });
-  return { mutation, text, phase };
 }
 
 export interface DecideVariables {

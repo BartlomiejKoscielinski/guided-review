@@ -129,6 +129,7 @@ export function createMockClient({
   // Review sessions survive a reload like the core's SQLite (F-04.3).
   const data = createSessionData(storage);
   const focusLayout = () => settings.ui.focusLayout;
+  const startIn = () => settings.ui.startIn;
   const sessionExists = (id: string) =>
     sessions.some((s) => s.id === id) || id in data.data.mrs || data.data.local.includes(id);
   const pause = (ms: number) => (latencyMs > 0 ? wait(ms) : Promise.resolve());
@@ -140,13 +141,13 @@ export function createMockClient({
     appStartRoute: () => respond(restoreRoute(settings.ui.lastRoute, sessionExists)),
     sessionsListUnfinished: () => respond(sessions),
     ...createChangesBackend(changes, respond, repos),
-    ...createSourcesBackend(respond, repos, data, focusLayout),
-    ...createPrepareBackend(repos, pause, data, focusLayout),
+    ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
+    ...createPrepareBackend(repos, pause, data, focusLayout, startIn),
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
     ...createReviewBackend(reviewScenario, respond, pause, data),
     ...createPlanBackend(reviewScenario, respond, pause, data),
-    ...createStateBackend(respond, data, focusLayout),
+    ...createStateBackend(respond, data, focusLayout, startIn),
     ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),
     // The browser has no window to move; the mock only tracks the maximized state.
     windowMinimize: () => Promise.resolve(),

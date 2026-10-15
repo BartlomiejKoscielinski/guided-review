@@ -1,6 +1,7 @@
 import type { Draft } from '../types/Draft';
 import type { Finding } from '../types/Finding';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { MrRow } from '../types/MrRow';
 import type { Source } from '../types/Source';
 import type { Strategy } from '../types/Strategy';
@@ -25,6 +26,8 @@ export interface StoredState {
   currentStep: string | null;
   /** The layout the session was opened in or the last one chosen; null: `ui.focusLayout`. */
   layout: Layout | null;
+  /** The mode the session was opened in or the last one toggled to; null: `ui.startIn`. */
+  mode?: Mode | null;
   scroll: Record<string, number>;
   checklist: Record<string, string[]>;
 }
@@ -101,6 +104,7 @@ export function stateOf(data: SessionData, sessionId: string): StoredState {
   const state = (data.states[sessionId] ??= {
     currentStep: null,
     layout: null,
+    mode: null,
     scroll: {},
     checklist: {},
   });

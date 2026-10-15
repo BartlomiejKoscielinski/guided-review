@@ -9,6 +9,7 @@ import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
 import type { Layout } from './types/Layout';
+import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { PlanView } from './types/PlanView';
@@ -172,6 +173,11 @@ export interface IpcClient {
   sessionSetStep(sessionId: string, stepId: string): Promise<void>;
   /** The layout chosen for the session (F-07.1). */
   sessionSetLayout(sessionId: string, layout: Layout): Promise<void>;
+  /**
+   * The session's mode from the Focus | Detailed toggle or Ctrl+D (F-08.1); Settings › General ›
+   * Start in stays the mode of new sessions (M4 decision 4).
+   */
+  sessionSetMode(sessionId: string, mode: Mode): Promise<void>;
   /** Where the step was scrolled, in pixels (written debounced). */
   sessionSetScroll(sessionId: string, stepId: string, top: number): Promise<void>;
   /** The step's ticked "For you to judge" items (F-08.7); an empty list unticks all. */

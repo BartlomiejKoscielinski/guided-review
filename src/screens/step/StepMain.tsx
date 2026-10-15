@@ -63,6 +63,7 @@ export function StepMain({
     ask && !guide ? (
       <AnswerCard
         key={ask.nonce}
+        nonce={ask.nonce}
         sessionId={sessionId}
         stepId={stepId}
         selection={ask.selection}
