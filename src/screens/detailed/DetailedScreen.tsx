@@ -25,8 +25,9 @@ export function DetailedScreen() {
   // The step's notes as S-03 asks for them (F-09.6); restored on start only cached ones (F-30.4).
   const notes = useStepFindings(sessionId, step?.id ?? '', !restored).query.data;
   const openNotes = notes?.findings.filter((f) => f.decision === 'open').length;
-  // The step's files with only its hunks (F-07.3), each under its sticky file bar (F-08.5).
-  const files = useStep(sessionId, step?.id ?? '').data?.files;
+  // The step's files with only its hunks (F-07.3), each under its sticky file bar (F-08.5); a
+  // failed read shows its message under the step header, as S-03 does (S-04 states: same as S-03).
+  const files = useStep(sessionId, step?.id ?? '');
   const mainRef = useRef<HTMLElement>(null);
 
   // The step is open here as in S-03: another step's state is dropped, this step's is kept.
@@ -43,8 +44,13 @@ export function DetailedScreen() {
         <Rail sessionId={sessionId} view={view} current={step?.id} openNotes={openNotes} />
         <main ref={mainRef} className={styles.main}>
           {step && view && <DetailedStepHeader sessionId={sessionId} view={view} step={step} />}
+          {step && files.isError && (
+            <p role="alert" className={styles.error}>
+              {files.error.message}
+            </p>
+          )}
           {step &&
-            files?.map((file) => (
+            files.data?.files.map((file) => (
               <DetailedFile
                 key={pathOf(file)}
                 sessionId={sessionId}

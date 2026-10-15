@@ -34,6 +34,14 @@
 
 /* Step header (F-08.4): DetailedStepHeader.module.css */
 
+/* The step's files could not be read: the message as on S-03 (Step.module.css .error). */
+.error {
+  margin: 0;
+  padding: 0 28px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
 /* Guide aside (F-08.7) */
 .guide {
   flex: 1 1 352px;
