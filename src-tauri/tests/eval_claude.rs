@@ -1,7 +1,8 @@
 //! `npm run eval:claude` (docs/09 › Claude quality): golden inputs on a synthetic fixture
 //! repository, run through the production path with the real Claude Code. Manual only: it uses
 //! the developer's own Claude login and usage (ADR-019 layer 2, synthetic data only), so every
-//! case is `#[ignore]` and `npm run verify` never runs it.
+//! golden case is `#[ignore]` and `npm run verify` never runs it. Their seed checks (no `claude`)
+//! do run there, so a golden input the app rejects fails in verify and not in a manual run.
 //!
 //! The step task runs on Sonnet · low (the app's step model) unless `GR_EVAL_MODEL` (a full
 //! model ID, e.g. `claude-opus-5-5`) and `GR_EVAL_EFFORT` (`low` … `max`) say
@@ -19,14 +20,14 @@ use guided_review_lib::claude::queue::{Priority, Queue};
 use guided_review_lib::claude::status::{self, CheckInput, ClaudeState};
 use guided_review_lib::claude::tasks::plan::{self, Context, PlanRequest};
 use guided_review_lib::claude::tasks::plan_inputs::PlanSource;
-use guided_review_lib::claude::tasks::step;
+use guided_review_lib::claude::tasks::{step, step_inputs};
 use guided_review_lib::git::Git;
 use guided_review_lib::gitlab::discussions::{self, Thread};
 use guided_review_lib::os::process::Cancel;
 use guided_review_lib::review::finding_model::Finding;
 use guided_review_lib::review::model::Strategy;
 use guided_review_lib::review::plan_cache;
-use guided_review_lib::review::step_context;
+use guided_review_lib::review::step_context::{self, StepContext};
 use guided_review_lib::settings::{ClaudeSettings, TaskEffort, TaskOverride};
 use guided_review_lib::store::{self, Store};
 use serde_json::{Value, json};
@@ -132,28 +133,77 @@ fn discussion(id: &str, path: &str, line: u32, messages: &[(&str, &str)]) -> Val
     json!({ "id": id, "notes": notes })
 }
 
-/// Runs the step task for the only step of a freshly stored MR session (its own in-memory store,
-/// so no run reads another's cache) with `threads` as the MR's discussions.
-async fn analyze(
+/// An in-memory store, queue and temp dir of its own per run, so no run reads another's cache.
+struct Env {
+    tmp: tempfile::TempDir,
+    store: Store,
+    queue: Queue,
+}
+
+impl Env {
+    fn new() -> Self {
+        Self {
+            tmp: tempfile::tempdir().unwrap(),
+            store: Store::open_in_memory().unwrap(),
+            queue: Queue::new(1),
+        }
+    }
+
+    fn ctx<'a>(&'a self, exe: &'a ClaudeExecutable, settings: &'a ClaudeSettings) -> Context<'a> {
+        Context {
+            exe,
+            settings,
+            tmp_root: self.tmp.path(),
+            queue: &self.queue,
+            store: &self.store,
+        }
+    }
+}
+
+/// The golden repository: `SERVICE` committed at `BASE`, then at `HEAD`; with (base, head).
+fn golden_repo() -> (FixtureRepo, String, String) {
+    let repo = FixtureRepo::new("eval threads");
+    repo.write(SERVICE, BASE);
+    let base = repo.commit_all("base");
+    repo.write(SERVICE, HEAD);
+    let head = repo.commit_all("head");
+    (repo, base, head)
+}
+
+/// The line of the real issue: the `async void` method's declaration in `HEAD`.
+fn issue_line() -> u32 {
+    line_of(HEAD, "public async void Upload")
+}
+
+/// A teammate's open thread on [`issue_line`] that already makes the point, with a reply.
+fn golden_thread() -> Vec<Thread> {
+    discussions::parse(vec![discussion(
+        "d1",
+        SERVICE,
+        issue_line(),
+        &[
+            (
+                "alice",
+                "This is async void: if the upload throws, the exception crashes the app and \
+                 the caller can't await or catch it. Should Upload return Task?",
+            ),
+            ("bob", "Agreed, I'll make it return Task."),
+        ],
+    )])
+    .unwrap()
+}
+
+/// Stores an MR session of `repo`, caches a plan of one step over every hunk for it and loads
+/// its step context as the app does, with `threads` as the MR's discussions.
+async fn session(
+    ctx: &Context<'_>,
     repo: &FixtureRepo,
-    exe: &ClaudeExecutable,
-    settings: &ClaudeSettings,
     (base, head): (&str, &str),
     threads: Vec<Thread>,
-) -> Vec<Finding> {
-    let tmp = tempfile::tempdir().unwrap();
-    let store = Store::open_in_memory().unwrap();
-    let queue = Queue::new(1);
-    let ctx = Context {
-        exe,
-        settings,
-        tmp_root: tmp.path(),
-        queue: &queue,
-        store: &store,
-    };
+) -> StepContext {
     let path = repo.path.to_string_lossy().into_owned();
     let (b, h) = (base.to_owned(), head.to_owned());
-    store
+    ctx.store
         .with_conn(move |c| {
             let row = store::repos::add(c, "app", &path, Some("team/app"))?;
             c.execute(
@@ -173,16 +223,18 @@ async fn analyze(
         .iter()
         .flat_map(|f| f.hunks.iter().map(|h| h.id.clone()))
         .collect();
+    // The layer is one of the plan schema's names (`review/plan.rs`), or the cached plan is
+    // rejected and the session loads as PlanNotReady.
     let plan_output = json!({
         "intent": "Files can be uploaded to the server.",
         "steps": [{ "id": "s1", "title": "Upload a file", "short_title": "Upload",
             "reason": "The only change.", "description": "Adds an upload method to the service.",
-            "layer": "Services", "hunk_ids": hunk_ids, "builds_on": [] }],
+            "layer": "Core", "hunk_ids": hunk_ids, "builds_on": [] }],
         "orders": { "contract_to_ui": ["s1"], "tests_first": ["s1"] },
         "skim": [], "risks": [], "description_check": [], "already_discussed": ""
     });
     let key = plan::key(
-        &ctx,
+        ctx,
         &PlanRequest {
             repo_id: 1,
             project: "team/app",
@@ -201,18 +253,32 @@ async fn analyze(
             rules: None,
         },
     );
-    store
+    ctx.store
         .with_conn(|c| plan_cache::put(c, &key, &plan_output))
         .unwrap();
-    let cx = step_context::load(
-        &ctx,
+    step_context::load(
+        ctx,
         None,
         "e1",
         move |_| async move { threads },
         &Cancel::new(),
     )
     .await
-    .unwrap();
+    .unwrap()
+}
+
+/// Runs the step task for the only step of a freshly stored MR session with `threads` as the
+/// MR's discussions.
+async fn analyze(
+    repo: &FixtureRepo,
+    exe: &ClaudeExecutable,
+    settings: &ClaudeSettings,
+    (base, head): (&str, &str),
+    threads: Vec<Thread>,
+) -> Vec<Finding> {
+    let env = Env::new();
+    let ctx = env.ctx(exe, settings);
+    let cx = session(&ctx, repo, (base, head), threads).await;
     let order = cx.order(Strategy::ContractToUi);
     let req = cx.step_request("s1", &order, &[]);
     let outcome = step::run(&ctx, &req, Priority::CurrentStep, &|| {}, &Cancel::new())
@@ -238,6 +304,50 @@ fn mentions(finding: &Finding, topic: &str) -> bool {
         .any(|text| text.to_lowercase().contains(topic))
 }
 
+/// The golden case's seed without Claude (so `npm run verify` runs it): the session loads its
+/// cached plan, one step over every hunk, and the thread is on a line of that step. A plan the
+/// app rejects (a layer name outside the schema) once made every eval run panic with
+/// PlanNotReady before Claude ran.
+#[tokio::test]
+async fn eval_f09_5_the_golden_session_loads_one_step_with_the_thread_on_its_line() {
+    let (repo, base, head) = golden_repo();
+    let env = Env::new();
+    let exe = ClaudeExecutable::Native(env.tmp.path().join("claude is not run.exe"));
+    let settings = ClaudeSettings::default();
+    let cx = session(
+        &env.ctx(&exe, &settings),
+        &repo,
+        (&base, &head),
+        golden_thread(),
+    )
+    .await;
+
+    assert!(!cx.fallback, "the cached plan was replaced by the fallback");
+    let hunks: Vec<&str> = cx
+        .files
+        .iter()
+        .flat_map(|f| f.hunks.iter().map(|h| h.id.as_str()))
+        .collect();
+    let steps: Vec<(&str, Vec<&str>)> = cx
+        .plan
+        .steps
+        .iter()
+        .map(|s| {
+            (
+                s.id.as_str(),
+                s.hunk_ids.iter().map(String::as_str).collect(),
+            )
+        })
+        .collect();
+    assert_eq!(steps, vec![("s1", hunks)]);
+    let on_step = step_inputs::threads_on_step(&cx.threads, &cx.files);
+    let lines: Vec<Option<u32>> = on_step
+        .iter()
+        .map(|t| t.position.as_ref().and_then(|p| p.new_line))
+        .collect();
+    assert_eq!(lines, vec![Some(issue_line())]);
+}
+
 /// F-09.5 golden case (M3 decision 6): a teammate's open thread already makes the point about
 /// the real issue on a line of the step. Without the thread Claude raises it (so the issue is
 /// real and found); with the thread in its context no note repeats it.
@@ -247,12 +357,8 @@ async fn eval_f09_5_no_note_repeats_an_existing_thread_on_a_line_with_a_real_iss
     let tmp = tempfile::tempdir().unwrap();
     let exe = real_claude(tmp.path()).await;
     let settings = settings();
-    let repo = FixtureRepo::new("eval threads");
-    repo.write(SERVICE, BASE);
-    let base = repo.commit_all("base");
-    repo.write(SERVICE, HEAD);
-    let head = repo.commit_all("head");
-    let line = line_of(HEAD, "public async void Upload");
+    let (repo, base, head) = golden_repo();
+    let line = issue_line();
     let topic = "async void";
 
     let control = analyze(&repo, &exe, &settings, (&base, &head), Vec::new()).await;
@@ -262,21 +368,7 @@ async fn eval_f09_5_no_note_repeats_an_existing_thread_on_a_line_with_a_real_iss
         "the golden input lost its real issue: no note about {topic}"
     );
 
-    let threads = discussions::parse(vec![discussion(
-        "d1",
-        SERVICE,
-        line,
-        &[
-            (
-                "alice",
-                "This is async void: if the upload throws, the exception crashes the app and \
-                 the caller can't await or catch it. Should Upload return Task?",
-            ),
-            ("bob", "Agreed, I'll make it return Task."),
-        ],
-    )])
-    .unwrap();
-    let with_thread = analyze(&repo, &exe, &settings, (&base, &head), threads).await;
+    let with_thread = analyze(&repo, &exe, &settings, (&base, &head), golden_thread()).await;
     print(&format!("with the thread on line {line}"), &with_thread);
     let repeats: Vec<&Finding> = with_thread.iter().filter(|f| mentions(f, topic)).collect();
     assert!(
