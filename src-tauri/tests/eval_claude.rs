@@ -308,18 +308,21 @@ const POINTS_AT_THREAD: [&str; 5] = [
     "discussion",
 ];
 
-/// Whether a note raises `topic` (lowercase): a sentence of its title, body or suggested comment
+/// Whether a note raises `topic` (lowercase). Its title (the note's topic) and its suggested
+/// comment (the text that would go to GitLab) raise it by naming it at all, even next to a word
+/// that cites the thread. Its body, the explanation to the reviewer, raises it in a sentence that
 /// names it and does not point at the existing thread. Sentences end at `. `, `!`, `?`, `;` or a
 /// line break, so `Upload Service.cs:16` stays whole.
 fn mentions(finding: &Finding, topic: &str) -> bool {
-    [&finding.title, &finding.body, &finding.suggested_comment]
-        .iter()
-        .any(|text| {
-            text.to_lowercase()
-                .replace(". ", ".\n")
-                .split(['\n', '!', '?', ';'])
-                .any(|s| s.contains(topic) && !POINTS_AT_THREAD.iter().any(|w| s.contains(w)))
-        })
+    let names = |text: &str| text.to_lowercase().contains(topic);
+    names(&finding.title)
+        || names(&finding.suggested_comment)
+        || finding
+            .body
+            .to_lowercase()
+            .replace(". ", ".\n")
+            .split(['\n', '!', '?', ';'])
+            .any(|s| s.contains(topic) && !POINTS_AT_THREAD.iter().any(|w| s.contains(w)))
 }
 
 /// A note on the golden issue line with Claude's wording, for the topic check's own test.
@@ -343,7 +346,8 @@ fn note(kind: &str, title: &str, body: &str, suggested_comment: &str) -> Finding
 
 /// The topic check of the golden case without Claude (so `npm run verify` runs it), on notes
 /// worded as in a live run. A different-topic note that says the async void point is already
-/// in the open thread once failed `npm run eval:claude` as a repeat (ap-20261015-1438).
+/// in the open thread once failed `npm run eval:claude` as a repeat (ap-20261015-1438). Only the
+/// body gets that exemption: a title or suggested comment that states the topic is a repeat.
 #[test]
 fn eval_f09_5_topic_check_skips_a_sentence_that_points_at_the_open_thread() {
     let topic = "async void";
@@ -379,6 +383,28 @@ fn eval_f09_5_topic_check_skips_a_sentence_that_points_at_the_open_thread() {
     assert!(
         mentions(&repeat, topic),
         "a note that makes the point again is a repeat, whatever else it says"
+    );
+
+    let cited_in_title = note(
+        "async-void-method",
+        "Upload is async void, already raised in the open thread",
+        "If it throws, the exception crashes the app.",
+        "Could Upload log what went wrong?",
+    );
+    assert!(
+        mentions(&cited_in_title, topic),
+        "a title that states the topic is a repeat even when it cites the thread"
+    );
+
+    let cited_in_comment = note(
+        "unobserved-exception",
+        "Upload exceptions crash the app",
+        "If it throws, the exception crashes the app.",
+        "As already discussed in the open thread, async void should be Task.",
+    );
+    assert!(
+        mentions(&cited_in_comment, topic),
+        "a suggested comment that states the topic would post it to GitLab again"
     );
 }
 
