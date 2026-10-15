@@ -22,3 +22,4 @@ Output:
 ## Rules learned
 
 - Any user-visible copy that the spec and mock do not give needs a test assertion in the same commit, not only a decision note. (P-017)
+- When a new state changes what a design shot shows, seed that state in tests/e2e/design-shots.spec.ts in the same implement commit, so the design-check compares the screen in that state. (P-023)

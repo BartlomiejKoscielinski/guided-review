@@ -2,34 +2,20 @@
   "items": 24,
   "entries": [
     {
-      "id": "P-001",
-      "tags": [
-        "mixed",
-        "implement",
-        "src/ipc/mock/**"
-      ],
-      "text": "Keep per-head flags such as planReady equal across mock rows that share a headSha, even where the design mock omits the note on one tab, because the core derives them per head; the review flagged one headSha with planReady true on one tab and false on the other.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T08:53:29.473Z",
-      "lastUsedItem": 0,
-      "source": "F-02.5"
-    },
-    {
       "id": "P-002",
       "tags": [
         "ui",
         "tests",
         "src/screens/**",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "mixed"
       ],
-      "text": "Before moving a suffix or other text out of a mock note into a UI helper, grep existing tests for the full old row string, since the F-02.2 mock assertion had to change when the suffix moved.",
+      "text": "Before changing what a mock returns or requires (moving a suffix out of a mock note into a UI helper, adding a precondition such as requiring reviewPlan first), grep the existing tests for the full old row string and for calls that skip the new precondition, since the F-02.2 mock assertion had to change when the suffix moved and an F-10.2 mock test asks without a plan.",
       "helpful": 1,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T08:53:29.521Z",
-      "lastUsedItem": 0,
+      "lastUsedItem": 12,
       "source": "F-02.5"
     },
     {
@@ -355,7 +341,9 @@
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
       "lastUsedItem": 7,
-      "source": "F-07.1"
+      "source": "F-07.1",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-025",
@@ -423,14 +411,16 @@
         "core",
         "tests",
         "src-tauri/src/review/**",
-        "src-tauri/tests/**"
+        "src-tauri/tests/**",
+        "ui",
+        "src/screens/**"
       ],
-      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught.",
+      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught. Pin the restored-after-restart state of a screen the same way, as a red test in the tests stage, because F-17.4 left it to the implementer and review raised the missing progress line after a restart.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T07:10:35.512Z",
-      "lastUsedItem": 10,
+      "lastUsedItem": 15,
       "source": "F-09.4",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
@@ -501,22 +491,6 @@
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
-      "id": "P-035",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/tests/**"
-      ],
-      "text": "Before ticking a locked test of a rule that reads a context list (threads, cached notes), empty that list in a mutation check and confirm the tests fail, because F-09.5's empty thread list failed 4 of 6 Rust tests, which shows they go through the production loader rather than a stub.",
-      "helpful": 1,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T07:32:02.922Z",
-      "lastUsedItem": 11,
-      "source": "F-09.5",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
       "id": "P-036",
       "tags": [
         "ui",
@@ -548,21 +522,6 @@
       "source": "F-10.1"
     },
     {
-      "id": "P-038",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/ipc/mock/**"
-      ],
-      "text": "Before adding a precondition to a mock command (such as requiring reviewPlan first), grep the existing mock tests for calls that skip it, because the F-10.2 mock test asks without a plan and the tests stage kept the new refusal check independent of that precondition.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:10:35.971Z",
-      "lastUsedItem": 12,
-      "source": "F-10.1"
-    },
-    {
       "id": "P-039",
       "tags": [
         "mixed",
@@ -576,22 +535,6 @@
       "created": "2026-10-15T08:58:46.260Z",
       "lastUsedItem": 13,
       "source": "F-17.1"
-    },
-    {
-      "id": "P-040",
-      "tags": [
-        "ui",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "In e2e checks, assert the screen content the criterion names (the Start step 1 button) instead of the route: createMemoryRouter keeps the browser URL at the origin so toHaveURL can never pass, and the main landmark carries only the screen name, so an empty stub passed every check.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:58:46.309Z",
-      "lastUsedItem": 13,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-041",
@@ -614,12 +557,13 @@
       "tags": [
         "ui",
         "implement",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "mixed"
       ],
-      "text": "Derive a mock flag from the same source field the core reads (session source kind), not from an id prefix or a second rule, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix).",
+      "text": "Derive a mock flag from the same source field the core reads (session source kind, headSha), not from an id prefix, a second rule or a design-mock note, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix); keep per-head flags such as planReady equal across mock rows that share a headSha, as the F-02.5 review flagged one headSha with planReady true on one tab and false on the other.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T09:26:23.718Z",
       "lastUsedItem": 14,
       "source": "F-17.2",
@@ -648,31 +592,17 @@
         "src/screens/step/**",
         "mixed",
         "src/screens/plan/**",
-        "src/screens/detailed/**"
-      ],
-      "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it.",
-      "helpful": 2,
-      "harmful": 0,
-      "seen": 4,
-      "created": "2026-10-15T09:26:23.811Z",
-      "lastUsedItem": 14,
-      "source": "F-17.2",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-045",
-      "tags": [
-        "ui",
-        "tests",
+        "src/screens/detailed/**",
+        "implement",
         "src/screens/**"
       ],
-      "text": "Pin the restored-after-restart state of a screen as a red test in the tests stage, because the tests notes left 'restored start on S-05 untested' to the implementer and review raised the missing progress line after a restart as the only normal finding (fix round 1).",
-      "helpful": 0,
+      "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
+      "helpful": 2,
       "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T09:59:03.927Z",
+      "seen": 6,
+      "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 15,
-      "source": "F-17.4",
+      "source": "F-17.2",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
@@ -687,24 +617,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T09:59:03.977Z",
-      "lastUsedItem": 15,
-      "source": "F-17.4",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-047",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/**",
-        "mixed",
-        "src/screens/detailed/**"
-      ],
-      "text": "Give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded and review raised it as a nit.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 2,
-      "created": "2026-10-15T09:59:04.024Z",
       "lastUsedItem": 15,
       "source": "F-17.4",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
@@ -734,10 +646,10 @@
         "mixed",
         "tests/e2e/**"
       ],
-      "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false).",
-      "helpful": 0,
+      "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
+      "helpful": 1,
       "harmful": 0,
-      "seen": 2,
+      "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
       "source": "F-09.5",
@@ -749,12 +661,13 @@
         "mixed",
         "tests",
         "tests/e2e/**",
-        "src/screens/**"
+        "src/screens/**",
+        "ui"
       ],
       "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T11:47:51.456Z",
       "lastUsedItem": 17,
       "source": "F-17.1",
