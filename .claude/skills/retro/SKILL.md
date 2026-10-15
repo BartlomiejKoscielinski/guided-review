@@ -2,10 +2,10 @@
 name: retro
 description: Process retrospective for Guided Review - read the session metrics (tokens, context tax, time), judge the open experiments in docs/process/IMPROVEMENTS.md, and add or apply at most three small improvements. Use when /handoff says a retro is due, at the end of a milestone, or when the user says /retro.
 argument-hint: [optional focus, e.g. "design-check" or "verify time"]
-# Forked so the metrics never enter the main session; Sonnet is enough for reading a compact report.
+# Forked so the metrics never enter the main session. Opus (E21): its verdicts keep or revert process changes, and on Sonnet 4 of 6 needed redoing.
 context: fork
 background: false
-model: sonnet
+model: opus
 effort: medium
 ---
 
