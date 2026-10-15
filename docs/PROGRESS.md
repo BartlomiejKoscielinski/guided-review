@@ -103,7 +103,7 @@ Rules for Claude Code:
 - [x] F-10.3 An answer can be turned into a draft comment with one click. (0f656e9, 3976bc2)
 - [ ] F-17.1 Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working… — partial: plan, step and ask for commits and local scopes in the repository root, cache subject per source (3558aee); open: plan decisions 12–15 (2ee03a6): Commits open S-02, commit messages as description, staged note, step.md wording; live check in `tauri dev`; autopilot (efbb6ac, 04c59e1, 6f51f58, a88fa46, dcd5083)
 - [x] F-17.2 No publish, approve or thread actions are shown. Notes can be turned into a "fix list" and into Fix with… (1f1c357, 4cbb9ea, 2294ab0)
-- [ ] F-17.4 The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes…
+- [x] F-17.4 The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes… (9b5ffbe, 5f7e17f, 4fb5358, 4a02d04)
 
 ## M4 · Detailed mode and keyboard
 - [ ] F-08.1 Mode toggle Focus | Detailed in the title bar (Ctrl+D); both modes show the same session state.
