@@ -3,17 +3,22 @@
 // the milestone branch; checks the item branch in the autopilot worktree and fast-forwards it.
 //   node tools/autopilot/gate.mjs F-07.2 --base m3-plan-focus [--worktree ../gr-ap] [--branch ap/f07-2]
 //        [--lock <sha> --tests a,b [--dispute a@sha]] [--e2e step,plan] [--port 1510] [--complete] [--no-merge] [--out f.json] [--root dir]
-// --dispute: locked test files the reviewer accepted a dispute about, each changed only in its own
-// commit (the fix round's test-only commit).
-// Prints the JSON verdict (and writes it to --out); exit 0 when it passed, 1 when not, 2 on usage.
+// Accepted test disputes: the item's `disputes` in docs/process/backlog.json of --root (remembered by
+// `backlog.mjs set <id> --dispute file@sha`, so every later call and attempt applies them) plus
+// --dispute (a one-off); each disputed locked test changed only in its own commit (the fix round's
+// test-only commit).
+// Prints the JSON verdict and writes it to --out; an existing --out is never overwritten: the verdict
+// goes to the next free number (gate-1.json → gate-2.json), named on stderr. Exit 0 when it passed,
+// 1 when not, 2 on usage.
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   addedLines,
+  freePath,
+  itemDisputes,
   lockProblems,
-  parseDisputes,
   protectedChanges,
   ruleViolations,
   tickProgress,
@@ -40,9 +45,11 @@ const wt = resolve(root, flag('worktree', join('..', 'gr-ap')));
 const branch = flag('branch', `ap/${itemSlug(item)}`);
 const lock = flag('lock');
 const lockedTests = (flag('tests', '') ?? '').split(',').filter(Boolean);
+const backlogPath = join(root, 'docs', 'process', 'backlog.json');
 let disputes;
 try {
-  disputes = parseDisputes(flag('dispute'));
+  const backlog = existsSync(backlogPath) ? JSON.parse(readFileSync(backlogPath, 'utf8')) : null;
+  disputes = itemDisputes(backlog, item, flag('dispute'));
 } catch (e) {
   console.error(e instanceof Error ? e.message : String(e));
   process.exit(2);
@@ -75,8 +82,10 @@ function finish() {
   const text = JSON.stringify(verdict, null, 2);
   const out = flag('out');
   if (out) {
-    mkdirSync(dirname(resolve(root, out)), { recursive: true });
-    writeFileSync(resolve(root, out), `${text}\n`);
+    const path = freePath(resolve(root, out), existsSync);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, `${text}\n`);
+    console.error(`verdict → ${path}`);
   }
   console.log(text);
   process.exit(verdict.pass ? 0 : 1);

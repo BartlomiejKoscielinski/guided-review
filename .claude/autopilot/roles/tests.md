@@ -3,6 +3,10 @@ Objective: write the acceptance tests of {{item}} from the specification only, b
 
 Read: {{context}} (the criterion, its screen section and mock, the plan row, files). Read existing code only to learn names, signatures, test helpers and fixtures; never design the implementation.
 
+Item history (the backlog note and earlier attempts; their verdicts are in the folders named):
+{{history}}
+On a repeat attempt (a failed live check or gate), first write a test that reproduces what failed.
+
 Write:
 - Rust core: unit tests named `{{rustPrefix}}_…` in the module's test file (or `#[cfg(test)] mod tests`).
 - TypeScript: Vitest tests named `'{{item}} …'` next to the component or in `src/ipc/mock/*.test.ts`; mock data must match the mocks.

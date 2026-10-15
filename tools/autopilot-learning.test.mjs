@@ -209,3 +209,45 @@ test('autopilot metrics: judge waits for k rows, keeps or reverts by direction',
   assert.equal(summary([...before, ...cheaper]).tokens, 90);
   assert.equal(summary([...before, row('2026-10-09', { run: 'ap-2' })], 'ap-2').items, 1);
 });
+
+test('autopilot metrics: the first gate call decides first pass; record.mjs takes the live result', () => {
+  const verdicts = {
+    'gate-10': { pass: true },
+    'gate-2': { pass: true },
+    'gate-1': { pass: false },
+  };
+  const r = buildRow({ item: 'F-17.1', run: 'ap-1', result: 'live', verdicts, endedAt: 't' });
+  assert.equal(r.gateFirstPass, false);
+  assert.equal(r.gates, 3);
+  assert.equal(r.result, 'live');
+  assert.equal(
+    buildRow({ item: 'F-17.1', run: 'ap-1', result: 'done', verdicts: {}, endedAt: 't' })
+      .gateFirstPass,
+    false,
+  );
+  const tmp = mkdtempSync(join(tmpdir(), 'gr-record-'));
+  const record = (result) =>
+    spawnSync(
+      process.execPath,
+      [
+        join(root, 'tools', 'autopilot', 'record.mjs'),
+        'F-17.1',
+        '--run',
+        'ap-1',
+        '--result',
+        result,
+        '--dir',
+        join(tmp, 'none'),
+        '--session',
+        'none',
+        '--out',
+        join(tmp, 'items.jsonl'),
+      ],
+      { encoding: 'utf8', env: { ...process.env, CLAUDE_CONFIG_DIR: tmp } },
+    );
+  assert.equal(record('live').status, 0);
+  assert.equal(JSON.parse(readFileSync(join(tmp, 'items.jsonl'), 'utf8')).result, 'live');
+  const bad = record('built');
+  assert.equal(bad.status, 2);
+  assert.match(bad.stderr, /--result done\|partial\|live\|blocked\|needs-owner/);
+});

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Autopilot role prompt (docs/process/AUTOPILOT.md §5, autopilot SKILL step d): prints
 // .claude/autopilot/roles/_common.md + the role file with every {{field}} filled from
-// docs/process/backlog.json, .autopilot/run.json, the worktree and .autopilot/items/<item>/.
+// docs/process/backlog.json, .autopilot/run.json, the worktree and .autopilot/items/<item>/ (with
+// its attempt-N folders, the earlier attempts).
 // Exit 1 when a field the prompt uses stays empty.
 //   node tools/autopilot/prompt.mjs tests|implement|review|fix|reflect F-07.2 [--extra '<json>']
 //   node tools/autopilot/prompt.mjs plan M4 · node tools/autopilot/prompt.mjs curate|live
@@ -26,6 +27,29 @@ const json = (p) => {
   const text = read(p);
   return text ? JSON.parse(text) : null;
 };
+/** The `<name>-N.json` verdicts of a folder in N order, parsed. */
+const numbered = (dir, name) =>
+  (existsSync(dir) ? readdirSync(dir) : [])
+    .map((f) => f.match(new RegExp(`^${name}-(\\d+)\\.json$`)))
+    .filter(Boolean)
+    .sort((a, b) => Number(a[1]) - Number(b[1]))
+    .map((m) => json(join(dir, m[0])));
+/** Earlier attempts the conductor moved into `attempt-N` folders of the item. */
+const attemptsOf = (itemDir) =>
+  (existsSync(itemDir) ? readdirSync(itemDir) : [])
+    .map((f) => f.match(/^attempt-(\d+)$/))
+    .filter(Boolean)
+    .map((m) => {
+      const dir = join(itemDir, m[0]);
+      return {
+        n: Number(m[1]),
+        dir,
+        impl: json(join(dir, 'impl.json')),
+        review: json(join(dir, 'review.json')),
+        fixes: numbered(dir, 'fix').length,
+        gates: numbered(dir, 'gate'),
+      };
+    });
 
 try {
   if (!ROLES.includes(role)) {
@@ -52,16 +76,12 @@ try {
     const item = backlog?.items.find((i) => i.id === id);
     if (!item) throw new Error(`no item ${id} in docs/process/backlog.json`);
     const itemDir = join(root, '.autopilot', 'items', id);
-    const gates = (existsSync(itemDir) ? readdirSync(itemDir) : [])
-      .map((f) => f.match(/^gate-(\d+)\.json$/))
-      .filter(Boolean)
-      .sort((a, b) => Number(a[1]) - Number(b[1]))
-      .map((m) => json(join(itemDir, m[0])));
     const files = {
       context: read(join(itemDir, 'context.md')),
       impl: json(join(itemDir, 'impl.json')),
       review: json(join(itemDir, 'review.json')),
-      gates,
+      gates: numbered(itemDir, 'gate'),
+      attempts: attemptsOf(itemDir),
     };
     values = promptValues({
       role,

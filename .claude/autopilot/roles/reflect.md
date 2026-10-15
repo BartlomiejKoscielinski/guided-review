@@ -1,5 +1,6 @@
 <!-- Role: reflector (Sonnet). Turns one item's outcome into 0–3 playbook deltas (ACE). -->
 Objective: learn from item {{item}} ({{kind}}, result {{result}}) so the next items go better.
+Results: done; live = built and merged, only the check in the real app is left (not a failure); partial; blocked; needs-owner.
 
 Read only the verdict files in {{verdictsDir}} (tests, impl, review, fix-N, gate-N JSON) and the playbook entries the pack offered: {{offered}}.
 Exception to the rules above, read-only: the verdicts live in the main checkout ({{verdictsDir}}); read them there with Read, Grep or Glob. Write nothing, neither there nor in the worktree: the conductor stores your answer.

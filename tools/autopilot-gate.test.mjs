@@ -7,7 +7,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   addedLines,
+  freePath,
   isTest,
+  itemDisputes,
   lockProblems,
   parseDisputes,
   protectedChanges,
@@ -208,6 +210,56 @@ test('autopilot gate: a locked test changes only in its accepted dispute commit'
       lockedCheck(both.verdict).detail,
       /src\/b\.test\.ts: dispute commit \w+ also changes src\/a\.ts/,
     );
+  } finally {
+    await rm(r.dir, { recursive: true, force: true });
+  }
+});
+
+test('autopilot gate: remembered disputes and the next free verdict file', () => {
+  const backlog = {
+    items: [{ id: 'F-01.1', disputes: ['src/a.test.ts@1111111', 'src/b.test.ts@2222222'] }],
+  };
+  assert.deepEqual(
+    [...itemDisputes(backlog, 'F-01.1', 'src/b.test.ts@3333333')],
+    [
+      ['src/a.test.ts', '1111111'],
+      ['src/b.test.ts', '3333333'],
+    ],
+  );
+  assert.equal(itemDisputes(backlog, 'F-09.9', undefined).size, 0);
+  assert.equal(itemDisputes(null, 'F-01.1', null).size, 0);
+  const dir = 'C:\\Repos\\gr-ap 1\\items';
+  const files = new Set([`${dir}\\gate-1.json`, `${dir}\\gate-2.json`, 'items/x.json']);
+  const exists = (p) => files.has(p);
+  assert.equal(freePath(`${dir}\\gate-1.json`, exists), `${dir}\\gate-3.json`);
+  assert.equal(freePath(`${dir}\\gate-5.json`, exists), `${dir}\\gate-5.json`);
+  assert.equal(freePath('items/x.json', exists), 'items/x-2.json');
+});
+
+test('autopilot gate: a dispute the backlog remembers applies to every later call; no verdict is overwritten', async () => {
+  const r = repo();
+  try {
+    const lock = r.commit({ 'src/a.test.ts': 'test("F-01.1 a");\n' }, 'tests');
+    r.commit({ 'src/a.ts': 'export const a = 2;\n' }, 'impl');
+    const fix = r.commit({ 'src/a.test.ts': 'test("F-01.1 a, reading order");\n' }, 'dispute');
+    const out = join('items', 'F-01.1', 'gate-1.json');
+    const args = ['--lock', lock, '--tests', 'src/a.test.ts', '--no-merge', '--out', out];
+    assert.equal(r.gate(...args).code, 1);
+    mkdirSync(join(r.main, 'docs', 'process'), { recursive: true });
+    const item = { id: 'F-01.1', status: 'review', disputes: [`src/a.test.ts@${fix}`] };
+    writeFileSync(
+      join(r.main, 'docs', 'process', 'backlog.json'),
+      JSON.stringify({ items: [item] }),
+    );
+    const second = r.gate(...args);
+    assert.equal(second.code, 0, JSON.stringify(second.verdict.checks));
+    const saved = (n) =>
+      JSON.parse(readFileSync(join(r.main, 'items', 'F-01.1', `gate-${n}.json`), 'utf8'));
+    const locked = (v) => v.checks.find((c) => c.name === 'locked-tests');
+    assert.equal(saved(1).pass, false);
+    assert.match(locked(saved(1)).detail, /changed after the lock/);
+    assert.equal(saved(2).pass, true);
+    assert.equal(locked(saved(2)).detail, `disputed: src/a.test.ts@${fix}`);
   } finally {
     await rm(r.dir, { recursive: true, force: true });
   }

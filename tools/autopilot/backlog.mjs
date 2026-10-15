@@ -4,6 +4,7 @@
 //   node tools/autopilot/backlog.mjs sync --milestone M3
 //   node tools/autopilot/backlog.mjs next                      → JSON item or {"none": reason}
 //   node tools/autopilot/backlog.mjs set F-07.2 impl [--note t] [--attempt] [--lock sha --tests a,b] [--kind ui]
+//   node tools/autopilot/backlog.mjs set F-07.2 --dispute tests/e2e/x.spec.ts@abc1234   (gate.mjs applies it from then on)
 //   node tools/autopilot/backlog.mjs list
 //   node tools/autopilot/backlog.mjs decision '<json: item, decisions: [{question, chosen, alternatives, reversible}]>'
 //     (all decisions of one item at once, each with a "why"; one decided row per item)
@@ -70,6 +71,7 @@ try {
         lockSha: typeof flags.lock === 'string' ? flags.lock : undefined,
         tests: typeof flags.tests === 'string' ? flags.tests.split(',').filter(Boolean) : undefined,
         kind: typeof flags.kind === 'string' ? flags.kind : undefined,
+        dispute: typeof flags.dispute === 'string' ? flags.dispute : undefined,
       },
       now(),
     );
