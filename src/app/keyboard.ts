@@ -40,6 +40,23 @@ export function isTypingOrControl(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest('button, a, input, textarea, select') !== null;
 }
 
+/** Focus in a field, where a printable key types: `]` leaves the key to it, buttons don't. */
+export function isTyping(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || target.closest('input, textarea, select') !== null)
+  );
+}
+
+/**
+ * `]` without Ctrl, Alt or Meta: Next step on S-04 (F-08.4, F-30.6). AltGr (Ctrl+Alt on Windows)
+ * still counts, since some keyboard layouts type `]` with it.
+ */
+export function isNextStepShortcut(event: KeyboardEvent): boolean {
+  const altGr = event.getModifierState('AltGraph');
+  return event.key === ']' && !event.metaKey && (altGr || (!event.ctrlKey && !event.altKey));
+}
+
 /** Space without modifiers: Mark reviewed or its undo on S-03 (F-07.2, F-30.6). */
 export function isMarkReviewedShortcut(event: KeyboardEvent): boolean {
   return event.key === ' ' && !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey;

@@ -3,6 +3,7 @@ import { useParams } from 'react-router';
 import { useStepFindings } from '../../ipc/hooks/useReview';
 import { reviewKey, useReviewStore } from '../../state/review';
 import { useStepSession } from '../step/useStepSession';
+import { DetailedStepHeader } from './DetailedStepHeader';
 import { InfoHeader } from './InfoHeader';
 import { Rail } from './Rail';
 import styles from './Detailed.module.css';
@@ -36,12 +37,7 @@ export function DetailedScreen() {
       <div className={styles.body}>
         <Rail sessionId={sessionId} view={view} current={step?.id} openNotes={openNotes} />
         <main className={styles.main}>
-          {step && (
-            <section className={styles.head}>
-              <h1 className={styles.title}>{step.title}</h1>
-              <p className={styles.description}>{step.description}</p>
-            </section>
-          )}
+          {step && view && <DetailedStepHeader sessionId={sessionId} view={view} step={step} />}
         </main>
         <aside aria-label="Guide" className={styles.guide}>
           <div className={styles.guideHead}>

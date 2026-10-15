@@ -26,29 +26,7 @@
   background: var(--bg);
 }
 
-.head {
-  padding: 22px 28px 20px;
-}
-
-.title {
-  margin: 16px 0 10px;
-  font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 1.02;
-  font-weight: 800;
-  letter-spacing: 0.005em;
-  text-transform: uppercase;
-  text-wrap: balance;
-}
-
-.description {
-  margin: 0;
-  max-width: 82ch;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-body);
-  text-wrap: pretty;
-}
+/* Step header (F-08.4): DetailedStepHeader.module.css */
 
 /* Guide aside (F-08.7) */
 .guide {
