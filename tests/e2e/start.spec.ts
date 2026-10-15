@@ -102,7 +102,12 @@ test('F-17.1 Review of a commit opens the review plan, like a merge request', as
   await commits(page).getByRole('option').first().click();
   await commits(page).getByRole('button', { name: 'Review a3f9c12' }).click();
   await expect(page.getByRole('main', { name: 'Review plan' })).toBeVisible({ timeout: 5000 });
-  await expect(page).toHaveURL(/\/session\/[^/]+\/plan$/);
+  // The plan's content: S-02's <main> label alone also shows for an empty screen.
+  const plan = page.getByRole('main', { name: 'Review plan' });
+  await expect(plan.getByRole('heading', { name: /^Plan · \d+ steps$/ })).toBeVisible({
+    timeout: 10000,
+  });
+  await expect(plan.getByRole('button', { name: /Start step 1/ })).toBeEnabled();
 });
 
 test('F-03.3 F-03.4 scopes with counts; Review before push opens a self-review', async ({
