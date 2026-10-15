@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T11:01:56.809Z",
+  "updated": "2026-10-15T11:16:30.517Z",
   "items": [
     {
       "id": "F-02.5",
@@ -249,9 +249,9 @@
       "title": "Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as…",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 1,
-      "note": "live check failed: live check failed: npm run eval:claude panics (PlanNotReady) because src-tauri/tests/eval_claude.rs:180 seeds layer Services, which review/plan.rs::layer() rejects; with layer Core the eval passed (control raised async void, run with the thread did not). Fix the layer and rerun the eval",
+      "status": "live",
+      "attempts": 2,
+      "note": "Threads in the step task + prompt rule on base (513d0fa, 39c183c, c2d9e0d); eval seed layer fixed to Core and seed check in verify (60c8232). Left: run npm run eval:claude (golden case: control raises async void, run with the thread does not).",
       "lockSha": "39c183c",
       "tests": [
         "src-tauri/tests/step_threads.rs",
