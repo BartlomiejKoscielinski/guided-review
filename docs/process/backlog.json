@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T14:38:09.051Z",
+  "updated": "2026-10-15T14:41:03.332Z",
   "items": [
     {
       "id": "F-02.5",
@@ -249,9 +249,9 @@
       "title": "Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as…",
       "kind": "core",
       "deps": [],
-      "status": "live",
+      "status": "todo",
       "attempts": 2,
-      "note": "Threads in the step task + prompt rule on base (513d0fa, 39c183c, c2d9e0d); eval seed layer fixed to Core and seed check in verify (60c8232). Left: run npm run eval:claude (golden case: control raises async void, run with the thread does not).",
+      "note": "live check failed: live check failed: npm run eval:claude fails on a false positive in the eval, not in the app. Claude behaved per F-09.5 (control raised async void at Upload Service.cs:16; with the thread it raised none), but mentions() in src-tauri/tests/eval_claude.rs (~line 301) matches 'async void' in the body of a cancellation-token note that says 'The async void concern is already in the open thread, so it is not repeated here', so repeats.is_empty() (~line 372) fails. Fix the eval's topic check only (e.g. title + suggested_comment, or skip sentences that acknowledge the thread); do not change the prompt or the golden thread; then rerun npm run eval:claude.",
       "lockSha": "39c183c",
       "tests": [
         "src-tauri/tests/step_threads.rs",
