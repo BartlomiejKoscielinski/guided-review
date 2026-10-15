@@ -1,6 +1,18 @@
 # Coding rules: research proposal (2026-10-15)
 
-Status: **accepted by the owner on 2026-10-15; the owner delegated the open decisions, which are recorded below. Not implemented yet.**
+Status: **accepted by the owner on 2026-10-15; the owner delegated the open decisions, which are recorded below. Implemented on `claude/loving-bouman-a46fda`.**
+
+- **Group A** ends at `90b99a0` (`2c09fa2`, `68c7789`, `90b99a0`). Merge it at once.
+- **Group B** ends at `1e313a5` (`8cde4a0`, `1e313a5`). Merge it when E16 is judged, then start E18.
+
+Notes from the implementation:
+
+- **e2e restarts (L2):** they now run the page on Playwright's clock. `openStep1` installs it; `flushSaves` and `restartApp` run it past the mock's latency and the scroll debounce. A scroll waits for its `scroll` event before the clock runs. Green 3 times in a row.
+- **Clippy (C1, C2):** every exception is an `#[expect(clippy::disallowed_methods, reason)]`, so a stale one fails the build.
+- **Capabilities (S1):** checked in the real app with `/app`:
+  - drag, minimize, maximize and restore (the icon follows the resize event), and close work;
+  - `menu.new`, `path.resolve_directory` and `window.unminimize` are refused.
+- **Overlap with E17:** E17 lets the curator promote playbook lessons into role files. It should not promote the lessons that group B replaces (see "Playbook overlap"); retire them instead.
 
 ## Decisions (2026-10-15)
 
