@@ -87,13 +87,13 @@ describe('S-01 hero', () => {
     );
   });
 
-  it('F-01.3 Start on a commit opens its step review; a branch opens a session', async () => {
+  it('F-01.3 F-17.1 Start on a commit opens its review plan; a branch opens a session', async () => {
     const user = userEvent.setup();
     const { router } = renderStart();
     await user.type(input(), '9be0d47');
     await user.click(screen.getByRole('button', { name: /^Start/ }));
     await waitFor(() => {
-      expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/step$/);
+      expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
     });
     await user.keyboard('{Control>}k{/Control}');
     // Ctrl+K focuses and selects the input once S-01 is mounted; typing earlier gets replaced.

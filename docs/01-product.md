@@ -53,7 +53,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 ### F-01 Start: input and source detection · S-01
 - **F-01.1** One input accepts an MR URL (`https://<host>/<group>/<project>/-/merge_requests/<iid>`), `!<iid>`, a commit SHA (7–40 hex), a branch name, or a path to a local repository.
 - **F-01.2** The detected type is shown as a label block next to the input before starting (e.g. `MERGE REQUEST !482`, `COMMIT a3f9c12`, `BRANCH chore/compiled-bindings`).
-- **F-01.3** Enter or **Start** opens the source: MR → plan (S-02); commit → step review of that commit; branch or local path → self-review.
+- **F-01.3** Enter or **Start** opens the source: MR → plan (S-02); commit → plan (S-02) of that commit (M3 decision 12); branch or local path → self-review.
 - **F-01.4** `Ctrl+K` opens S-01 with the input focused, from any screen.
 - **F-01.5** Unknown or unreachable input shows an inline error under the input and stays on S-01: "No merge request !999 in mobile/mobile-app", "No commit, branch or repository matches “x”.", "x is not the configured GitLab server." (MR URL on another host), "mobile/x is not one of your repositories. Add it in Settings › GitLab." (MR URL of a project without a configured repository). An MR URL of another configured repository switches the active repository (F-30.7).
 - **F-01.6** The title bar shows the repository switcher (name and path, F-30.7), "GitLab connected" with a green square, and "Claude Code signed in" as a chip with a purple square that opens Settings › Claude (on S-01 it takes the model chip's place); a failing check turns orange and offers the fixing action ("Add token", "Sign in to Claude Code").
@@ -176,7 +176,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-16.5** After commit: green block "Created `<sha>`" with **Push and create MR** (→ S-11), **Push only**, **New commit**.
 
 ### F-17 Self-review (local changes)
-- **F-17.1** Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working tree).
+- **F-17.1** Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working tree). Commits (one commit, a range or another branch) open the same plan, with their commit messages as the description (M3 decisions 12, 13). Limitation in M3 (decision 14): the staged scope reviews the index diff, but Claude reads surrounding code from the working tree, which differs only for a file with both staged and unstaged changes; the index snapshot comes in M7 on the ADR-018 scratch worktree.
 - **F-17.2** No publish, approve or thread actions are shown. Notes can be turned into a "fix list" and into Fix with Claude (F-25). The note card's primary action is **Keep to fix** (instead of Add to drafts), confirmation "Kept to fix. It's on your list at the end."; **Edit and add** becomes **Edit and keep**; **Dismiss** keeps its copy.
 - **F-17.3** At the end it offers a draft MR description (F-27.2) and **Browse and commit**.
 - **F-17.4** The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes kept "to fix" (with Fix with Claude per item once F-25 exists) and **Copy as checklist**. Heading "SUMMARY", progress line "All 6 steps reviewed." or "4 of 6 steps reviewed.", **Back to steps**; an empty list says "Nothing to fix."

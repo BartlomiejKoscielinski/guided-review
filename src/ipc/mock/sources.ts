@@ -58,7 +58,6 @@ export function createSourcesBackend(
     store.save();
     return respond({ sessionId, route: route(sessionId) });
   };
-  const step = (sessionId: string): Route => ({ screen: 'S-03', sessionId });
   const plan = (sessionId: string): Route => ({ screen: 'S-02', sessionId });
 
   const detectUrl = (input: string): DetectedSource => {
@@ -175,7 +174,7 @@ export function createSourcesBackend(
       if (range.from !== undefined && !known(range.from) && !parent(range.from)) {
         throw noMatch(range.from);
       }
-      return opened(step);
+      return opened(plan);
     },
     sessionOpenLocal: async () => {
       requireRepo();
@@ -185,7 +184,8 @@ export function createSourcesBackend(
       requireRepo();
       const name = branch.replace(/^origin\//, '');
       if (!BRANCHES.includes(name)) throw noMatch(branch);
-      return opened(name === BRANCH ? plan : step);
+      // Another branch is a commits session, the current one a local one: both open S-02 (F-17.1).
+      return opened(plan);
     },
     sessionOpenRepo: async (path) => {
       const detected = detect(path.trim());
