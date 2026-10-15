@@ -1,12 +1,29 @@
 # Coding rules: research proposal (2026-10-15)
 
-Status: **proposal, waiting for the owner.** Nothing in `eslint.config.js`, `src-tauri/clippy.toml`, `Cargo.toml`, `package.json` or `.claude/rules/` has changed. Trial runs were done in the session's scratch folder only.
+Status: **accepted by the owner on 2026-10-15; the owner delegated the open decisions, which are recorded below. Not implemented yet.**
+
+## Decisions (2026-10-15)
+
+| Item | Decision | Why |
+| - | - | - |
+| Wave 1 | Accepted. It is implemented in two groups so that E16 stays measurable. | E16 (the test author on Opus) is open and judges fix rounds that come from gaps in the locked tests, which are kinds K2 and K3. |
+| Group A, merge at once | L2 (with the 6 call sites migrated), L4, D1 (`flat/recommended` only), C1–C3, R2, R3, S1 with its guard test | None of these targets K2, K3 or K4, so E16's numbers are not affected. |
+| Group B, merge when E16 is judged | L1, L3, F1–F3, M1–M2, T1–T3, R1. E17 starts at that merge. Its baseline is E16's result if E16 is kept, otherwise 0.44 and 0.31. | These target the same kinds as E16. |
+| D1 | Adopt `@tanstack/eslint-plugin-query` 5.104.3 with `flat/recommended` (0 violations). `prefer-query-options` is deferred: it becomes one dedicated item when `src/ipc/hooks/` is quiet (end of M3). | The recommended set catches query keys that miss a variable, at no migration cost. Rewriting 29 sites in 13 files now would collide with running autopilot items. |
+| S1 | Replace `core:default` with `core:event:default`, `core:window:default` and the 4 window actions. A Rust guard test `src-tauri/tests/tauri_security.rs` fails on `core:default`, on a permission outside the allowlist, and on `'unsafe-inline'`, `'unsafe-eval'` or a remote host in the release CSP. Check the title bar in the real app with `/app`: drag, minimize, maximize and restore, the maximized state, close. | Least privilege. The UI uses only `invoke`, `Channel`, `listen` and the current window. |
+| D2 | Yes, as one autopilot item after E17 starts. It covers `review_reorder_steps`, `review_ask`, `review_decide` and `review_plan` first. | K1 recurs (6 lessons), and a fake needs contract tests. |
+| D3 | A separate experiment after E17 is judged. | It changes the autopilot reviewer and gate, and it would confound E17. |
+| D4 | Not now. Revisit it if file-length nits continue during E17. | Nits only, no fix rounds. |
+| S2 | Part of the M10 tray-window work: `AppManifest::commands` and one capability per window. | Today there is one window. |
+| S4 | An ADR decision at M11 (hardening). | It is not driven by our errors. |
+| Playbook | The curator retires the entries listed under "Playbook overlap" after group B merges. | Group B is what replaces them. |
+| E17 row | Added to `IMPROVEMENTS.md` when group B merges. | The autopilot session is changing that file now. |
 
 ## Streszczenie dla właściciela
 
 - **Po co:** w M3 recenzent autopilota znajduje średnio 0,44 poważnej lub zwykłej uwagi na kryterium, a 0,31 kryterium wymaga rundy poprawek. Prawie wszystkie te uwagi należą do trzech rodzajów błędów: testy nie przechodzą przez kod produkcyjny, ekran nie obsługuje jakiegoś stanu (ładowanie, błąd, inne źródło sesji niż MR) i dane liczone z surowego wyniku Claude zamiast ze sprawdzonego planu.
 - **Najpierw (fala 1, bez nowych zależności):** siedem reguł lintera (L1–L4 w eslint, C1–C3 w clippy). Nie kosztują kontekstu, a bramka autopilota je egzekwuje. Do tego 9 krótkich linijek reguł tekstowych tam, gdzie lintera nie da się użyć. Dwa nowe pliki (`mock.md`, `tests.md`) ładują się tylko przy pracy na mocku i testach.
-- **Potrzebuję od Ciebie:** (1) zgody na falę 1. (2) Decyzji o jednej nowej zależności: `@tanstack/eslint-plugin-query` (D1). (3) Decyzji o zawężeniu uprawnień okna Tauri (`core:default`, S1), bo to zmiana konfiguracji bezpieczeństwa. (4) Kolejności eksperymentów: proponuję zacząć E17 dopiero po ocenie E16, bo oba mierzą rundy poprawek. Pozostałe punkty (D2–D4, S2, S4) proponuję na później.
+- **Decyzje (właściciel przekazał je 2026-10-15):** fala 1 przyjęta. Reguły, które nie dotyczą tego, co mierzy E16 (grupa A), wchodzą od razu. Reguły dla tych samych rodzajów błędów co E16 (grupa B) wchodzą po jego ocenie i wtedy startuje E17. Wtyczka TanStack wchodzi w zestawie `recommended`. Uprawnienia okna Tauri zostają zawężone, a pilnuje ich nowy test. Szczegóły są w tabeli „Decisions” wyżej.
 
 ## Method
 
