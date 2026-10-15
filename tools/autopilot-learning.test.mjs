@@ -386,3 +386,48 @@ test('autopilot playbook E17: an entry on hold is never a rule proposal', () => 
   assert.equal(merge(pb, 'P-001', 'P-002').hold, 'E18 group B lint replaces it');
   assert.throws(() => hold(pb, ['P-001'], ' '), /needs a reason/);
 });
+
+test('autopilot playbook E20: curate --dry-run prints the proposals as one JSON line and saves nothing', async () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'gr playbook ł-'));
+  try {
+    const pb = empty();
+    addEntry(pb, { tags: ['core', 'tests'], text: 'Assert what can fail.' }, 't');
+    addEntry(pb, { tags: ['ui', 'implement'], text: 'Seed the mock.' }, 't');
+    for (let i = 0; i < 3; i++) rate(pb, 'P-001', 'helpful');
+    rate(pb, 'P-002', 'harmful');
+    rate(pb, 'P-002', 'harmful');
+    mkdirSync(join(tmp, 'docs', 'process'), { recursive: true });
+    const pbFile = join(tmp, 'docs', 'process', 'playbook.json');
+    const before = JSON.stringify(pb);
+    writeFileSync(pbFile, before);
+    const cli = (...a) =>
+      spawnSync(
+        process.execPath,
+        [join(root, 'tools', 'autopilot', 'playbook.mjs'), 'curate', ...a, '--root', tmp],
+        { encoding: 'utf8' },
+      );
+    const dry = cli('--dry-run');
+    assert.equal(dry.status, 0, dry.stderr);
+    assert.equal(dry.stdout.trim().split('\n').length, 1);
+    const out = JSON.parse(dry.stdout);
+    assert.deepEqual(out.removed, ['P-002']);
+    assert.deepEqual(
+      out.proposals.map((p) => p.id),
+      ['P-001'],
+    );
+    assert.equal(readFileSync(pbFile, 'utf8'), before);
+    // nothing waits once the proposal is promoted: the Closing step of an autopilot run skips the curator
+    const promoted = JSON.parse(before);
+    promoted.entries[0].promoted = true;
+    writeFileSync(pbFile, JSON.stringify(promoted));
+    assert.deepEqual(JSON.parse(cli('--dry-run').stdout).proposals, []);
+    // the real run prunes and saves
+    assert.equal(cli().status, 0);
+    assert.deepEqual(
+      JSON.parse(readFileSync(pbFile, 'utf8')).entries.map((e) => e.id),
+      ['P-001'],
+    );
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+});
