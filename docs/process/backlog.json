@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-15T17:03:56.316Z",
+  "updated": "2026-10-15T17:36:57.704Z",
   "items": [
     {
       "id": "F-08.1",
@@ -29,9 +29,14 @@
       "title": "Info header: branch block, author · age, N files +add −del, step progress segments with done/total, drafts…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "1f3ecd3",
+      "tests": [
+        "src/screens/detailed/InfoHeader.test.tsx",
+        "tests/e2e/detailed.spec.ts"
+      ]
     },
     {
       "id": "F-08.3",
