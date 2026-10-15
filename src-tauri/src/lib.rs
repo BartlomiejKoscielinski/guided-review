@@ -181,6 +181,7 @@ pub fn run() {
             commands::session_state::session_set_step,
             commands::session_state::session_set_layout,
             commands::session_state::session_set_mode,
+            commands::session_state::session_mark_plan_opened,
             commands::session_state::session_set_scroll,
             commands::session_state::session_set_checklist,
             commands::session_state::session_resume,

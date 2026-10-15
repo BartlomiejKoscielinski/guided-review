@@ -1,14 +1,17 @@
 //! Draft comments (table `drafts`, F-09.2, F-09.7, F-10.3): kept on this PC only. Nothing here
 //! talks to GitLab; drafts reach it only through Publish (`drafts_publish`, F-12), a separate
-//! explicit action. Drafts belong to the MR through `session_id` (F-12.7, docs/04).
+//! explicit action. Drafts belong to the MR through `session_id` (F-12.7, docs/04) and to a plan
+//! step through `step_id` (the S-04 rail's per-step count, F-08.3).
 
 use rusqlite::{Connection, OptionalExtension, Row, params};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::finding_model::Severity;
+use super::plan_model::Plan;
 use super::position::DiffPosition;
 use crate::error::{AppError, ErrorCode};
+use crate::git::model::FileDiff;
 use crate::store::StoreError;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -29,6 +32,9 @@ pub struct Draft {
     pub published_note_id: Option<u64>,
     /// Why the last Publish of this draft failed.
     pub error: Option<String>,
+    /// The plan step it belongs to (F-08.3): the note's step, else the step holding the hunk of
+    /// its line; `None` for a comment on the merge request or a line in no step.
+    pub step_id: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, TS)]
@@ -92,8 +98,7 @@ impl From<DraftError> for AppError {
     }
 }
 
-const COLUMNS: &str =
-    "id, session_id, finding_id, body, position_json, severity, include, published_note_id, error";
+const COLUMNS: &str = "id, session_id, finding_id, body, position_json, severity, include, published_note_id, error, step_id";
 
 fn severity_text(severity: Severity) -> &'static str {
     match severity {
@@ -126,6 +131,7 @@ fn from_row(row: &Row<'_>) -> rusqlite::Result<Draft> {
         include: row.get::<_, Option<bool>>(6)?.unwrap_or(true),
         published_note_id: note.and_then(|n| u64::try_from(n).ok()),
         error: row.get(8)?,
+        step_id: row.get(9)?,
     })
 }
 
@@ -150,8 +156,53 @@ pub fn get(conn: &Connection, id: &str) -> Result<Draft, DraftError> {
     .ok_or_else(|| DraftError::NotFound(id.to_owned()))
 }
 
-/// A new draft, included in the next Publish.
+/// The plan step holding the hunk of a diff line (F-08.3): a draft on that line belongs to it.
+/// `None` for a line in a skim group, between hunks or in a file outside the change.
+pub fn step_at(plan: &Plan, files: &[FileDiff], position: &DiffPosition) -> Option<String> {
+    let hunk = files
+        .iter()
+        .filter(|f| {
+            [&f.new_path, &f.old_path]
+                .into_iter()
+                .flatten()
+                .any(|p| *p == position.file)
+        })
+        .flat_map(|f| f.hunks.iter())
+        .find(|h| h.lines.iter().any(|l| position.is_on(l)))?;
+    plan.steps
+        .iter()
+        .find(|s| s.hunk_ids.contains(&hunk.id))
+        .map(|s| s.id.clone())
+}
+
+/// The step of a session's note; `None` when the note isn't there.
+fn note_step(
+    conn: &Connection,
+    session: &str,
+    finding: &str,
+) -> Result<Option<String>, DraftError> {
+    let step: Option<Option<String>> = conn
+        .query_row(
+            "SELECT step_id FROM findings WHERE session_id = ?1 AND id = ?2",
+            params![session, finding],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(step.flatten())
+}
+
+/// A new draft, included in the next Publish; one made from a note belongs to the note's step.
 pub fn create(conn: &Connection, new: &NewDraft) -> Result<Draft, DraftError> {
+    create_at(conn, new, None)
+}
+
+/// [`create`] with `line_step`, the step holding the hunk of the draft's line ([`step_at`]),
+/// for a draft that isn't from a note (the line comment composer, a draft from an answer).
+pub fn create_at(
+    conn: &Connection,
+    new: &NewDraft,
+    line_step: Option<String>,
+) -> Result<Draft, DraftError> {
     if new.body.trim().is_empty() {
         return Err(DraftError::EmptyBody);
     }
@@ -161,10 +212,15 @@ pub fn create(conn: &Connection, new: &NewDraft) -> Result<Draft, DraftError> {
         .as_ref()
         .map(serde_json::to_string)
         .transpose()?;
+    let note = match &new.finding_id {
+        Some(finding) => note_step(conn, &new.session_id, finding)?,
+        None => None,
+    };
+    let step_id = note.or(line_step.filter(|_| new.position.is_some()));
     conn.execute(
         "INSERT INTO drafts (id, session_id, finding_id, body, position_json, severity, include,
-                             created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1,
+                             step_id, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1, ?7,
                  strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))",
         params![
             id,
@@ -173,6 +229,7 @@ pub fn create(conn: &Connection, new: &NewDraft) -> Result<Draft, DraftError> {
             new.body,
             position,
             new.severity.map(severity_text),
+            step_id,
         ],
     )?;
     get(conn, &id)

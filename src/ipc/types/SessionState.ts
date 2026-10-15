@@ -23,4 +23,8 @@ scroll: { [key in string]: number },
 /**
  * The ticked "For you to judge" items of each step that has any (F-08.7).
  */
-checklist: { [key in string]: Array<string> }, };
+checklist: { [key in string]: Array<string> }, 
+/**
+ * S-02 showed the session's plan: the S-04 rail's "Change overview" is done (F-08.3).
+ */
+planOpened: boolean, };

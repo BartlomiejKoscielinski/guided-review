@@ -1,6 +1,6 @@
 //! What S-03 keeps of a session between app starts (F-04.3): the layout it was read in (F-07.1),
-//! the step it was on and its mode (F-08.1, M4 decision 4). All are columns of `sessions`; a
-//! session that doesn't exist has none of them.
+//! the step it was on, its mode (F-08.1, M4 decision 4) and whether S-02 showed its plan
+//! (F-08.3). All are columns of `sessions`; a session that doesn't exist has none of them.
 
 use rusqlite::{Connection, OptionalExtension, params};
 
@@ -78,6 +78,31 @@ pub fn set_mode(conn: &Connection, id: &str, mode: Mode) -> Result<bool, StoreEr
         "UPDATE sessions SET mode = ?2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?1",
         params![id, stored(mode)],
+    )?;
+    Ok(changed > 0)
+}
+
+/// Whether S-02 showed the session's plan: the S-04 rail's "Change overview" is then done
+/// (F-08.3). `false` too when there is no such session.
+pub fn plan_opened(conn: &Connection, id: &str) -> Result<bool, StoreError> {
+    let at: Option<Option<String>> = conn
+        .query_row(
+            "SELECT plan_opened_at FROM sessions WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(at.flatten().is_some())
+}
+
+/// Keeps that S-02 showed the session's plan; opening it again keeps the first time. `false`
+/// when there is no such session.
+pub fn mark_plan_opened(conn: &Connection, id: &str) -> Result<bool, StoreError> {
+    let changed = conn.execute(
+        "UPDATE sessions
+         SET plan_opened_at = COALESCE(plan_opened_at, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+         WHERE id = ?1",
+        params![id],
     )?;
     Ok(changed > 0)
 }

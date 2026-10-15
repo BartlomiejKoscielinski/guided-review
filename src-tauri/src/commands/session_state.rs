@@ -68,6 +68,12 @@ pub async fn session_set_mode(
     found(with_store(&store, move |c| sessions::set_mode(c, &session, mode)).await?)
 }
 
+/// S-02 showed the session's plan: the S-04 rail's "Change overview" is done (F-08.3).
+#[tauri::command]
+pub async fn session_mark_plan_opened(store: State<'_, Store>, session: String) -> AppResult<()> {
+    found(with_store(&store, move |c| sessions::mark_plan_opened(c, &session)).await?)
+}
+
 /// Where the step was scrolled, in pixels (debounced by the UI).
 #[tauri::command]
 pub async fn session_set_scroll(

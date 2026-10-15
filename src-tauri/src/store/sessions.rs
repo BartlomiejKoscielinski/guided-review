@@ -5,7 +5,10 @@
 #[path = "sessions_state.rs"]
 mod state;
 
-pub use state::{current_step, layout, mode, set_current_step, set_layout, set_mode};
+pub use state::{
+    current_step, layout, mark_plan_opened, mode, plan_opened, set_current_step, set_layout,
+    set_mode,
+};
 
 use std::collections::HashMap;
 use std::path::PathBuf;

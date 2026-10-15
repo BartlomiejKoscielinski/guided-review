@@ -45,7 +45,7 @@ impl ReviewApp {
         }
     }
 
-    fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
+    pub(super) fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
         self.contexts
             .lock()
             .ok()

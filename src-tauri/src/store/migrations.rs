@@ -10,6 +10,7 @@ pub fn migrations() -> Migrations<'static> {
         M::up(include_str!("migrations/003_session_mr.sql")),
         M::up(include_str!("migrations/004_claude_cache_lookup.sql")),
         M::up(include_str!("migrations/005_findings_per_session.sql")),
+        M::up(include_str!("migrations/006_plan_opened_draft_step.sql")),
     ])
 }
 
@@ -91,7 +92,7 @@ mod tests {
         let version: i64 = conn
             .query_row("PRAGMA user_version", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(version, 5);
+        assert_eq!(version, 6);
     }
 
     #[test]
