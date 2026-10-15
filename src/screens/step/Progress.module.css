@@ -14,6 +14,12 @@
   height: 10px;
 }
 
+/* S-04 info header (Main.dc.html) */
+.info {
+  width: 12px;
+  height: 6px;
+}
+
 .done {
   background: var(--green);
 }

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router';
 import { reviewKey, useReviewStore } from '../../state/review';
 import { useStepSession } from '../step/useStepSession';
+import { InfoHeader } from './InfoHeader';
 import styles from './Detailed.module.css';
 
 /**
@@ -26,7 +27,7 @@ export function DetailedScreen() {
 
   return (
     <div className={styles.screen}>
-      <div className={styles.info} />
+      <InfoHeader sessionId={sessionId} stepId={step?.id} />
       <div className={styles.body}>
         <nav aria-label="Review plan" className={styles.rail} />
         <main className={styles.main}>

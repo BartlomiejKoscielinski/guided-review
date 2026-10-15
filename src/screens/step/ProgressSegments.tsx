@@ -8,8 +8,11 @@ export interface ProgressSegmentsProps {
   current: string;
   /** The steps marked reviewed (`PlanView.reviewed`): their segments are green. */
   reviewed: readonly string[];
-  /** "bar" = 18x6 in the title bar (layout B), "guide" = 10x10 in the guide panel (layout C). */
-  size: 'bar' | 'guide';
+  /**
+   * "bar" = 18x6 in the title bar (layout B), "guide" = 10x10 in the guide panel (layout C),
+   * "info" = 12x6 in the S-04 info header (F-08.2).
+   */
+  size: 'bar' | 'guide' | 'info';
 }
 
 /**

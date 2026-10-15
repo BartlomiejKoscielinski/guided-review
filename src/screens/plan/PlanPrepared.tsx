@@ -4,10 +4,8 @@ import { isTypingOrControl } from '../../app/keyboard';
 import { pathFor, stepScreen } from '../../app/routes';
 import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
-import { useCommitInfo } from '../../ipc/hooks/useChanges';
 import { useSessionState } from '../../ipc/hooks/useSessionState';
 import { useStepFindings } from '../../ipc/hooks/useReview';
-import { useSessionMr, useSessionSource } from '../../ipc/hooks/useSources';
 import { browseFilter } from '../changes/browseFilter';
 import { FallbackBanner } from './FallbackBanner';
 import { MrMetaLine } from './MrMetaLine';
@@ -17,6 +15,7 @@ import { PlanIntent } from './PlanIntent';
 import { PlanList } from './PlanList';
 import { SourceMetaLine } from './SourceMetaLine';
 import { claimsHeading, sourceTitle } from './sourceText';
+import { useSessionHeader } from './useSessionHeader';
 import styles from './Plan.module.css';
 
 export interface PlanPreparedProps {
@@ -31,13 +30,7 @@ export interface PlanPreparedProps {
  */
 export function PlanPrepared({ sessionId }: PlanPreparedProps) {
   const navigate = useNavigate();
-  const session = useSessionMr(sessionId);
-  const source = useSessionSource(sessionId, session.data === null);
-  const single = source.data?.kind === 'commits' && source.data.from === undefined;
-  const commit = useCommitInfo(
-    source.data?.kind === 'commits' ? source.data.to : undefined,
-    single,
-  );
+  const { session, source, single, commit } = useSessionHeader(sessionId);
   const { query: plan } = usePlan(sessionId);
   const setStrategy = useSetStrategy(sessionId);
   const reorder = useReorderSteps(sessionId);
