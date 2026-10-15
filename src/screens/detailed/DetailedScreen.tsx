@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
-import { useStepFindings } from '../../ipc/hooks/useReview';
+import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { reviewKey, useReviewStore } from '../../state/review';
+import { pathOf } from '../step/diffPath';
 import { useStepSession } from '../step/useStepSession';
+import { DetailedFile } from './DetailedFile';
 import { DetailedStepHeader } from './DetailedStepHeader';
 import { InfoHeader } from './InfoHeader';
 import { Rail } from './Rail';
@@ -23,6 +25,9 @@ export function DetailedScreen() {
   // The step's notes as S-03 asks for them (F-09.6); restored on start only cached ones (F-30.4).
   const notes = useStepFindings(sessionId, step?.id ?? '', !restored).query.data;
   const openNotes = notes?.findings.filter((f) => f.decision === 'open').length;
+  // The step's files with only its hunks (F-07.3), each under its sticky file bar (F-08.5).
+  const files = useStep(sessionId, step?.id ?? '').data?.files;
+  const mainRef = useRef<HTMLElement>(null);
 
   // The step is open here as in S-03: another step's state is dropped, this step's is kept.
   const claim = useReviewStore((s) => s.claim);
@@ -36,8 +41,17 @@ export function DetailedScreen() {
       <InfoHeader sessionId={sessionId} stepId={step?.id} />
       <div className={styles.body}>
         <Rail sessionId={sessionId} view={view} current={step?.id} openNotes={openNotes} />
-        <main className={styles.main}>
+        <main ref={mainRef} className={styles.main}>
           {step && view && <DetailedStepHeader sessionId={sessionId} view={view} step={step} />}
+          {step &&
+            files?.map((file) => (
+              <DetailedFile
+                key={pathOf(file)}
+                sessionId={sessionId}
+                file={file}
+                scrollRoot={mainRef}
+              />
+            ))}
         </main>
         <aside aria-label="Guide" className={styles.guide}>
           <div className={styles.guideHead}>

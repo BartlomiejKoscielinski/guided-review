@@ -17,6 +17,12 @@
   overflow: auto;
 }
 
+/* Each region scrolls on its own while they sit side by side, so the sticky file bar (F-08.5)
+   sticks to the main column; wrapped under each other in a narrow window, the body scrolls. */
+.body > * {
+  max-height: 100%;
+}
+
 /* Rail (F-08.3): Rail.module.css */
 
 .main {

@@ -29,6 +29,8 @@ export interface SegmentedProps<T extends string> {
   tone?: 'white' | 'yellow' | 'purple' | 'green';
   /** Values in mono lowercase (effort levels in Settings › Claude). */
   mono?: boolean;
+  /** Extra class on the group (a different group fill on a bar of the same color). */
+  className?: string;
 }
 
 /**
@@ -43,6 +45,7 @@ export function Segmented<T extends string>({
   size = 'form',
   tone = 'white',
   mono = false,
+  className,
 }: SegmentedProps<T>) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const enabled = options.flatMap((o, i) => (o.disabled ? [] : [i]));
@@ -85,7 +88,7 @@ export function Segmented<T extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={cx(styles.group, styles[size], styles[tone], mono && styles.mono)}
+      className={cx(styles.group, styles[size], styles[tone], mono && styles.mono, className)}
     >
       {options.map((option, index) => (
         <button

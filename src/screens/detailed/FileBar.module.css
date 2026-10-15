@@ -1,0 +1,79 @@
+/* S-04 file bar (F-08.5, Main.dc.html sticky bar above the diff; docs/03). Colors only from tokens. */
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--panel-2);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 8px 28px;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.path {
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.add,
+.del {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.add {
+  color: var(--diff-add-text);
+}
+
+.del {
+  color: var(--diff-del-text);
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The group sits darker than the bar (Main.dc.html: #101010 on #1A1A1A). */
+.sticky .layout {
+  background: var(--bg);
+}
+
+/* Ignore whitespace on: the white block of a selected option. */
+.toggle[aria-pressed='true'] {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.alert {
+  margin: 0;
+  padding: 8px 28px;
+  background: var(--orange);
+  color: var(--ink);
+  font-size: 13.5px;
+}
