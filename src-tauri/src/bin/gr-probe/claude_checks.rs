@@ -2,7 +2,7 @@
 //! status, the startup probe, the read-only profile under `--restricted` (schema, system prompt
 //! file, `--add-dir` input, repository read, loaded tools), canaries of project configuration,
 //! `--resume`, schema enforcement, the fix profile in a scratch worktree, and model IDs.
-//! About ten short calls; Haiku unless `--model` says otherwise. Synthetic fixtures only.
+//! About ten short calls; Sonnet unless `--model` says otherwise. Synthetic fixtures only.
 
 use std::path::Path;
 use std::time::{Duration, Instant};
@@ -19,7 +19,7 @@ use crate::claude_s3_s4::{canaries, fix_profile, schema_enforcement};
 use crate::report::{Check, Detail, Outcome, Sanitizer, key_types, utc_now};
 
 const TIMEOUT: Duration = Duration::from_secs(240);
-const DEFAULT_MODEL: &str = "claude-haiku-5-5";
+const DEFAULT_MODEL: &str = "claude-sonnet-5-5";
 const MODELS: [&str; 4] = [
     "claude-opus-5-5",
     "claude-sonnet-5-5",

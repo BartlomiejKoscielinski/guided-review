@@ -31,7 +31,7 @@ gr-probe (Guided Review field kit)
 Usage:
   gr-probe env                                   [--report <stem>]
   gr-probe claude       [--model <id>]           [--report <stem>]
-            (about ten short Claude calls on synthetic fixtures; Haiku by default)
+            (about ten short Claude calls on synthetic fixtures; Sonnet by default)
   gr-probe token set    --server <url>
   gr-probe token delete --server <url>
   gr-probe tls          --server <url>           [--report <stem>]

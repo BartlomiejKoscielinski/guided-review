@@ -15,6 +15,7 @@ export default defineConfig(
     'playwright-report',
     'test-results',
     '.design-check',
+    '.app-driver', // app driver scratch output (screenshots, batches, copies)
   ]),
   {
     files: ['**/*.{ts,tsx}'],
