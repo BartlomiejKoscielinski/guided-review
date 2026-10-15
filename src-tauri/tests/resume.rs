@@ -20,7 +20,7 @@ use guided_review_lib::git::Git;
 use guided_review_lib::git::model::FileDiff;
 use guided_review_lib::os::process::Cancel;
 use guided_review_lib::review::decisions::{self, FindingDecision};
-use guided_review_lib::review::finding_model::Decision;
+use guided_review_lib::review::finding_model::{Decision, Finding};
 use guided_review_lib::review::model::Strategy;
 use guided_review_lib::review::plan_cache;
 use guided_review_lib::review::resume;
@@ -47,6 +47,33 @@ fn vm_findings() -> Value {
         }
     });
     json!({ "stdout": result.to_string() })
+}
+
+/// Two notes of one kind on the same code (identical line and neighbours): one fingerprint.
+fn twin_findings() -> Value {
+    let note = |title: &str| {
+        json!({
+            "severity": "fix", "kind": "unawaited-call", "title": title,
+            "body": "The task is dropped.", "file": VM, "side": "new", "line": 2,
+            "evidence": [{ "file": QUEUE, "line": 2, "note": "the contract" }],
+            "suggested_comment": "Should Enqueue be awaited?"
+        })
+    };
+    let result = json!({
+        "type": "result", "subtype": "success", "is_error": false, "session_id": "s",
+        "structured_output": {
+            "findings": [note("Enqueue isn't awaited"), note("Enqueue is dropped")],
+            "checklist": [], "files_read": [], "folds": []
+        }
+    });
+    json!({ "stdout": result.to_string() })
+}
+
+fn seen(findings: &[Finding]) -> Vec<(String, Decision)> {
+    findings
+        .iter()
+        .map(|f| (f.id.clone(), f.decision))
+        .collect()
 }
 
 struct Setup {
@@ -208,6 +235,50 @@ impl Setup {
         id
     }
 
+    /// S-03 opens step s1 as `review_step_findings` does: with the review's dismissals.
+    async fn open_s1(&self) -> Vec<Finding> {
+        let cx = step_context::load(
+            &self.ctx(),
+            None,
+            "r1",
+            |_| async { Vec::new() },
+            &Cancel::new(),
+        )
+        .await
+        .unwrap();
+        let order = cx.order(Strategy::ContractToUi);
+        let dismissed = self
+            .store
+            .with_conn(|c| Ok(decisions::dismissed(c, "mr:482")))
+            .unwrap()
+            .unwrap();
+        let req = cx.step_request("s1", &order, &dismissed);
+        step_runs::findings(
+            &StepRuns::default(),
+            &self.ctx(),
+            &req,
+            "r1",
+            Priority::CurrentStep,
+            &Cancel::new(),
+            &|_| {},
+        )
+        .await
+        .unwrap()
+        .findings
+    }
+
+    /// The reviewer's click on a note card (`review_decide`).
+    fn decide(&self, finding_id: &str, decision: &FindingDecision) {
+        self.store
+            .with_conn(|c| {
+                Ok(decisions::decide_in(
+                    c, "r1", finding_id, decision, "mr:482",
+                ))
+            })
+            .unwrap()
+            .unwrap();
+    }
+
     async fn resume(&self) -> Option<resume::ResumedSession> {
         resume::resume(&self.ctx(), None, "r1", &Cancel::new())
             .await
@@ -279,4 +350,44 @@ async fn f04_3_a_step_never_analyzed_resumes_without_notes_and_without_a_run() {
         })
         .unwrap();
     assert_eq!(s.resume().await.unwrap().step.step.id, "s1");
+}
+
+#[tokio::test]
+async fn f09_4_undoing_one_of_two_notes_on_the_same_code_shows_it_open_when_the_step_loads_again() {
+    let s = setup();
+    s.plan().await;
+    s.fake
+        .set_scenario(&json!({ "responses": [twin_findings()] }));
+    let notes = s.open_s1().await;
+    assert_eq!(notes.len(), 2);
+    assert_eq!(notes[0].fingerprint, notes[1].fingerprint);
+    let (f1, f3) = (notes[0].id.clone(), notes[1].id.clone());
+    s.decide(&f1, &FindingDecision::Dismiss);
+    s.decide(&f3, &FindingDecision::Dismiss);
+    s.decide(&f1, &FindingDecision::Undo);
+    let runs = s.fake.calls().len();
+
+    // The step task leaves the shared fingerprint out (f3 is still dismissed), yet the reviewer
+    // sees f1 open and f3 dismissed, as on the card: re-opened, and restored after a restart.
+    let expected = [
+        (f1.clone(), Decision::Open),
+        (f3.clone(), Decision::Dismissed),
+    ];
+    assert_eq!(seen(&s.open_s1().await), expected);
+    s.store
+        .with_conn(|c| {
+            sessions::set_current_step(c, "r1", "s1")?;
+            Ok(())
+        })
+        .unwrap();
+    let resumed = s.resume().await.unwrap().findings.unwrap();
+    assert_eq!(seen(&resumed.findings), expected);
+    assert_eq!(s.fake.calls().len(), runs, "both from the cache");
+
+    // f1 can still go to drafts, and the draft stays next to its dismissed twin.
+    s.decide(&f1, &FindingDecision::AddToDrafts);
+    assert_eq!(
+        seen(&s.open_s1().await),
+        [(f1, Decision::Draft), (f3, Decision::Dismissed)]
+    );
 }

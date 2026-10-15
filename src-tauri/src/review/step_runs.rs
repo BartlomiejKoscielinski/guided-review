@@ -158,7 +158,7 @@ pub async fn findings(
     let key = format!("{session_id}\u{0}{}", req.step_id);
     let started = || emit(ClaudeTaskEvent::Started);
     let result = match runs.run(&key, ctx, req, priority, &started, cancel).await {
-        Ok(outcome) => record(ctx, session_id, req.files, outcome.analysis).map_err(RunError::App),
+        Ok(outcome) => record(ctx, session_id, req, outcome.analysis).map_err(RunError::App),
         Err(error) => Err(RunError::Claude(error)),
     };
     emit(match &result {
@@ -181,7 +181,7 @@ pub fn cached_findings(
     session_id: &str,
 ) -> Result<Option<StepAnalysis>, RunError> {
     match step::cached_analysis(ctx, req) {
-        Ok(Some(analysis)) => record(ctx, session_id, req.files, analysis)
+        Ok(Some(analysis)) => record(ctx, session_id, req, analysis)
             .map(Some)
             .map_err(RunError::App),
         Ok(None) => Ok(None),
@@ -189,36 +189,39 @@ pub fn cached_findings(
     }
 }
 
-/// The analysis with each note's stored decision, and the step's notes this session dismissed
-/// back in their place (the task leaves dismissed fingerprints out, F-09.4).
+/// The analysis with each note's stored decision, and the step's notes this session recorded
+/// that the task left out back in their place: the task leaves out every note with a dismissed
+/// fingerprint (F-09.4), including a note that shares it with a dismissed one but is itself open
+/// or a draft, so those come back with their own decisions.
 fn record(
     ctx: &Context<'_>,
     session_id: &str,
-    files: &[FileDiff],
+    req: &StepRequest<'_>,
     analysis: StepAnalysis,
 ) -> Result<StepAnalysis, AppError> {
-    let (findings, dismissed) = ctx.store.with_conn(|conn| {
+    let (findings, left_out) = ctx.store.with_conn(|conn| {
         Ok(
             decisions::record(conn, session_id, &analysis).and_then(|findings| {
-                let dismissed = decisions::dismissed_notes(conn, session_id, &analysis.step_id)?;
-                Ok((findings, dismissed))
+                let left_out =
+                    decisions::left_out_notes(conn, session_id, &analysis.step_id, req.dismissed)?;
+                Ok((findings, left_out))
             }),
         )
     })??;
     Ok(StepAnalysis {
-        findings: with_dismissed(findings, dismissed, files),
+        findings: with_left_out(findings, left_out, req.files),
         ..analysis
     })
 }
 
-/// `findings` with the dismissed notes they lack, in diff order: the change's file order, then
+/// `findings` with the left-out notes they lack, in diff order: the change's file order, then
 /// the line (the order the step task's notes come in).
-fn with_dismissed(
+fn with_left_out(
     mut findings: Vec<Finding>,
-    dismissed: Vec<Finding>,
+    left_out: Vec<Finding>,
     files: &[FileDiff],
 ) -> Vec<Finding> {
-    let missing: Vec<Finding> = dismissed
+    let missing: Vec<Finding> = left_out
         .into_iter()
         .filter(|d| findings.iter().all(|f| f.id != d.id))
         .collect();
@@ -325,7 +328,7 @@ mod tests {
             note("v1", VM, 20, Decision::Dismissed),
             note("q2", QUEUE, 30, Decision::Dismissed),
         ];
-        let merged = with_dismissed(shown, dismissed, &files);
+        let merged = with_left_out(shown, dismissed, &files);
         assert_eq!(ids(&merged), ["q1", "q2", "v1", "v2"]);
         assert_eq!(merged[2].decision, Decision::Dismissed);
     }
@@ -339,6 +342,6 @@ mod tests {
             note("v1", VM, 20, Decision::Dismissed),
         ];
         let dismissed = vec![note("v1", VM, 20, Decision::Dismissed)];
-        assert_eq!(ids(&with_dismissed(shown, dismissed, &files)), ["v2", "v1"]);
+        assert_eq!(ids(&with_left_out(shown, dismissed, &files)), ["v2", "v1"]);
     }
 }

@@ -287,30 +287,47 @@ pub fn session_of(conn: &Connection, finding_id: &str) -> Result<String, Decisio
     .ok_or_else(|| DecisionError::NotFound(finding_id.to_owned()))
 }
 
-/// The step's notes this session dismissed, in the order they were first recorded. The step
-/// task leaves dismissed fingerprints out (F-09.4), so a step shown again - from the cache after
-/// a restart (F-04.3) - gets them back from here: the reviewer still sees the decision and can
-/// undo it.
+/// The step's notes this session dismissed, in the order they were first recorded.
 pub fn dismissed_notes(
     conn: &Connection,
     session_id: &str,
     step_id: &str,
 ) -> Result<Vec<Finding>, DecisionError> {
+    left_out_notes(conn, session_id, step_id, &[])
+}
+
+/// The step's notes this session recorded that the step task now leaves out, with their stored
+/// decisions, in the order they were first recorded: the dismissed ones and every note sharing a
+/// dismissed fingerprint (`dismissed`, F-09.4). A step shown again - re-opened, or from the cache
+/// after a restart (F-04.3) - gets them back from here: the reviewer still sees each decision and
+/// can undo it, and a note whose twin was dismissed stays open (or a draft) instead of vanishing.
+pub fn left_out_notes(
+    conn: &Connection,
+    session_id: &str,
+    step_id: &str,
+    dismissed: &[Dismissal],
+) -> Result<Vec<Finding>, DecisionError> {
     let mut stmt = conn.prepare(
-        "SELECT json FROM findings
-         WHERE session_id = ?1 AND step_id = ?2 AND decision = 'dismissed' ORDER BY rowid",
+        "SELECT json, decision FROM findings WHERE session_id = ?1 AND step_id = ?2 ORDER BY rowid",
     )?;
     let rows = stmt
-        .query_map(params![session_id, step_id], |row| row.get::<_, String>(0))?
+        .query_map(params![session_id, step_id], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })?
         .collect::<Result<Vec<_>, _>>()?;
-    rows.iter()
-        .map(|json| {
-            Ok(Finding {
-                decision: Decision::Dismissed,
-                ..serde_json::from_str(json)?
-            })
-        })
-        .collect()
+    let mut notes = Vec::new();
+    for (json, decision) in rows {
+        let note = Finding {
+            decision: decision_from(&decision),
+            ..serde_json::from_str(&json)?
+        };
+        let left_out = note.decision == Decision::Dismissed
+            || dismissed.iter().any(|d| d.fingerprint == note.fingerprint);
+        if left_out {
+            notes.push(note);
+        }
+    }
+    Ok(notes)
 }
 
 /// The notes dismissed for `subject` (inputs of the step task, F-09.4), oldest first.
