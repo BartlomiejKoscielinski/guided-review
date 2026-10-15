@@ -10,7 +10,8 @@ import { groupFiles } from './changes';
 import { lineCounts, MR_BRANCHES, mrFiles } from './fixtures/mr';
 import { findMockMr } from './gitlab';
 import type { MockRepos } from './repos';
-import { stateOf, type MockSessionData } from './session-data';
+import type { MrRow } from '../types/MrRow';
+import { stateOf, type MockSessionData, type SessionData } from './session-data';
 
 type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel' | 'sessionMr'>;
 
@@ -18,6 +19,16 @@ type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel' | 
 export const MOCK_STAGE_MS = 400;
 
 const MR_SESSION = 'mock-mr-session-';
+
+/**
+ * The MR a mock session reviews: the one it was opened for, else !482 for an MR session that was
+ * planned without being opened (every mock session has !482's plan; a test may plan one directly).
+ */
+export function sessionMrRow(data: SessionData, sessionId: string): MrRow | undefined {
+  const opened = data.mrs[sessionId];
+  if (opened) return opened;
+  return sessionId.startsWith(MR_SESSION) && data.plans[sessionId] ? findMockMr(482) : undefined;
+}
 
 const error = (code: IpcError['code'], message: string) =>
   new IpcError({ code, message, retryable: false });
@@ -91,7 +102,7 @@ export function createPrepareBackend(
       return result;
     },
     sessionMr: async (sessionId) => {
-      const mr = data.mrs[sessionId];
+      const mr = sessionMrRow(data, sessionId);
       // Commit and local sessions of the sources mock have no MR.
       if (!mr && !sessionId.startsWith(MR_SESSION)) return null;
       if (!mr) throw error('INVALID_INPUT', 'Unknown session.');

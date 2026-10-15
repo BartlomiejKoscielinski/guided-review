@@ -4,7 +4,7 @@ import { isTypingOrControl } from '../../app/keyboard';
 import { pathFor, stepScreen } from '../../app/routes';
 import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
-import { useSessionState } from '../../ipc/hooks/useSessionState';
+import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
 import { useStepFindings } from '../../ipc/hooks/useReview';
 import { browseFilter } from '../changes/browseFilter';
 import { FallbackBanner } from './FallbackBanner';
@@ -42,10 +42,18 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
   // Step 1 even when the session was on another step before (S-03 opens there otherwise), in
   // the session's mode (F-08.1, M4 decision 4).
   const stepOne = view?.order.order[0];
-  const mode = useSessionState(sessionId).data?.mode;
+  const state = useSessionState(sessionId);
+  const mode = state.data?.mode;
   const startPath = `${pathFor({ screen: stepScreen(mode), sessionId })}${
     stepOne === undefined ? '' : `?step=${encodeURIComponent(stepOne)}`
   }`;
+
+  // The plan is on screen: the S-04 rail's "Change overview" is done from now on (F-08.3).
+  const { markPlanOpened } = useSessionStateWriter(sessionId);
+  const unmarked = state.data ? !state.data.planOpened : state.isError;
+  useEffect(() => {
+    if (view !== undefined && unmarked) markPlanOpened();
+  }, [view, unmarked, markPlanOpened]);
 
   // Enter outside controls and fields starts step 1 (F-06.11).
   useEffect(() => {

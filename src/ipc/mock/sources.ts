@@ -10,6 +10,7 @@ import type { Source } from '../types/Source';
 import { BRANCH } from './fixtures/changes';
 import { BRANCHES, branchCommits, STATUS_SUMMARY } from './fixtures/sources';
 import { MOCK_SERVER } from './gitlab';
+import { sessionMrRow } from './prepare';
 import type { MockRepos } from './repos';
 import { stateOf, type MockSessionData } from './session-data';
 
@@ -208,7 +209,7 @@ export function createSourcesBackend(
     sessionSource: async (sessionId) => {
       const source = data.sources[sessionId];
       if (source) return respond(source);
-      const mr = data.mrs[sessionId];
+      const mr = sessionMrRow(data, sessionId);
       const active = repos.active()?.path;
       const project = repos.list().find((r) => r.path === active)?.gitlabProject ?? '';
       if (mr) return respond<Source>({ kind: 'mr', project, iid: mr.iid });

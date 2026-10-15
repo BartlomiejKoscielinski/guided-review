@@ -53,6 +53,7 @@ const draft = (id: string, publishedNoteId: number | null = null): Draft => ({
   include: true,
   publishedNoteId,
   error: null,
+  stepId: null,
 });
 
 type MockStorage = NonNullable<MockOptions['storage']>;

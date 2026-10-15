@@ -28,6 +28,8 @@ export interface StoredState {
   layout: Layout | null;
   /** The mode the session was opened in or the last one toggled to; null: `ui.startIn`. */
   mode?: Mode | null;
+  /** S-02 showed the session's plan (F-08.3); missing in data kept before it existed. */
+  planOpened?: boolean;
   scroll: Record<string, number>;
   checklist: Record<string, string[]>;
 }

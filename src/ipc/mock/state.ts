@@ -15,6 +15,7 @@ type StateClient = Pick<
   | 'sessionSetStep'
   | 'sessionSetLayout'
   | 'sessionSetMode'
+  | 'sessionMarkPlanOpened'
   | 'sessionSetScroll'
   | 'sessionSetChecklist'
   | 'sessionResume'
@@ -22,11 +23,11 @@ type StateClient = Pick<
 
 /**
  * What S-03 keeps of a session in the mock backend (F-04.3): the current step, the layout, the
- * mode (F-08.1), the scroll position per step and the checklist ticks, kept in `store` like the
- * core keeps them in SQLite. Any session ID has a state (every session of the mock has !482's
- * plan); one that was never opened reads in the layout `ui.focusLayout` and the mode
- * `ui.startIn` name. `sessionResume` is S-03 restored on
- * start: stored data only, the step without threads, the notes only when analyzed (F-30.4).
+ * mode (F-08.1), whether S-02 showed the plan (F-08.3), the scroll position per step and the
+ * checklist ticks, kept in `store` like the core keeps them in SQLite. Any session ID has a state
+ * (every session of the mock has !482's plan); one that was never opened reads in the layout
+ * `ui.focusLayout` and the mode `ui.startIn` name. `sessionResume` is S-03 restored on start:
+ * stored data only, the step without threads, the notes only when analyzed (F-30.4).
  */
 export function createStateBackend(
   respond: <T>(value: T) => Promise<T>,
@@ -52,6 +53,7 @@ export function createStateBackend(
         checklist: Object.fromEntries(
           Object.entries(stored?.checklist ?? {}).filter(([, ticked]) => ticked.length > 0),
         ),
+        planOpened: stored?.planOpened === true,
       };
       return respond(state);
     },
@@ -66,6 +68,10 @@ export function createStateBackend(
     sessionSetMode: (sessionId, mode) =>
       write(() => {
         stateOf(data, sessionId).mode = mode;
+      }),
+    sessionMarkPlanOpened: (sessionId) =>
+      write(() => {
+        stateOf(data, sessionId).planOpened = true;
       }),
     sessionSetScroll: (sessionId, stepId, top) =>
       write(() => {

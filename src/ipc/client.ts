@@ -178,6 +178,8 @@ export interface IpcClient {
    * Start in stays the mode of new sessions (M4 decision 4).
    */
   sessionSetMode(sessionId: string, mode: Mode): Promise<void>;
+  /** S-02 showed the session's plan: the S-04 rail's "Change overview" is done (F-08.3). */
+  sessionMarkPlanOpened(sessionId: string): Promise<void>;
   /** Where the step was scrolled, in pixels (written debounced). */
   sessionSetScroll(sessionId: string, stepId: string, top: number): Promise<void>;
   /** The step's ticked "For you to judge" items (F-08.7); an empty list unticks all. */

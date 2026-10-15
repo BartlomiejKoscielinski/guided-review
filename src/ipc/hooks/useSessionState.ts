@@ -34,6 +34,8 @@ export interface SessionStateWriter {
   setMode: (mode: Mode) => void;
   setScroll: (stepId: string, top: number) => void;
   setChecklist: (stepId: string, ticked: string[]) => void;
+  /** S-02 showed the plan: the S-04 rail's "Change overview" is done (F-08.3). */
+  markPlanOpened: () => void;
 }
 
 /**
@@ -73,6 +75,10 @@ export function useSessionStateWriter(sessionId: string): SessionStateWriter {
       setChecklist: (stepId, ticked) => {
         update((s) => ({ ...s, checklist: { ...s.checklist, [stepId]: ticked } }));
         ipc.sessionSetChecklist(sessionId, stepId, ticked).catch(report('checklist'));
+      },
+      markPlanOpened: () => {
+        update((s) => ({ ...s, planOpened: true }));
+        ipc.sessionMarkPlanOpened(sessionId).catch(report('opened plan'));
       },
     };
   }, [ipc, queryClient, sessionId]);
