@@ -54,7 +54,11 @@ async function expectStep(router: Router, step: string, kicker: string, title: s
 
 const previous = () => screen.getByRole('button', { name: 'Previous step' });
 // The header's Next step comes first; the end-of-step card (F-08.9) has one of its own below.
-const next = () => screen.getAllByRole('button', { name: /^Next step/ })[0];
+const next = () => {
+  const [first] = screen.getAllByRole('button', { name: /^Next step/ });
+  if (!first) throw new Error('no Next step button');
+  return first;
+};
 const markButton = () => screen.getByRole('button', { name: /^(Mark reviewed|Reviewed)/ });
 const railRow = (name: RegExp) =>
   within(screen.getByRole('navigation', { name: 'Review plan' })).getByRole('button', { name });
