@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T07:32:03.354Z",
+  "updated": "2026-10-15T08:10:36.571Z",
   "items": [
     {
       "id": "F-02.5",
@@ -274,9 +274,16 @@
       "title": "Questions are asked in the context of the current step and, if any, the selected lines.",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "`claude/tasks/ask.rs` step + selection (`selection_block`) (3ed3792); `review_ask` command (b42a11c), mock + `useAsk` (4772c33); AnswerCard (0f656e9); placed in A/B/C (3976bc2); open: no line-selection UI (asks use the note's line or the whole step)"
+      "status": "done",
+      "attempts": 1,
+      "note": "`claude/tasks/ask.rs` step + selection (`selection_block`) (3ed3792); `review_ask` command (b42a11c), mock + `useAsk` (4772c33); AnswerCard (0f656e9); placed in A/B/C (3976bc2); open: no line-selection UI (asks use the note's line or the whole step)",
+      "lockSha": "e5af190",
+      "tests": [
+        "src/screens/step/LineSelection.test.tsx",
+        "src/ipc/mock/review.test.ts",
+        "tests/e2e/step-ask.spec.ts",
+        "src-tauri/tests/ask_task.rs"
+      ]
     },
     {
       "id": "F-17.1",
