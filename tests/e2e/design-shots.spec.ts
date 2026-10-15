@@ -245,6 +245,19 @@ const SHOTS: Shot[] = [
     prepare: (page) => step4(page, 'C'),
   },
   {
+    screen: 'S04',
+    state: 'detailed',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_REVIEWED,
+    prepare: async (page) => {
+      await step4(page, 'A');
+      await page.keyboard.press('Control+d');
+      await page.getByText('Claude · step 4').waitFor();
+      // The Mode toggle's fill slides over; shoot it where it ends.
+      await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+    },
+  },
+  {
     screen: 'S05',
     state: 'summary-self-review',
     lastRoute: { screen: 'S-01' },
