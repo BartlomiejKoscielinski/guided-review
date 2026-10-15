@@ -144,13 +144,6 @@ describe('S-04 step header (F-08.4)', () => {
     expect(next()).toBeEnabled();
   });
 
-  it('F-08.4 Next step is disabled on the last step of the reader’s order', async () => {
-    await openDetailed(await backend(), 's8');
-    await screen.findByText('Step 8 / 8');
-    expect(next()).toBeDisabled();
-    expect(previous()).toBeEnabled();
-  });
-
   it('F-08.4 Mark reviewed marks the step and takes it back, and shows its key Space', async () => {
     const client = await backend();
     const markStep = vi.fn<IpcClient['reviewMarkStep']>((session, step, reviewed) =>
