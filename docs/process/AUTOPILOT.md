@@ -70,7 +70,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 - Iteration cap per run (default 12 items), daily token budget from the metrics ledger, kill switch `.autopilot/STOP`.
 - Max 2 fix rounds and 2 attempts per item → `blocked` with a report, next item.
 - No destructive git outside `../gr-ap` and the `ap/*` branches; nothing is pushed; the owner opens PRs.
-- Self-modification allowlist: retro/curator may change `docs/process/playbook.json`, `.claude/skills/**` (except non-negotiable text), `tools/autopilot/**`. Never `CLAUDE.md` non-negotiables, `docs/0*.md` decisions, security rules.
+- Self-modification allowlist: retro/curator may change `docs/process/playbook.json`, `.claude/skills/**` (except non-negotiable text), `tools/autopilot/**`; the curator adds learned rules to `.claude/autopilot/roles/*.md` only through `playbook.mjs promote` (covered by the `node tools/autopilot/*` allow rule, so no approval is needed). Never `CLAUDE.md` non-negotiables, `docs/0*.md` decisions, security rules.
 - Explicit `allow` rules for the few operations the classifier blocks (auto mode falls back to manual prompts after 3 blocks in a row or 20 per session).
 
 ## 4. Build list
@@ -131,7 +131,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 
 ## 9. Build status (A-4, 2026-10-14)
 
-**Built** (B1–B9; `node --test tools/autopilot-*.test.mjs`, 37 tests): backlog with one decision row per item, gate with `--dispute`, run state, worktree and Stop hook, the seven role prompts composed by `prompt.mjs`, playbook, outcome metrics with tokens per role from the subagent transcripts, judge, the conductor skill. The owner applied the Stop hook and the allow rules in `.claude/settings.json` (6917cfa) and allowed the role files (40f612b); CLAUDE.md "How to work" 11 and the memory "Go with recommended" (P-7).
+**Built** (B1–B9; `node --test tools/autopilot-*.test.mjs`, 39 tests): backlog with one decision row per item, gate with `--dispute`, run state, worktree and Stop hook, the seven role prompts composed by `prompt.mjs`, playbook, outcome metrics with tokens per role from the subagent transcripts, judge, the conductor skill. The owner applied the Stop hook and the allow rules in `.claude/settings.json` (6917cfa) and allowed the role files (40f612b); CLAUDE.md "How to work" 11 and the memory "Go with recommended" (P-7).
 
 **Verified in the first run** (A-3, `ap-20261014-0830`): two items built and merged without the owner. F-02.5: tests → implement → review → gate, first pass. F-04.1: tests → implement → review (1 severe finding, an accepted test dispute) → fix round 1 → gate, first pass. Proven along the way: the Stop hook carrying the loop to the next item, `backlog sync/next/set`, `worktree ready/done`, the context pack offering playbook lessons, reflection with `playbook add/rate/tick`, `record.mjs`, and the stop on the decision cap. Gate first pass 2/2, 0 non-negotiable violations merged. Fixed after the run: token counting (f0c1f34), test disputes in the gate (88558bc), one decision row per item (88b2606), prompts from `prompt.mjs` instead of hand-filled placeholders (912bbde).
 
@@ -141,7 +141,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 
 **Never run yet** (still unproven after three runs):
 1. A second fix round, and the statuses `blocked` (gate failed twice) and `needs-owner` (with the push notification).
-2. The curator writing the "Rules learned" of a role file (whether the permission mode lets it write there is still open). Since E17 (2026-10-15) a proposal is a lesson seen 3× or helpful 3× and never harmful (8 proposals waiting), the reflector confirms an existing lesson by id (`{"same": "P-xxx"}`) instead of rewording it, and the curator merges same-meaning lessons with `playbook.mjs merge`.
+2. The curator writing the "Rules learned" of a role file: it does so only with `playbook.mjs promote <id> <role> "<rule>"`, a command the `node tools/autopilot/*` allow rule covers, so no approval is needed (owner, 2026-10-15: nothing approved by hand). Since E17 (2026-10-15) a proposal is a lesson seen 3× or helpful 3× and never harmful (8 proposals waiting), the reflector confirms an existing lesson by id (`{"same": "P-xxx"}`) instead of rewording it, and the curator merges same-meaning lessons with `playbook.mjs merge`.
 3. The retro every 10 items with `judge.mjs` keep/revert verdicts.
 4. The planner (a milestone without `docs/plans/<Mx>.md`).
 5. The token budget `--budget`: it counts the tokens of the run (`items.jsonl` rows of the run id), not of a day; never set or reached.

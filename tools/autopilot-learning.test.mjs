@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   addEntry,
+  addRule,
   curate,
   empty,
   existing,
@@ -13,6 +14,7 @@ import {
 } from './autopilot/playbook-lib.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -318,4 +320,50 @@ test('autopilot playbook E17: promotion by helpful count, a lesson confirmed by 
     },
   });
   assert.deepEqual(row.lessons, { new: 1, same: 2 });
+});
+
+test('autopilot playbook E17: promote writes the rule into the role file through the CLI', async () => {
+  const tmp = mkdtempSync(join(tmpdir(), 'gr playbook ł-'));
+  try {
+    const pb = empty();
+    addEntry(pb, { tags: ['core', 'tests'], text: 'Assert what can fail.' }, 't');
+    addEntry(pb, { tags: ['ui', 'implement'], text: 'Seed the mock.' }, 't');
+    for (let i = 0; i < 3; i++) rate(pb, 'P-001', 'helpful');
+    mkdirSync(join(tmp, 'docs', 'process'), { recursive: true });
+    mkdirSync(join(tmp, '.claude', 'autopilot', 'roles'), { recursive: true });
+    const pbFile = join(tmp, 'docs', 'process', 'playbook.json');
+    const roleFile = join(tmp, '.claude', 'autopilot', 'roles', 'tests.md');
+    writeFileSync(pbFile, JSON.stringify(pb));
+    writeFileSync(roleFile, 'Objective: x.\n\nOutput:\n```json\n{}\n```\n');
+    const cli = (...a) =>
+      spawnSync(
+        process.execPath,
+        [join(root, 'tools', 'autopilot', 'playbook.mjs'), ...a, '--root', tmp],
+        { encoding: 'utf8' },
+      );
+    const ok = cli('promote', 'P-001', 'tests', 'Name the change that would fail each assertion.');
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.equal(
+      readFileSync(roleFile, 'utf8'),
+      'Objective: x.\n\nOutput:\n```json\n{}\n```\n\n## Rules learned\n\n- Name the change that would fail each assertion. (P-001)\n',
+    );
+    const saved = JSON.parse(readFileSync(pbFile, 'utf8')).entries[0];
+    assert.deepEqual([saved.promoted, saved.promotedTo], [true, 'tests']);
+    assert.match(cli('promote', 'P-001', 'tests', 'Again.').stderr, /already promoted/);
+    assert.match(cli('promote', 'P-002', 'implement', 'Seed it.').stderr, /not a rule proposal/);
+    assert.match(cli('promote', 'P-001', 'curate', 'x').stderr, /role curate/);
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+});
+
+test('autopilot playbook E17: addRule appends to the rules list, once per entry, one line only', () => {
+  const md = 'Objective: x.\n\n## Rules learned\n\n- First. (P-001)\n\n## After\n\ny\n';
+  assert.equal(
+    addRule(md, 'P-002', 'Second.'),
+    'Objective: x.\n\n## Rules learned\n\n- First. (P-001)\n- Second. (P-002)\n\n## After\n\ny\n',
+  );
+  assert.equal(addRule(md, 'P-001', 'Again.'), md);
+  assert.throws(() => addRule(md, 'P-003', 'two\nlines'), /one line/);
+  assert.throws(() => addRule(md, 'P-003', 'uses {{wt}}'), /one line/);
 });

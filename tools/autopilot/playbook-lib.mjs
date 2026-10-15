@@ -107,6 +107,43 @@ export function merge(pb, keep, drop) {
 export const promotable = (e) =>
   !e.promoted && (e.seen >= PROMOTE_SEEN || (e.helpful >= PROMOTE_HELPFUL && e.harmful === 0));
 
+/** Role prompts a learned rule may go into (`.claude/autopilot/roles/<role>.md`). */
+export const RULE_ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'live'];
+const RULES_HEADING = '## Rules learned';
+
+/**
+ * The role file with one more learned rule `- <rule> (P-003)` at the end of its "## Rules learned"
+ * section (created at the end of the file when missing); unchanged when the entry is already there.
+ */
+export function addRule(roleMd, id, rule) {
+  const text = String(rule ?? '').trim();
+  if (!text || /[\r\n]/.test(text) || text.length > 300 || /{{|}}|<!--/.test(text))
+    throw new Error('a rule is one line of at most 300 characters, without {{, }} or <!--');
+  if (roleMd.includes(`(${id})`)) return roleMd;
+  const line = `- ${text} (${id})`;
+  const body = roleMd.replace(/\s*$/, '');
+  const at = body.indexOf(`\n${RULES_HEADING}\n`);
+  if (at < 0) return `${body}\n\n${RULES_HEADING}\n\n${line}\n`;
+  const next = body.indexOf('\n## ', at + 1);
+  const end = next < 0 ? body.length : next;
+  const rest = body.slice(end);
+  return `${body.slice(0, end).replace(/\s*$/, '')}\n${line}\n${rest ? `${rest}\n` : ''}`;
+}
+
+/** Marks a rule proposal promoted into `role`; refuses an entry that is not a proposal. */
+export function promote(pb, id, role) {
+  const e = pb.entries.find((x) => x.id === id);
+  if (!e) throw new Error(`no entry ${id}`);
+  if (!RULE_ROLES.includes(role)) throw new Error(`role ${role}: one of ${RULE_ROLES.join(', ')}`);
+  if (!promotable(e))
+    throw new Error(
+      `${id} is not a rule proposal (seen ${e.seen}, helpful ${e.helpful}, harmful ${e.harmful}${e.promoted ? ', already promoted' : ''})`,
+    );
+  e.promoted = true;
+  e.promotedTo = role;
+  return e;
+}
+
 export function touch(pb, ids) {
   for (const e of pb.entries) if (ids.includes(e.id)) e.lastUsedItem = pb.items;
 }
