@@ -43,6 +43,12 @@
   color: var(--text-secondary);
 }
 
+/* Back to steps: neutral fill on --raised, 16px side padding (the mock's secondary action). */
+.back {
+  padding: 0 16px;
+  background: var(--raised);
+}
+
 .list {
   display: flex;
   flex-direction: column;

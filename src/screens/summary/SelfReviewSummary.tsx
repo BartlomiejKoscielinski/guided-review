@@ -38,6 +38,7 @@ export function SelfReviewSummary({ sessionId }: SelfReviewSummaryProps) {
           </div>
           <Button
             size={38}
+            className={styles.back}
             onClick={() => {
               void navigate(pathFor({ screen: 'S-03', sessionId }));
             }}

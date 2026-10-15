@@ -96,11 +96,14 @@ async function selfReviewSummary(page: Page) {
     'Status texts are hardcoded',
   ]) {
     const note = page.getByRole('article', { name: `Claude note: ${title}` });
+    // The notes strip opens the note: the diff draws only the rows in view.
+    await page.getByRole('button', { name: title }).first().click();
     await note.getByRole('button', { name: 'Keep to fix' }).click();
     await note.getByRole('button', { name: 'Undo' }).waitFor();
   }
   await page.getByTestId('title-bar').getByRole('button', { name: 'Finish review' }).click();
   await page.getByText('Back to steps').waitFor();
+  await page.getByText(/^Consider a separate catch/).waitFor();
 }
 
 const SHOTS: Shot[] = [
