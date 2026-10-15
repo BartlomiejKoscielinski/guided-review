@@ -42,7 +42,10 @@ export interface SessionData {
   marks: Record<string, string[]>;
   /** `session\0step` of every analyzed step: Claude's cache of the step task. */
   analyzed: string[];
-  /** Notes by ID with their decisions and the session they belong to. */
+  /**
+   * Notes by session and ID (`noteKey`) with their decisions and the session they belong to:
+   * another session can hold a note with the same ID, with its own decision (F-09.4).
+   */
   notes: Record<string, { finding: Finding; sessionId: string }>;
   drafts: Draft[];
   nextDraft: number;

@@ -147,8 +147,15 @@ export interface IpcClient {
     selection: LineSelection | null,
     onEvent: (event: ClaudeTaskEvent<AskAnswer>) => void,
   ): Promise<AskAnswer>;
-  /** Add to drafts, Edit and add, Dismiss or Undo on a note (F-09.2, F-09.4). Local only. */
-  reviewDecide(findingId: string, decision: FindingDecision): Promise<DecisionOutcome>;
+  /**
+   * Add to drafts, Edit and add, Dismiss or Undo on a note of the session (F-09.2, F-09.4). Local
+   * only. The session names the note: another review can hold a note with the same ID.
+   */
+  reviewDecide(
+    sessionId: string,
+    findingId: string,
+    decision: FindingDecision,
+  ): Promise<DecisionOutcome>;
   /**
    * Mark reviewed (Space) or its undo (F-07.2); the plan's reviewed steps for the done checks
    * and progress segments (F-07.1). No Claude.

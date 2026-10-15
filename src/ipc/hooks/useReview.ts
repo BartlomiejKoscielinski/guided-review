@@ -125,7 +125,7 @@ export function useDecide(
   const ipc = useIpc();
   const queryClient = useQueryClient();
   return useMutation<DecisionOutcome, IpcError, DecideVariables>({
-    mutationFn: ({ findingId, decision }) => ipc.reviewDecide(findingId, decision),
+    mutationFn: ({ findingId, decision }) => ipc.reviewDecide(sessionId, findingId, decision),
     onSuccess: ({ finding }) => {
       queryClient.setQueryData<StepAnalysis>(findingsKey(sessionId, finding.stepId), (old) =>
         old

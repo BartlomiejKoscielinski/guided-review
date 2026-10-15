@@ -86,7 +86,7 @@ describe('mock review backend', () => {
     const mock = client();
     await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
 
-    const added = await mock.reviewDecide('f2', { kind: 'addToDrafts' });
+    const added = await mock.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
     expect(added.finding.decision).toBe('draft');
     expect(added.draft).toMatchObject({
       sessionId: SESSION,
@@ -96,16 +96,19 @@ describe('mock review backend', () => {
       severity: 'fix',
       include: true,
     });
-    const edited = await mock.reviewDecide('f4', { kind: 'editAndAdd', body: 'Catch it apart?' });
+    const edited = await mock.reviewDecide(SESSION, 'f4', {
+      kind: 'editAndAdd',
+      body: 'Catch it apart?',
+    });
     expect(edited.draft?.body).toBe('Catch it apart?');
-    const dismissed = await mock.reviewDecide('f3', { kind: 'dismiss' });
+    const dismissed = await mock.reviewDecide(SESSION, 'f3', { kind: 'dismiss' });
     expect(dismissed).toMatchObject({ finding: { decision: 'dismissed' }, draft: null });
     expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2', 'f4']);
 
-    await expect(mock.reviewDecide('f2', { kind: 'dismiss' })).rejects.toMatchObject({
+    await expect(mock.reviewDecide(SESSION, 'f2', { kind: 'dismiss' })).rejects.toMatchObject({
       code: 'CONFLICT',
     });
-    await expect(mock.reviewDecide('nope', { kind: 'dismiss' })).rejects.toMatchObject({
+    await expect(mock.reviewDecide(SESSION, 'nope', { kind: 'dismiss' })).rejects.toMatchObject({
       code: 'INVALID_INPUT',
       message: 'This note no longer exists.',
     });
@@ -118,10 +121,10 @@ describe('mock review backend', () => {
       'draft',
     ]);
 
-    await mock.reviewDecide('f2', { kind: 'undo' });
-    await mock.reviewDecide('f3', { kind: 'undo' });
+    await mock.reviewDecide(SESSION, 'f2', { kind: 'undo' });
+    await mock.reviewDecide(SESSION, 'f3', { kind: 'undo' });
     expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f4']);
-    await expect(mock.reviewDecide('f3', { kind: 'undo' })).rejects.toMatchObject({
+    await expect(mock.reviewDecide(SESSION, 'f3', { kind: 'undo' })).rejects.toMatchObject({
       code: 'CONFLICT',
     });
   });
@@ -130,25 +133,48 @@ describe('mock review backend', () => {
     const mock = client();
     await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
 
-    await mock.reviewDecide('f2', { kind: 'addToDrafts' });
-    const edited = await mock.reviewDecide('f4', { kind: 'editAndAdd', body: 'Catch it apart?' });
+    await mock.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
+    const edited = await mock.reviewDecide(SESSION, 'f4', {
+      kind: 'editAndAdd',
+      body: 'Catch it apart?',
+    });
     expect(edited.finding.decision).toBe('draft');
-    const undone = await mock.reviewDecide('f4', { kind: 'undo' });
+    const undone = await mock.reviewDecide(SESSION, 'f4', { kind: 'undo' });
     expect(undone).toMatchObject({ finding: { id: 'f4', decision: 'open' }, draft: null });
     expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2']);
 
     // Undone, the note takes Edit and add again; its suggested comment is untouched.
-    const again = await mock.reviewDecide('f4', { kind: 'editAndAdd', body: 'Second try.' });
+    const again = await mock.reviewDecide(SESSION, 'f4', {
+      kind: 'editAndAdd',
+      body: 'Second try.',
+    });
     expect(again.draft?.body).toBe('Second try.');
     expect(again.finding.suggestedComment).toBe(edited.finding.suggestedComment);
 
     // Blank text is refused with the core's copy and leaves the note open (nothing half done).
-    await expect(mock.reviewDecide('f1', { kind: 'editAndAdd', body: '  ' })).rejects.toMatchObject(
-      { code: 'INVALID_INPUT', message: 'Write a comment first.' },
-    );
+    await expect(
+      mock.reviewDecide(SESSION, 'f1', { kind: 'editAndAdd', body: '  ' }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT', message: 'Write a comment first.' });
     const { findings } = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
     expect(findings.map((f) => f.decision)).toEqual(['open', 'draft', 'open', 'draft']);
     expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2', 'f4']);
+  });
+
+  it('F-09.4 another review raising a note with the same ID keeps its own decision, like the core', async () => {
+    const mock = client();
+    const other = 'mock-commit-session-1';
+    await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    await mock.reviewDecide(SESSION, 'f3', { kind: 'dismiss' });
+    await mock.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
+
+    const there = await mock.reviewFindings(other, NOTES_STEP, () => undefined);
+    expect(there.findings.map((f) => f.decision)).toEqual(['open', 'open', 'open', 'open']);
+    await mock.reviewDecide(other, 'f2', { kind: 'addToDrafts' });
+    await mock.reviewDecide(other, 'f2', { kind: 'undo' });
+    // Undo there deletes only that review's draft; the MR's note and draft stay.
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2']);
+    const here = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    expect(here.findings.map((f) => f.decision)).toEqual(['open', 'draft', 'dismissed', 'open']);
   });
 
   it('F-09.2 local drafts: create, update, delete with the core’s error copy', async () => {

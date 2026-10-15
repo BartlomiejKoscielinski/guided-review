@@ -51,9 +51,9 @@ describe('mock session state across a restart', () => {
     const storage = memoryStorage();
     const before = start(storage);
     await before.reviewFindings(SESSION, NOTES_STEP, ignore);
-    await before.reviewDecide('f2', { kind: 'addToDrafts' });
-    await before.reviewDecide('f3', { kind: 'dismiss' });
-    await before.reviewDecide('f4', { kind: 'editAndAdd', body: 'Catch it apart?' });
+    await before.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
+    await before.reviewDecide(SESSION, 'f3', { kind: 'dismiss' });
+    await before.reviewDecide(SESSION, 'f4', { kind: 'editAndAdd', body: 'Catch it apart?' });
 
     const after = start(storage);
     const notes = await after.reviewFindings(SESSION, NOTES_STEP, ignore);
@@ -64,11 +64,11 @@ describe('mock session state across a restart', () => {
       ['f4', 'draft'],
     ]);
     // A decided note takes no second decision until it is undone, as before the restart.
-    await expect(after.reviewDecide('f2', { kind: 'dismiss' })).rejects.toMatchObject({
+    await expect(after.reviewDecide(SESSION, 'f2', { kind: 'dismiss' })).rejects.toMatchObject({
       code: 'CONFLICT',
     });
-    await after.reviewDecide('f2', { kind: 'undo' });
-    await after.reviewDecide('f3', { kind: 'undo' });
+    await after.reviewDecide(SESSION, 'f2', { kind: 'undo' });
+    await after.reviewDecide(SESSION, 'f3', { kind: 'undo' });
     expect((await after.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f4']);
   });
 
@@ -76,7 +76,7 @@ describe('mock session state across a restart', () => {
     const storage = memoryStorage();
     const before = start(storage);
     await before.reviewFindings(SESSION, NOTES_STEP, ignore);
-    const fromNote = (await before.reviewDecide('f2', { kind: 'addToDrafts' })).draft;
+    const fromNote = (await before.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' })).draft;
     const general = await before.draftsCreate({
       sessionId: SESSION,
       findingId: null,
@@ -138,7 +138,7 @@ describe('mock session state across a restart', () => {
     await before.reviewPlan(SESSION, ignore);
     await before.reviewMarkStep(SESSION, 's1', true);
     await before.reviewFindings(SESSION, NOTES_STEP, ignore);
-    await before.reviewDecide('f1', { kind: 'dismiss' });
+    await before.reviewDecide(SESSION, 'f1', { kind: 'dismiss' });
 
     const fresh = start(memoryStorage());
     expect((await fresh.reviewPlan(SESSION, ignore)).reviewed).toEqual([]);

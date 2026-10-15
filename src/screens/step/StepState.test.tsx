@@ -98,7 +98,7 @@ describe('S-03 session state (F-04.3)', () => {
   it('F-04.3 F-30.4 restored S-03 shows the stored step and its cached notes, no Claude or GitLab', async () => {
     const base = mockClient();
     await onStep4(base);
-    await base.reviewDecide('f2', { kind: 'addToDrafts' });
+    await base.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
     const { client, calls } = recordingClient(base);
     renderStep(client, true);
     expect(await screen.findByText('Step 4 of 8')).toBeInTheDocument();

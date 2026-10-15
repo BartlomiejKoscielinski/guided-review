@@ -40,15 +40,18 @@ const error = (code: IpcError['code'], message: string, retryable = false) =>
 
 const analyzedKey = (sessionId: string, stepId: string) => `${sessionId}\0${stepId}`;
 
+/** A note's key in `SessionData.notes`: the core keeps notes per session (F-09.4). */
+const noteKey = (sessionId: string, findingId: string) => `${sessionId}\0${findingId}`;
+
 /** The step's notes with the decisions made on them (a note keeps its decision across runs). */
 function decided(data: SessionData, sessionId: string, stepId: string): StepAnalysis {
   const analysis = stepAnalysis(stepId);
   return {
     ...analysis,
     findings: analysis.findings.map((f) => {
-      const stored = data.notes[f.id];
+      const stored = data.notes[noteKey(sessionId, f.id)];
       if (stored) return stored.finding;
-      data.notes[f.id] = { finding: f, sessionId };
+      data.notes[noteKey(sessionId, f.id)] = { finding: f, sessionId };
       return f;
     }),
   };
@@ -80,8 +83,8 @@ export function createReviewBackend(
   const { data } = store;
   const asked = new Set<string>();
 
-  const setDecision = (id: string, decision: Decision): Finding => {
-    const stored = data.notes[id];
+  const setDecision = (key: string, decision: Decision): Finding => {
+    const stored = data.notes[key];
     if (!stored) throw error('INVALID_INPUT', 'This note no longer exists.');
     stored.finding = { ...stored.finding, decision };
     return stored.finding;
@@ -156,11 +159,12 @@ export function createReviewBackend(
       onEvent({ kind: 'done', result: answer });
       return respond(answer);
     },
-    reviewDecide: (findingId, decision) =>
+    reviewDecide: (sessionId, findingId, decision) =>
       change(() => {
-        const stored = data.notes[findingId];
+        const key = noteKey(sessionId, findingId);
+        const stored = data.notes[key];
         if (!stored) throw error('INVALID_INPUT', 'This note no longer exists.');
-        const { finding, sessionId } = stored;
+        const { finding } = stored;
         const changed = () => error('CONFLICT', 'This note changed in the meantime.');
         switch (decision.kind) {
           case 'addToDrafts':
@@ -173,15 +177,17 @@ export function createReviewBackend(
               position: { file: finding.file, side: finding.side, line: finding.line },
               severity: finding.severity,
             });
-            return { finding: setDecision(findingId, 'draft'), draft };
+            return { finding: setDecision(key, 'draft'), draft };
           }
           case 'dismiss':
             if (finding.decision !== 'open') throw changed();
-            return { finding: setDecision(findingId, 'dismissed'), draft: null };
+            return { finding: setDecision(key, 'dismissed'), draft: null };
           case 'undo':
             if (finding.decision === 'open') throw changed();
-            data.drafts = data.drafts.filter((d) => d.findingId !== findingId);
-            return { finding: setDecision(findingId, 'open'), draft: null };
+            data.drafts = data.drafts.filter(
+              (d) => d.findingId !== findingId || d.sessionId !== sessionId,
+            );
+            return { finding: setDecision(key, 'open'), draft: null };
         }
       }),
     draftsList: (sessionId) => respond(data.drafts.filter((d) => d.sessionId === sessionId)),

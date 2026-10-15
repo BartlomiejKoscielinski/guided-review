@@ -80,7 +80,7 @@ describe('mock session state (F-04.3)', () => {
     expect(await before.sessionResume(session)).toBeNull();
     await before.reviewPlan(session, ignore);
     await before.reviewFindings(session, NOTES_STEP, ignore);
-    await before.reviewDecide('f1', { kind: 'dismiss' });
+    await before.reviewDecide(session, 'f1', { kind: 'dismiss' });
     await before.reviewMarkStep(session, 's1', true);
     await before.sessionSetStep(session, NOTES_STEP);
 
