@@ -1,5 +1,5 @@
 {
-  "items": 13,
+  "items": 14,
   "entries": [
     {
       "id": "P-001",
@@ -165,7 +165,7 @@
         "src-tauri/tests/**"
       ],
       "text": "For core parsers of git output, build fixtures from real git diffs and run the production to_model path with spaces, Polish characters and CRLF or missing-final-newline cases, because the review accepted this as non-tautological and independent of autocrlf (F-05.5, 6 integration tests, no findings).",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.064Z",
@@ -195,7 +195,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -582,6 +582,51 @@
       "created": "2026-10-15T08:10:35.971Z",
       "lastUsedItem": 12,
       "source": "F-10.1"
+    },
+    {
+      "id": "P-039",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When a criterion covers a source or state that a screen still renders as a stub, decide its content in the tests stage and lock a content assertion for it, because F-17.1 left the non-MR plan screen as a StubScreen 'outside this item', review rated it severe, and the fix round had to build the header and plan for those sessions.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:58:46.260Z",
+      "lastUsedItem": 13,
+      "source": "F-17.1"
+    },
+    {
+      "id": "P-040",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "In e2e checks, assert the screen content the criterion names (the Start step 1 button) instead of the route: createMemoryRouter keeps the browser URL at the origin so toHaveURL can never pass, and the main landmark carries only the screen name, so an empty stub passed every check.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:58:46.309Z",
+      "lastUsedItem": 13,
+      "source": "F-17.1"
+    },
+    {
+      "id": "P-041",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/plan/**"
+      ],
+      "text": "When a shared screen component first receives a non-MR source, turn its hard-coded MR copy into a prop, because Claims.tsx always read 'MR description vs code' for commit sessions and review rated that mislabel normal.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:58:46.352Z",
+      "lastUsedItem": 13,
+      "source": "F-17.1"
     }
   ]
 }

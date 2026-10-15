@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T08:10:36.571Z",
+  "updated": "2026-10-15T08:58:46.849Z",
   "items": [
     {
       "id": "F-02.5",
@@ -291,9 +291,17 @@
       "title": "Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working…",
       "kind": "core",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": "plan, step and ask for commits and local scopes in the repository root, cache subject per source (3558aee); open: plan decisions 12–15 (2ee03a6): Commits open S-02, commit messages as description, staged note, step.md wording; live check in `tauri dev`"
+      "status": "live",
+      "attempts": 1,
+      "note": "Commits sessions open S-02 with a source header (session_source), commit messages as description capped at 64 KB, step.md says in the repository, PROMPT_VERSION 2 (04c59e1, 6f51f58, a88fa46, dcd5083). Live check left in tauri dev: plan and step a real commit, a range and a local scope in the repository root; S-02 shows the source header and Start step 1 opens S-03",
+      "lockSha": "efbb6ac",
+      "tests": [
+        "src-tauri/tests/self_review.rs",
+        "src-tauri/tests/sources.rs",
+        "src/ipc/mock/sources.test.ts",
+        "src/screens/start/SourceColumns.test.tsx",
+        "tests/e2e/start.spec.ts"
+      ]
     },
     {
       "id": "F-17.2",
