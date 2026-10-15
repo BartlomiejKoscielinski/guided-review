@@ -1,5 +1,5 @@
 {
-  "items": 15,
+  "items": 16,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -226,7 +226,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -241,7 +241,7 @@
         "src/screens/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, write the reading you chose as a tests-stage decision and make it the red test, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and the item then passed gate 1 without a fix round.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.675Z",
@@ -256,7 +256,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -317,7 +317,7 @@
         "tests/e2e/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T16:11:26.716Z",
@@ -332,7 +332,7 @@
         "tests/e2e/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T16:11:26.778Z",
@@ -643,6 +643,51 @@
       "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 14,
       "source": "F-17.2"
+    },
+    {
+      "id": "P-045",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Pin the restored-after-restart state of a screen as a red test in the tests stage, because the tests notes left 'restored start on S-05 untested' to the implementer and review raised the missing progress line after a restart as the only normal finding (fix round 1).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:59:03.927Z",
+      "lastUsedItem": 15,
+      "source": "F-17.4"
+    },
+    {
+      "id": "P-046",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Read cached state after a restart through the existing resume hook (useResume, as S-03 does), not the TanStack plan query, because a disabled query never loads the stored plan.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:59:03.977Z",
+      "lastUsedItem": 15,
+      "source": "F-17.4"
+    },
+    {
+      "id": "P-047",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded and review raised it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:59:04.024Z",
+      "lastUsedItem": 15,
+      "source": "F-17.4"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T09:26:24.508Z",
+  "updated": "2026-10-15T09:59:04.701Z",
   "items": [
     {
       "id": "F-02.5",
@@ -325,9 +325,14 @@
       "title": "The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes…",
       "kind": "ui",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "9b5ffbe",
+      "tests": [
+        "src/screens/summary/SelfReviewSummary.test.tsx",
+        "tests/e2e/summary-self-review.spec.ts"
+      ]
     }
   ]
 }
