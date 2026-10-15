@@ -24,7 +24,7 @@ use guided_review_lib::claude::tasks::{step, step_inputs};
 use guided_review_lib::git::Git;
 use guided_review_lib::gitlab::discussions::{self, Thread};
 use guided_review_lib::os::process::Cancel;
-use guided_review_lib::review::finding_model::Finding;
+use guided_review_lib::review::finding_model::{Decision, Finding, Severity, Side};
 use guided_review_lib::review::model::Strategy;
 use guided_review_lib::review::plan_cache;
 use guided_review_lib::review::step_context::{self, StepContext};
@@ -297,11 +297,89 @@ fn print(label: &str, findings: &[Finding]) {
     }
 }
 
-/// The text of a note a reader would see, for a topic check.
+/// Words of a sentence that points at the existing thread instead of making its point again
+/// ("The async void concern is already in the open thread, so it is not repeated here."). Not a
+/// bare "thread", which a repeat can use for the thread pool or the UI thread.
+const POINTS_AT_THREAD: [&str; 5] = [
+    "already",
+    "open thread",
+    "existing thread",
+    "not repeat",
+    "discussion",
+];
+
+/// Whether a note raises `topic` (lowercase): a sentence of its title, body or suggested comment
+/// names it and does not point at the existing thread. Sentences end at `. `, `!`, `?`, `;` or a
+/// line break, so `Upload Service.cs:16` stays whole.
 fn mentions(finding: &Finding, topic: &str) -> bool {
     [&finding.title, &finding.body, &finding.suggested_comment]
         .iter()
-        .any(|text| text.to_lowercase().contains(topic))
+        .any(|text| {
+            text.to_lowercase()
+                .replace(". ", ".\n")
+                .split(['\n', '!', '?', ';'])
+                .any(|s| s.contains(topic) && !POINTS_AT_THREAD.iter().any(|w| s.contains(w)))
+        })
+}
+
+/// A note on the golden issue line with Claude's wording, for the topic check's own test.
+fn note(kind: &str, title: &str, body: &str, suggested_comment: &str) -> Finding {
+    Finding {
+        id: "f1".into(),
+        step_id: "s1".into(),
+        severity: Severity::Fix,
+        kind: kind.into(),
+        title: title.into(),
+        body: body.into(),
+        file: SERVICE.into(),
+        side: Side::New,
+        line: issue_line(),
+        evidence: Vec::new(),
+        suggested_comment: suggested_comment.into(),
+        fingerprint: "fp".into(),
+        decision: Decision::Open,
+    }
+}
+
+/// The topic check of the golden case without Claude (so `npm run verify` runs it), on notes
+/// worded as in a live run. A different-topic note that says the async void point is already
+/// in the open thread once failed `npm run eval:claude` as a repeat (ap-20261015-1438).
+#[test]
+fn eval_f09_5_topic_check_skips_a_sentence_that_points_at_the_open_thread() {
+    let topic = "async void";
+    let control = note(
+        "async-void-method",
+        "Upload is async void",
+        "An exception thrown in Upload cannot be awaited or caught by the caller and crashes \
+         the app.",
+        "Could Upload return Task instead of async void, so the caller can await it?",
+    );
+    assert!(mentions(&control, topic), "the control note raises it");
+
+    let acknowledging = note(
+        "missing-cancellation",
+        "No cancellation token for file read and POST",
+        "Upload reads the whole file and posts it with no CancellationToken, so a closed page \
+         cannot stop it. The async void concern is already in the open thread, so it is not \
+         repeated here.",
+        "Could Upload take a CancellationToken and pass it to ReadAllBytesAsync and PostAsync?",
+    );
+    assert!(
+        !mentions(&acknowledging, topic),
+        "a sentence that points at the thread is not a repeat"
+    );
+
+    let repeat = note(
+        "unobserved-exception",
+        "Upload exceptions crash the app",
+        "Upload (Upload Service.cs:16) is async void. An exception on the thread pool is never \
+         observed; the open thread is about this too.",
+        "Upload should return Task.",
+    );
+    assert!(
+        mentions(&repeat, topic),
+        "a note that makes the point again is a repeat, whatever else it says"
+    );
 }
 
 /// The golden case's seed without Claude (so `npm run verify` runs it): the session loads its
