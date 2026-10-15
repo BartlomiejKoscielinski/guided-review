@@ -1,8 +1,10 @@
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
+import type { StartState } from '../../app/router';
 import { pathFor } from '../../app/routes';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon } from '../../components/icons';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
+import { useResume } from '../../ipc/hooks/useSessionState';
 import { useStepProgress } from '../step/useStepProgress';
 import { checklistText, progressLine } from './checklist';
 import { CopyChecklist } from './CopyChecklist';
@@ -21,6 +23,10 @@ export interface SelfReviewSummaryProps {
 export function SelfReviewSummary({ sessionId }: SelfReviewSummaryProps) {
   const navigate = useNavigate();
   const drafts = useDrafts(sessionId);
+  // Restored on start the plan isn't cached yet: the stored one, reviewed marks included, is put
+  // where the progress reads it, from stored data only, as S-03 does (F-30.4).
+  const restored = (useLocation().state as StartState | null)?.restored === true;
+  useResume(sessionId, restored);
   // The plan the steps screen cached; this never starts a plan (F-30.4).
   const { order, reviewed } = useStepProgress(sessionId);
   const done = order.filter((id) => reviewed.includes(id)).length;
