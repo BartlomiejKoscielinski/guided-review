@@ -316,8 +316,9 @@ describe('S-03 selected lines (F-10.1)', () => {
 
   it('F-10.1 layout C: Ask Claude in the selection group opens the answer card in the guide with the input focused', async () => {
     const { calls, reviewAsk } = recordedAsk();
-    setLayout('C');
     await openStep4({ reviewAsk });
+    // After the session loads: it applies its stored layout (F-04.3), so set C afterwards.
+    setLayout('C');
     await userEvent.click(line('add', 50));
     await shiftClick(line('add', 52));
 
