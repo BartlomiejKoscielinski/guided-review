@@ -1,5 +1,5 @@
 {
-  "items": 23,
+  "items": 24,
   "entries": [
     {
       "id": "P-001",
@@ -234,7 +234,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -251,7 +251,7 @@
         "src/screens/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T15:13:07.675Z",
@@ -268,7 +268,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -696,12 +696,14 @@
       "tags": [
         "ui",
         "implement",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed",
+        "src/screens/detailed/**"
       ],
       "text": "Give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded and review raised it as a nit.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T09:59:04.024Z",
       "lastUsedItem": 15,
       "source": "F-17.4",
@@ -728,12 +730,14 @@
         "core",
         "tests",
         "src-tauri/tests/**",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "mixed",
+        "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
       "source": "F-09.5",
@@ -893,6 +897,21 @@
       "created": "2026-10-15T19:08:46.107Z",
       "lastUsedItem": 22,
       "source": "F-08.4"
+    },
+    {
+      "id": "P-060",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "When an e2e guard counts or targets getByRole by name (for example radiogroup 'Layout' with toHaveCount(0)), pass exact: true, because Playwright matches names as case-insensitive substrings and the same screen's other required control ('Diff layout') was counted, so all 6 detailed e2e tests failed at the guard and cost a test dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T19:52:39.906Z",
+      "lastUsedItem": 23,
+      "source": "F-08.5"
     }
   ]
 }

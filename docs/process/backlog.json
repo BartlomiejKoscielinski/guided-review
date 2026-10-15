@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-15T19:08:46.883Z",
+  "updated": "2026-10-15T19:52:40.755Z",
   "items": [
     {
       "id": "F-08.1",
@@ -81,9 +81,18 @@
       "title": "Sticky file bar: path, +/−, Split | Unified, Ignore whitespace, Open in Rider.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "6cc2631",
+      "tests": [
+        "src/diff/whitespace.test.ts",
+        "src/screens/detailed/FileBar.test.tsx",
+        "tests/e2e/detailed.spec.ts"
+      ],
+      "disputes": [
+        "tests/e2e/detailed.spec.ts@f224f5b"
+      ]
     },
     {
       "id": "F-08.6",
