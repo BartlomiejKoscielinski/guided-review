@@ -291,6 +291,55 @@ async fn f10_1_selection_outside_the_step_starts_no_claude() {
     assert!(s.fake.calls().is_empty());
 }
 
+/// The lines of the selection block in the prompt, with their diff markers.
+fn selection_lines(stdin: &str, header: &str) -> Vec<String> {
+    let mut lines = stdin.lines().skip_while(|l| !l.contains(header));
+    assert!(lines.next().is_some(), "{header} is in the prompt: {stdin}");
+    lines
+        .skip(1)
+        .take_while(|l| *l != "```")
+        .map(str::to_owned)
+        .collect()
+}
+
+#[tokio::test]
+async fn f10_1_selection_on_the_old_side_shows_the_deleted_line_and_no_new_line() {
+    let s = setup(vec![streamed(&["Yes."], "c-1")]).await;
+    let old = LineSelection {
+        file: VM.into(),
+        side: Side::Old,
+        start: 1,
+        end: 3,
+    };
+    let (answer, _) = s.ask("Why was Send removed?", Some(&old)).await;
+    answer.unwrap();
+    let stdin = s.fake.calls()[0]["stdin"].as_str().unwrap().to_owned();
+    assert_eq!(
+        selection_lines(&stdin, &format!("selected lines 1-3 of {VM} (old side)")),
+        [" class Vm {", "-    void Up() { Send(); }", " }"],
+        "{stdin}"
+    );
+}
+
+#[tokio::test]
+async fn f10_1_a_range_selected_upwards_reads_from_the_lower_line_to_the_higher() {
+    let s = setup(vec![streamed(&["Yes."], "c-1")]).await;
+    let upwards = LineSelection {
+        file: VM.into(),
+        side: Side::New,
+        start: 3,
+        end: 1,
+    };
+    let (answer, _) = s.ask("What changed?", Some(&upwards)).await;
+    answer.unwrap();
+    let stdin = s.fake.calls()[0]["stdin"].as_str().unwrap().to_owned();
+    assert_eq!(
+        selection_lines(&stdin, &format!("selected lines 1-3 of {VM} (new side)")),
+        [" class Vm {", "+    void Up() { queue.Enqueue(); }", " }"],
+        "{stdin}"
+    );
+}
+
 #[tokio::test]
 async fn f10_2_first_question_keeps_the_session_and_follow_ups_resume_it() {
     let s = setup(vec![

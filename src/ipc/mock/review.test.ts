@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createMockClient } from '.';
+import type { AskAnswer } from '../types/AskAnswer';
 import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
+import type { LineSelection } from '../types/LineSelection';
 import { NOTES_STEP } from './fixtures/review';
 import type { ReviewScenario } from './review';
 
@@ -231,5 +233,62 @@ describe('mock review backend', () => {
     await expect(
       mock.reviewAsk(SESSION, NOTES_STEP, ' ', null, () => undefined),
     ).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+  });
+
+  describe('F-10.1 a question about lines of the step', () => {
+    const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
+    const QUEUE = 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs';
+    const ask = (mock: ReturnType<typeof client>, selection: LineSelection | null) =>
+      mock.reviewAsk(SESSION, NOTES_STEP, 'Why?', selection, () => undefined);
+
+    it('F-10.1 lines of the step are answered, on either side and in either order', async () => {
+      const mock = client();
+      const lines: LineSelection[] = [
+        { file: VM, side: 'new', start: 47, end: 50 },
+        { file: VM, side: 'new', start: 50, end: 47 },
+        { file: VM, side: 'old', start: 37, end: 38 },
+        // Some of the lines are in the step: that is enough, as in the core.
+        { file: VM, side: 'new', start: 50, end: 200 },
+      ];
+      for (const selection of lines) {
+        expect((await ask(mock, selection)).text).not.toBe('');
+      }
+    });
+
+    it('F-10.1 lines that are not in the step are refused like the core, and the refused question is not the first of the step', async () => {
+      const mock = client();
+      const outside: LineSelection[] = [
+        { file: 'README.md', side: 'new', start: 1, end: 1 },
+        // A file of step 2, not of step 4.
+        { file: QUEUE, side: 'new', start: 1, end: 3 },
+        // A file of the step, but lines no hunk of it covers.
+        { file: VM, side: 'new', start: 1, end: 3 },
+        { file: VM, side: 'new', start: 100, end: 101 },
+      ];
+      for (const selection of outside) {
+        const run = recorder<AskAnswer>();
+        await expect(
+          mock.reviewAsk(SESSION, NOTES_STEP, 'Why?', selection, run.push),
+        ).rejects.toMatchObject({
+          code: 'INVALID_INPUT',
+          message: 'The selected lines are not in this step.',
+        });
+        expect(run.kinds().filter((k) => k.startsWith('partialText') || k === 'done')).toEqual([]);
+      }
+      expect((await ask(mock, null)).followUp).toBe(false);
+    });
+
+    it('F-10.1 an empty question is refused before the lines are looked at', async () => {
+      const mock = client();
+      await expect(
+        mock.reviewAsk(
+          SESSION,
+          NOTES_STEP,
+          ' ',
+          { file: 'README.md', side: 'new', start: 1, end: 1 },
+          () => undefined,
+        ),
+      ).rejects.toMatchObject({ code: 'INVALID_INPUT', message: 'Type a question first.' });
+    });
   });
 });
