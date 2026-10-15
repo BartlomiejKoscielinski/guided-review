@@ -370,3 +370,81 @@ test('F-08.6 the full callout under the focused note: Add to drafts and Undo, Ed
     callout.getByText("Dismissed. Claude won't raise it again for this commit."),
   ).toBeVisible();
 });
+
+// F-08.7: the Guide aside's Code notes (N cycles), For you to judge and Analysis context.
+test('F-08.7 the Guide aside: Code notes with N, For you to judge with its progress, Analysis context', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await openStep(page, /ViewModel/, 4);
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const guide = page.getByRole('complementary', { name: 'Guide' });
+  const notes = guide.getByRole('region', { name: 'Code notes' });
+  const callout = page.getByRole('region', { name: 'Claude note at this line' });
+  const row = (title: string) => notes.getByRole('button', { name: title });
+
+  // Code notes in line order, the focused note 2 marked; N moves on and the callout follows.
+  await expect(notes).toContainText('in line order · N');
+  await expect(row(SECOND)).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('n');
+  await expect(row('Status texts are hardcoded')).toHaveAttribute('aria-pressed', 'true');
+  await expect(row(SECOND)).toHaveAttribute('aria-pressed', 'false');
+  await expect(callout.getByText('Status texts are hardcoded', { exact: true })).toBeInViewport();
+  await row(FIRST).click();
+  await expect(callout.getByText(FIRST, { exact: true })).toBeInViewport();
+
+  // For you to judge: a tick counts.
+  const judge = guide.getByRole('region', { name: 'For you to judge' });
+  await expect(judge.getByText('0/3', { exact: true })).toBeVisible();
+  await judge
+    .getByRole('checkbox', {
+      name: 'Matches the MR description: the photo is saved even without network',
+    })
+    .check();
+  await expect(judge.getByText('1/3', { exact: true })).toBeVisible();
+
+  // Analysis context: the files Claude read and where each sits; the reason as the tooltip.
+  const context = guide.getByRole('region', { name: 'Analysis context' });
+  await expect(context.getByText('Files Claude read in the worktree:')).toBeVisible();
+  await expect(context).toContainText('Uploads/IUploadQueue.cs · step 1');
+  await expect(context).toContainText('Uploads/UploadWorker.cs · step 3');
+  await expect(context).toContainText('Services/CameraService.cs · outside MR');
+  await expect(context).toContainText('Strings/AppResources.resx · skim');
+  await expect(
+    context.locator('[title="src/Mobile.Core/Uploads/IUploadQueue.cs · The queue contract."]'),
+  ).toHaveCount(1);
+});
+
+test('F-08.7 ask with a selection streams the answer in the aside', async ({ page }) => {
+  await openStep1(page);
+  await openStep(page, /ViewModel/, 4);
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const guide = page.getByRole('complementary', { name: 'Guide' });
+  const box = guide.getByRole('textbox', { name: 'Ask about this step or the selected code' });
+  await expect(box).toHaveAttribute(
+    'placeholder',
+    'E.g. can the worker upload the same photo twice?',
+  );
+  await expect(guide.getByText('step 4', { exact: true })).toBeVisible();
+
+  // Ask Claude on note 2's callout: the Ask box takes the focus with the note's line.
+  const callout = page.getByRole('region', { name: 'Claude note at this line' });
+  await callout.getByRole('button', { name: 'Ask Claude' }).click();
+  await expect(box).toBeFocused();
+  await expect(guide.getByText('step 4 · L49', { exact: true })).toBeVisible();
+  await page.keyboard.type('Does the worker refresh the count?');
+  await page.keyboard.press('Control+Enter');
+
+  const answer = guide.getByRole('article', { name: 'Claude answer' });
+  await expect(answer).toContainText('Does the worker refresh the count?');
+  await expect(answer).toContainText(
+    'SendPhoto no longer calls the API. It wraps the photo in a PendingUpload, stores it in the queue from step 1 and wakes UploadWorker, which sends it once the network is back. The banner shows the status instead of a dialog.',
+  );
+  // The card sits right above the Ask box, which is empty again.
+  const yOf = async (locator: Locator) => (await locator.boundingBox())?.y ?? Number.NaN;
+  expect(await yOf(answer)).toBeLessThan(await yOf(box));
+  await expect(box).toHaveValue('');
+  await expect(guide.getByRole('button', { name: 'Ask Ctrl+↵' })).toBeVisible();
+});
