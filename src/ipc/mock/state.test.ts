@@ -48,6 +48,8 @@ describe('mock session state (F-04.3)', () => {
     expect(await after.sessionState(session)).toEqual({
       currentStep: 's4',
       layout: 'B',
+      // Opened in ui.startIn (Focus by default); the mode was never toggled.
+      mode: 'focus',
       scroll: { s2: 300, s4: 245 },
       checklist: { s4: ['Is the retry copy right?'] },
     });
@@ -55,6 +57,7 @@ describe('mock session state (F-04.3)', () => {
     expect(await after.sessionState(other)).toEqual({
       currentStep: null,
       layout: 'C',
+      mode: 'focus',
       scroll: {},
       checklist: {},
     });
