@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import type { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { PlanView } from '../types/PlanView';
 import type { ResumedSession } from '../types/ResumedSession';
 import type { SessionState } from '../types/SessionState';
@@ -29,6 +30,8 @@ export function useSessionState(sessionId: string): UseQueryResult<SessionState,
 export interface SessionStateWriter {
   setStep: (stepId: string) => void;
   setLayout: (layout: Layout) => void;
+  /** The session's mode (F-08.1); Settings › General › Start in is left alone. */
+  setMode: (mode: Mode) => void;
   setScroll: (stepId: string, top: number) => void;
   setChecklist: (stepId: string, ticked: string[]) => void;
 }
@@ -57,6 +60,10 @@ export function useSessionStateWriter(sessionId: string): SessionStateWriter {
       setLayout: (layout) => {
         update((s) => ({ ...s, layout }));
         ipc.sessionSetLayout(sessionId, layout).catch(report('layout'));
+      },
+      setMode: (mode) => {
+        update((s) => ({ ...s, mode }));
+        ipc.sessionSetMode(sessionId, mode).catch(report('mode'));
       },
       setScroll: (stepId, top) => {
         const px = Math.max(0, Math.round(top));

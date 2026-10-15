@@ -1,3 +1,4 @@
+import type { Mode } from '../ipc/types/Mode';
 import type { Route } from '../ipc/types/Route';
 import type { SettingsSection } from '../ipc/types/SettingsSection';
 
@@ -70,6 +71,10 @@ export function screenInfo(id: ScreenId): ScreenInfo {
   if (!info) throw new Error(`Unknown screen ${id}.`);
   return info;
 }
+
+/** Step review in a mode (ADR-010): S-03 Focus, S-04 Detailed. */
+export const stepScreen = (mode: Mode | undefined): 'S-03' | 'S-04' =>
+  mode === 'detailed' ? 'S-04' : 'S-03';
 
 /** The router path of a route. */
 export function pathFor(route: Route): string {

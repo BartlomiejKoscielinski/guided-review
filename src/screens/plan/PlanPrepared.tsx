@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { isTypingOrControl } from '../../app/keyboard';
-import { pathFor } from '../../app/routes';
+import { pathFor, stepScreen } from '../../app/routes';
 import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
 import { useCommitInfo } from '../../ipc/hooks/useChanges';
+import { useSessionState } from '../../ipc/hooks/useSessionState';
 import { useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionMr, useSessionSource } from '../../ipc/hooks/useSources';
 import { browseFilter } from '../changes/browseFilter';
@@ -45,9 +46,11 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
   const firstStep = view && !fallback ? (view.order.order[0] ?? '') : '';
   useStepFindings(sessionId, firstStep);
   const canStart = Boolean(view);
-  // Step 1 even when the session was on another step before (S-03 opens there otherwise).
+  // Step 1 even when the session was on another step before (S-03 opens there otherwise), in
+  // the session's mode (F-08.1, M4 decision 4).
   const stepOne = view?.order.order[0];
-  const startPath = `${pathFor({ screen: 'S-03', sessionId })}${
+  const mode = useSessionState(sessionId).data?.mode;
+  const startPath = `${pathFor({ screen: stepScreen(mode), sessionId })}${
     stepOne === undefined ? '' : `?step=${encodeURIComponent(stepOne)}`
   }`;
 

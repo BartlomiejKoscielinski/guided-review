@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import { LayoutGuideIcon, LayoutMinimalIcon, LayoutSidebarIcon } from '../../components/icons';
 import { Segmented } from '../../components/Segmented';
+import type { Mode } from '../../ipc/types/Mode';
 import type { FocusLayout } from '../../state/focus';
 import { ContextText } from './ContextText';
 import { PLACEHOLDER } from './placeholders';
@@ -53,19 +54,27 @@ export function SessionContext({
 }
 
 export interface StepControlsProps {
-  mode: 'focus' | 'detailed';
+  mode: Mode;
+  /** Focus | Detailed (F-08.1): the other mode on the same step. */
+  onMode?: (mode: Mode) => void;
   model: ReactNode;
   /** The shared Focus layout (F-07.1); only shown in Focus mode. */
   layout?: FocusLayout;
   onLayout?: (layout: FocusLayout) => void;
 }
 
-/** Focus/Detailed toggle (F-08.1, M4), the layout switch (F-07.1) and Finish review (F-30.3, M4). */
-export function StepControls({ mode, model, layout = 'A', onLayout = noop }: StepControlsProps) {
+/** Focus/Detailed toggle (F-08.1), the layout switch (F-07.1) and Finish review (F-30.3, M4). */
+export function StepControls({
+  mode,
+  onMode = noop,
+  model,
+  layout = 'A',
+  onLayout = noop,
+}: StepControlsProps) {
   const finishReview = useFinishReview();
   return (
     <>
-      <Segmented label="Mode" size="bar" options={MODE_OPTIONS} value={mode} onChange={noop} />
+      <Segmented label="Mode" size="bar" options={MODE_OPTIONS} value={mode} onChange={onMode} />
       {mode === 'focus' && (
         <Segmented
           label="Layout"

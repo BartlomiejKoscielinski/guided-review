@@ -49,7 +49,8 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
     controls: ['[Mode]', '[Layout]', 'Sonnet 5.5 · medium', 'Finish review'],
   },
   'S-04': {
-    text: ['!482', 'Offline queue for delivery photos'],
+    // The same session context as S-03 (F-08.1): the active repository, no `!iid` or title.
+    text: ['mobile-app'],
     controls: ['[Mode]', 'Sonnet 5.5 · medium', 'Finish review'],
   },
   'S-05': { text: ['!482'], controls: ['Sonnet 5.5 · low'] },
