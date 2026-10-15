@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
+import { useStepFindings } from '../../ipc/hooks/useReview';
 import { reviewKey, useReviewStore } from '../../state/review';
 import { useStepSession } from '../step/useStepSession';
 import { InfoHeader } from './InfoHeader';
+import { Rail } from './Rail';
 import styles from './Detailed.module.css';
 
 /**
@@ -14,9 +16,12 @@ import styles from './Detailed.module.css';
  */
 export function DetailedScreen() {
   const { sessionId = '' } = useParams();
-  const { view, order, stepId, ready } = useStepSession(sessionId);
+  const { view, order, stepId, ready, restored } = useStepSession(sessionId);
   const step = ready ? view?.plan.steps.find((s) => s.id === stepId) : undefined;
   const index = step ? order.indexOf(step.id) : -1;
+  // The step's notes as S-03 asks for them (F-09.6); restored on start only cached ones (F-30.4).
+  const notes = useStepFindings(sessionId, step?.id ?? '', !restored).query.data;
+  const openNotes = notes?.findings.filter((f) => f.decision === 'open').length;
 
   // The step is open here as in S-03: another step's state is dropped, this step's is kept.
   const claim = useReviewStore((s) => s.claim);
@@ -29,7 +34,7 @@ export function DetailedScreen() {
     <div className={styles.screen}>
       <InfoHeader sessionId={sessionId} stepId={step?.id} />
       <div className={styles.body}>
-        <nav aria-label="Review plan" className={styles.rail} />
+        <Rail sessionId={sessionId} view={view} current={step?.id} openNotes={openNotes} />
         <main className={styles.main}>
           {step && (
             <section className={styles.head}>

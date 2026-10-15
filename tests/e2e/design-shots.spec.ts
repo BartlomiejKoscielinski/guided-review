@@ -17,6 +17,8 @@ interface Shot {
   review?: Record<string, unknown>;
   /** Steps marked reviewed per session id, as the mock draws them (S-03's done checks). */
   reviewed?: Record<string, string[]>;
+  /** Drafts the mock keeps (the S-04 rail's per-step counts, F-08.3). */
+  drafts?: Record<string, unknown>[];
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -71,6 +73,23 @@ async function step4(page: Page, layout: 'A' | 'B' | 'C') {
 
 /** Review.dc.html is on step 4 with steps 1 to 3 done; !482 is the first MR session of an empty mock. */
 const MR_482_REVIEWED = { 'mock-mr-session-1': ['s1', 's2', 's3'] };
+
+/** Main.dc.html's rail: one draft on step 2 and one on step 3 (F-08.3). */
+const MR_482_DRAFTS = [
+  ['s2', 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs', 3],
+  ['s3', 'src/Mobile.Infrastructure/Uploads/UploadWorker.cs', 2],
+].map(([stepId, file, line], i) => ({
+  id: `mock-draft-${String(i + 1)}`,
+  sessionId: 'mock-mr-session-1',
+  findingId: null,
+  body: 'A comment on this line.',
+  position: { file, side: 'new', line },
+  severity: null,
+  include: true,
+  publishedNoteId: null,
+  error: null,
+  stepId,
+}));
 
 /** The first local session of an empty mock, with all 8 steps marked reviewed (SummaryDesk.dc.html). */
 const LOCAL_ALL_REVIEWED = { 'mock-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'] };
@@ -249,6 +268,7 @@ const SHOTS: Shot[] = [
     state: 'detailed',
     lastRoute: { screen: 'S-01' },
     reviewed: MR_482_REVIEWED,
+    drafts: MR_482_DRAFTS,
     prepare: async (page) => {
       await step4(page, 'A');
       await page.keyboard.press('Control+d');
@@ -298,10 +318,17 @@ const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
 
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
-    await page.addInitScript(({ lastRoute, sessions, review, reviewed }) => {
+    await page.addInitScript(({ lastRoute, sessions, review, reviewed, drafts }) => {
       if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
-      if (reviewed) {
-        localStorage.setItem('guided-review.mock.sessionData', JSON.stringify({ marks: reviewed }));
+      if (reviewed || drafts) {
+        localStorage.setItem(
+          'guided-review.mock.sessionData',
+          JSON.stringify({
+            marks: reviewed ?? {},
+            drafts: drafts ?? [],
+            nextDraft: (drafts?.length ?? 0) + 1,
+          }),
+        );
       }
       if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
       localStorage.setItem(

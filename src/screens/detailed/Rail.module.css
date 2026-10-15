@@ -1,0 +1,192 @@
+/* S-04 rail (F-08.3, Main.dc.html "Review plan"; docs/03). Colors only from tokens. */
+.rail {
+  flex: 1 1 256px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 18px 12px;
+  background: var(--panel);
+  overflow: auto;
+}
+
+.head,
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.head {
+  padding: 0 8px 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--panel-2);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: -2px;
+}
+
+.mark {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 2px var(--ring-2);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+}
+
+.done {
+  background: var(--green);
+  box-shadow: none;
+  color: var(--ink);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.title {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.overview .title,
+.reviewed .title {
+  color: var(--text-secondary);
+}
+
+.current,
+.current:hover {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.current .mark {
+  background: var(--ink);
+  box-shadow: none;
+  color: var(--yellow);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.current .title {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.current .meta {
+  color: var(--ink);
+}
+
+.notes {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.drafts {
+  padding: 0 5px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.skim {
+  margin-top: 14px;
+  padding: 14px 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skimList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.coverage {
+  margin-top: auto;
+  padding: 18px 8px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coverageHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.coverageValue {
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+.bar {
+  display: block;
+  height: 8px;
+  background: var(--line);
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+
+.rule {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
