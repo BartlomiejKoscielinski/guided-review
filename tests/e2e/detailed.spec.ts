@@ -214,3 +214,64 @@ test('F-08.3 the rail: Change overview, step states and draft counts, Skim, Chan
   await overview.click();
   await expect(page.getByRole('heading', { name: 'Plan · 8 steps' })).toBeVisible();
 });
+
+// F-08.4: the S-04 step header (Main.dc.html): "Step n / 8" in the reader's order, "builds on"
+// chips `<number> · <short title>` that open that step, Previous step, Mark reviewed (Space) and
+// Next step (`]`) with the H1 title below. Step 1 builds on nothing; step 4 builds on 1 and 3.
+test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
+  await openStep1(page);
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const kicker = (n: number) => page.getByText(`Step ${String(n)} / 8`, { exact: true });
+  const title = page.getByRole('heading', { level: 1 });
+  // The header's Next step comes first; the end-of-step card (F-08.9) has one of its own below.
+  const next = page.getByRole('button', { name: /^Next step/ }).first();
+  const previous = page.getByRole('button', { name: 'Previous step', exact: true });
+  const mark = page.getByRole('button', { name: /^(Mark reviewed|Reviewed)/ });
+  const buildsOn = page.getByText('builds on', { exact: true });
+
+  await expect(kicker(1)).toBeVisible();
+  await expect(title).toHaveText('Queue contract');
+  await expect(previous).toBeDisabled();
+  await expect(buildsOn).toHaveCount(0);
+  await expect(next).toContainText(']');
+
+  await next.click();
+  await expect(kicker(2)).toBeVisible();
+  await page.keyboard.press(']');
+  await expect(kicker(3)).toBeVisible();
+  await page.keyboard.press(']');
+  await expect(kicker(4)).toBeVisible();
+  await expect(title).toHaveText('ViewModel: queue instead of upload');
+  await expect(buildsOn).toBeVisible();
+  await expect(page.getByRole('button', { name: '1 · Queue contract', exact: true })).toBeVisible();
+
+  await page.getByRole('button', { name: '3 · UploadWorker', exact: true }).click();
+  await expect(kicker(3)).toBeVisible();
+  await expect(title).toHaveText('UploadWorker with retries');
+  await expect(mode(page).getByRole('radio', { name: 'Detailed' })).toBeChecked();
+  const rail = page.getByRole('navigation', { name: 'Review plan' });
+  await expect(rail.getByRole('button', { name: /UploadWorker with retries/ })).toHaveAttribute(
+    'aria-current',
+    'step',
+  );
+
+  await previous.click();
+  await expect(kicker(2)).toBeVisible();
+  await expect(title).toHaveText('SqliteUploadQueue');
+
+  // Mark reviewed: the button turns green and reads Reviewed; Space on the page takes it back.
+  await expect(mark).toHaveText(/^Mark reviewed/);
+  await expect(mark).toContainText('Space');
+  await mark.click();
+  await expect(mark).toHaveAttribute('aria-pressed', 'true');
+  await expect(mark).toHaveText(/^Reviewed/);
+  await expect.poll(() => backgroundOf(mark)).toEqual([GREEN]);
+  await expect(rail.getByRole('button', { name: /SqliteUploadQueue/ }).locator('svg')).toHaveCount(
+    1,
+  );
+  await mark.blur();
+  await page.keyboard.press('Space');
+  await expect(mark).toHaveAttribute('aria-pressed', 'false');
+  await expect(mark).toHaveText(/^Mark reviewed/);
+});
