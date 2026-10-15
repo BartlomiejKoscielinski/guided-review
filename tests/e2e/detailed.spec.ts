@@ -320,3 +320,53 @@ test('F-08.5 the file bar stays on top while scrolling; Unified; Open in Rider',
   await column.getByRole('button', { name: 'Open in Rider' }).click();
   await expect(column.getByRole('alert')).toHaveCount(0);
 });
+
+test('F-08.6 the full callout under the focused note: Add to drafts and Undo, Edit and add, Dismiss on another note', async ({
+  page,
+}) => {
+  await openStep1(page);
+  await openStep(page, /ViewModel/, 4);
+  await page.keyboard.press('Control+d');
+  await expectDetailed(page);
+  const callout = page.getByRole('region', { name: 'Claude note at this line' });
+  const added = 'Added to drafts. It reaches GitLab only when you publish.';
+  const add = callout.getByRole('button', { name: /^Add to drafts/ });
+  const yOf = async (locator: Locator) => (await locator.boundingBox())?.y ?? Number.NaN;
+
+  // Step 4 opens on note 2; its callout sits under line 49, above line 50.
+  await expect(callout).toHaveCount(1);
+  await expect(callout.getByText(SECOND, { exact: true })).toBeVisible();
+  await expect(callout.getByText('Should fix', { exact: true })).toBeVisible();
+  await expect(callout.getByText('Claude', { exact: true })).toBeVisible();
+  await expect(callout.getByText('Checked in', { exact: true })).toBeVisible();
+  await expect(callout.getByText('Uploads/UploadWorker.cs:58', { exact: true })).toBeVisible();
+  await expect(callout.getByText('Suggested comment', { exact: true })).toBeVisible();
+  const mark = page.getByRole('button', { name: `Note 2: ${SECOND}` });
+  await expect(mark).toHaveAttribute('aria-pressed', 'true');
+  expect(await yOf(callout)).toBeGreaterThan(await yOf(mark));
+  expect(await yOf(callout)).toBeLessThan(await yOf(addLine(page, 50)));
+
+  // Add to drafts and Undo.
+  await add.click();
+  await expect(callout.getByText(added)).toBeVisible();
+  await expect(callout.getByRole('button', { name: 'Undo' })).toBeFocused();
+  await callout.getByRole('button', { name: 'Undo' }).click();
+  await expect(add).toBeVisible();
+
+  // Edit and add sends the edited text.
+  await callout.getByRole('button', { name: 'Edit and add' }).click();
+  const text = callout.getByRole('textbox', { name: 'Suggested comment' });
+  await expect(text).toBeFocused();
+  await text.fill('Refresh PendingCount after each upload?');
+  await add.click();
+  await expect(callout.getByText(added)).toBeVisible();
+
+  // Note 1's mark moves the callout; Dismiss and its confirmation.
+  await page.getByRole('button', { name: `Note 1: ${FIRST}` }).click();
+  await expect(callout.getByText(FIRST, { exact: true })).toBeVisible();
+  await expect(callout).toHaveCount(1);
+  await callout.getByRole('button', { name: /^Dismiss/ }).click();
+  await expect(
+    callout.getByText("Dismissed. Claude won't raise it again for this commit."),
+  ).toBeVisible();
+});
