@@ -1,5 +1,5 @@
 {
-  "items": 9,
+  "items": 10,
   "entries": [
     {
       "id": "P-001",
@@ -41,7 +41,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -149,7 +149,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -240,7 +240,7 @@
         "src/screens/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, write the reading you chose as a tests-stage decision and make it the red test, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and the item then passed gate 1 without a fix round.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.675Z",
@@ -376,7 +376,7 @@
         "tests/e2e/**"
       ],
       "text": "When the pinned Playwright browser is missing on this PC, the tests role reports the e2e command as not run with the missing browser path instead of pointing Playwright at another binary, because F-09.1's tests verdict claimed an e2e run through a temporary config while the review could not run it and gate-1 verify never runs e2e.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T21:00:04.409Z",
@@ -397,6 +397,51 @@
       "created": "2026-10-14T21:00:04.477Z",
       "lastUsedItem": 8,
       "source": "F-09.1"
+    },
+    {
+      "id": "P-027",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**"
+      ],
+      "text": "Lock a keyboard focus change with one vitest assertion on document.activeElement after the state change: F-09.2's single red test led to a one-effect fix in NoteCard.tsx that passed gate-1 on the first run.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T06:35:59.945Z",
+      "lastUsedItem": 9,
+      "source": "F-09.2"
+    },
+    {
+      "id": "P-028",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Make the pinned Playwright chromium available before the tests stage: the F-09.2 tests verdict ended with e2e not run (chromium-1248 missing) after 135k tokens, against 67k for implement, and the implement verify then ran the same e2e green.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T06:36:00.004Z",
+      "lastUsedItem": 9,
+      "source": "F-09.2"
+    },
+    {
+      "id": "P-029",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T06:36:00.066Z",
+      "lastUsedItem": 9,
+      "source": "F-09.2"
     }
   ]
 }
