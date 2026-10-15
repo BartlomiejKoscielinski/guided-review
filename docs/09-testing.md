@@ -21,7 +21,7 @@ Goal: every acceptance criterion in `01-product.md` is covered by at least one a
 | Visual | `/design-check S-xx` | screenshot of the implemented screen (mock backend, same data) next to `docs/design/screens/*.png`; differences listed and fixed or justified. During milestones a structure check (copy, design rules, regions); the pixel pass (`/design-check S-xx pixel`) once per screen in M11 (ADR-026) |
 | Real app | `tools/app-driver/app.mjs` (skill `/app`) | `tauri dev` with the real backend and the stand-in, driven by Claude Code through Playwright over WebView2 CDP (`127.0.0.1:9222`, dev build only); smoke checks of wired screens, real-backend states, before ticking stand-in criteria; native windows (file picker, Rider, tray) stay manual |
 | Performance | scripted | 10,000-line diff scroll (no frame > 32 ms in a Playwright trace), 1,000-file tree render < 100 ms, cached session open < 300 ms |
-| Claude quality | `npm run eval:claude` (manual, uses your seat; `src-tauri/tests/eval_claude.rs`, Haiku · low unless `GR_EVAL_MODEL` / `GR_EVAL_EFFORT`) | golden inputs from fixture MRs → plan covers all hunks, findings cite real lines, no findings outside the step, schema valid, no note repeats an existing thread on its line (F-09.5) |
+| Claude quality | `npm run eval:claude` (manual, uses your seat; `src-tauri/tests/eval_claude.rs`, Sonnet · low unless `GR_EVAL_MODEL` / `GR_EVAL_EFFORT`) | golden inputs from fixture MRs → plan covers all hunks, findings cite real lines, no findings outside the step, schema valid, no note repeats an existing thread on its line (F-09.5) |
 
 ## Environments (ADR-019)
 

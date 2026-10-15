@@ -1,4 +1,4 @@
-<!-- Role: reflector (Haiku). Turns one item's outcome into 0–3 playbook deltas (ACE). -->
+<!-- Role: reflector (Sonnet). Turns one item's outcome into 0–3 playbook deltas (ACE). -->
 Objective: learn from item {{item}} ({{kind}}, result {{result}}) so the next items go better.
 
 Read only the verdict files in {{verdictsDir}} (tests, impl, review, fix-N, gate-N JSON) and the playbook entries the pack offered: {{offered}}.

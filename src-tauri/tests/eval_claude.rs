@@ -3,8 +3,8 @@
 //! the developer's own Claude login and usage (ADR-019 layer 2, synthetic data only), so every
 //! case is `#[ignore]` and `npm run verify` never runs it.
 //!
-//! The step task runs on Haiku · low unless `GR_EVAL_MODEL` (a full model ID, e.g.
-//! `claude-sonnet-5-5`, the app's step default) and `GR_EVAL_EFFORT` (`low` … `max`) say
+//! The step task runs on Sonnet · low (the app's step model) unless `GR_EVAL_MODEL` (a full
+//! model ID, e.g. `claude-opus-5-5`) and `GR_EVAL_EFFORT` (`low` … `max`) say
 //! otherwise. Each case prints Claude's notes for a human look.
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
 
@@ -79,7 +79,7 @@ public class UploadService
 /// The step task's model and effort for the eval (see the module doc).
 fn settings() -> ClaudeSettings {
     let mut settings = ClaudeSettings::default();
-    let model = std::env::var("GR_EVAL_MODEL").unwrap_or_else(|_| "claude-haiku-5-5".into());
+    let model = std::env::var("GR_EVAL_MODEL").unwrap_or_else(|_| "claude-sonnet-5-5".into());
     let effort = std::env::var("GR_EVAL_EFFORT").unwrap_or_else(|_| "low".into());
     let effort: TaskEffort = serde_json::from_value(json!(effort)).expect("GR_EVAL_EFFORT");
     settings.tasks.step = TaskOverride { model, effort };

@@ -45,7 +45,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
        ↺ implementer fix round (max 2)
     4 Gate (script, no LLM)    → verify (+e2e for UI), audit, locked tests unchanged, owns, rule greps
                                → ff-merge into the milestone branch, tick PROGRESS
-    5 Reflector (Haiku)        → 0–3 playbook deltas
+    5 Reflector (Sonnet)       → 0–3 playbook deltas
 ```
 
 ### 3.1 State (files)
@@ -96,7 +96,7 @@ No new npm or cargo dependencies (Node built-ins only).
 - **Implementer** reads the context pack (`context-pack.mjs <AC> --plan <Mx> --files … --playbook`), may not change locked test files (gate enforces; a wrong test → `testDispute` in its verdict, decided by the reviewer).
 - **Reviewer** gets `git diff <milestone>...ap/<item>`, the AC text and `CLAUDE.md` non-negotiables; returns `{findings: [{severity: severe|normal|nit, file, line, text}], testDispute?: accept|reject}`; UI items also run `/design-check` structure mode. Severe or normal findings → one fix round.
 - **Gate** is deterministic; its JSON verdict is the only thing that decides merge.
-- **Live checker** (Sonnet, main checkout, once per run at the start of "Closing"): the items with status `live` (built; only the check in `tauri dev` left: a PROGRESS note ending in `open: live check …`, or the conductor after a gate). It drives the real app with `tools/app-driver/app.mjs` (batches via `run`, ≤ 8 calls per criterion, Docker and the stand-in started if needed, real Claude only on Haiku · low), takes expected values from the seed and fixtures, and answers pass / fail / skip per criterion. `tools/autopilot/live.mjs pass` ticks PROGRESS with the commits of the note; `fail` sends the item back to todo ("live check failed: …"), and after its fix the gate runs without `--complete` and the item waits as `live` again.
+- **Live checker** (Sonnet, main checkout, once per run at the start of "Closing"): the items with status `live` (built; only the check in `tauri dev` left: a PROGRESS note ending in `open: live check …`, or the conductor after a gate). It drives the real app with `tools/app-driver/app.mjs` (batches via `run`, ≤ 8 calls per criterion, Docker and the stand-in started if needed, real Claude only on Sonnet · low), takes expected values from the seed and fixtures, and answers pass / fail / skip per criterion. `tools/autopilot/live.mjs pass` ticks PROGRESS with the commits of the note; `fail` sends the item back to todo ("live check failed: …"), and after its fix the gate runs without `--complete` and the item waits as `live` again.
 - **Reflector** gets the item's verdicts (not the transcripts) and answers: what went well, what was slow or wrong, what to do differently; writes 0–3 deltas with tags. A delta that duplicates an entry increments its count instead.
 
 ## 6. Owner decisions (recommended answers; approving this plan approves them)
@@ -121,7 +121,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 
 | Risk | Mitigation |
 | - | - |
-| Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Haiku for reflect, Sonnet for tests and UI |
+| Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Sonnet for reflect, tests and UI |
 | Decisions drift in the wrong direction | spec, mocks and design system first, then named UI/UX principles with a "why"; the fresh reviewer judges open UI/UX choices; logged in `DECISIONS-PENDING.md`; an owner veto at any time → rework item |
 | Classifier blocks stall the loop | allow rules; blocked commands are reported, never worked around |
 | Agents game the tests | lock + gate diff check; reviewer sees the tests and the diff |

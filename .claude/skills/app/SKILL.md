@@ -35,6 +35,6 @@ Targets are Playwright selectors. Prefer roles from `snap`: `role=button[name="P
 
 - This is the real backend. It uses the stand-in GitLab (`https://localhost:8443`, synthetic data), the fixture repos and real `claude`. Everything in CLAUDE.md › Non-negotiables still applies.
 - Only click Publish / Approve / Resolve / Reply / Run pipeline / Play job in the stand-in sandbox, and only when the check needs it.
-- Real Claude runs (plans, chat, fixes) spend the owner's tokens: see memory "Live checks use Haiku". Prefer fake-claude, or a check that doesn't need Claude.
+- Real Claude runs (plans, chat, fixes) spend the owner's tokens: use Sonnet 5.5 · low for them (memory "Live checks use Sonnet low"). Prefer fake-claude, or a check that doesn't need Claude.
 - Native windows such as file pickers, Rider and the tray menu are outside the webview. The driver can't reach them; say so instead of guessing.
 - Port 9222 lets any local process script the app while it runs. Use it only through this tool, on the development PC, with the dev build.
