@@ -1,5 +1,5 @@
-//! `sessions_*` and `session_open_*` commands. Commit and local sessions open stub screens until
-//! M3 (M2 decision 3); MR sessions come with preparation (`session_open_mr`, F-05) and open S-02.
+//! `sessions_*` and `session_open_*` commands. Commit and local sessions open the review plan
+//! (S-02, F-17.1, M3 decision 12); MR sessions come with preparation (`session_open_mr`, F-05).
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};

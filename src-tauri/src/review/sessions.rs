@@ -98,9 +98,9 @@ pub struct OpenedSession {
     pub route: Route,
 }
 
-/// The row and route of a new session (M2 decision 3). Commits go to step review (S-03);
-/// local changes (self-review plan, F-17.1) and a prepared MR (F-05) go to S-02. The
-/// plans are stubs until M3. Set `worktree` on the row for an MR.
+/// The row and route of a new session. Every source opens the review plan (S-02) while it is
+/// planned: a prepared MR (F-05), local changes and commits alike (self-review, F-17.1, M3
+/// decision 12). Set `worktree` on the row for an MR.
 pub fn new_session(
     repo_id: i64,
     resolved: Resolved,
@@ -108,19 +108,9 @@ pub fn new_session(
     layout: Layout,
 ) -> Result<(NewSession, OpenedSession), serde_json::Error> {
     let id = uuid::Uuid::new_v4().to_string();
-    let (status, route) = match resolved.source {
-        Source::Local { .. } | Source::Mr { .. } => (
-            SessionStatus::Planning,
-            Route::Plan {
-                session_id: id.clone(),
-            },
-        ),
-        Source::Commits { .. } => (
-            SessionStatus::Reviewing,
-            Route::Step {
-                session_id: id.clone(),
-            },
-        ),
+    let status = SessionStatus::Planning;
+    let route = Route::Plan {
+        session_id: id.clone(),
     };
     let row = NewSession {
         id: id.clone(),

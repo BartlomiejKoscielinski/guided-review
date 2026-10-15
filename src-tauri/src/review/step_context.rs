@@ -25,7 +25,7 @@ use crate::claude::tasks::step::StepRequest;
 use crate::claude::tasks::step_inputs::Dismissal;
 use crate::error::{AppError, ErrorCode};
 use crate::git::model::FileDiff;
-use crate::git::{Git, GitError};
+use crate::git::{Git, GitError, log};
 use crate::gitlab::discussions::Thread;
 use crate::os::process::Cancel;
 use crate::review::position::LineSelection;
@@ -173,7 +173,8 @@ impl SessionInputs {
     }
 }
 
-/// The session's source, files, threads (see [`load`]), team rules and MR description.
+/// The session's source, files, threads (see [`load`]), team rules and description (the MR
+/// description, or the commit messages of a commits session).
 pub async fn load_inputs<F, Fut>(
     store: &Store,
     git_program: Option<&Path>,
@@ -195,6 +196,7 @@ where
         return Err(StepContextError::UnknownSession);
     };
     let stored: Source = serde_json::from_str(&row.source_json)?;
+    let git = Git::new(git_program, &folders.checkout);
     let (source, mr, description, cwd) = match stored.clone() {
         Source::Mr { project, iid } => {
             let mr_json = row.mr_json.ok_or(StepContextError::NotMr)?;
@@ -209,12 +211,17 @@ where
             (source, Some(MrRef { project, iid }), meta.description, cwd)
         }
         // F-17.1: commits and the user's own changes read the repository root, no worktree.
-        Source::Commits { from, to } => (
-            PlanSource::Commits { from, to },
-            None,
-            None,
-            folders.checkout.clone(),
-        ),
+        // A commits session's description is its commit messages (M3 decision 13); local
+        // scopes have none.
+        Source::Commits { from, to } => {
+            let messages = log::messages(&git, from.as_deref(), &to, cancel).await?;
+            (
+                PlanSource::Commits { from, to },
+                None,
+                Some(messages).filter(|m| !m.trim().is_empty()),
+                folders.checkout.clone(),
+            )
+        }
         Source::Local { scope } => (
             PlanSource::Local { scope },
             None,
@@ -226,7 +233,6 @@ where
         Some(mr) => mr.project.clone(),
         None => repo_project(store, row.repo_id, &folders.checkout)?,
     };
-    let git = Git::new(git_program, &folders.checkout);
     let rules = plan::team_rules(&git, &row.base_sha, cancel).await?;
     let files = source_files::files(&git, &stored, &row.base_sha, &row.head_sha, cancel).await?;
     let threads = match &mr {

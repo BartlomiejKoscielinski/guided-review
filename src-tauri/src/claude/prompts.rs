@@ -5,7 +5,7 @@
 use crate::settings::Lang;
 
 /// Version of the prompts and schemas below.
-pub const PROMPT_VERSION: u32 = 1;
+pub const PROMPT_VERSION: u32 = 2;
 
 pub const SYSTEM_COMMON: &str = include_str!("../../resources/prompts/system-common.md");
 pub const COMMIT_MESSAGE: &str = include_str!("../../resources/prompts/commit-message.md");

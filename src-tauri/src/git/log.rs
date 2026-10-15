@@ -1,5 +1,5 @@
 //! The Commits column of S-01 (F-03.1): the newest 200 commits of a branch, filtered by message,
-//! author or SHA prefix (docs/05 › Commit list).
+//! author or SHA prefix (docs/05 › Commit list); the messages of a commits session (F-17.1).
 
 use serde::Serialize;
 use ts_rs::TS;
@@ -154,6 +154,57 @@ fn merge(mut entries: Vec<Entry>) -> Vec<Entry> {
     entries
 }
 
+/// Bytes of commit messages a commits session hands Claude as its description at most
+/// (M3 decision 13); the rest is cut with a note.
+pub const MESSAGES_MAX: usize = 64 * 1024;
+
+/// The full messages (subject and body) of a single commit (`from` = `None`) or of the commits
+/// in `from..to` (`from` excluded), oldest first, each headed by its short SHA, capped at
+/// [`MESSAGES_MAX`] bytes: the description of a commits session (F-17.1, M3 decision 13).
+pub async fn messages(
+    git: &Git,
+    from: Option<&str>,
+    to: &str,
+    cancel: &Cancel,
+) -> Result<String, GitError> {
+    let range = from.map(|from| format!("{from}..{to}"));
+    let mut args = vec!["log", "--no-color", "--reverse", "--format=%h%x1f%B%x1e"];
+    match &range {
+        Some(range) => args.extend(["--end-of-options", range.as_str()]),
+        None => args.extend(["-n", "1", "--end-of-options", to]),
+    }
+    args.push("--");
+    let output = git.run(args, cancel).await?;
+    let text = output
+        .stdout
+        .split('\x1e')
+        .filter_map(|record| {
+            let (short_sha, message) =
+                record.trim_start_matches(['\n', '\r']).split_once('\x1f')?;
+            let message = message.trim();
+            (!message.is_empty()).then(|| format!("{short_sha} {message}"))
+        })
+        .collect::<Vec<_>>()
+        .join("\n\n");
+    Ok(cap(&text, MESSAGES_MAX))
+}
+
+/// `text` cut to at most `max` bytes on a character boundary, with a note when cut.
+fn cap(text: &str, max: usize) -> String {
+    if text.len() <= max {
+        return text.to_owned();
+    }
+    let mut end = max;
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!(
+        "{}\n\n[Commit messages cut at {} KB.]",
+        text[..end].trim_end(),
+        max / 1024
+    )
+}
+
 fn parse(text: &str) -> Option<Vec<Entry>> {
     text.split('\x1e')
         .map(|record| record.trim_start_matches(['\n', '\r']))
@@ -196,5 +247,17 @@ mod tests {
         assert_eq!(shas, ["bbb", "aaa"]);
         assert!(parse("x\x1fy\x1e").is_none());
         assert_eq!(parse("").unwrap().len(), 0);
+    }
+
+    #[test]
+    fn f17_1_caps_commit_messages_on_a_character_boundary() {
+        assert_eq!(cap("Zażółć", 64), "Zażółć");
+        // "ż" is two bytes; a cut inside it backs off to the character before.
+        let capped = cap("aż gęś", 2);
+        assert_eq!(capped, "a\n\n[Commit messages cut at 0 KB.]");
+        let long = "ł".repeat(MESSAGES_MAX);
+        let capped = cap(&long, MESSAGES_MAX);
+        assert!(capped.len() < MESSAGES_MAX + 64);
+        assert!(capped.ends_with("[Commit messages cut at 64 KB.]"));
     }
 }
