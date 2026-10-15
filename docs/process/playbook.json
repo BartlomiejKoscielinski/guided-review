@@ -1,5 +1,5 @@
 {
-  "items": 11,
+  "items": 12,
   "entries": [
     {
       "id": "P-001",
@@ -71,7 +71,7 @@
         "src-tauri/src/store/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T10:02:39.330Z",
@@ -149,7 +149,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -316,7 +316,7 @@
         "src/screens/plan/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:34:55.903Z",
@@ -490,6 +490,52 @@
       "created": "2026-10-15T07:10:35.609Z",
       "lastUsedItem": 10,
       "source": "F-09.4"
+    },
+    {
+      "id": "P-033",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**",
+        "package.json"
+      ],
+      "text": "Before the tests stage marks a live check as manual, confirm its runner exists (package.json script, tools/ file); when it is missing, plan the runner as its own item, because F-09.5's tests verdict said autopilot could not add the eval:claude harness, the implementer then built it in the same item anyway, and the criterion still ended unticked.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:32:02.825Z",
+      "lastUsedItem": 11,
+      "source": "F-09.5"
+    },
+    {
+      "id": "P-034",
+      "tags": [
+        "core",
+        "tests",
+        "src/ipc/mock/**"
+      ],
+      "text": "In a mock test labelled with an AC ID, assert the behaviour the rule states and never generalize a rule that a plan decision rejected, because F-09.5's mock loop enforced no note on a thread's file and line (the line-only dedupe M3 decision 6 rejected), contradicted the Rust test, and was the item's only review finding.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:32:02.876Z",
+      "lastUsedItem": 11,
+      "source": "F-09.5"
+    },
+    {
+      "id": "P-035",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Before ticking a locked test of a rule that reads a context list (threads, cached notes), empty that list in a mutation check and confirm the tests fail, because F-09.5's empty thread list failed 4 of 6 Rust tests, which shows they go through the production loader rather than a stub.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:32:02.922Z",
+      "lastUsedItem": 11,
+      "source": "F-09.5"
     }
   ]
 }
