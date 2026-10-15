@@ -320,3 +320,103 @@ fn f09_1_a_stored_note_keeps_every_field_through_a_decision() {
         })
         .unwrap();
 }
+
+const COMMIT: &str = "commit:abc1234";
+
+#[test]
+fn f09_4_a_dismissal_stays_in_its_own_review_and_its_undo_cannot_reach_another() {
+    with(|c| {
+        // The MR review (session r1) dismisses its note.
+        let here = record(c, "r1", &analysis(vec![finding("f1", "aaaa")]))?;
+        decide(c, &here[0].id, &FindingDecision::Dismiss, SUBJECT)?;
+        // A commit review (session c1) raises the same note: same step, position and code, so
+        // the same id and fingerprint.
+        let there = record(c, "c1", &analysis(vec![finding("f1", "aaaa")]))?;
+        assert_eq!(
+            there[0].decision,
+            Decision::Open,
+            "a dismissal elsewhere is not a decision on this review's note"
+        );
+        // Dismissing it there records a dismissal for the commit and leaves the MR's alone.
+        decide(c, &there[0].id, &FindingDecision::Dismiss, COMMIT)?;
+        assert_eq!(dismissed(c, COMMIT)?.len(), 1);
+        assert_eq!(dismissed(c, SUBJECT)?.len(), 1);
+        // Undoing it there takes back only the commit's dismissal.
+        decide(c, &there[0].id, &FindingDecision::Undo, COMMIT)?;
+        assert!(dismissed(c, COMMIT)?.is_empty());
+        assert_eq!(
+            dismissed(c, SUBJECT)?,
+            [Dismissal {
+                fingerprint: "aaaa".into(),
+                kind: "unawaited-task".into()
+            }],
+            "the MR still does not see the note again"
+        );
+        Ok(())
+    });
+}
+
+#[test]
+fn f09_4_undoing_one_note_keeps_the_dismissal_of_another_note_with_the_same_fingerprint() {
+    with(|c| {
+        // The same kind on the same code twice in one file (identical line and neighbours).
+        record(
+            c,
+            "r1",
+            &analysis(vec![finding("f1", "aaaa"), finding("f3", "aaaa")]),
+        )?;
+        decide(c, "f1", &FindingDecision::Dismiss, SUBJECT)?;
+        decide(c, "f3", &FindingDecision::Dismiss, SUBJECT)?;
+        decide(c, "f1", &FindingDecision::Undo, SUBJECT)?;
+        // f3 still shows as dismissed, so its fingerprint must still be kept out of the next run.
+        assert_eq!(decision_of(c, "f3"), Decision::Dismissed);
+        assert_eq!(
+            dismissed(c, SUBJECT)?,
+            [Dismissal {
+                fingerprint: "aaaa".into(),
+                kind: "unawaited-task".into()
+            }]
+        );
+        decide(c, "f3", &FindingDecision::Undo, SUBJECT)?;
+        assert!(dismissed(c, SUBJECT)?.is_empty());
+        Ok(())
+    });
+}
+
+#[test]
+fn f09_4_dismissals_keep_kind_review_file_and_time_for_the_rule_suggestions() {
+    with(|c| {
+        // F-29.2 counts dismissals of one kind across reviews: two in the MR, one in a commit.
+        record(c, "c1", &analysis(vec![finding("f9", "cccc")]))?;
+        decide(c, "f1", &FindingDecision::Dismiss, SUBJECT)?;
+        decide(c, "f2", &FindingDecision::Dismiss, SUBJECT)?;
+        decide(c, "f9", &FindingDecision::Dismiss, COMMIT)?;
+        let count = |c: &Connection| -> rusqlite::Result<(i64, i64)> {
+            c.query_row(
+                "SELECT COUNT(*), COUNT(DISTINCT mr) FROM dismissals WHERE kind = 'unawaited-task'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+        };
+        assert_eq!(count(c)?, (3, 2));
+        let rows: Vec<(String, String, String)> = c
+            .prepare("SELECT mr, file, created_at FROM dismissals ORDER BY rowid")?
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
+            .collect::<Result<_, _>>()?;
+        let reviews: Vec<&str> = rows.iter().map(|(mr, _, _)| mr.as_str()).collect();
+        assert_eq!(reviews, [SUBJECT, SUBJECT, COMMIT]);
+        for (_, file, at) in &rows {
+            assert_eq!(file, VM);
+            // "2026-10-15T06:23:45.123Z": a UTC time, so "N times in 3 weeks" can be told.
+            let b = at.as_bytes();
+            assert!(
+                at.len() == 24 && b[10] == b'T' && at.ends_with('Z') && at.starts_with("20"),
+                "{at}"
+            );
+        }
+        // An undone dismissal no longer counts.
+        decide(c, "f9", &FindingDecision::Undo, COMMIT)?;
+        assert_eq!(count(c)?, (2, 1));
+        Ok(())
+    });
+}

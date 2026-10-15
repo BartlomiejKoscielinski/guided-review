@@ -466,3 +466,90 @@ async fn f09_1_invalid_output_is_claude_schema_and_not_cached() {
         .unwrap();
     assert_eq!(cached, None);
 }
+
+#[tokio::test]
+async fn f09_4_a_dismissed_note_is_not_raised_again_when_its_code_moved_on_a_new_head() {
+    let mut s = setup().await;
+    s.fake.set_scenario(
+        &json!({ "responses": [result(json!({ "structured_output": vm_findings() }))] }),
+    );
+    let priority = step::schedule(&s.order, "s1")[0].1;
+    let first = step::run(
+        &s.ctx(),
+        &s.request("s1", &[]),
+        priority,
+        &|| {},
+        &Cancel::new(),
+    )
+    .await
+    .unwrap();
+    let note = &first.analysis.findings[0];
+    let dismissed = [Dismissal {
+        fingerprint: note.fingerprint.clone(),
+        kind: note.kind.clone(),
+    }];
+
+    // A new head: the same call is two lines further down and re-indented; the lines around it
+    // are the same.
+    s.repo.write(
+        VM,
+        "using System;\n\nclass Vm {\n\tvoid Up()  { queue.Enqueue(); }\n}\n",
+    );
+    let head = s.repo.commit_all("head 2");
+    s.files = files(&Git::new(None, &s.repo.path), &s.base, &head).await;
+    s.head = head;
+    s.plan = plan(&s.files);
+    // Claude words the same note differently and also raises another kind on the same line.
+    let mut again = vm_findings();
+    again["findings"][0]["title"] = json!("Enqueue result is dropped");
+    again["findings"][0]["body"] = json!("The call returns before the upload is queued.");
+    again["findings"][0]["line"] = json!(4);
+    again["findings"][0]["evidence"][0]["line"] = json!(4);
+    let mut other = again["findings"][0].clone();
+    other["kind"] = json!("swallowed-error");
+    other["title"] = json!("Failures are lost");
+    again["findings"].as_array_mut().unwrap().push(other);
+    s.fake
+        .set_scenario(&json!({ "responses": [result(json!({ "structured_output": again }))] }));
+
+    let calls_before = s.fake.calls().len();
+    let after = step::run(
+        &s.ctx(),
+        &s.request("s1", &dismissed),
+        priority,
+        &|| {},
+        &Cancel::new(),
+    )
+    .await
+    .unwrap();
+    assert!(!after.cached, "a new head is a new run");
+    let calls = s.fake.calls();
+    assert_eq!(calls.len(), calls_before + 1);
+    let kinds: Vec<(&str, u32)> = after
+        .analysis
+        .findings
+        .iter()
+        .map(|f| (f.kind.as_str(), f.line))
+        .collect();
+    assert_eq!(kinds, [("swallowed-error", 4)]);
+    // Claude is also told which kinds the reviewer dismissed.
+    assert!(
+        calls[calls_before]["stdin"]
+            .as_str()
+            .unwrap()
+            .contains("(do not raise them again): unawaited-call\n")
+    );
+
+    // Control: the same result without the dismissal raises both notes.
+    let both = step::run(
+        &s.ctx(),
+        &s.request("s1", &[]),
+        priority,
+        &|| {},
+        &Cancel::new(),
+    )
+    .await
+    .unwrap();
+    assert!(both.cached);
+    assert_eq!(both.analysis.findings.len(), 2);
+}
