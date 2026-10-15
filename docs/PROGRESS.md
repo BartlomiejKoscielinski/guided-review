@@ -93,7 +93,7 @@ Rules for Claude Code:
 - [x] F-07.8 Layout B's toolbar: previous, "Step 4 of 8", next, Mark reviewed, Ask Claude. (3976bc2, ecc02ae, ce90ddc)
 - [x] F-07.9 The chosen layout is remembered globally and per session. (6c15e0f)
 - [x] F-09.1 Each note has severity, title, body, line (file, side, line), evidence (file:line list) and a suggested… (75dcfbd, 8d92b37, 1f1e6c5, b42a11c, 4772c33, 87b700d, fb9bfc6)
-- [ ] F-09.2 Decisions: Add to drafts (creates a draft from the suggested comment), Edit and add (opens the text for… — partial: `review/decisions.rs` decide + undo (1f1e6c5), local drafts `review/drafts.rs` (b645db8); `review_decide` + `drafts_*` commands (b42a11c), mock + hooks (4772c33); NoteCard Add to drafts / Edit and add / Dismiss / Undo (87b700d); e2e in 3e
+- [x] F-09.2 Decisions: Add to drafts (creates a draft from the suggested comment), Edit and add (opens the text for… (1f1e6c5, b645db8, b42a11c, 4772c33, 87b700d, f1f5aa2, de40ad0)
 - [x] F-09.3 After Add to drafts the card says "Added to drafts. It reaches GitLab only when you publish." After… (87b700d)
 - [ ] F-09.4 Dismissed notes are fingerprinted (rule = the note's kind + file + normalized code: the line with… — partial: `review/fingerprint.rs` (8d92b37), dismissed fingerprints filtered + kinds in `step.md` (75dcfbd, 513d0fa); `dismissals` written on Dismiss, removed on Undo, read by `decisions::dismissed` (1f1e6c5); `review_decide` command, subject per MR (b42a11c); Dismiss on the NoteCard (87b700d)
 - [ ] F-09.5 Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as… — partial: threads on the step's lines in the step task (513d0fa); eval golden case (decision 6)
