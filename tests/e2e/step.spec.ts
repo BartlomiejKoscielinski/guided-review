@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openStep, openStep1, restartApp, stepsList } from './stepHelpers';
+import { flushSaves, openStep, openStep1, restartApp, stepsList } from './stepHelpers';
 
 // S-03 layout A against the mock backend, part 1 (M3 plan › 3e): step 1 from the plan, the steps
 // list, the step's diff with its fold, notes, thread, and a decision with Undo (F-09.2).
@@ -138,11 +138,24 @@ test('F-07.1 F-07.8 F-07.7 F-10.2 layouts B and C share the step, the note and t
 // F-04.3: session state survives app restarts. The mock keeps it in the browser's storage, as the
 // core keeps it in SQLite, so reloading the page is starting the app again (`restartApp`).
 
-/** A scroll position is written debounced, within this time. */
-const SCROLL_SAVED_MS = 2000;
-
 const mainOf = (page: Page) => page.locator('main[class*="main"]').first();
 const scrollTopOf = (page: Page) => mainOf(page).evaluate((el) => el.scrollTop);
+/** Scrolls S-03's main area and returns once the scroll event (which starts the save) has run. */
+const scrollMainTo = (page: Page, top: number) =>
+  mainOf(page).evaluate(
+    (el, to) =>
+      new Promise<void>((resolve) => {
+        el.addEventListener(
+          'scroll',
+          () => {
+            resolve();
+          },
+          { once: true },
+        );
+        el.scrollTop = to;
+      }),
+    top,
+  );
 
 const SECOND = 'PendingCount won’t refresh after upload';
 const FIRST = 'The whole photo goes into SQLite as byte[]';
@@ -208,16 +221,12 @@ test('F-07.9 a new session starts in the layout you chose last, also after a res
 test('F-04.3 after a restart each step reopens at its own scroll position', async ({ page }) => {
   await openStep1(page);
   await openStep(page, /ViewModel/, 4);
-  await mainOf(page).evaluate((el) => {
-    el.scrollTop = 120;
-  });
-  await page.waitForTimeout(SCROLL_SAVED_MS);
+  await scrollMainTo(page, 120);
+  await flushSaves(page);
   await openStep(page, /SqliteUploadQueue/, 2);
-  await mainOf(page).evaluate((el) => {
-    el.scrollTop = 300;
-  });
+  await scrollMainTo(page, 300);
 
-  await restartApp(page, SCROLL_SAVED_MS);
+  await restartApp(page);
   await expect(page.getByText('Step 2 of 8')).toBeVisible();
   await expect.poll(() => scrollTopOf(page)).toBe(300);
   await openStep(page, /ViewModel/, 4);

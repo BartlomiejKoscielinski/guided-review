@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
@@ -47,6 +47,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.0",
+    "@tanstack/eslint-plugin-query": "^5.104.3",
     "@tauri-apps/cli": "^2.12.2",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",

@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { openStep, openStep1, restartApp, STATE_SAVED_MS, stepsList } from './stepHelpers';
+import { flushSaves, openStep, openStep1, restartApp, stepsList } from './stepHelpers';
 
 // S-03 progress against the mock backend: the steps marked reviewed (F-07.2) drive the done
 // checks in layout A's steps list and the progress segments in B's title bar and C's guide panel
@@ -22,7 +22,7 @@ const LINE = 'rgb(42, 42, 42)';
  * makes while it closes cannot overwrite them.
  */
 async function restartWithReviewed(page: Page, ids: string[]) {
-  await page.waitForTimeout(STATE_SAVED_MS);
+  await flushSaves(page);
   await page.addInitScript(
     ({ key, reviewed }) => {
       const data = JSON.parse(localStorage.getItem(key) ?? '{}') as {

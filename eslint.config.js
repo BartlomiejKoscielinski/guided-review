@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import pluginQuery from '@tanstack/eslint-plugin-query';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -30,8 +31,27 @@ export default defineConfig(
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    extends: [reactHooks.configs.flat['recommended-latest'], reactRefresh.configs.vite],
+    extends: [
+      reactHooks.configs.flat['recommended-latest'],
+      reactRefresh.configs.vite,
+      // Query keys hold every variable the queryFn reads (docs/process/CODING-RULES-PROPOSAL.md D1).
+      pluginQuery.configs['flat/recommended'],
+    ],
     languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['tests/e2e/**/*.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'page',
+          property: 'waitForTimeout',
+          message:
+            'Wait for a state, not a time: a web-first assertion, expect.poll on the saved state, or page.clock (CODING-RULES-PROPOSAL L2).',
+        },
+      ],
+    },
   },
   {
     files: ['**/*.{js,mjs}'],

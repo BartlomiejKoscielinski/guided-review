@@ -1,4 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { restartApp } from './stepHelpers';
+
+/** One preparation stage of the mock (`MOCK_STAGE_MS` in src/ipc/mock/prepare.ts). */
+const MOCK_STAGE_MS = 400;
 
 // S-02 against the mock backend: Preparing with stages and Cancel (F-05.6), the M2 prepared
 // header (M2 decision 2) and Browse files instead → S-06 MR browse with Open in Rider (F-24.1).
@@ -35,12 +39,14 @@ test('F-05.6 Preparing shows the MR title and the stages, then the plan header',
 });
 
 test('F-05.6 Cancel stops the preparation and goes back to S-01', async ({ page }) => {
+  await page.clock.install();
+  await page.goto('/');
   await openMr482(page);
   await expect(stages(page).getByText('Fetching !482')).toBeVisible();
   await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(source(page)).toBeVisible();
-  // The cancelled preparation never opens the plan.
-  await page.waitForTimeout(2000);
+  // The cancelled preparation never opens the plan, not even once all its stages would have run.
+  await page.clock.runFor(5 * MOCK_STAGE_MS);
   await expect(source(page)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Browse files instead' })).toHaveCount(0);
 });
@@ -181,6 +187,8 @@ const titlesOf = async (page: Page) =>
 test('F-06.5 a mouse drag on the handle moves the row, renumbers the plan and clears the strategy', async ({
   page,
 }) => {
+  await page.clock.install();
+  await page.goto('/');
   await openPlan(page);
   await dragWithMouse(page, 'Queue contract', 'UploadWorker with retries');
   await expect(stepRows(page).nth(0)).toContainText('SqliteUploadQueue');
@@ -206,6 +214,8 @@ test('F-06.5 a mouse drag on the handle moves the row, renumbers the plan and cl
 test('F-06.5 the dragged order is saved in the session and is still there after a restart', async ({
   page,
 }) => {
+  await page.clock.install();
+  await page.goto('/');
   await openPlan(page);
   await dragWithMouse(page, 'Queue contract', 'UploadWorker with retries');
   await expect(page.getByText(CAPTION)).toBeVisible();
@@ -217,8 +227,7 @@ test('F-06.5 the dragged order is saved in the session and is still there after 
   ]);
 
   // The state is written on change; reloading the page starts the app again (F-04.3).
-  await page.waitForTimeout(500);
-  await page.reload();
+  await restartApp(page);
   await expect(page.getByRole('heading', { name: 'Plan · 8 steps' })).toBeVisible();
   expect(await titlesOf(page)).toEqual(dragged);
   await expect(page.getByText(CAPTION)).toBeVisible();
@@ -230,8 +239,7 @@ test('F-06.5 the dragged order is saved in the session and is still there after 
   // Picking a strategy clears it, also after a restart.
   await page.getByRole('radio', { name: 'Contract to UI' }).click();
   await expect(stepRows(page).nth(0)).toContainText('Queue contract');
-  await page.waitForTimeout(500);
-  await page.reload();
+  await restartApp(page);
   await expect(page.getByRole('heading', { name: 'Plan · 8 steps' })).toBeVisible();
   await expect(stepRows(page).nth(0)).toContainText('Queue contract');
   await expect(page.getByText(CONTRACT_CAPTION)).toBeVisible();
