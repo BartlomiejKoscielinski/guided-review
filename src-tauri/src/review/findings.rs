@@ -183,8 +183,10 @@ pub fn worktree_lines(root: &Path) -> impl Fn(&str) -> Option<usize> + '_ {
 }
 
 /// The validated analysis of a step. `relative_path` maps a cited path to the worktree (or
-/// `None`); `line_count` gives the lines of a worktree file (see [`worktree_lines`]). Notes
-/// whose fingerprint is in `dismissed` are left out. Details never quote Claude's text.
+/// `None`); `line_count` gives the lines of a worktree file (see [`worktree_lines`]). A note's
+/// or fold's file may also be named as an absolute path in the worktree or with backslashes
+/// (Claude's Read tool works with absolute paths); it still has to be one of the step's files.
+/// Notes whose fingerprint is in `dismissed` are left out. Details never quote Claude's text.
 pub fn validate(
     output: Option<&Value>,
     scope: &StepScope<'_>,
@@ -203,14 +205,19 @@ pub fn validate(
         return Err(schema("too many findings, checks, files or folds"));
     }
 
+    // The step file a note, its evidence or a fold names, as given or as a worktree path.
+    let in_step = |name: &str| {
+        scope
+            .file(name)
+            .or_else(|| relative_path(name).and_then(|rel| scope.file(&rel)))
+    };
     let mut findings = Vec::new();
     for (index, f) in out.findings.iter().enumerate() {
         if !is_kind(&f.kind) || f.evidence.is_empty() || f.evidence.len() > EVIDENCE_MAX {
             return Err(schema("invalid kind or evidence count"));
         }
-        let (position, file, hunks) = scope
-            .file(&f.file)
-            .ok_or_else(|| schema("a finding on a file outside the step"))?;
+        let (position, file, hunks) =
+            in_step(&f.file).ok_or_else(|| schema("a finding on a file outside the step"))?;
         let fingerprint = hunks
             .iter()
             .find_map(|h| fingerprint::for_hunk_line(&f.kind, file, h, f.side, f.line))
@@ -218,7 +225,7 @@ pub fn validate(
         let mut evidence = Vec::new();
         for e in &f.evidence {
             // The finding's own line counts (prompt rule); on the old side it isn't in the worktree.
-            let own = e.line == f.line && scope.file(&e.file).is_some_and(|(p, ..)| p == position);
+            let own = e.line == f.line && in_step(&e.file).is_some_and(|(p, ..)| p == position);
             let cited = if own {
                 Some(file.to_owned())
             } else {
@@ -257,9 +264,8 @@ pub fn validate(
 
     let mut folds = Vec::new();
     for fold in &out.folds {
-        let (_, file, hunks) = scope
-            .file(&fold.file)
-            .ok_or_else(|| schema("a fold on a file outside the step"))?;
+        let (_, file, hunks) =
+            in_step(&fold.file).ok_or_else(|| schema("a fold on a file outside the step"))?;
         let inside = |h: &&Hunk| {
             h.new_lines > 0
                 && h.new_start <= fold.new_start
