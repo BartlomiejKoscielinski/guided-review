@@ -6,7 +6,9 @@ import {
   curate,
   empty,
   existing,
+  hold,
   merge,
+  promote,
   rate,
   render,
   select,
@@ -366,4 +368,20 @@ test('autopilot playbook E17: addRule appends to the rules list, once per entry,
   assert.equal(addRule(md, 'P-001', 'Again.'), md);
   assert.throws(() => addRule(md, 'P-003', 'two\nlines'), /one line/);
   assert.throws(() => addRule(md, 'P-003', 'uses {{wt}}'), /one line/);
+});
+
+test('autopilot playbook E17: an entry on hold is never a rule proposal', () => {
+  const pb = empty();
+  addEntry(pb, { tags: ['core', 'tests'], text: 'Assert what can fail.' }, 't');
+  addEntry(pb, { tags: ['ui', 'implement'], text: 'Seed the mock.' }, 't');
+  for (const id of ['P-001', 'P-002']) for (let i = 0; i < 3; i++) rate(pb, id, 'helpful');
+  hold(pb, ['P-002'], 'E18 group B lint replaces it');
+  assert.deepEqual(
+    curate(structuredClone(pb)).proposals.map((e) => e.id),
+    ['P-001'],
+  );
+  assert.throws(() => promote(pb, 'P-002', 'implement'), /on hold: E18 group B lint replaces it/);
+  assert.throws(() => hold(pb, ['P-009'], 'x'), /no entry P-009/);
+  assert.equal(merge(pb, 'P-001', 'P-002').hold, 'E18 group B lint replaces it');
+  assert.throws(() => hold(pb, ['P-001'], ' '), /needs a reason/);
 });

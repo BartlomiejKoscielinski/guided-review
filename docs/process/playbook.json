@@ -61,7 +61,8 @@
       "seen": 1,
       "created": "2026-10-14T10:02:39.282Z",
       "lastUsedItem": 1,
-      "source": "F-04.1"
+      "source": "F-04.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-005",
@@ -76,7 +77,8 @@
       "seen": 1,
       "created": "2026-10-14T10:02:39.330Z",
       "lastUsedItem": 1,
-      "source": "F-04.1"
+      "source": "F-04.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-006",
@@ -201,7 +203,8 @@
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
       "lastUsedItem": 4,
-      "source": "F-06.5"
+      "source": "F-06.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-014",
@@ -216,7 +219,8 @@
       "seen": 1,
       "created": "2026-10-14T14:47:55.231Z",
       "lastUsedItem": 4,
-      "source": "F-06.5"
+      "source": "F-06.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-015",
@@ -291,7 +295,8 @@
       "seen": 1,
       "created": "2026-10-14T15:34:55.841Z",
       "lastUsedItem": 6,
-      "source": "F-06.9"
+      "source": "F-06.9",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-021",
@@ -428,7 +433,8 @@
       "seen": 1,
       "created": "2026-10-15T07:10:35.512Z",
       "lastUsedItem": 10,
-      "source": "F-09.4"
+      "source": "F-09.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-031",
@@ -491,7 +497,8 @@
       "seen": 1,
       "created": "2026-10-15T07:32:02.876Z",
       "lastUsedItem": 11,
-      "source": "F-09.5"
+      "source": "F-09.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-035",
@@ -506,7 +513,8 @@
       "seen": 1,
       "created": "2026-10-15T07:32:02.922Z",
       "lastUsedItem": 11,
-      "source": "F-09.5"
+      "source": "F-09.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-036",
@@ -582,7 +590,8 @@
       "seen": 1,
       "created": "2026-10-15T08:58:46.309Z",
       "lastUsedItem": 13,
-      "source": "F-17.1"
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-041",
@@ -597,7 +606,8 @@
       "seen": 1,
       "created": "2026-10-15T08:58:46.352Z",
       "lastUsedItem": 13,
-      "source": "F-17.1"
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-042",
@@ -612,7 +622,8 @@
       "seen": 1,
       "created": "2026-10-15T09:26:23.718Z",
       "lastUsedItem": 14,
-      "source": "F-17.2"
+      "source": "F-17.2",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-043",
@@ -642,7 +653,8 @@
       "seen": 1,
       "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 14,
-      "source": "F-17.2"
+      "source": "F-17.2",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-045",
@@ -657,7 +669,8 @@
       "seen": 1,
       "created": "2026-10-15T09:59:03.927Z",
       "lastUsedItem": 15,
-      "source": "F-17.4"
+      "source": "F-17.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-046",
@@ -672,7 +685,8 @@
       "seen": 1,
       "created": "2026-10-15T09:59:03.977Z",
       "lastUsedItem": 15,
-      "source": "F-17.4"
+      "source": "F-17.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-047",
@@ -687,7 +701,8 @@
       "seen": 1,
       "created": "2026-10-15T09:59:04.024Z",
       "lastUsedItem": 15,
-      "source": "F-17.4"
+      "source": "F-17.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-048",
@@ -718,7 +733,8 @@
       "seen": 1,
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
-      "source": "F-09.5"
+      "source": "F-09.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-050",
@@ -734,7 +750,8 @@
       "seen": 1,
       "created": "2026-10-15T11:47:51.456Z",
       "lastUsedItem": 17,
-      "source": "F-17.1"
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-051",
@@ -749,7 +766,8 @@
       "seen": 1,
       "created": "2026-10-15T11:47:51.504Z",
       "lastUsedItem": 17,
-      "source": "F-17.1"
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-052",
@@ -764,7 +782,8 @@
       "seen": 1,
       "created": "2026-10-15T11:47:51.551Z",
       "lastUsedItem": 17,
-      "source": "F-17.1"
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     }
   ]
 }

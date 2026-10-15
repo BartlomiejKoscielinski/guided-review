@@ -99,13 +99,27 @@ export function merge(pb, keep, drop) {
   k.tags = [...new Set([...k.tags, ...d.tags])];
   k.lastUsedItem = Math.max(k.lastUsedItem, d.lastUsedItem);
   if (d.promoted) k.promoted = true;
+  if (d.hold && !k.hold) k.hold = d.hold;
   pb.entries = pb.entries.filter((e) => e !== d);
   return k;
 }
 
-/** A rule proposal: seen 3× or more, or helpful 3× or more and never harmful (E17). */
+/**
+ * A rule proposal: seen 3× or more, or helpful 3× or more and never harmful (E17). An entry on
+ * `hold` (a planned rule elsewhere replaces it, e.g. a lint of E18) is never proposed.
+ */
 export const promotable = (e) =>
-  !e.promoted && (e.seen >= PROMOTE_SEEN || (e.helpful >= PROMOTE_HELPFUL && e.harmful === 0));
+  !e.promoted &&
+  !e.hold &&
+  (e.seen >= PROMOTE_SEEN || (e.helpful >= PROMOTE_HELPFUL && e.harmful === 0));
+
+/** Keeps entries from becoming rule proposals, with the reason (they stay usable as lessons). */
+export function hold(pb, ids, reason) {
+  if (!String(reason ?? '').trim()) throw new Error('hold needs a reason');
+  const missing = ids.filter((id) => !pb.entries.some((e) => e.id === id));
+  if (missing.length) throw new Error(`no entry ${missing.join(', ')}`);
+  for (const e of pb.entries) if (ids.includes(e.id)) e.hold = reason.trim();
+}
 
 /** Role prompts a learned rule may go into (`.claude/autopilot/roles/<role>.md`). */
 export const RULE_ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'live'];
@@ -137,7 +151,7 @@ export function promote(pb, id, role) {
   if (!RULE_ROLES.includes(role)) throw new Error(`role ${role}: one of ${RULE_ROLES.join(', ')}`);
   if (!promotable(e))
     throw new Error(
-      `${id} is not a rule proposal (seen ${e.seen}, helpful ${e.helpful}, harmful ${e.harmful}${e.promoted ? ', already promoted' : ''})`,
+      `${id} is not a rule proposal (seen ${e.seen}, helpful ${e.helpful}, harmful ${e.harmful}${e.promoted ? ', already promoted' : ''}${e.hold ? `, on hold: ${e.hold}` : ''})`,
     );
   e.promoted = true;
   e.promotedTo = role;

@@ -141,7 +141,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 
 **Never run yet** (still unproven after three runs):
 1. A second fix round, and the statuses `blocked` (gate failed twice) and `needs-owner` (with the push notification).
-2. The curator writing the "Rules learned" of a role file: it does so only with `playbook.mjs promote <id> <role> "<rule>"`, a command the `node tools/autopilot/*` allow rule covers, so no approval is needed (owner, 2026-10-15: nothing approved by hand). Since E17 (2026-10-15) a proposal is a lesson seen 3× or helpful 3× and never harmful (8 proposals waiting), the reflector confirms an existing lesson by id (`{"same": "P-xxx"}`) instead of rewording it, and the curator merges same-meaning lessons with `playbook.mjs merge`.
+2. The curator writing the "Rules learned" of a role file: it does so only with `playbook.mjs promote <id> <role> "<rule>"`, a command the `node tools/autopilot/*` allow rule covers, so no approval is needed (owner, 2026-10-15: nothing approved by hand). Since E17 (2026-10-15) a proposal is a lesson seen 3× or helpful 3× and never harmful (6 proposals waiting; 19 entries on `hold` because E18 group B rules replace them), the reflector confirms an existing lesson by id (`{"same": "P-xxx"}`) instead of rewording it, and the curator merges same-meaning lessons with `playbook.mjs merge`.
 3. The retro every 10 items with `judge.mjs` keep/revert verdicts.
 4. The planner (a milestone without `docs/plans/<Mx>.md`).
 5. The token budget `--budget`: it counts the tokens of the run (`items.jsonl` rows of the run id), not of a day; never set or reached.

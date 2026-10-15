@@ -10,6 +10,7 @@
 //   node tools/autopilot/playbook.mjs promote P-003 implement "<one-line rule>"
 //     (a rule proposal into the "## Rules learned" list of .claude/autopilot/roles/implement.md, entry
 //     marked promoted: the curator's only way to write a role file, through the allowed node tools/autopilot/* rule)
+//   node tools/autopilot/playbook.mjs hold P-005,P-013 "<reason>"   (never a rule proposal: another rule replaces them)
 //   --root <dir> reads and writes another checkout (tests).
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -19,6 +20,7 @@ import {
   addRule,
   curate,
   empty,
+  hold,
   merge,
   promote,
   rate,
@@ -96,6 +98,12 @@ try {
       console.log(`${argv[2]} merged into ${e.id}: +${e.helpful} -${e.harmful} ×${e.seen}`);
       break;
     }
+    case 'hold': {
+      hold(pb, (argv[1] ?? '').split(',').filter(Boolean), argv[2]);
+      save();
+      console.log(`on hold: ${argv[1]}`);
+      break;
+    }
     case 'promote': {
       const [, id, role, rule] = argv;
       const e = promote(pb, id, role);
@@ -113,7 +121,7 @@ try {
       }
       break;
     default:
-      console.error('usage: playbook.mjs add|select|rate|tick|curate|merge|promote|list');
+      console.error('usage: playbook.mjs add|select|rate|tick|curate|merge|hold|promote|list');
       process.exit(2);
   }
 } catch (e) {
