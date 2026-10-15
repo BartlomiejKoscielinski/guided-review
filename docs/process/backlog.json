@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-15T20:40:05.529Z",
+  "updated": "2026-10-15T20:59:03.411Z",
   "items": [
     {
       "id": "F-08.1",
@@ -115,9 +115,16 @@
       "title": "Guide aside: Code notes in line order (N cycles), \"For you to judge\" checklist with progress (1/3)…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "impl",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "9b7279f",
+      "tests": [
+        "src-tauri/src/review/file_place_tests.rs",
+        "src/screens/detailed/GuideAside.test.tsx",
+        "src/screens/detailed/AskBox.test.tsx",
+        "tests/e2e/detailed.spec.ts"
+      ]
     },
     {
       "id": "F-08.8",
