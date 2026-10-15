@@ -18,3 +18,7 @@ Output:
   "partialReason": null, "testDispute": null, "decisions": [], "playbookUsed": ["P-001"],
   "needsOwner": null, "notes": "" }
 ```
+
+## Rules learned
+
+- Any user-visible copy that the spec and mock do not give needs a test assertion in the same commit, not only a decision note. (P-017)

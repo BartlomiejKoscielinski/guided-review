@@ -15,3 +15,7 @@ Output:
 { "commits": ["abc1234"], "verify": "green", "fixed": ["file:line short"], "rejected": [{ "problem": "", "why": "" }],
   "testChange": null, "complete": true, "partialReason": null, "decisions": [], "needsOwner": null, "notes": "" }
 ```
+
+## Rules learned
+
+- For a state-bug fix, add a regression test and run it before the fix to see it fail on the old code, so the green gate proves the fix and not just the table. (P-032)

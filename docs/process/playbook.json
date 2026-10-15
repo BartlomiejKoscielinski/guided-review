@@ -46,7 +46,9 @@
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
       "lastUsedItem": 0,
-      "source": "F-02.5"
+      "source": "F-02.5",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-004",
@@ -156,7 +158,9 @@
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
       "lastUsedItem": 3,
-      "source": "F-05.5"
+      "source": "F-05.5",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-011",
@@ -235,7 +239,9 @@
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
       "lastUsedItem": 4,
-      "source": "F-06.5"
+      "source": "F-06.5",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-016",
@@ -244,13 +250,15 @@
         "tests",
         "src/screens/**"
       ],
-      "text": "When the plan row and the existing code disagree on what a control does, write the reading you chose as a tests-stage decision and make it the red test, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and the item then passed gate 1 without a fix round.",
+      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
       "helpful": 4,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T15:13:07.675Z",
-      "lastUsedItem": 5,
-      "source": "F-06.6"
+      "lastUsedItem": 7,
+      "source": "F-06.6",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-017",
@@ -265,7 +273,9 @@
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
       "lastUsedItem": 5,
-      "source": "F-06.6"
+      "source": "F-06.6",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-019",
@@ -312,7 +322,9 @@
       "seen": 1,
       "created": "2026-10-14T15:34:55.903Z",
       "lastUsedItem": 6,
-      "source": "F-06.9"
+      "source": "F-06.9",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-022",
@@ -341,21 +353,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T16:11:26.778Z",
-      "lastUsedItem": 7,
-      "source": "F-07.1"
-    },
-    {
-      "id": "P-024",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**"
-      ],
-      "text": "Enumerate the combinations a status colour or check can take (reviewed and current, skipped before current) during the tests stage and record each chosen reading as a decision with a red assertion, since F-07.1 found two undefined ones and both passed the gate with no fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T16:11:26.843Z",
       "lastUsedItem": 7,
       "source": "F-07.1"
     },
@@ -466,7 +463,9 @@
       "seen": 1,
       "created": "2026-10-15T07:10:35.609Z",
       "lastUsedItem": 10,
-      "source": "F-09.4"
+      "source": "F-09.4",
+      "promoted": true,
+      "promotedTo": "fix"
     },
     {
       "id": "P-033",
