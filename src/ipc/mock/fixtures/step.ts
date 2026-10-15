@@ -1,4 +1,5 @@
 import type { FileDiff } from '../../types/FileDiff';
+import type { LineSelection } from '../../types/LineSelection';
 import type { Plan } from '../../types/Plan';
 import type { StepView } from '../../types/StepView';
 import type { Thread } from '../../types/Thread';
@@ -104,6 +105,24 @@ export function mockStepView(
   const step = plan.steps.find((s) => s.id === stepId);
   if (index < 0 || !step) return undefined;
 
+  const files = stepFiles(step);
+  const prev = order[index - 1];
+  const next = order[index + 1];
+  return {
+    step: structuredClone(step),
+    number: index + 1,
+    total: order.length,
+    ...(prev === undefined ? {} : { prev }),
+    ...(next === undefined ? {} : { next }),
+    files,
+    threads: structuredClone(MOCK_THREADS.filter((t) => files.some((f) => holds(f, t)))),
+    reviewed,
+    fallback,
+  };
+}
+
+/** The files of a step with only the step's hunks, in GitLab's order. */
+export function stepFiles(step: Plan['steps'][number]): FileDiff[] {
   const files: FileDiff[] = [];
   for (const file of mrFiles()) {
     const diff = toFileDiff(file);
@@ -118,18 +137,28 @@ export function mockStepView(
     files.push({ ...diff, hunks, additions: count('add'), deletions: count('del') });
   }
   files.sort((a, b) => gitlabPathCmp(path(a), path(b)));
+  return files;
+}
 
-  const prev = order[index - 1];
-  const next = order[index + 1];
-  return {
-    step: structuredClone(step),
-    number: index + 1,
-    total: order.length,
-    ...(prev === undefined ? {} : { prev }),
-    ...(next === undefined ? {} : { next }),
-    files,
-    threads: structuredClone(MOCK_THREADS.filter((t) => files.some((f) => holds(f, t)))),
-    reviewed,
-    fallback,
-  };
+/**
+ * Some of the selected lines are in the step's hunks, as the core's `LineSelection::lines`
+ * reads them: the file by its new or old path, the side's line numbers in the range.
+ */
+export function selectionInStep(files: FileDiff[], selection: LineSelection): boolean {
+  const low = Math.min(selection.start, selection.end);
+  const high = Math.max(selection.start, selection.end);
+  return files
+    .filter((f) => f.newPath === selection.file || f.oldPath === selection.file)
+    .flatMap((f) => f.hunks.flatMap((h) => h.lines))
+    .some((l) => {
+      const no =
+        selection.side === 'new'
+          ? l.kind === 'del'
+            ? undefined
+            : l.newNo
+          : l.kind === 'add'
+            ? undefined
+            : l.oldNo;
+      return no !== undefined && no >= low && no <= high;
+    });
 }

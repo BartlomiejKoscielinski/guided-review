@@ -6,7 +6,11 @@ import type { Decision } from '../types/Decision';
 import type { Draft } from '../types/Draft';
 import type { Finding } from '../types/Finding';
 import type { StepAnalysis } from '../types/StepAnalysis';
+import type { FileDiff } from '../types/FileDiff';
+import { mockPlan } from './fixtures/plan';
+import { mockFallbackView } from './fixtures/planFallback';
 import { ANSWER_PARTS, stepAnalysis } from './fixtures/review';
+import { selectionInStep, stepFiles } from './fixtures/step';
 import type { MockSessionData, SessionData } from './session-data';
 
 /** Variations of S-02's and S-03's Claude tasks (`MOCK_REVIEW_KEY`). */
@@ -39,6 +43,13 @@ const error = (code: IpcError['code'], message: string, retryable = false) =>
   new IpcError({ code, message, retryable });
 
 const analyzedKey = (sessionId: string, stepId: string) => `${sessionId}\0${stepId}`;
+
+/** The files of a step of the mock plan or of the file-order fallback plan (ids f1, f2, …). */
+function filesOfStep(stepId: string): FileDiff[] {
+  const fallback = mockFallbackView({ code: 'CLAUDE_FAILED', message: '', retryable: true });
+  const step = [...mockPlan().steps, ...fallback.plan.steps].find((s) => s.id === stepId);
+  return step ? stepFiles(step) : [];
+}
 
 /** A note's key in `SessionData.notes`: the core keeps notes per session (F-09.4). */
 const noteKey = (sessionId: string, findingId: string) => `${sessionId}\0${findingId}`;
@@ -145,8 +156,12 @@ export function createReviewBackend(
       onEvent({ kind: 'done', result: structuredClone(result) });
       return respond(result);
     },
-    reviewAsk: async (sessionId, stepId, question, _selection, onEvent) => {
+    reviewAsk: async (sessionId, stepId, question, selection, onEvent) => {
       if (question.trim() === '') throw error('INVALID_INPUT', 'Type a question first.');
+      // As the core's `selection_block`: lines no hunk of the step covers start no Claude.
+      if (selection && !selectionInStep(filesOfStep(stepId), selection)) {
+        throw error('INVALID_INPUT', 'The selected lines are not in this step.');
+      }
       const key = analyzedKey(sessionId, stepId);
       const events: ClaudeTaskEvent<AskAnswer>[] = [{ kind: 'queued' }, { kind: 'started' }];
       for (const event of events) onEvent(event);
