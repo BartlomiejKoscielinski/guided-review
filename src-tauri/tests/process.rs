@@ -1,5 +1,9 @@
 //! `os/process.rs` against a real child process (`gr-test-child`, see `tests/bin/`).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "test helpers")]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "tests check the process tree with tasklist and taskkill"
+)]
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};

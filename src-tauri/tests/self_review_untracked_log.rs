@@ -4,6 +4,10 @@
 //! same binary would write its own failed steps into the same log. Fake `claude`, synthetic data
 //! only (ADR-019).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "own test binary: it installs the global logger"
+)]
 
 #[path = "support/fake_claude.rs"]
 mod fake_claude;

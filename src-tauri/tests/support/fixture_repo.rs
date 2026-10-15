@@ -7,6 +7,10 @@
     dead_code,
     reason = "each test binary uses a different part of the helper"
 )]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "test fixtures run git directly, never the app runner"
+)]
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "test helper")]
 
 use std::path::PathBuf;

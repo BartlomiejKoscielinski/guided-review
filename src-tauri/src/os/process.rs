@@ -5,6 +5,10 @@
 //!
 //! Logs name the program, the number of arguments, the exit code and the duration. Stdin,
 //! stdout and stderr are never logged (NFR-08): they carry prompts, Claude output and diffs.
+#![expect(
+    clippy::disallowed_methods,
+    reason = "the one place that starts child processes: CREATE_NO_WINDOW, Job Object, timeouts"
+)]
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};

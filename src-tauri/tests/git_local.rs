@@ -1,6 +1,10 @@
 //! Local changes, staging, commit and push on fixture repositories (F-16.1, F-16.2, F-16.4,
 //! F-16.5, F-15.6). Paths carry spaces and Polish characters.
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "tests read the fixture repositories with git directly, never through the app"
+)]
 
 #[path = "support/fixture_repo.rs"]
 mod fixture_repo;

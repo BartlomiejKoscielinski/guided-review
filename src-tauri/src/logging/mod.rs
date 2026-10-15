@@ -138,6 +138,10 @@ pub fn subscriber(
 /// Installs the global logger for the app with its files in `<app_data>\logs`. When the folder
 /// can't be opened the app still runs (stderr only in debug builds) and the error is returned
 /// so the caller can report it once the logger exists.
+#[expect(
+    clippy::disallowed_methods,
+    reason = "app startup installs the global logger once"
+)]
 pub fn init(app_data: &Path) -> Result<(), LoggingError> {
     let opened = RotatingFile::open(
         &log_dir(app_data),
