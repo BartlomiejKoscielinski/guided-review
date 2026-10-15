@@ -97,7 +97,7 @@ Rules for Claude Code:
 - [x] F-09.3 After Add to drafts the card says "Added to drafts. It reaches GitLab only when you publish." After… (87b700d)
 - [x] F-09.4 Dismissed notes are fingerprinted (rule = the note's kind + file + normalized code: the line with… (8d92b37, 75dcfbd, 513d0fa, 1f1e6c5, b42a11c, 87b700d, 78ee197, cdfe51d, 5c8cf1b, a7e25d1)
 - [ ] F-09.5 Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as… — partial: threads on the step's lines in the step task (513d0fa); eval golden case (decision 6); autopilot (39c183c, c2d9e0d)
-- [ ] F-09.6 Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the… — partial: step task + cache + CurrentStep/prefetch N+1 only (6692508, 513d0fa); in-flight dedupe + events (a39b778), `review_findings` with prefetch spawn (b42a11c), mock + `useStepFindings` (4772c33); S-03 states in StepNotes (87b700d), in the S-03 screen (f604e59); open: live check of prefetch in `tauri dev`
+- [x] F-09.6 Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the… (6692508, 513d0fa, a39b778, b42a11c, 4772c33, 87b700d, f604e59)
 - [x] F-10.1 Questions are asked in the context of the current step and, if any, the selected lines. (3ed3792, b42a11c, 4772c33, 0f656e9, 3976bc2, e5af190, 9f84351, f9601e0, 19b7f13)
 - [x] F-10.2 Answers stream in. Follow-up questions continue the same Claude session (--resume). (3ed3792, a39b778, b42a11c, 4772c33, 0f656e9, 3976bc2)
 - [x] F-10.3 An answer can be turned into a draft comment with one click. (0f656e9, 3976bc2)

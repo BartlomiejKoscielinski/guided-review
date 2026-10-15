@@ -1,6 +1,6 @@
 {
   "milestone": "M3",
-  "updated": "2026-10-15T09:59:04.701Z",
+  "updated": "2026-10-15T10:19:57.961Z",
   "items": [
     {
       "id": "F-02.5",
@@ -249,9 +249,9 @@
       "title": "Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as…",
       "kind": "core",
       "deps": [],
-      "status": "live",
+      "status": "todo",
       "attempts": 1,
-      "note": "Thread list in the step task + system-common rule, deterministic tests step_threads.rs (39c183c); eval golden case src-tauri/tests/eval_claude.rs + npm run eval:claude (c2d9e0d). Live check left: run npm run eval:claude once (Haiku low): control run raises an async void note, the run with the thread on that line does not",
+      "note": "live check failed: live check failed: npm run eval:claude panics (PlanNotReady) because src-tauri/tests/eval_claude.rs:180 seeds layer Services, which review/plan.rs::layer() rejects; with layer Core the eval passed (control raised async void, run with the thread did not). Fix the layer and rerun the eval",
       "lockSha": "39c183c",
       "tests": [
         "src-tauri/tests/step_threads.rs",
@@ -264,7 +264,7 @@
       "title": "Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the…",
       "kind": "mixed",
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 0,
       "note": "step task + cache + CurrentStep/prefetch N+1 only (6692508, 513d0fa); in-flight dedupe + events (a39b778), `review_findings` with prefetch spawn (b42a11c), mock + `useStepFindings` (4772c33); S-03 states in StepNotes (87b700d), in the S-03 screen (f604e59); open: live check of prefetch in `tauri dev`"
     },
@@ -291,9 +291,9 @@
       "title": "Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working…",
       "kind": "core",
       "deps": [],
-      "status": "live",
+      "status": "todo",
       "attempts": 1,
-      "note": "Commits sessions open S-02 with a source header (session_source), commit messages as description capped at 64 KB, step.md says in the repository, PROMPT_VERSION 2 (04c59e1, 6f51f58, a88fa46, dcd5083). Live check left in tauri dev: plan and step a real commit, a range and a local scope in the repository root; S-02 shows the source header and Start step 1 opens S-03",
+      "note": "live check failed: live check failed: commit, range and second commit pass (S-02 source header, Commit messages vs code, Start step 1 -> S-03 with notes); local Uncommitted changes with untracked src/Delivery.App/Services/.idea/{.gitignore,encodings.xml}: S-03 shows Couldn't analyze this step. on every Retry, no step cache entry. Current-step failures are not logged; log the error detail, reproduce, fix (suspects findings.rs::validate or untracked files in a dot directory)",
       "lockSha": "efbb6ac",
       "tests": [
         "src-tauri/tests/self_review.rs",
