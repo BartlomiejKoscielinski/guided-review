@@ -90,8 +90,27 @@ function report({ name, ok, secs, output, log }) {
 
 mkdirSync(logDir, { recursive: true });
 const results = [];
+// Independent groups run in parallel (JS static checks, JS tests, Rust chain); steps inside a
+// group stay sequential. Output is printed in STEPS order once everything finished.
+// --serial restores the one-after-another run.
+const GROUPS = [
+  ['typecheck', 'lint', 'format:check'],
+  ['test', 'test:tools'],
+  ['rust:fmt', 'rust:clippy', 'rust:test'],
+];
+const lanes = args.includes('--serial')
+  ? [steps]
+  : GROUPS.map((g) => g.filter((s) => steps.includes(s))).filter((g) => g.length);
+const done = await Promise.all(
+  lanes.map(async (lane) => {
+    const out = [];
+    for (const step of lane) out.push(await run(step, `npm run ${step}`));
+    return out;
+  }),
+);
+const byName = new Map(done.flat().map((r) => [r.name, r]));
 for (const step of steps) {
-  const r = await run(step, `npm run ${step}`);
+  const r = byName.get(step);
   report(r);
   results.push(r);
 }

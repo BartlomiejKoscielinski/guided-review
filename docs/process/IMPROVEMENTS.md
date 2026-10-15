@@ -2,7 +2,7 @@
 
 The feedback loop for how we build Guided Review (not the product). Data: `node tools/metrics/report.mjs` (ledger `.metrics/sessions.jsonl`, from the Claude Code transcripts; `.verify/timings.jsonl` for verify steps). `/retro` reads the numbers, judges the open experiments below, and adds at most three new ones. Every change to the process is an experiment with a metric and a baseline, so it can be kept or reverted on evidence.
 
-Last retro: 2026-10-14T18:00Z (30 sessions)
+Last retro: 2026-10-15T06:15Z (38 sessions)
 
 ## Baseline (2026-10-13, 10 M3 sessions 3b–3e)
 
@@ -22,6 +22,8 @@ Last retro: 2026-10-14T18:00Z (30 sessions)
 | E11 | 2026-10-14 | Autopilot role prompts (`.claude/autopilot/roles/_common.md`): reading budget (grep -n then Read offset/limit, no whole-file cat over ~150 lines, no re-reading edited files, ~40 turns per role) | reading tax (R11) of the roles: cat 18.5M + sed 15.0M + grep 8.0M over 8 sessions; subagent turns avg 37 (R5: 13 hits, 46 turns/5.5M) → cat+sed ≤ 15M over the next 8 sessions; avg role turns ≤ 30 | open |
 | E12 | 2026-10-14 | planned: the conductor splits items that add a new IPC command plus mock persistence into two ACs/rounds (F-04.3 cost 74.8M vs median 11.0M, 50 min); needs a change in `docs/process/AUTOPILOT.md` and the backlog builder | tokens per AC: mean 20.6M, median 11.0M → mean ≤ 14M | planned |
 | E13 | 2026-10-14 | Real-app checks next to e2e: Playwright serves the mock on its own port 1421 (`playwright.config.ts`; was 1420, so a running `tauri dev` was reused as the mock server and e2e failed); `/app` sends three or more steps as one `run <steps.json>` (`.claude/skills/app/SKILL.md`) | A-5 (last session): e2e failed while the app ran; 22 single `app.mjs` calls → e2e green with the app running; `app.mjs` calls per live check ≤ 8 | open |
+| E14 | 2026-10-15 | Focus verify time: `tools/verify.mjs` runs three groups in parallel (typecheck+lint+format, test+test:tools, rust fmt+clippy+test); `--serial` restores the old order. Output order unchanged. First measurement while a second verify overlapped: 158 s wall, rust:test 98 s (CPU contention), so the gain may be small | verify wall time per full run ≈ 175 s (sum of medians: lint 24, test 26, rust:test 57, rest ~20) → ≤ 110 s without more failures; if the median over 5 runs stays > 150 s, revert to serial. Next lever: e2e runs 12× per session in one stretch (25 s each, 4 failed first tries): run `--only e2e <spec>` while iterating | open |
+| E15 | 2026-10-15 | planned: verify in autopilot gate runs 28× in one session (R2, 113k tax, 61 min tool time): gate should call `verify.mjs --only` for the steps affected by the diff (Rust-only diff skips lint/test; UI-only skips cargo); needs a change in `tools/autopilot/gate.mjs` | verify tool time 61 min per 8 sessions → ≤ 35 min | planned |
 
 ## Closed
 
