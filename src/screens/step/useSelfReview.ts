@@ -9,3 +9,14 @@ import { useSessionMr } from '../../ipc/hooks/useSources';
 export function useSelfReview(sessionId: string): boolean {
   return useSessionMr(sessionId).data === null;
 }
+
+/**
+ * The same, but unknown (undefined) while the session is looked up, so a screen guesses neither
+ * the MR copy nor the self-review copy (S-04, as its info header); a failed lookup keeps the MR
+ * copy, as S-03 does.
+ */
+export function useSelfReviewKnown(sessionId: string): boolean | undefined {
+  const mr = useSessionMr(sessionId);
+  if (mr.isPending) return undefined;
+  return mr.data === null;
+}

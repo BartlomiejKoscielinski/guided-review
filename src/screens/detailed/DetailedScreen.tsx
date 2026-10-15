@@ -1,8 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
+import type { Finding } from '../../ipc/types/Finding';
 import { reviewKey, useReviewStore } from '../../state/review';
+import { selectionOf } from '../step/askState';
 import { pathOf } from '../step/diffPath';
+import { useSelfReviewKnown } from '../step/useSelfReview';
+import { useStepFocus } from '../step/useStepFocus';
 import { useStepSession } from '../step/useStepSession';
 import { DetailedFile } from './DetailedFile';
 import { DetailedStepHeader } from './DetailedStepHeader';
@@ -24,7 +28,9 @@ export function DetailedScreen() {
   const index = step ? order.indexOf(step.id) : -1;
   // The step's notes as S-03 asks for them (F-09.6); restored on start only cached ones (F-30.4).
   const notes = useStepFindings(sessionId, step?.id ?? '', !restored).query.data;
+  const findings = notes?.findings ?? [];
   const openNotes = notes?.findings.filter((f) => f.decision === 'open').length;
+  const selfReview = useSelfReviewKnown(sessionId);
   // The step's files with only its hunks (F-07.3), each under its sticky file bar (F-08.5); a
   // failed read shows its message under the step header, as S-03 does (S-04 states: same as S-03).
   const files = useStep(sessionId, step?.id ?? '');
@@ -32,10 +38,20 @@ export function DetailedScreen() {
 
   // The step is open here as in S-03: another step's state is dropped, this step's is kept.
   const claim = useReviewStore((s) => s.claim);
+  const change = useReviewStore((s) => s.change);
   const key = step ? reviewKey(sessionId, step.id) : null;
   useEffect(() => {
     if (key !== null) claim(key);
   }, [claim, key]);
+  // The focused note as in S-03 (its callout opens under its line, F-08.6); Ask Claude on it asks
+  // about the note's line, the same ask S-03 opens, so a mode switch keeps it (F-08.1).
+  const { focused, setFocus } = useStepFocus(key ?? '', findings);
+  const onAsk = (finding: Finding) => {
+    if (key === null) return;
+    change(key, (s) => ({
+      ask: { selection: selectionOf(finding), focusInput: true, nonce: (s.ask?.nonce ?? 0) + 1 },
+    }));
+  };
 
   return (
     <div className={styles.screen}>
@@ -56,6 +72,13 @@ export function DetailedScreen() {
                 sessionId={sessionId}
                 file={file}
                 scrollRoot={mainRef}
+                findings={findings
+                  .map((finding, i) => ({ finding, number: i + 1 }))
+                  .filter(({ finding }) => finding.file === pathOf(file))}
+                focus={focused}
+                onFocus={setFocus}
+                selfReview={selfReview}
+                onAsk={onAsk}
               />
             ))}
         </main>
