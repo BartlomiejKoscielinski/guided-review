@@ -19,6 +19,8 @@ export interface StepMainProps {
   layout: FocusLayout;
   view: StepView;
   analysis: StepAnalysis | undefined;
+  /** Self-review: notes are kept to fix instead of added to drafts (F-17.2). */
+  selfReview: boolean;
   focused: string | null;
   onFocus: (findingId: string) => void;
   mainRef: RefObject<HTMLElement | null>;
@@ -43,6 +45,7 @@ export function StepMain({
   layout,
   view,
   analysis,
+  selfReview,
   focused,
   onFocus,
   mainRef,
@@ -63,6 +66,7 @@ export function StepMain({
         sessionId={sessionId}
         stepId={stepId}
         selection={ask.selection}
+        selfReview={selfReview}
         autoFocus={ask.focusInput}
       />
     ) : null;
@@ -106,7 +110,7 @@ export function StepMain({
       )}
       {!guide && findings.length === 0 && (
         <div className={styles.notesState}>
-          <StepNotes sessionId={sessionId} stepId={stepId} onAsk={onAsk} />
+          <StepNotes sessionId={sessionId} stepId={stepId} selfReview={selfReview} onAsk={onAsk} />
         </div>
       )}
       {ask && !ask.selection && answerNode && <div className={styles.answerTop}>{answerNode}</div>}
@@ -128,6 +132,7 @@ export function StepMain({
             focus={focused}
             onFocus={onFocus}
             scrollRoot={mainRef}
+            selfReview={selfReview}
             onAsk={onAsk}
             guide={guide}
             answer={

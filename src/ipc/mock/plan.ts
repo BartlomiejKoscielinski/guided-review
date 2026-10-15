@@ -36,9 +36,18 @@ export const orderOf = (s: SessionPlan): StepOrder => ({
   order: [...(s.custom ?? MOCK_ORDERS[s.strategy])],
 });
 
+/**
+ * A session of commits or local changes (F-17): no MR, so no threads to load. The core loads
+ * threads for MR sessions only (review/step_context.rs).
+ */
+const isSelfReview = (data: SessionData, sessionId: string): boolean =>
+  data.local.includes(sessionId);
+
 /** S-02's data of a planned session (the plan is !482's for every session). */
 export function plannedView(data: SessionData, sessionId: string, s: SessionPlan): PlanView {
   const plan = mockPlan();
+  // A self-review has no threads to summarize (F-17.2).
+  if (isSelfReview(data, sessionId)) plan.alreadyDiscussed = '';
   return {
     plan,
     order: orderOf(s),
@@ -122,6 +131,7 @@ export function createPlanBackend(
             retryable: true,
           });
           fallback.reviewed = reviewedIn(data, sessionId, fallback.plan);
+          if (isSelfReview(data, sessionId)) fallback.plan.alreadyDiscussed = '';
           fallbacks.set(sessionId, fallback);
           onEvent({ kind: 'done', result: structuredClone(fallback) });
           return respond(fallback);
@@ -143,6 +153,7 @@ export function createPlanBackend(
           ? mockStepView(fallback.plan, fallback.order.order, stepId, reviewed, true)
           : mockStepView(mockPlan(), orderOf(planned(sessionId)).order, stepId, reviewed, false);
         if (!view) throw notInPlan();
+        if (isSelfReview(data, sessionId)) view.threads = [];
         return respond(view);
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));

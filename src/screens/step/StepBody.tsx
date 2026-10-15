@@ -13,6 +13,7 @@ import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
 import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
+import { useSelfReview } from './useSelfReview';
 import { useStepScroll } from './useStepScroll';
 import styles from './Step.module.css';
 
@@ -46,6 +47,7 @@ export interface StepBodyProps {
 export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }: StepBodyProps) {
   const layout = useFocusStore((s) => s.layout);
   const step = useStep(sessionId, stepId);
+  const selfReview = useSelfReview(sessionId);
   const { query: notes } = useStepFindings(sessionId, stepId, !restored);
   const findings = notes.data?.findings ?? [];
   const kept = useSessionState(sessionId).data?.scroll[stepId] ?? 0;
@@ -112,6 +114,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             layout={layout}
             view={view}
             analysis={notes.data}
+            selfReview={selfReview}
             focused={focused}
             onFocus={setFocus}
             mainRef={mainRef}
@@ -132,6 +135,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
           stepId={stepId}
           view={view}
           analysis={notes.data}
+          selfReview={selfReview}
           focused={focused}
           onFocus={setFocus}
           ask={ask}

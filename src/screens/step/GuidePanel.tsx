@@ -18,6 +18,8 @@ export interface GuidePanelProps {
   stepId: string;
   view: StepView;
   analysis: StepAnalysis | undefined;
+  /** Self-review: notes are kept to fix instead of added to drafts (F-17.2). */
+  selfReview: boolean;
   focused: string | null;
   onFocus: (findingId: string) => void;
   /** Mark reviewed or its undo (F-07.2). */
@@ -30,8 +32,8 @@ export interface GuidePanelProps {
 
 const SUB_LABEL = { fix: 'should fix', q: 'question', nit: 'minor' } as const;
 
-function subLabel(finding: Finding): string {
-  if (finding.decision === 'draft') return 'in drafts';
+function subLabel(finding: Finding, selfReview: boolean): string {
+  if (finding.decision === 'draft') return selfReview ? 'to fix' : 'in drafts';
   if (finding.decision === 'dismissed') return 'dismissed';
   return SUB_LABEL[finding.severity];
 }
@@ -47,6 +49,7 @@ export function GuidePanel({
   stepId,
   view,
   analysis,
+  selfReview,
   focused,
   onFocus,
   onToggleReviewed,
@@ -95,7 +98,12 @@ export function GuidePanel({
           return on ? (
             <div key={finding.id} className={styles.noteOn}>
               <span className={badge}>{number}</span>
-              <NoteCard finding={finding} sessionId={sessionId} onAsk={onAsk} />
+              <NoteCard
+                finding={finding}
+                sessionId={sessionId}
+                selfReview={selfReview}
+                onAsk={onAsk}
+              />
             </div>
           ) : (
             <button
@@ -110,7 +118,7 @@ export function GuidePanel({
               <span className={badge}>{number}</span>
               <span className={styles.noteText}>
                 <span className={styles.noteTitle}>{finding.title}</span>
-                <span className={styles.noteSub}>{subLabel(finding)}</span>
+                <span className={styles.noteSub}>{subLabel(finding, selfReview)}</span>
               </span>
             </button>
           );
@@ -145,6 +153,7 @@ export function GuidePanel({
             sessionId={sessionId}
             stepId={stepId}
             selection={ask.selection}
+            selfReview={selfReview}
             autoFocus={ask.focusInput}
             initialQuestion={ask.question}
           />
