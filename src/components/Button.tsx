@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import { KbdContext } from './KbdContext';
 import { cx } from './cx';
 import styles from './Button.module.css';
@@ -13,6 +13,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   /** Icon or `<Kbd>` hints are passed as children next to the label. */
   children: ReactNode;
+  /** React 19: passed through to the button (focus after a note decision). */
+  ref?: Ref<HTMLButtonElement>;
 }
 
 /** Design-system button: yellow primary, green approve, blue send, purple Claude, neutral, ghost. */

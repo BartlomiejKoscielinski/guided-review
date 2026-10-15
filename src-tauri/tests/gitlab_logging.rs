@@ -1,6 +1,10 @@
 //! NFR-08 for the GitLab client: the token header never reaches the logs, even at trace level
 //! of the HTTP stack. Own test binary because it installs the global logger.
 #![allow(clippy::unwrap_used, reason = "test helpers")]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "own test binary: it installs the global logger"
+)]
 
 use std::sync::Arc;
 

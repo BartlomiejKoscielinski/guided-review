@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { FileGroup } from '../../ipc/types/FileGroup';
 import type { TreeFile } from '../../ipc/types/TreeFile';
-import { filterCount, flattenTree, stageCheck } from './tree';
+import { browseFilter, browseFiles } from './browseFilter';
+import { filterCount, flattenTree, onlyFiles, stageCheck } from './tree';
 
 const file = (path: string, staged: TreeFile['staged'] = 'none'): TreeFile => ({
   path,
@@ -65,5 +66,21 @@ describe('S-06 tree', () => {
     expect(stageCheck(groups[0]?.files ?? [])).toBe('off');
     expect(stageCheck(groups.flatMap((g) => g.files))).toBe('mixed');
     expect(stageCheck([file('x', 'partial')])).toBe('mixed');
+  });
+
+  it('F-06.6 onlyFiles keeps the listed files and drops folders left empty', () => {
+    const kept = onlyFiles(groups, ['src/App/Views/Deliveries/DeliveryMapPage.xaml', 'gone.cs']);
+    expect(kept.map((g) => [g.dir, g.files.map((f) => f.name)])).toEqual([
+      ['src/App/Views/Deliveries', ['DeliveryMapPage.xaml']],
+    ]);
+    expect(onlyFiles(groups, [])).toEqual([]);
+  });
+
+  it('F-06.6 the browse filter travels as router state and unknown state means the whole change', () => {
+    expect(browseFiles(browseFilter(['a.cs', 'b.cs']))).toEqual(['a.cs', 'b.cs']);
+    expect(browseFiles(null)).toBeNull();
+    expect(browseFiles({ files: 'a.cs' })).toBeNull();
+    expect(browseFiles({ files: [1] })).toBeNull();
+    expect(browseFiles({})).toBeNull();
   });
 });

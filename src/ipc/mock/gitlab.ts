@@ -65,6 +65,7 @@ function row(
     mine: false,
     createdAt: ago(age),
     updatedAt: ago(age),
+    headSha: String(iid).padStart(40, 'f'),
     additions,
     deletions,
     files,
@@ -73,6 +74,7 @@ function row(
     reviewer: false,
     approved: false,
     note,
+    planReady: false,
     ...extra,
   };
 }
@@ -81,17 +83,12 @@ const REVIEWER = { reviewer: true };
 
 /** Start.dc.html's lists (the counts are the mock's, All open shows its first rows). */
 function lists(): Record<MrTab, MrRow[]> {
-  const offline = (note: string | null) =>
-    row(
-      482,
-      'Offline queue for delivery photos',
-      'Marta K.',
-      2 * HOUR,
-      [462, 61, 16],
-      true,
-      note,
-      REVIEWER,
-    );
+  // Waiting for me's !482 has its plan cached; the row adds " · plan is ready" (F-02.5).
+  const offline = (note: string | null, planReady: boolean) =>
+    row(482, 'Offline queue for delivery photos', 'Marta K.', 2 * HOUR, [462, 61, 16], true, note, {
+      ...REVIEWER,
+      planReady,
+    });
   const retry = (note: string | null) =>
     row(
       480,
@@ -109,7 +106,7 @@ function lists(): Record<MrTab, MrRow[]> {
     );
   return {
     waiting: [
-      offline('You’re a reviewer · plan is ready'),
+      offline('You’re a reviewer', true),
       row(
         479,
         'Crash when rotating the signature screen',
@@ -133,7 +130,7 @@ function lists(): Record<MrTab, MrRow[]> {
     ],
     mine: [retry('2 unresolved threads from reviewers')],
     all: [
-      offline(null),
+      offline(null, false),
       row(481, 'Dark theme: button colors', 'Ola M.', 4 * HOUR, [58, 40, 6], true, null),
       retry(null),
     ],

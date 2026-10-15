@@ -5,14 +5,20 @@ import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
+import { createPlanBackend } from './plan';
+import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
+import { createSessionData } from './session-data';
 import { createSourcesBackend } from './sources';
+import { createStateBackend } from './state';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
 import { health } from './fixtures/app';
 import defaultSettings from './fixtures/default-settings.json';
 import { unfinishedSessions } from './fixtures/sessions';
 import { restoreRoute } from './route-restore';
+
+export { MOCK_SESSION_DATA_KEY } from './session-data';
 
 /** Key under which the mock keeps its settings between page loads. */
 export const MOCK_SETTINGS_KEY = 'guided-review.mock.settings';
@@ -24,13 +30,15 @@ export const MOCK_CHANGES_KEY = 'guided-review.mock.changes';
 export const MOCK_CLAUDE_KEY = 'guided-review.mock.claude';
 /** Key with a `GitlabScenario` (connected, no token, failing). */
 export const MOCK_GITLAB_KEY = 'guided-review.mock.gitlab';
+/** Key with a `ReviewScenario` (S-02 plan and S-03 step task failures, cached plan). */
+export const MOCK_REVIEW_KEY = 'guided-review.mock.review';
 
 export interface MockOptions {
   /** Fake latency per call, so loading states are visible in `npm run dev:mock`. */
   latencyMs?: number;
   /**
-   * Where settings survive a reload (the browser's localStorage in `npm run dev:mock` and e2e);
-   * without it they live only as long as the client.
+   * Where settings and review sessions survive a reload (the browser's localStorage in
+   * `npm run dev:mock` and e2e); without it they live only as long as the client.
    */
   storage?: Pick<Storage, 'getItem' | 'setItem'> | null;
   /** Unfinished sessions to report; none by default (no sessions exist before M3). */
@@ -43,6 +51,8 @@ export interface MockOptions {
   gitlab?: GitlabScenario;
   /** Rider variations (F-24.4). */
   rider?: RiderScenario;
+  /** S-03 variations; the storage's `MOCK_REVIEW_KEY` wins. */
+  review?: ReviewScenario;
 }
 
 const wait = (ms: number): Promise<void> =>
@@ -95,6 +105,7 @@ export function createMockClient({
   claude: claudeOption = {},
   gitlab: gitlabOption = {},
   rider: riderOption = {},
+  review: reviewOption = {},
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
@@ -115,20 +126,27 @@ export function createMockClient({
     storage?.setItem(MOCK_SETTINGS_KEY, JSON.stringify(settings));
     return settings;
   };
+  // Review sessions survive a reload like the core's SQLite (F-04.3).
+  const data = createSessionData(storage);
+  const focusLayout = () => settings.ui.focusLayout;
+  const sessionExists = (id: string) =>
+    sessions.some((s) => s.id === id) || id in data.data.mrs || data.data.local.includes(id);
+  const pause = (ms: number) => (latencyMs > 0 ? wait(ms) : Promise.resolve());
+  const reviewScenario = loadJson(storage, MOCK_REVIEW_KEY, reviewOption);
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
     appSettingsSet: (patch) => respond(setSettings(patch)),
-    appStartRoute: () =>
-      respond(restoreRoute(settings.ui.lastRoute, (id) => sessions.some((s) => s.id === id))),
+    appStartRoute: () => respond(restoreRoute(settings.ui.lastRoute, sessionExists)),
     sessionsListUnfinished: () => respond(sessions),
     ...createChangesBackend(changes, respond, repos),
-    ...createSourcesBackend(respond, repos),
-    ...createPrepareBackend(repos, (ms) => (latencyMs > 0 ? wait(ms) : Promise.resolve())),
-    ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, (ms) =>
-      latencyMs > 0 ? wait(ms) : Promise.resolve(),
-    ),
+    ...createSourcesBackend(respond, repos, data, focusLayout),
+    ...createPrepareBackend(repos, pause, data, focusLayout),
+    ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
+    ...createReviewBackend(reviewScenario, respond, pause, data),
+    ...createPlanBackend(reviewScenario, respond, pause, data),
+    ...createStateBackend(respond, data, focusLayout),
     ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),
     // The browser has no window to move; the mock only tracks the maximized state.
     windowMinimize: () => Promise.resolve(),

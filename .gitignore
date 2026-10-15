@@ -10,3 +10,12 @@ playwright-report/
 .claude/settings.local.json
 # Stand-in GitLab certificate and key (cargo run --example standin_cert)
 tools/standin/ssl/
+# Real-app driver state, log and screenshots (tools/app-driver)
+.app-driver/
+# Context guard state per session (tools/metrics/context-guard.mjs)
+.metrics/guard/
+# Parallel lanes: registry, context packs, prompts, reports (tools/lanes.mjs, tools/context-pack.mjs)
+.lanes/
+
+# Autopilot run state and per-item verdicts (tools/autopilot/, docs/process/AUTOPILOT.md)
+.autopilot/

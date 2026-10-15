@@ -21,20 +21,25 @@ Windows desktop app (Tauri 2: React + TypeScript UI, Rust core) that walks a dev
 - `npm run verify` = typecheck + eslint + `prettier --check` + vitest + `cargo fmt --check` + `cargo clippy -- -D warnings` + `cargo test`
 - `npm run e2e` (Playwright against the mock backend) · `npm run gen:types` (ts-rs → `src/ipc/types/`)
 - `node tools/mock-preview/render-mock.mjs <Mock.dc.html> --state '<json>' --out <png>` (render a design mock)
+- `node tools/mock-preview/design-check.mjs S06` (/design-check data in one run: shots, mock render, pixel heatmap, DOM/style comparison)
 - `node tools/audit.mjs [--milestone M3]` (acceptance criteria vs PROGRESS vs tests)
+- `node tools/metrics/report.mjs [--last 8 | --retro-due]` (process feedback: tokens, context tax, time per session; experiments in `docs/process/IMPROVEMENTS.md`, `/retro`)
+- `node tools/app-driver/app.mjs start | snap | click <selector> | shot | stop` (drive the real app over WebView2 CDP; skill `/app`)
 
 ## How to work
 
 1. One milestone per branch. Start with `/milestone Mx`: it plans first (acceptance-criteria IDs → tasks → tests) and waits for approval.
 2. Small commits: `M3: F-06.4 F-06.5 strategy toggle and drag reorder`.
 3. Tests carry the AC ID in their name (`f06_10_…` in Rust, `'F-06.10 …'` in TS).
-4. A screen is built against the **mock backend first**, compared with its PNG (`/design-check S-xx`), then wired to the real backend.
+4. A screen is built against the **mock backend first**, compared with its PNG (`/design-check S-xx`, a structure check; pixel polish in M11, ADR-026), then wired to the real backend and checked in the real app with `/app` (Claude drives it; don't ask the owner to click).
 5. Before saying a task is done: `/verify`; for UI changes also `/design-check`; at the end of a milestone `/audit`.
 6. End every session with `/handoff`: it updates `docs/PROGRESS.md` (ticks with commit SHA, a session-log line) and writes the prompt for the next session.
 7. If the spec is unclear, contradictory or seems wrong: stop and ask. Propose the doc change; never silently pick an interpretation. If a decision in `08-decisions.md` looks wrong, explain why and wait.
 8. If you are not sure about a library or CLI API (Tauri plugins, csharp-ls, GitLab endpoint, Claude Code flag): read its current docs before writing code and note the version in the commit message or spike notes.
 9. Don't add dependencies without saying why in the plan.
 10. Keep sessions short: one phase per session (plan · core · one screen with its design-check · wrap-up). When a phase ends with a commit, run `/handoff` and suggest a new session instead of continuing. Read docs by section (grep headings, Read with offset/limit); filter command output (`tools/verify.mjs`, `grep`, `tail`); open images only as crops.
+11. Autopilot (E10, `docs/process/AUTOPILOT.md`): `/autopilot start Mx` in the main checkout builds the milestone unattended, one criterion at a time (test author → implementer → fresh reviewer → `tools/autopilot/gate.mjs` → reflection). In the autopilot rules 1, 7 and 10 give way to its decision policy (§3.2): no waiting for plan approval; an unclear, reversible spec question gets the recommended option and a row in `docs/process/DECISIONS-PENDING.md`; needs-owner matters (non-negotiables, ADRs, new dependencies, deleting tests, company data) are skipped with a notification. Interactive sessions keep rules 1–10. Parallel lanes (`/fanout`, `/integrate`, E4) are legacy.
+12. In a lane (`.lanes/<lane>/lane.json` exists): read only `.lanes/<lane>/context.md`, no `/app` or `tauri dev`, never write `docs/PROGRESS.md` or `.metrics/`; end with a commit and `/handoff`, which writes `.lanes/<lane>/report.md`.
 
 ## Non-negotiables
 

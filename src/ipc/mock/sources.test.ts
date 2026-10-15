@@ -103,14 +103,24 @@ describe('mock commits, scopes and sessions (F-03.1, F-03.3, F-01.3)', () => {
     expect(summary.branchVsTarget).toEqual({ commits: 3, files: 104 });
   });
 
-  it('F-01.3 opens commit and local sessions on their stub screens', async () => {
+  it('F-17.1 commits, ranges, branches and local changes all open the review plan (S-02)', async () => {
     const ipc = client();
     const commit = await ipc.sessionOpenCommit({ to: 'a3f9c12' });
-    expect(commit.route).toEqual({ screen: 'S-03', sessionId: commit.sessionId });
+    expect(commit.route).toEqual({ screen: 'S-02', sessionId: commit.sessionId });
+    const range = await ipc.sessionOpenCommit({ from: '51c2e8a', to: 'a3f9c12' });
+    expect(range.route).toEqual({ screen: 'S-02', sessionId: range.sessionId });
     const local = await ipc.sessionOpenLocal({ kind: 'uncommitted' });
     expect(local.route).toEqual({ screen: 'S-02', sessionId: local.sessionId });
-    expect((await ipc.sessionOpenBranch('develop')).route.screen).toBe('S-03');
+    // Another branch is a commits session; the current branch is a local one.
+    const other = await ipc.sessionOpenBranch('develop');
+    expect(other.route).toEqual({ screen: 'S-02', sessionId: other.sessionId });
     expect((await ipc.sessionOpenBranch('chore/compiled-bindings')).route.screen).toBe('S-02');
+  });
+
+  it('F-01.3 opens commit and local sessions, a repository and refuses unknown input', async () => {
+    const ipc = client();
+    await ipc.sessionOpenCommit({ to: 'a3f9c12' });
+    await ipc.sessionOpenLocal({ kind: 'uncommitted' });
     await ipc.sessionOpenRepo('C:\\src\\Zażółć gęślą');
     await expect(ipc.repoActive()).resolves.toMatchObject({ name: 'Zażółć gęślą' });
     await expect(ipc.sessionOpenCommit({ to: 'ffffff0' })).rejects.toMatchObject({

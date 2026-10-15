@@ -21,9 +21,10 @@ export interface SegmentedProps<T extends string> {
   onChange: (value: T) => void;
   /**
    * "bar" = 28px title-bar control, "tool" = 30px toolbar control (S-06 Unified | Split),
-   * "fill" = 32px options sharing the full width (S-06 source toggle), "form" = 40px settings.
+   * "fill" = 32px options sharing the full width (S-06 source toggle), "section" = 36px section
+   * control (S-02 step order), "form" = 40px settings.
    */
-  size?: 'bar' | 'tool' | 'fill' | 'form';
+  size?: 'bar' | 'tool' | 'fill' | 'section' | 'form';
   /** Fill of the selected option (white block by default). */
   tone?: 'white' | 'yellow' | 'purple' | 'green';
   /** Values in mono lowercase (effort levels in Settings › Claude). */

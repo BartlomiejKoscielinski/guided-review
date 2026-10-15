@@ -13,7 +13,11 @@ mine: boolean,
 /**
  * ISO 8601; the row shows the age.
  */
-createdAt: string, updatedAt: string, additions: number, deletions: number, files: number, 
+createdAt: string, updatedAt: string, 
+/**
+ * `diffHeadSha`: the head of the MR diff (ADR-024 update, F-02.5).
+ */
+headSha: string | null, additions: number, deletions: number, files: number, 
 /**
  * `null` when the MR has no pipeline.
  */
@@ -29,4 +33,9 @@ approved: boolean,
 /**
  * The one-line note (F-02.2), if any applies.
  */
-note: string | null, };
+note: string | null, 
+/**
+ * A plan is cached for `head_sha` under the current plan settings (F-02.5); the row adds
+ * " · plan is ready" to the note. Set from `review::plan_cache`, never from GitLab.
+ */
+planReady: boolean, };

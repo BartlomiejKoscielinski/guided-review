@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tools/autopilot/*)",
+      "Bash(git branch -d ap/*)",
+      "Bash(git branch -d m*/*)",
+      "Bash(git worktree remove ../gr-ap)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/metrics/context-guard.mjs\"", "timeout": 10 }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/tools/autopilot/stop-hook.mjs\"", "timeout": 30 }]
+      }
+    ]
+  }
+}

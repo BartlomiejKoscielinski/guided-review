@@ -15,6 +15,7 @@
               "username": "alice"
             },
             "createdAt": "2026-10-12T13:58:06Z",
+            "diffHeadSha": "2d7926b517094232816f00afb3993d9aad9de64c",
             "diffStatsSummary": {
               "additions": 20,
               "deletions": 0,
@@ -41,6 +42,7 @@
               "username": "dev"
             },
             "createdAt": "2026-10-12T13:58:05Z",
+            "diffHeadSha": "a565aaabcb2e3bac4016ed49c1a36fd508fadea7",
             "diffStatsSummary": {
               "additions": 35,
               "deletions": 0,
@@ -80,6 +82,7 @@
               "username": "bob"
             },
             "createdAt": "2026-10-12T13:57:18Z",
+            "diffHeadSha": "8eee5858a0a790beab74062ff195da02247a0420",
             "diffStatsSummary": {
               "additions": 1,
               "deletions": 2,
@@ -115,6 +118,7 @@
               "username": "alice"
             },
             "createdAt": "2026-10-12T13:57:17Z",
+            "diffHeadSha": "006d4b4a879466c0cb00880af3e8994e65484134",
             "diffStatsSummary": {
               "additions": 749,
               "deletions": 2,

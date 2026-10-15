@@ -2,12 +2,15 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { CommitList } from '../types/CommitList';
 import type { DetectedSource } from '../types/DetectedSource';
+import type { Layout } from '../types/Layout';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { Route } from '../types/Route';
+import type { Source } from '../types/Source';
 import { BRANCH } from './fixtures/changes';
 import { BRANCHES, branchCommits, STATUS_SUMMARY } from './fixtures/sources';
 import { MOCK_SERVER } from './gitlab';
 import type { MockRepos } from './repos';
+import { stateOf, type MockSessionData } from './session-data';
 
 type SourcesClient = Pick<
   IpcClient,
@@ -22,7 +25,14 @@ type SourcesClient = Pick<
   | 'sessionOpenLocal'
   | 'sessionOpenBranch'
   | 'sessionOpenRepo'
+  | 'sessionSource'
 >;
+
+/** The current branch as the core opens it: local changes against its target (F-17.1). */
+const CURRENT_BRANCH: Source = {
+  kind: 'local',
+  scope: { kind: 'branchVsTarget', target: STATUS_SUMMARY.target ?? 'origin/develop' },
+};
 
 const invalid = (message: string) =>
   new IpcError({ code: 'INVALID_INPUT', message, retryable: false });
@@ -32,23 +42,31 @@ const MR_PATH = /^\/(.+?)\/-\/merge_requests\/(\d+)(?:[/?#]|$)/;
 const HEX = /^[0-9a-f]{7,40}$/i;
 const WINDOWS_PATH = /^(?:[A-Za-z]:\\|\\\\)/;
 
-/** The S-01 sources part of the mock backend: detection, commits, scope counts, sessions. */
+/**
+ * The S-01 sources part of the mock backend: detection, commits, scope counts, sessions (kept in
+ * `store`, in the layout `ui.focusLayout` names).
+ */
 export function createSourcesBackend(
   respond: <T>(value: T) => Promise<T>,
   repos: MockRepos,
+  store: MockSessionData,
+  focusLayout: () => Layout,
 ): SourcesClient {
   const commits = branchCommits();
   const head = commits[0]?.sha ?? '';
-  let sessions = 0;
+  const { data } = store;
   const requireRepo = () => {
     if (!repos.active()) throw invalid('Pick a repository first.');
   };
-  const opened = (route: (sessionId: string) => Route): Promise<OpenedSession> => {
-    sessions += 1;
-    const sessionId = `mock-session-${String(sessions)}`;
+  const opened = (route: (sessionId: string) => Route, source: Source): Promise<OpenedSession> => {
+    data.localCount += 1;
+    const sessionId = `mock-session-${String(data.localCount)}`;
+    data.local.push(sessionId);
+    data.sources[sessionId] = source;
+    stateOf(data, sessionId).layout = focusLayout();
+    store.save();
     return respond({ sessionId, route: route(sessionId) });
   };
-  const step = (sessionId: string): Route => ({ screen: 'S-03', sessionId });
   const plan = (sessionId: string): Route => ({ screen: 'S-02', sessionId });
 
   const detectUrl = (input: string): DetectedSource => {
@@ -165,23 +183,36 @@ export function createSourcesBackend(
       if (range.from !== undefined && !known(range.from) && !parent(range.from)) {
         throw noMatch(range.from);
       }
-      return opened(step);
+      return opened(plan, { kind: 'commits', ...range });
     },
-    sessionOpenLocal: async () => {
+    sessionOpenLocal: async (scope) => {
       requireRepo();
-      return opened(plan);
+      return opened(plan, { kind: 'local', scope });
     },
     sessionOpenBranch: async (branch) => {
       requireRepo();
       const name = branch.replace(/^origin\//, '');
       if (!BRANCHES.includes(name)) throw noMatch(branch);
-      return opened(name === BRANCH ? plan : step);
+      // Another branch is a commits session, the current one a local one: both open S-02 (F-17.1).
+      if (name === BRANCH) return opened(plan, CURRENT_BRANCH);
+      return opened(plan, { kind: 'commits', from: commits.at(-1)?.parent ?? head, to: head });
     },
     sessionOpenRepo: async (path) => {
       const detected = detect(path.trim());
       if (detected.kind !== 'repository') throw noMatch(path.trim());
       repos.add(detected.name, detected.path);
-      return opened(plan);
+      return opened(plan, CURRENT_BRANCH);
+    },
+    sessionSource: async (sessionId) => {
+      const source = data.sources[sessionId];
+      if (source) return respond(source);
+      const mr = data.mrs[sessionId];
+      const active = repos.active()?.path;
+      const project = repos.list().find((r) => r.path === active)?.gitlabProject ?? '';
+      if (mr) return respond<Source>({ kind: 'mr', project, iid: mr.iid });
+      // A session saved before the mock kept sources: the current branch, like the core's repo.
+      if (data.local.includes(sessionId)) return respond(CURRENT_BRANCH);
+      throw invalid('Unknown session.');
     },
   };
 }

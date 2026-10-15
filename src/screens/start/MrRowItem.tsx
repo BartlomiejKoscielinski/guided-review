@@ -1,6 +1,6 @@
 import { cx } from '../../components/cx';
 import type { MrRow } from '../../ipc/types/MrRow';
-import { age, authorName, pipelineText, sizeParts } from './mrRow';
+import { age, authorName, noteText, pipelineText, sizeParts } from './mrRow';
 import styles from './MergeRequests.module.css';
 
 export interface MrRowItemProps {
@@ -11,9 +11,10 @@ export interface MrRowItemProps {
   onOpen: (row: MrRow) => void;
 }
 
-/** One MR (F-02.2): `!iid` and title; author · age, size, pipeline; the optional note. */
+/** One MR (F-02.2): `!iid` and title; author · age, size, pipeline; the optional note (F-02.5). */
 export function MrRowItem({ row, now, disabled, onOpen }: MrRowItemProps) {
   const size = sizeParts(row);
+  const note = noteText(row);
   return (
     <button
       type="button"
@@ -42,7 +43,7 @@ export function MrRowItem({ row, now, disabled, onOpen }: MrRowItemProps) {
           </span>
         )}
       </span>
-      {row.note && <span className={styles.note}>{row.note}</span>}
+      {note && <span className={styles.note}>{note}</span>}
     </button>
   );
 }

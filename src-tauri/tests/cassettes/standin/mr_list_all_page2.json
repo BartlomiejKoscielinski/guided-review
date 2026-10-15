@@ -15,6 +15,7 @@
               "username": "bob"
             },
             "createdAt": "2026-10-12T13:57:16Z",
+            "diffHeadSha": "8e5cd7653ba8623cb8a26f806c8bcfd2a60bab58",
             "diffStatsSummary": {
               "additions": 1,
               "deletions": 2,
@@ -50,6 +51,7 @@
               "username": "alice"
             },
             "createdAt": "2026-10-12T13:57:15Z",
+            "diffHeadSha": "fe3606ec1528751e17b04da0069310466697c190",
             "diffStatsSummary": {
               "additions": 116,
               "deletions": 4,

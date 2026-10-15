@@ -1,6 +1,6 @@
 # 07 · Roadmap
 
-Twelve milestones. Each one ends with a working app you can use and demo; nothing is built "for later" without a consumer. Work on one milestone per branch (`m3-plan-and-focus`), with the `/milestone` skill. A milestone is done when every acceptance criterion listed for it is ticked in `PROGRESS.md` with a commit SHA, `/verify` passes, `/design-check` was run for its screens, and `/audit` shows no gaps for it.
+Twelve milestones. Each one ends with a working app you can use and demo; nothing is built "for later" without a consumer. Work on one milestone per branch (`m3-plan-and-focus`), with the `/milestone` skill. A milestone is done when every acceptance criterion listed for it is ticked in `PROGRESS.md` with a commit SHA, `/verify` passes, `/design-check` (structure check, ADR-026) was run for its screens, and `/audit` shows no gaps for it.
 
 Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 → M10 → M11. M4 and M5 can swap.
 
@@ -100,6 +100,7 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 
 ## M11 · Hardening and release
 **Goal:** ready for the team.
+- UI polish pass (ADR-026): `/design-check S-xx pixel` for every screen, sizes, spacing and typography to the mocks.
 - Error and empty states from `02-screens.md` on every screen; offline mode; performance budgets measured; accessibility pass (keyboard, focus, contrast, reduced motion); installer (NSIS/MSI) with deep-link registration; code signing if available; short user guide in `docs/USER-GUIDE.md`.
 - Features: NFR-01 … NFR-07 (final verification), manual checklist in `09-testing.md`.
 - **Field visit 5** (M10 and M11): tray, toasts, deep links, Rider External Tools and the installer on the laptop; every `[field]` item in the `09` manual checklist.

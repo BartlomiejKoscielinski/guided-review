@@ -37,12 +37,12 @@ const diff: FileDiff = {
 
 describe('diff rows', () => {
   it('F-15.5 unified: a header row and one row per line', () => {
-    const rows = buildRows(diff, 'unified', true);
+    const rows = buildRows(diff, 'unified', { note: true });
     expect(rows.map((r) => r.kind)).toEqual(['hunk', ...Array<string>(7).fill('line'), 'note']);
   });
 
   it('F-15.5 split pairs deletions and additions by position', () => {
-    const rows = buildRows(diff, 'split', false);
+    const rows = buildRows(diff, 'split');
     const pairs = rows.flatMap((r) =>
       r.kind === 'pair' ? [[r.left?.text ?? null, r.right?.text ?? null]] : [],
     );

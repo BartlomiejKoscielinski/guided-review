@@ -1,0 +1,803 @@
+{
+  "items": 19,
+  "entries": [
+    {
+      "id": "P-001",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Keep per-head flags such as planReady equal across mock rows that share a headSha, even where the design mock omits the note on one tab, because the core derives them per head; the review flagged one headSha with planReady true on one tab and false on the other.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T08:53:29.473Z",
+      "lastUsedItem": 0,
+      "source": "F-02.5"
+    },
+    {
+      "id": "P-002",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**",
+        "src/ipc/mock/**"
+      ],
+      "text": "Before moving a suffix or other text out of a mock note into a UI helper, grep existing tests for the full old row string, since the F-02.2 mock assertion had to change when the suffix moved.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T08:53:29.521Z",
+      "lastUsedItem": 0,
+      "source": "F-02.5"
+    },
+    {
+      "id": "P-003",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**",
+        "tests/e2e/**"
+      ],
+      "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
+      "helpful": 8,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T08:53:29.568Z",
+      "lastUsedItem": 0,
+      "source": "F-02.5",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-004",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/store/**"
+      ],
+      "text": "Derive every count a card shows from the validated plan the screen uses (after coverage enforcement adds the Other step and drops duplicates), never from the raw cached model output.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T10:02:39.282Z",
+      "lastUsedItem": 1,
+      "source": "F-04.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-005",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/store/**"
+      ],
+      "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
+      "helpful": 6,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T10:02:39.330Z",
+      "lastUsedItem": 1,
+      "source": "F-04.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-006",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Before locking an e2e order or position assertion, check the mock's CSS layout (grid auto-fit puts cards side by side, not stacked), since a stacked-order assumption cost a test dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T10:02:39.379Z",
+      "lastUsedItem": 1,
+      "source": "F-04.1"
+    },
+    {
+      "id": "P-007",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/**",
+        "src/ipc/**"
+      ],
+      "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:05:35.020Z",
+      "lastUsedItem": 2,
+      "source": "F-04.3"
+    },
+    {
+      "id": "P-008",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:05:35.078Z",
+      "lastUsedItem": 2,
+      "source": "F-04.3"
+    },
+    {
+      "id": "P-009",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**",
+        "src-tauri/src/store/**"
+      ],
+      "text": "Before showing restored per-step state keyed by step id (dismissed notes, cached findings), check it still belongs to the current plan's step, because with_dismissed restores every dismissed note for a session and step id and a re-plan that reuses step ids could surface old notes.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:05:35.142Z",
+      "lastUsedItem": 2,
+      "source": "F-04.3"
+    },
+    {
+      "id": "P-010",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
+      "helpful": 8,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:19:12.003Z",
+      "lastUsedItem": 3,
+      "source": "F-05.5",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-011",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/git/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "For core parsers of git output, build fixtures from real git diffs and run the production to_model path with spaces, Polish characters and CRLF or missing-final-newline cases, because the review accepted this as non-tautological and independent of autocrlf (F-05.5, 6 integration tests, no findings).",
+      "helpful": 2,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:19:12.064Z",
+      "lastUsedItem": 3,
+      "source": "F-05.5"
+    },
+    {
+      "id": "P-012",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/ipc/mock/**",
+        "ui"
+      ],
+      "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 2,
+      "created": "2026-10-14T14:19:12.128Z",
+      "lastUsedItem": 5,
+      "source": "F-05.5"
+    },
+    {
+      "id": "P-013",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
+      "helpful": 5,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:47:55.168Z",
+      "lastUsedItem": 4,
+      "source": "F-06.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-014",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Parse computed CSS offsets in e2e helpers with a decimal-aware pattern (for example -?[0-9.]+px on translate3d), because the F-06.5 liftedOffset regex matched only whole pixels and silently returned 0 for a 36.5px row, which would time out a keyboard drag.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:47:55.231Z",
+      "lastUsedItem": 4,
+      "source": "F-06.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-015",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
+      "helpful": 6,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T14:47:55.295Z",
+      "lastUsedItem": 4,
+      "source": "F-06.5",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-016",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
+      "helpful": 4,
+      "harmful": 0,
+      "seen": 2,
+      "created": "2026-10-14T15:13:07.675Z",
+      "lastUsedItem": 7,
+      "source": "F-06.6",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-017",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
+      "helpful": 3,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:13:07.737Z",
+      "lastUsedItem": 5,
+      "source": "F-06.6",
+      "promoted": true,
+      "promotedTo": "implement"
+    },
+    {
+      "id": "P-019",
+      "tags": [
+        "ui",
+        "tests",
+        "tools/standin/**"
+      ],
+      "text": "Before a UI item relies on a data shape that only the live stand-in can show, check that the stand-in seed data contains it: MR !6 had no DiffNote, so the F-06.9 thread cards could only be covered by the e2e mock and the real-app check went to the manual field.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:34:55.778Z",
+      "lastUsedItem": 6,
+      "source": "F-06.9"
+    },
+    {
+      "id": "P-020",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "For a fallback test, inject a fetcher that returns an error rather than an empty list, because an empty result never reaches the command's error branch (the review nit on src-tauri/tests/plan_threads.rs line 301).",
+      "helpful": 2,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:34:55.841Z",
+      "lastUsedItem": 6,
+      "source": "F-06.9",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-021",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/src/**",
+        "src/screens/plan/**"
+      ],
+      "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
+      "helpful": 3,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T15:34:55.903Z",
+      "lastUsedItem": 6,
+      "source": "F-06.9",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-022",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
+      "helpful": 2,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T16:11:26.716Z",
+      "lastUsedItem": 7,
+      "source": "F-07.1"
+    },
+    {
+      "id": "P-023",
+      "tags": [
+        "ui",
+        "implement",
+        "tests/e2e/**"
+      ],
+      "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T16:11:26.778Z",
+      "lastUsedItem": 7,
+      "source": "F-07.1"
+    },
+    {
+      "id": "P-025",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "When the pinned Playwright browser is missing on this PC, the tests role reports the e2e command as not run with the missing browser path instead of pointing Playwright at another binary, because F-09.1 claimed an e2e run through a temporary config while the review could not run it and gate-1 verify never runs e2e; the conductor should make the pinned chromium available before the tests stage, since F-09.2 ended with e2e not run (chromium-1248 missing) after 135k tokens against 67k for implement, whose verify then ran the same e2e green.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 2,
+      "created": "2026-10-14T21:00:04.409Z",
+      "lastUsedItem": 9,
+      "source": "F-09.1"
+    },
+    {
+      "id": "P-026",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a locked test pins a data shape that a later item will extend, name that later item in the tests verdict (here evidence is stored as file:line with no side, which F-08.6 must extend) so the reviewer classifies the gap instead of raising a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-14T21:00:04.477Z",
+      "lastUsedItem": 8,
+      "source": "F-09.1"
+    },
+    {
+      "id": "P-027",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**"
+      ],
+      "text": "Lock a keyboard focus change with one vitest assertion on document.activeElement after the state change: F-09.2's single red test led to a one-effect fix in NoteCard.tsx that passed gate-1 on the first run.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T06:35:59.945Z",
+      "lastUsedItem": 9,
+      "source": "F-09.2"
+    },
+    {
+      "id": "P-029",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T06:36:00.066Z",
+      "lastUsedItem": 9,
+      "source": "F-09.2"
+    },
+    {
+      "id": "P-030",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:10:35.512Z",
+      "lastUsedItem": 10,
+      "source": "F-09.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-031",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "When a scoped core function replaces an ambiguous one (decide became decide_in), move every remaining caller, integration tests included, and narrow the old function's visibility in the same commit, because review found the old pub decide still used by tests/resume.rs and tests/step_runs.rs.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:10:35.562Z",
+      "lastUsedItem": 10,
+      "source": "F-09.4"
+    },
+    {
+      "id": "P-032",
+      "tags": [
+        "core",
+        "fix",
+        "src-tauri/src/review/**",
+        "src-tauri/tests/**"
+      ],
+      "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
+      "helpful": 3,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:10:35.609Z",
+      "lastUsedItem": 10,
+      "source": "F-09.4",
+      "promoted": true,
+      "promotedTo": "fix"
+    },
+    {
+      "id": "P-033",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**",
+        "package.json"
+      ],
+      "text": "Before the tests stage marks a live check as manual, confirm its runner exists (package.json script, tools/ file); when it is missing, plan the runner as its own item, because F-09.5's tests verdict said autopilot could not add the eval:claude harness, the implementer then built it in the same item anyway, and the criterion still ended unticked.",
+      "helpful": 2,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:32:02.825Z",
+      "lastUsedItem": 11,
+      "source": "F-09.5"
+    },
+    {
+      "id": "P-034",
+      "tags": [
+        "core",
+        "tests",
+        "src/ipc/mock/**"
+      ],
+      "text": "In a mock test labelled with an AC ID, assert the behaviour the rule states and never generalize a rule that a plan decision rejected, because F-09.5's mock loop enforced no note on a thread's file and line (the line-only dedupe M3 decision 6 rejected), contradicted the Rust test, and was the item's only review finding.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:32:02.876Z",
+      "lastUsedItem": 11,
+      "source": "F-09.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-035",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Before ticking a locked test of a rule that reads a context list (threads, cached notes), empty that list in a mutation check and confirm the tests fail, because F-09.5's empty thread list failed 4 of 6 Rust tests, which shows they go through the production loader rather than a stub.",
+      "helpful": 1,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T07:32:02.922Z",
+      "lastUsedItem": 11,
+      "source": "F-09.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-036",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**",
+        "src/diff/**"
+      ],
+      "text": "For modifier-click tests, press Shift through one shared userEvent.setup() instance (user.keyboard('{Shift>}') around the click) or pass shiftKey to fireEvent, because the direct userEvent.click API carries no shiftKey and forced the implementer into a window-wide Shift tracker that the review flagged as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:10:35.879Z",
+      "lastUsedItem": 12,
+      "source": "F-10.1"
+    },
+    {
+      "id": "P-037",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**"
+      ],
+      "text": "In a test that needs layout C, call setLayout('C') after openStep, because loading the session applies its stored layout (or the default focus layout A) and overrides an earlier call; the locked ask test got this wrong and cost a dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:10:35.925Z",
+      "lastUsedItem": 12,
+      "source": "F-10.1"
+    },
+    {
+      "id": "P-038",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/ipc/mock/**"
+      ],
+      "text": "Before adding a precondition to a mock command (such as requiring reviewPlan first), grep the existing mock tests for calls that skip it, because the F-10.2 mock test asks without a plan and the tests stage kept the new refusal check independent of that precondition.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:10:35.971Z",
+      "lastUsedItem": 12,
+      "source": "F-10.1"
+    },
+    {
+      "id": "P-039",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When a criterion covers a source or state that a screen still renders as a stub, decide its content in the tests stage and lock a content assertion for it, because F-17.1 left the non-MR plan screen as a StubScreen 'outside this item', review rated it severe, and the fix round had to build the header and plan for those sessions.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:58:46.260Z",
+      "lastUsedItem": 13,
+      "source": "F-17.1"
+    },
+    {
+      "id": "P-040",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "In e2e checks, assert the screen content the criterion names (the Start step 1 button) instead of the route: createMemoryRouter keeps the browser URL at the origin so toHaveURL can never pass, and the main landmark carries only the screen name, so an empty stub passed every check.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:58:46.309Z",
+      "lastUsedItem": 13,
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-041",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/plan/**"
+      ],
+      "text": "When a shared screen component first receives a non-MR source, turn its hard-coded MR copy into a prop, because Claims.tsx always read 'MR description vs code' for commit sessions and review rated that mislabel normal.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T08:58:46.352Z",
+      "lastUsedItem": 13,
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-042",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Derive a mock flag from the same source field the core reads (session source kind), not from an id prefix or a second rule, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:26:23.718Z",
+      "lastUsedItem": 14,
+      "source": "F-17.2",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-043",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/hooks/**"
+      ],
+      "text": "Before wiring a screen to an existing query hook, run the tests that prime the same cache key, because a second hook over the session-source cache broke PlanPrepared.test and forced a switch to useSessionMr.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:26:23.767Z",
+      "lastUsedItem": 14,
+      "source": "F-17.2"
+    },
+    {
+      "id": "P-044",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**"
+      ],
+      "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:26:23.811Z",
+      "lastUsedItem": 14,
+      "source": "F-17.2",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-045",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Pin the restored-after-restart state of a screen as a red test in the tests stage, because the tests notes left 'restored start on S-05 untested' to the implementer and review raised the missing progress line after a restart as the only normal finding (fix round 1).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:59:03.927Z",
+      "lastUsedItem": 15,
+      "source": "F-17.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-046",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Read cached state after a restart through the existing resume hook (useResume, as S-03 does), not the TanStack plan query, because a disabled query never loads the stored plan.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:59:03.977Z",
+      "lastUsedItem": 15,
+      "source": "F-17.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-047",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded and review raised it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T09:59:04.024Z",
+      "lastUsedItem": 15,
+      "source": "F-17.4",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-048",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/tests/**"
+      ],
+      "text": "When a golden or live test is #[ignore]d, add a non-ignored test in verify that builds its seed and loads it through the production loader with a placeholder executable, because F-09.5's eval seed used a layer name that plan::layer() rejects, so verify stayed green while the live run panicked with PlanNotReady and the item needed a second attempt.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:16:26.108Z",
+      "lastUsedItem": 16,
+      "source": "F-09.5"
+    },
+    {
+      "id": "P-049",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**",
+        "src/ipc/mock/**"
+      ],
+      "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:16:26.158Z",
+      "lastUsedItem": 16,
+      "source": "F-09.5",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-050",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**",
+        "src/screens/**"
+      ],
+      "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:47:51.456Z",
+      "lastUsedItem": 17,
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-051",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Put a test that installs a global tracing subscriber or log file in its own tests/*.rs binary (or use the thread-local set_default and match the line by a unique key), and run a new test binary several times before committing, because a 3-test binary sharing the global logger failed 6 of 7 runs in review.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:47:51.504Z",
+      "lastUsedItem": 17,
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-052",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When logging a failed Claude step, write only code and message for Claude-originated errors (ClaudeFailed, ClaudeNotSignedIn, ClaudeLimited) and log the detail only for app-written errors, because that detail carries Claude's stderr or result text and NFR-08 keeps Claude output out of logs; cover one Claude code with a canary test.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T11:47:51.551Z",
+      "lastUsedItem": 17,
+      "source": "F-17.1",
+      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
+    },
+    {
+      "id": "P-053",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/tests/eval*.rs"
+      ],
+      "text": "When relaxing an eval's text-matching check to remove a false positive, give the exemption only to the field that caused it (the note body) and add a verify-run unit case for every other field (title, suggested_comment) where the topic and the exempting phrase share one sentence, because F-09.5's first sentence-level fix exempted all three fields and review showed that a title like 'async void, already raised in the open thread' would pass the item's only check, which cost a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T15:03:45.339Z",
+      "lastUsedItem": 18,
+      "source": "F-09.5"
+    }
+  ]
+}

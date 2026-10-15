@@ -1,0 +1,153 @@
+/* S-03 note and answer cards (docs/03 › NoteCard; Review.dc.html and Main.dc.html callouts). */
+.card {
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--card);
+  box-shadow: var(--shadow-pop);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* The answer's lines (F-10.1): "Lines 47–50", as in the "Selected lines" group. */
+.lines {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+
+.titleDismissed {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.claude {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.body {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-body);
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.statusDismissed {
+  color: var(--text-secondary);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.textarea,
+.input {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.textarea {
+  min-height: 84px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.ask {
+  display: flex;
+  gap: 6px;
+}
+
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--orange-text);
+}
+
+.reading {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  color: var(--purple);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}

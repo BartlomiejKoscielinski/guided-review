@@ -348,3 +348,12 @@ export function ClaudeIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** S-03 steps list: the Skim row (Review.dc.html). */
+export function SkimIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 16 16" defaultSize={18} defaultStroke={1.8} {...props}>
+      <path d="M4 6l4-3 4 3M4 10l4 3 4-3" />
+    </Svg>
+  );
+}

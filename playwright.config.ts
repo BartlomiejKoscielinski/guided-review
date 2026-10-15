@@ -1,13 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // UI flows against the mock backend (docs/09-testing.md › Layers). Screens are drawn at 1600×1000.
+// GR_PORT: the dev server port of a lane worktree (vite.config.ts). By default 1421, not 1420, so a
+// running `tauri dev` (real backend on 1420) is never reused as the mock server (E13).
+const port = process.env.GR_PORT ?? '1421';
+const baseURL = `http://localhost:${port}`;
+
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  reporter: process.env.CI ? 'line' : 'list',
+  reporter: 'line',
   use: {
-    baseURL: 'http://localhost:1420',
+    baseURL,
     viewport: { width: 1600, height: 1000 },
     trace: 'retain-on-failure',
   },
@@ -19,7 +24,8 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev:mock',
-    url: 'http://localhost:1420',
+    env: { GR_PORT: port },
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

@@ -20,6 +20,15 @@ pub struct ClaudeResult {
     pub total_cost_usd: Option<f64>,
 }
 
+/// A string longer than the schema's `maxLength` (in characters), clamped with "…" (05 › Tasks).
+pub fn clamp(text: &str, max: usize) -> String {
+    if text.chars().count() <= max {
+        return text.to_owned();
+    }
+    let kept: String = text.chars().take(max.saturating_sub(1)).collect();
+    format!("{}…", kept.trim_end())
+}
+
 /// The result message and its raw JSON, or `None` when stdout holds no result (a killed
 /// process, a flag error printed to stderr).
 pub fn parse_result(stdout: &str) -> Option<(ClaudeResult, Value)> {

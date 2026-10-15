@@ -87,3 +87,12 @@ export function findFile(
   }
   return undefined;
 }
+
+/** The groups with only the files at `paths` (F-06.6: the S-06 browse of a skim row's files). */
+export function onlyFiles(groups: readonly FileGroup[], paths: readonly string[]): FileGroup[] {
+  const wanted = new Set(paths);
+  return groups.flatMap((group) => {
+    const kept = group.files.filter((f) => wanted.has(f.path));
+    return kept.length > 0 ? [{ ...group, files: kept }] : [];
+  });
+}

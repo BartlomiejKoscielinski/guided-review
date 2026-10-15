@@ -33,6 +33,11 @@ pub struct MrMeta {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub pipeline: Option<PipelineState>,
+    /// The MR description for the plan task (F-06.8); none when empty or for sessions prepared
+    /// before it was stored.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub description: Option<String>,
 }
 
 impl MrMeta {
@@ -49,6 +54,7 @@ impl MrMeta {
             source_branch: info.source_branch.clone(),
             target_branch: info.target_branch.clone(),
             pipeline: info.pipeline_state(),
+            description: info.description.clone().filter(|d| !d.trim().is_empty()),
         }
     }
 }

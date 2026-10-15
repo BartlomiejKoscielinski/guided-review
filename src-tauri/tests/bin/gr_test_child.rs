@@ -11,6 +11,10 @@
 //! - `tree <pid file>`: starts a grandchild (`sleep 120`, inheriting stdout), writes
 //!   "<own pid> <grandchild pid>" to the file, then sleeps.
 //! - `spawn-and-exit <pid file>`: like `tree`, but exits right after writing the file.
+#![expect(
+    clippy::disallowed_methods,
+    reason = "the scripted child starts its own grandchild for the kill-tree test"
+)]
 
 use std::io::{Read, Write};
 use std::process::{Command, ExitCode};

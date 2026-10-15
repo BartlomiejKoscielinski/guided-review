@@ -2,13 +2,38 @@
 import type { Mode } from "./Mode";
 import type { Route } from "./Route";
 import type { SessionStatus } from "./SessionStatus";
+import type { Source } from "./Source";
 
 /**
- * A session the Review tile can open. Progress and titles for "Pick up where you left off"
- * (F-04.1) join in M3.
+ * A session the Review tile and a "Pick up where you left off" card open (F-30.2, F-04.1).
+ * The UI draws the card's progress line from the numbers.
  */
-export type UnfinishedSession = { id: string, status: SessionStatus, mode: Mode, updatedAt: string, 
+export type UnfinishedSession = { id: string, status: SessionStatus, mode: Mode, 
 /**
- * The screen the Review tile opens for this session.
+ * ISO 8601 UTC; the card's "saved yesterday 18:40".
  */
-resume: Route, };
+updatedAt: string, 
+/**
+ * The screen the Review tile and **Continue** open for this session.
+ */
+resume: Route, 
+/**
+ * The card's tag: `!iid` of an MR, `local` of a self-review.
+ */
+source: Source, 
+/**
+ * The MR's title, the branch of a self-review, the commit or range of commits.
+ */
+title: string, 
+/**
+ * Steps of the session's plan marked reviewed (F-07.2).
+ */
+reviewedSteps: number, 
+/**
+ * Steps of the session's plan; 0 while it has none.
+ */
+totalSteps: number, 
+/**
+ * Drafts not published yet (F-09.2).
+ */
+drafts: number, };

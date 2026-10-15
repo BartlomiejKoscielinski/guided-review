@@ -75,6 +75,8 @@ pub struct MrRow {
     /// ISO 8601; the row shows the age.
     pub created_at: String,
     pub updated_at: String,
+    /// `diffHeadSha`: the head of the MR diff (ADR-024 update, F-02.5).
+    pub head_sha: Option<String>,
     pub additions: u32,
     pub deletions: u32,
     pub files: u32,
@@ -87,6 +89,9 @@ pub struct MrRow {
     pub approved: bool,
     /// The one-line note (F-02.2), if any applies.
     pub note: Option<String>,
+    /// A plan is cached for `head_sha` under the current plan settings (F-02.5); the row adds
+    /// " · plan is ready" to the note. Set from `review::plan_cache`, never from GitLab.
+    pub plan_ready: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
@@ -239,6 +244,10 @@ fn read_row(node: &Value, me: &str) -> Result<MrRow, GitlabError> {
         mine: author_username == me,
         created_at: text("createdAt"),
         updated_at: text("updatedAt"),
+        head_sha: node["diffHeadSha"]
+            .as_str()
+            .filter(|sha| !sha.is_empty())
+            .map(str::to_owned),
         additions: count(&stats["additions"]),
         deletions: count(&stats["deletions"]),
         files,
@@ -249,6 +258,7 @@ fn read_row(node: &Value, me: &str) -> Result<MrRow, GitlabError> {
         reviewer,
         approved,
         note: note(unresolved, files, reviewer),
+        plan_ready: false,
     })
 }
 

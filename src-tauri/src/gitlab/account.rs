@@ -2,7 +2,7 @@
 //! the UI shows. The token goes from the Check and save input straight to the token store
 //! (Windows Credential Manager, T4); everything returned here carries only its masked form.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use ts_rs::TS;
 
@@ -58,7 +58,7 @@ impl From<AccountError> for AppError {
 }
 
 /// The signed-in GitLab user.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
 pub struct GitlabUser {

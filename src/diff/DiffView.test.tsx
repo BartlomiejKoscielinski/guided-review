@@ -85,6 +85,40 @@ describe('DiffView', () => {
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
 
+  it('F-07.4 a mechanical hunk is a fold row with its reason until Show', () => {
+    const mechanical: FileDiff = {
+      ...diff,
+      hunks: diff.hunks.map((h) => ({ ...h, mechanical: 'whitespace' as const })),
+    };
+    const { container } = render(<DiffView path="a.xaml" diff={mechanical} layout="split" />);
+    expect(screen.getByText('Whitespace only')).toBeInTheDocument();
+    expect(container.querySelector('[data-kind]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Show' }));
+    expect(screen.queryByText('Whitespace only')).toBeNull();
+    expect(container.querySelector('[data-kind="add"]')).not.toBeNull();
+  });
+
+  it('F-07.5 gutter markers sit on their line, inserts follow it', () => {
+    render(
+      <DiffView
+        path="a.xaml"
+        diff={diff}
+        layout="split"
+        headers={false}
+        markers={new Map([['n24', <span key="m">marker</span>]])}
+        inserts={new Map([['n24', <p key="c">card under 24</p>]])}
+      />,
+    );
+    expect(screen.getByText('marker').closest('[data-line-no]')).toHaveAttribute(
+      'data-line-no',
+      '24',
+    );
+    expect(screen.queryByText(/lines 22/)).toBeNull();
+    const rows = Array.from(document.querySelectorAll('[data-index]'));
+    const at = rows.findIndex((r) => r.textContent.includes('card under 24'));
+    expect(rows[at - 1]?.querySelector('[data-line-no="24"]')).not.toBeNull();
+  });
+
   it('F-05.2 a binary file shows a note instead of lines', () => {
     const binary: FileDiff = {
       ...diff,

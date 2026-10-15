@@ -114,6 +114,34 @@ unless project.repository.blob_at(main, BASE_FILES.keys.first)
   puts 'committed the app skeleton'
 end
 
+# A package bump counts as mechanical (F-05.5) only when the old package line is on main, so the
+# test project comes in its own commit; on a stand-in seeded before it, MR !6 is rebased onto it.
+TEST_PROJECT = 'tests/Delivery.App.Tests/Delivery.App.Tests.csproj'
+
+def test_project(xunit)
+  <<~XML
+    <Project Sdk="Microsoft.NET.Sdk">
+
+      <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+      </PropertyGroup>
+
+      <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+        <PackageReference Include="xunit" Version="#{xunit}" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+      </ItemGroup>
+
+    </Project>
+  XML
+end
+
+unless project.repository.blob_at(main, TEST_PROJECT)
+  commit_files(project, root, main, main, 'Add the test project',
+               [{ action: 'create', file_path: TEST_PROJECT, content: test_project('2.9.0') }])
+  puts 'committed the test project'
+end
+
 def edit(path, lines, extra)
   { action: 'update', file_path: path,
     content: cs_file(File.basename(path, '.*').delete('.'), lines) + extra }
@@ -145,6 +173,9 @@ MRS = [
     threads: [['alice', 'Should the retry back off?', false],
               ['bob', 'What happens when the token expires mid-upload?', false],
               ['alice', 'Typo in the log message.', true]],
+    bump: [TEST_PROJECT, test_project('2.9.2'), 'Bump xunit to 2.9.2'],
+    diff_thread: ['bob', 'src/Delivery.App/Services/UploadWorker.cs',
+                  'Log the attempt number here, so support can count the retries.'],
     actions: [edit('src/Delivery.App/Services/UploadWorker.cs', 44, "// retry after network loss\n"),
               create('src/Delivery.App/Services/RetryPolicy.cs', 25)] },
   { author: 'alice', title: 'Draft: Localize the settings screen', branch: 'feature/settings-pl',
@@ -175,12 +206,67 @@ def create_mr(project, author, main, spec, users)
   mr.reload
 end
 
+# GitLab refreshes the MR diff after a push in Sidekiq; wait for it, then reload it ourselves.
+def refreshed(project, mr, user)
+  head = project.repository.commit(mr.source_branch).id
+  60.times do
+    return mr if mr.reload.diff_head_sha == head
+
+    sleep 2
+  end
+  mr.reload_diff(user)
+  mr.reload
+end
+
+def add_bump(project, mr, user, bump)
+  path, content, message = bump
+  current = project.repository.blob_at(mr.source_branch, path)&.data
+  return mr if current == content
+
+  unless current
+    result = MergeRequests::RebaseService.new(project: project, current_user: user).execute(mr)
+    raise "rebase !#{mr.iid}: #{result[:message]}" unless result[:status] == :success
+
+    puts "rebased !#{mr.iid} onto #{mr.target_branch}"
+  end
+  commit_files(project, user, mr.source_branch, mr.source_branch, message,
+               [{ action: 'update', file_path: path, content: content }])
+  puts "committed #{message} to !#{mr.iid}"
+  refreshed(project, mr, user)
+end
+
+# A thread on the last added line of the file (a DiffNote), left unresolved.
+def add_diff_thread(mr, users, thread)
+  name, path, text = thread
+  return if mr.notes.where(type: 'DiffNote').exists?
+
+  diff_file = mr.diffs.diff_files.find { |f| f.new_path == path }
+  line = diff_file&.diff_lines&.reverse&.find(&:added?)
+  raise "no added line in #{path} of !#{mr.iid}" unless line
+
+  position = Gitlab::Diff::Position.new(
+    old_path: path, new_path: path, old_line: nil, new_line: line.new_pos,
+    position_type: 'text', diff_refs: mr.diff_refs
+  )
+  note = Notes::CreateService.new(
+    mr.project, users.fetch(name),
+    noteable_type: 'MergeRequest', noteable_id: mr.id, note: text, type: 'DiffNote',
+    position: position.to_h
+  ).execute
+  raise "diff thread !#{mr.iid}: #{note.errors.full_messages.join(', ')}" unless note.persisted?
+
+  puts "added a diff thread on #{path}:#{line.new_pos} of !#{mr.iid}"
+end
+
 # Each extra is checked on its own, so a run that stopped half-way is completed by the next one.
 MRS.each do |spec|
   author = users.fetch(spec[:author])
   mr = project.merge_requests.find_by(source_branch: spec[:branch]) ||
        create_mr(project, author, main, spec, users)
-  add_pipeline(project, mr, spec[:pipeline], author) if spec[:pipeline] && mr.head_pipeline_id.nil?
+  mr = add_bump(project, mr, author, spec[:bump]) if spec[:bump]
+  stale = mr.head_pipeline&.sha != mr.diff_head_sha
+  add_pipeline(project, mr, spec[:pipeline], author) if spec[:pipeline] && stale
+  add_diff_thread(mr, users, spec[:diff_thread]) if spec[:diff_thread]
   Array(spec[:approved_by]).each do |name|
     approver = users.fetch(name)
     next if mr.approved_by?(approver)

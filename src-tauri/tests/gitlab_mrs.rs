@@ -170,6 +170,15 @@ async fn f02_2_row_model_from_the_stand_in() {
     );
     assert!(small.created_at.starts_with("2026-"));
 
+    // F-02.5: every row carries the head of its diff; "plan is ready" is never GitLab's.
+    assert!(list.rows.iter().all(|r| {
+        r.head_sha
+            .as_deref()
+            .is_some_and(|sha| sha.len() == 40 && sha.bytes().all(|b| b.is_ascii_hexdigit()))
+            && !r.plan_ready
+    }));
+    assert!(small.head_sha.as_deref().unwrap().starts_with("8e5cd765"));
+
     let text = serde_json::to_string(&list).unwrap();
     assert!(!text.contains("wiremock0000000"), "token in the payload");
 }

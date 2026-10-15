@@ -114,3 +114,5 @@ unsafe_code = "deny"
 # CLAUDE.md: no unwrap()/expect() outside tests and app startup (clippy.toml allows them in tests).
 unwrap_used = "deny"
 expect_used = "deny"
+# Every exception says why (docs/process/CODING-RULES-PROPOSAL.md C3).
+allow_attributes_without_reason = "deny"

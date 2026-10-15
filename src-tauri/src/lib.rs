@@ -153,6 +153,7 @@ pub fn run() {
             commands::repo::manage(app.handle());
             app.manage(commands::gitlab::GitlabApp::default());
             app.manage(commands::sessions::PrepareTasks::default());
+            app.manage(commands::review::ReviewApp::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -175,6 +176,13 @@ pub fn run() {
             commands::sessions::session_open_mr,
             commands::sessions::session_prepare_cancel,
             commands::sessions::session_mr,
+            commands::sessions::session_source,
+            commands::session_state::session_state,
+            commands::session_state::session_set_step,
+            commands::session_state::session_set_layout,
+            commands::session_state::session_set_scroll,
+            commands::session_state::session_set_checklist,
+            commands::session_state::session_resume,
             commands::git::git_status,
             commands::git::git_log,
             commands::git::git_status_summary,
@@ -199,6 +207,18 @@ pub fn run() {
             commands::gitlab::gitlab_account_save,
             commands::gitlab::gitlab_account_remove,
             commands::gitlab::gitlab_list_mrs,
+            commands::review_plan::review_plan,
+            commands::review_plan::review_set_strategy,
+            commands::review_plan::review_reorder_steps,
+            commands::review::review_step,
+            commands::review::review_findings,
+            commands::review::review_ask,
+            commands::review::review_decide,
+            commands::review::review_mark_step,
+            commands::drafts::drafts_list,
+            commands::drafts::drafts_create,
+            commands::drafts::drafts_update,
+            commands::drafts::drafts_delete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Guided Review");

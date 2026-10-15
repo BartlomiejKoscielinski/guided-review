@@ -1,6 +1,13 @@
 //! Sessions repository (table `sessions`). Sessions are created from S-01 (F-01.3) and listed
-//! for the Review tile (F-30.2).
+//! for the Review tile (F-30.2) and "Pick up where you left off" (F-04.1); their layout and
+//! current step are kept for the next start (F-04.3, `sessions_state.rs`).
 
+#[path = "sessions_state.rs"]
+mod state;
+
+pub use state::{current_step, layout, set_current_step, set_layout};
+
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use rusqlite::{Connection, OptionalExtension, params};
@@ -8,53 +15,124 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use super::StoreError;
-use crate::review::model::{Layout, Mode, SessionStatus};
-use crate::review::sessions::{UnfinishedSession, resume_route};
+use super::session_progress;
+use crate::review::model::{Layout, Mode, SessionStatus, Strategy};
+use crate::review::mr_summary::MrMeta;
+use crate::review::sessions::{UnfinishedSession, card_title, resume_route};
 use crate::route::Route;
+use crate::source::Source;
 
 fn parse<T: DeserializeOwned>(text: &str) -> Option<T> {
     serde_json::from_value(Value::String(text.to_owned())).ok()
 }
 
-/// Unfinished sessions, most recently updated first, each with the screen to resume at.
+/// One `sessions` row as the unfinished list reads it.
+struct ListedRow {
+    id: String,
+    status: Option<String>,
+    mode: Option<String>,
+    updated_at: Option<String>,
+    source_json: Option<String>,
+    mr_json: Option<String>,
+    repo_name: Option<String>,
+}
+
+/// Unfinished sessions, most recently updated first, each with the screen to resume at and its
+/// card (F-04.1): title and progress. A self-review's title is its repository's name here; the
+/// command names it after the branch (`review::sessions::name_self_reviews`).
 pub fn list_unfinished(
     conn: &Connection,
     last_route: &Route,
 ) -> Result<Vec<UnfinishedSession>, StoreError> {
     let mut stmt = conn.prepare(
-        "SELECT id, status, mode, updated_at FROM sessions
-         ORDER BY updated_at DESC, id",
+        "SELECT s.id, s.status, s.mode, s.updated_at, s.source_json, s.mr_json, r.name
+         FROM sessions s LEFT JOIN repos r ON r.id = s.repo_id
+         ORDER BY s.updated_at DESC, s.id",
     )?;
     let rows = stmt
         .query_map([], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, Option<String>>(1)?,
-                row.get::<_, Option<String>>(2)?,
-                row.get::<_, Option<String>>(3)?,
-            ))
+            Ok(ListedRow {
+                id: row.get(0)?,
+                status: row.get(1)?,
+                mode: row.get(2)?,
+                updated_at: row.get(3)?,
+                source_json: row.get(4)?,
+                mr_json: row.get(5)?,
+                repo_name: row.get(6)?,
+            })
         })?
         .collect::<Result<Vec<_>, _>>()?;
     let mut sessions = Vec::new();
-    for (id, status, mode, updated_at) in rows {
-        let Some(status) = status.as_deref().and_then(parse::<SessionStatus>) else {
-            tracing::warn!(session = id, "session has an unknown status; skipped");
-            continue;
-        };
-        if !status.is_unfinished() {
-            continue;
+    for row in rows {
+        if let Some(session) = unfinished(conn, row, last_route)? {
+            sessions.push(session);
         }
-        let mode = mode.as_deref().and_then(parse::<Mode>).unwrap_or_default();
-        let resume = resume_route(&id, status, mode, last_route);
-        sessions.push(UnfinishedSession {
-            id,
-            status,
-            mode,
-            updated_at: updated_at.unwrap_or_default(),
-            resume,
-        });
     }
     Ok(sessions)
+}
+
+/// The card of an unfinished session; `None` for a finished one or a row that doesn't parse.
+fn unfinished(
+    conn: &Connection,
+    row: ListedRow,
+    last_route: &Route,
+) -> Result<Option<UnfinishedSession>, StoreError> {
+    let id = row.id;
+    let Some(status) = row.status.as_deref().and_then(parse::<SessionStatus>) else {
+        tracing::warn!(session = id, "session has an unknown status; skipped");
+        return Ok(None);
+    };
+    if !status.is_unfinished() {
+        return Ok(None);
+    }
+    let Some(source) = row
+        .source_json
+        .as_deref()
+        .and_then(|json| serde_json::from_str::<Source>(json).ok())
+    else {
+        tracing::warn!(session = id, "session has no readable source; skipped");
+        return Ok(None);
+    };
+    let mode = row
+        .mode
+        .as_deref()
+        .and_then(parse::<Mode>)
+        .unwrap_or_default();
+    let progress = session_progress::of(conn, &id)?;
+    let mr_title = row
+        .mr_json
+        .as_deref()
+        .and_then(|json| serde_json::from_str::<MrMeta>(json).ok())
+        .map(|mr| mr.title);
+    Ok(Some(UnfinishedSession {
+        title: card_title(&source, mr_title, row.repo_name),
+        resume: resume_route(&id, status, mode, last_route),
+        id,
+        status,
+        mode,
+        updated_at: row.updated_at.unwrap_or_default(),
+        source,
+        reviewed_steps: progress.reviewed,
+        total_steps: progress.total,
+        drafts: progress.drafts,
+    }))
+}
+
+/// The repository folder of each listed self-review, to name its card after the branch.
+pub fn self_review_checkouts(
+    conn: &Connection,
+    sessions: &[UnfinishedSession],
+) -> Result<HashMap<String, PathBuf>, StoreError> {
+    let mut checkouts = HashMap::new();
+    for session in sessions
+        .iter()
+        .filter(|s| matches!(s.source, Source::Local { .. }))
+    {
+        if let Some(found) = folders(conn, &session.id)? {
+            checkouts.insert(session.id.clone(), found.checkout);
+        }
+    }
+    Ok(checkouts)
 }
 
 /// A session to create (F-01.3); `source_json` is the serialized `Source`.
@@ -163,6 +241,41 @@ pub fn folders(conn: &Connection, id: &str) -> Result<Option<SessionFolders>, St
         .optional()?)
 }
 
+/// The session's step order strategy (F-06.4); the default when none is stored.
+pub fn strategy(conn: &Connection, id: &str) -> Result<Strategy, StoreError> {
+    let stored: Option<Option<String>> = conn
+        .query_row(
+            "SELECT strategy FROM sessions WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(stored
+        .flatten()
+        .as_deref()
+        .and_then(parse::<Strategy>)
+        .unwrap_or_default())
+}
+
+/// Stores the session's strategy; `false` when there is no such session.
+pub fn set_strategy(conn: &Connection, id: &str, strategy: Strategy) -> Result<bool, StoreError> {
+    let changed = conn.execute(
+        "UPDATE sessions SET strategy = ?2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+         WHERE id = ?1",
+        params![id, stored(strategy)],
+    )?;
+    Ok(changed > 0)
+}
+
+/// The session was used now: `updated_at` orders "Pick up where you left off" (F-04.1).
+pub fn touch(conn: &Connection, id: &str) -> Result<(), StoreError> {
+    conn.execute(
+        "UPDATE sessions SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
+        params![id],
+    )?;
+    Ok(())
+}
+
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {
     Ok(conn
         .query_row("SELECT 1 FROM sessions WHERE id = ?1", params![id], |_| {
@@ -181,7 +294,8 @@ pub(crate) fn insert_for_test(
     updated: &str,
 ) {
     conn.execute(
-        "INSERT INTO sessions (id, status, mode, updated_at) VALUES (?1, ?2, ?3, ?4)",
+        "INSERT INTO sessions (id, status, mode, updated_at, source_json)
+         VALUES (?1, ?2, ?3, ?4, '{\"kind\":\"local\",\"scope\":{\"kind\":\"uncommitted\"}}')",
         params![id, status, mode, updated],
     )
     .unwrap();
@@ -293,3 +407,7 @@ mod tests {
             .unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "sessions_progress_tests.rs"]
+mod progress_tests;

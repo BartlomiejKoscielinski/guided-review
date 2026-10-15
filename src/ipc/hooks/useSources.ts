@@ -18,6 +18,7 @@ import type { LocalScope } from '../types/LocalScope';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
 import type { SessionMr } from '../types/SessionMr';
+import type { Source } from '../types/Source';
 import type { StatusSummary } from '../types/StatusSummary';
 import { LOCAL_KEY } from './useChanges';
 import { GITLAB_MRS_ROOT } from './useGitlab';
@@ -163,6 +164,19 @@ export function useSessionMr(sessionId: string): UseQueryResult<SessionMr | null
   return useQuery<SessionMr | null, IpcError>({
     queryKey: ['session', sessionId, 'mr'],
     queryFn: () => ipc.sessionMr(sessionId),
+  });
+}
+
+/** S-02: what a session reviews (F-17.1), for the header of a session without an MR. */
+export function useSessionSource(
+  sessionId: string,
+  enabled: boolean,
+): UseQueryResult<Source, IpcError> {
+  const ipc = useIpc();
+  return useQuery<Source, IpcError>({
+    queryKey: ['session', sessionId, 'source'],
+    queryFn: () => ipc.sessionSource(sessionId),
+    enabled,
   });
 }
 

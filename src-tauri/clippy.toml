@@ -1,2 +1,12 @@
 allow-unwrap-in-tests = true
 allow-expect-in-tests = true
+
+# docs/process/CODING-RULES-PROPOSAL.md C1, C2: each exception carries #[expect(..., reason)].
+disallowed-methods = [
+  { path = "tracing::subscriber::set_global_default", reason = "the global logger is installed once at startup (logging::init) or in a test binary of its own; tests use tracing::subscriber::set_default and match their line by a unique key" },
+  { path = "tracing::dispatcher::set_global_default", reason = "the global logger is installed once at startup (logging::init) or in a test binary of its own; tests use tracing::subscriber::set_default" },
+  { path = "tracing_subscriber::util::SubscriberInitExt::init", reason = "installs the global logger; use logging::init, or tracing::subscriber::set_default in tests" },
+  { path = "tracing_subscriber::util::SubscriberInitExt::try_init", reason = "installs the global logger; use logging::init, or tracing::subscriber::set_default in tests" },
+  { path = "std::process::Command::new", reason = "child processes only through os/process.rs (argument arrays, CREATE_NO_WINDOW, Job Object, timeouts)" },
+  { path = "tokio::process::Command::new", reason = "child processes only through os/process.rs (argument arrays, CREATE_NO_WINDOW, Job Object, timeouts)" },
+]

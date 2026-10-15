@@ -4,11 +4,20 @@
 //! behind a mutex; commands run store calls on the blocking thread pool.
 
 pub mod app_state;
+pub mod claude_sessions;
 pub mod migrations;
+pub mod plans;
 pub mod repos;
+pub mod session_progress;
 pub mod sessions;
 pub mod settings;
+pub mod steps_state;
 pub mod worktrees;
+
+#[cfg(test)]
+mod session_state_notes_tests;
+#[cfg(test)]
+mod session_state_tests;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -197,7 +206,7 @@ mod tests {
         let version: i64 = again
             .with_conn(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(version, 3);
+        assert_eq!(version, 5);
     }
 
     #[test]

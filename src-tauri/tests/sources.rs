@@ -468,9 +468,10 @@ async fn f01_3_session_for_a_commit_and_a_range() {
     assert_eq!(resolved.base_sha, parent);
     assert_eq!(resolved.head_sha, head);
     let (id, route) = save(&store, repo_id, resolved);
+    // F-17.1 (M3 decision 12): a commit opens the plan like local changes and MRs.
     assert_eq!(
         route,
-        Route::Step {
+        Route::Plan {
             session_id: id.clone()
         }
     );
@@ -479,7 +480,7 @@ async fn f01_3_session_for_a_commit_and_a_range() {
         .unwrap()
         .unwrap();
     assert_eq!(stored.repo_id, repo_id);
-    assert_eq!(stored.status, Some(SessionStatus::Reviewing));
+    assert_eq!(stored.status, Some(SessionStatus::Planning));
     let source: Source = serde_json::from_str(&stored.source_json).unwrap();
     assert_eq!(
         source,
@@ -601,4 +602,58 @@ async fn f01_3_session_default_scope_without_origin_is_uncommitted() {
             .is_err()
     );
     assert!(Path::new(&path(&repo)).is_dir());
+}
+
+#[tokio::test]
+async fn f04_1_a_self_review_card_is_named_after_the_checked_out_branch() {
+    let repo = repo_with_history("f04-1-branch");
+    repo.git(&["checkout", "-q", "feature/zażółć"]);
+    let (store, repo_id) = store_with(&repo);
+    let cancel = Cancel::new();
+    let resolved = open::local(&git(&repo), &LocalScope::Uncommitted, &cancel)
+        .await
+        .unwrap();
+    let (local, _) = save(&store, repo_id, resolved);
+    let head = repo.head();
+    let commit = open::commits(
+        &git(&repo),
+        &CommitRange {
+            from: None,
+            to: head.clone(),
+        },
+        &cancel,
+    )
+    .await
+    .unwrap();
+    let (commits, _) = save(&store, repo_id, commit);
+    let (mut list, checkouts) = store
+        .with_conn(|c| {
+            let list = store::unfinished_sessions(c)?;
+            let checkouts = store::sessions::self_review_checkouts(c, &list)?;
+            Ok((list, checkouts))
+        })
+        .unwrap();
+    assert_eq!(checkouts.len(), 1, "only the self-review needs its branch");
+    let title = |list: &[guided_review_lib::review::sessions::UnfinishedSession], id: &str| {
+        list.iter().find(|s| s.id == id).unwrap().title.clone()
+    };
+    assert_eq!(
+        title(&list, &local),
+        "repo ąę",
+        "the repository until the branch is read"
+    );
+    guided_review_lib::review::sessions::name_self_reviews(&mut list, &checkouts, None, &cancel)
+        .await;
+    assert_eq!(title(&list, &local), "feature/zażółć");
+    assert_eq!(
+        title(&list, &commits),
+        head.chars().take(7).collect::<String>()
+    );
+
+    // A detached HEAD has no branch: the repository's name stays.
+    repo.git(&["checkout", "-q", "--detach"]);
+    let mut list = store.with_conn(|c| store::unfinished_sessions(c)).unwrap();
+    guided_review_lib::review::sessions::name_self_reviews(&mut list, &checkouts, None, &cancel)
+        .await;
+    assert_eq!(title(&list, &local), "repo ąę");
 }

@@ -1,0 +1,184 @@
+[
+  {
+    "id": "138a1f8634871cbffd28a9dc290ca5bdc5bb393e",
+    "individual_note": true,
+    "notes": [
+      {
+        "author": {
+          "avatar_url": "https://secure.gravatar.com/avatar/9d052c03cb5e0dc8263461c951f2c5f0ecc55985e25450e93084cdcb3dc97121?s=80&d=identicon",
+          "id": 2,
+          "locked": false,
+          "name": "Dev Stand-in",
+          "state": "active",
+          "username": "dev",
+          "web_url": "https://localhost:8443/dev"
+        },
+        "body": "requested review from @alice",
+        "commands_changes": {},
+        "confidential": false,
+        "created_at": "2026-10-12T13:58:05.608Z",
+        "id": 15,
+        "imported": false,
+        "imported_from": "none",
+        "internal": false,
+        "noteable_id": 6,
+        "noteable_iid": 6,
+        "noteable_type": "MergeRequest",
+        "project_id": 1,
+        "resolvable": false,
+        "system": true,
+        "type": null,
+        "updated_at": "2026-10-12T13:58:05.619Z"
+      }
+    ]
+  },
+  {
+    "id": "bdb17e5a1080f0b7794c5850fa8d1d75058e77e0",
+    "individual_note": false,
+    "notes": [
+      {
+        "author": {
+          "avatar_url": "https://secure.gravatar.com/avatar/1c428de16f20ade99a435fb3796121877be3787ab2fb98ccfca476f3b62d9728?s=80&d=identicon",
+          "id": 3,
+          "locked": false,
+          "name": "Alice Stand-in",
+          "state": "active",
+          "username": "alice",
+          "web_url": "https://localhost:8443/alice"
+        },
+        "body": "Should the retry back off?",
+        "commands_changes": {},
+        "confidential": false,
+        "created_at": "2026-10-12T13:58:06.108Z",
+        "id": 16,
+        "imported": false,
+        "imported_from": "none",
+        "internal": false,
+        "noteable_id": 6,
+        "noteable_iid": 6,
+        "noteable_type": "MergeRequest",
+        "project_id": 1,
+        "resolvable": true,
+        "resolved": false,
+        "resolved_at": null,
+        "resolved_by": null,
+        "system": false,
+        "type": "DiscussionNote",
+        "updated_at": "2026-10-12T13:58:06.108Z"
+      }
+    ]
+  },
+  {
+    "id": "ca54e0fc9c34133f480b318ae08270de745c259b",
+    "individual_note": false,
+    "notes": [
+      {
+        "author": {
+          "avatar_url": "https://secure.gravatar.com/avatar/dd11d6ddc449caad12f07036b55896693eb69da350c881e83767da50bb74dd7e?s=80&d=identicon",
+          "id": 4,
+          "locked": false,
+          "name": "Bob Stand-in",
+          "state": "active",
+          "username": "bob",
+          "web_url": "https://localhost:8443/bob"
+        },
+        "body": "What happens when the token expires mid-upload?",
+        "commands_changes": {},
+        "confidential": false,
+        "created_at": "2026-10-12T13:58:06.215Z",
+        "id": 17,
+        "imported": false,
+        "imported_from": "none",
+        "internal": false,
+        "noteable_id": 6,
+        "noteable_iid": 6,
+        "noteable_type": "MergeRequest",
+        "project_id": 1,
+        "resolvable": true,
+        "resolved": false,
+        "resolved_at": null,
+        "resolved_by": null,
+        "system": false,
+        "type": "DiscussionNote",
+        "updated_at": "2026-10-12T13:58:06.215Z"
+      }
+    ]
+  },
+  {
+    "id": "71a2015018293881cf453972129f18a0feef8cb7",
+    "individual_note": false,
+    "notes": [
+      {
+        "author": {
+          "avatar_url": "https://secure.gravatar.com/avatar/1c428de16f20ade99a435fb3796121877be3787ab2fb98ccfca476f3b62d9728?s=80&d=identicon",
+          "id": 3,
+          "locked": false,
+          "name": "Alice Stand-in",
+          "state": "active",
+          "username": "alice",
+          "web_url": "https://localhost:8443/alice"
+        },
+        "body": "Typo in the log message.",
+        "commands_changes": {},
+        "confidential": false,
+        "created_at": "2026-10-12T13:58:06.305Z",
+        "id": 18,
+        "imported": false,
+        "imported_from": "none",
+        "internal": false,
+        "noteable_id": 6,
+        "noteable_iid": 6,
+        "noteable_type": "MergeRequest",
+        "project_id": 1,
+        "resolvable": true,
+        "resolved": true,
+        "resolved_at": "2026-10-12T13:58:06.358Z",
+        "resolved_by": {
+          "avatar_url": "https://secure.gravatar.com/avatar/9d052c03cb5e0dc8263461c951f2c5f0ecc55985e25450e93084cdcb3dc97121?s=80&d=identicon",
+          "id": 2,
+          "locked": false,
+          "name": "Dev Stand-in",
+          "state": "active",
+          "username": "dev",
+          "web_url": "https://localhost:8443/dev"
+        },
+        "system": false,
+        "type": "DiscussionNote",
+        "updated_at": "2026-10-12T13:58:06.358Z"
+      }
+    ]
+  },
+  {
+    "id": "24794b3e0e90298e63bea35647dd6355ca957e96",
+    "individual_note": true,
+    "notes": [
+      {
+        "author": {
+          "avatar_url": "https://secure.gravatar.com/avatar/9d052c03cb5e0dc8263461c951f2c5f0ecc55985e25450e93084cdcb3dc97121?s=80&d=identicon",
+          "id": 2,
+          "locked": false,
+          "name": "Dev Stand-in",
+          "state": "active",
+          "username": "dev",
+          "web_url": "https://localhost:8443/dev"
+        },
+        "body": "restored source branch `fix/upload-retry`",
+        "commands_changes": {},
+        "confidential": false,
+        "created_at": "2026-10-12T13:58:06.729Z",
+        "id": 19,
+        "imported": false,
+        "imported_from": "none",
+        "internal": false,
+        "noteable_id": 6,
+        "noteable_iid": 6,
+        "noteable_type": "MergeRequest",
+        "project_id": 1,
+        "resolvable": false,
+        "system": true,
+        "type": null,
+        "updated_at": "2026-10-12T13:58:06.790Z"
+      }
+    ]
+  }
+]

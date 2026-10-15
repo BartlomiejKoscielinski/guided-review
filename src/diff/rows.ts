@@ -1,50 +1,157 @@
 import type { FileDiff } from '../ipc/types/FileDiff';
 import type { Hunk } from '../ipc/types/Hunk';
 import type { Line } from '../ipc/types/Line';
+import type { MechanicalReason } from '../ipc/types/MechanicalReason';
 
 export type DiffLayout = 'unified' | 'split';
+
+/** A region collapsed to a fold row until **Show** (F-07.4), as new-side lines. */
+export interface DiffFold {
+  newStart: number;
+  newEnd: number;
+  label: string;
+}
 
 /** One virtualized row of the diff list. */
 export type DiffRow =
   | { kind: 'hunk'; key: string; hunk: Hunk; first: boolean }
   | { kind: 'line'; key: string; hunk: Hunk; line: Line; last: boolean }
   | { kind: 'pair'; key: string; hunk: Hunk; left?: Line; right?: Line; last: boolean }
+  | { kind: 'fold'; key: string; label: string }
+  | { kind: 'insert'; key: string; at: string }
   | { kind: 'note'; key: string };
+
+export interface RowOptions {
+  /** A note row under the last hunk. */
+  note?: boolean;
+  /** Hunk header bars (S-03 shows none). */
+  headers?: boolean;
+  /** Folds from the step's analysis; mechanical hunks fold on their own. */
+  folds?: readonly DiffFold[];
+  /** Fold keys the reader opened with **Show**. */
+  shown?: ReadonlySet<string>;
+  /** Line keys (`lineKey`) with a row of their own under them (note and thread cards). */
+  inserts?: ReadonlySet<string>;
+}
+
+/** Labels of mechanical hunks (docs/05 › Mechanical hunks). */
+export const MECHANICAL_LABEL: Record<MechanicalReason, string> = {
+  generated: 'Generated',
+  whitespace: 'Whitespace only',
+  packageBump: 'Package bump',
+  resxKeyAdded: 'Resx key added',
+};
+
+/** A line's key on one side: `n48` (new line 48) or `o37` (old line 37). */
+export const lineKey = (side: 'old' | 'new', no: number): string =>
+  `${side === 'new' ? 'n' : 'o'}${String(no)}`;
+
+interface Segment {
+  lines: Line[];
+  fold?: DiffFold;
+  index: number;
+}
 
 /**
  * Unified rows: each hunk's header, then its lines. Split rows pair deleted and added lines by
- * position inside each run (docs/05 › Diff parsing); context lines sit on both sides.
+ * position inside each run (docs/05 › Diff parsing); context lines sit on both sides. Folded
+ * lines become one fold row; inserts follow the line they belong to.
  */
-export function buildRows(diff: FileDiff, layout: DiffLayout, note: boolean): DiffRow[] {
+export function buildRows(diff: FileDiff, layout: DiffLayout, options: RowOptions = {}): DiffRow[] {
+  const { note = false, headers = true, folds = [], shown, inserts } = options;
   const rows: DiffRow[] = [];
   diff.hunks.forEach((hunk, h) => {
     if (hunk.fileLevel) return;
-    rows.push({ kind: 'hunk', key: `${hunk.id}#h`, hunk, first: h === 0 });
-    const lineRows = layout === 'unified' ? unified(hunk) : split(hunk);
-    rows.push(...lineRows);
+    const segments = segment(hunk, folds);
+    const visible = segments.filter((s) => !s.fold || shown?.has(foldKey(hunk, s)) === true);
+    if (headers && visible.length > 0) {
+      rows.push({ kind: 'hunk', key: `${hunk.id}#h`, hunk, first: h === 0 });
+    }
+    const hunkRows: DiffRow[] = [];
+    for (const s of segments) {
+      const key = foldKey(hunk, s);
+      if (s.fold && shown?.has(key) !== true) {
+        hunkRows.push({ kind: 'fold', key, label: s.fold.label });
+        continue;
+      }
+      const lineRows = layout === 'unified' ? unified(hunk, s) : split(hunk, s);
+      for (const row of lineRows) {
+        hunkRows.push(row);
+        for (const at of insertKeys(row)) {
+          if (inserts?.has(at)) hunkRows.push({ kind: 'insert', key: `${row.key}@${at}`, at });
+        }
+      }
+    }
+    const lastLine = hunkRows.findLast((r) => r.kind === 'line' || r.kind === 'pair');
+    if (lastLine?.kind === 'line' || lastLine?.kind === 'pair') lastLine.last = true;
+    rows.push(...hunkRows);
   });
   if (note) rows.push({ kind: 'note', key: 'note' });
   return rows;
 }
 
-function unified(hunk: Hunk): DiffRow[] {
-  return hunk.lines.map((line, i) => ({
+const foldKey = (hunk: Hunk, s: Segment) => `${hunk.id}#f${String(s.index)}`;
+
+function insertKeys(row: DiffRow): string[] {
+  const keys: string[] = [];
+  const add = (line: Line | undefined) => {
+    if (line?.oldNo !== undefined && line.kind !== 'add') keys.push(lineKey('old', line.oldNo));
+    if (line?.newNo !== undefined) keys.push(lineKey('new', line.newNo));
+  };
+  if (row.kind === 'line') add(row.line);
+  if (row.kind === 'pair') {
+    if (row.left !== row.right) add(row.left);
+    add(row.right);
+  }
+  return [...new Set(keys)];
+}
+
+/**
+ * Splits a hunk into runs of lines that are folded or not. A mechanical hunk is one fold; a
+ * deleted line belongs where the next new-side line is.
+ */
+function segment(hunk: Hunk, folds: readonly DiffFold[]): Segment[] {
+  if (hunk.mechanical) {
+    const label = MECHANICAL_LABEL[hunk.mechanical];
+    return [{ lines: hunk.lines, fold: { newStart: 0, newEnd: 0, label }, index: 0 }];
+  }
+  const end = hunk.newStart + Math.max(hunk.newLines - 1, 0);
+  const position = (i: number): number => {
+    for (let k = i; k < hunk.lines.length; k += 1) {
+      const no = hunk.lines[k]?.newNo;
+      if (no !== undefined) return no;
+    }
+    return end;
+  };
+  const out: Segment[] = [];
+  hunk.lines.forEach((line, i) => {
+    const pos = position(i);
+    const fold = folds.find((f) => pos >= f.newStart && pos <= f.newEnd);
+    const last = out.at(-1);
+    if (last && last.fold === fold) last.lines.push(line);
+    else out.push({ lines: [line], index: out.length, ...(fold ? { fold } : {}) });
+  });
+  return out;
+}
+
+function unified(hunk: Hunk, s: Segment): DiffRow[] {
+  return s.lines.map((line, i) => ({
     kind: 'line',
-    key: `${hunk.id}#${String(i)}`,
+    key: `${hunk.id}#${String(s.index)}.${String(i)}`,
     hunk,
     line,
-    last: i === hunk.lines.length - 1,
+    last: false,
   }));
 }
 
-function split(hunk: Hunk): DiffRow[] {
+function split(hunk: Hunk, s: Segment): DiffRow[] {
   const out: DiffRow[] = [];
-  const lines = hunk.lines;
+  const lines = s.lines;
   let i = 0;
   const push = (left: Line | undefined, right: Line | undefined) => {
     out.push({
       kind: 'pair',
-      key: `${hunk.id}#${String(out.length)}`,
+      key: `${hunk.id}#${String(s.index)}.${String(out.length)}`,
       hunk,
       left,
       right,
@@ -65,8 +172,6 @@ function split(hunk: Hunk): DiffRow[] {
     while (i < lines.length && lines[i]?.kind === 'add') adds.push(lines[i++] as Line);
     for (let k = 0; k < Math.max(dels.length, adds.length); k += 1) push(dels[k], adds[k]);
   }
-  const last = out.at(-1);
-  if (last?.kind === 'pair') last.last = true;
   return out;
 }
 

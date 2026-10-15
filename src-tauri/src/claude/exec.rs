@@ -12,7 +12,7 @@ use super::discover::ClaudeExecutable;
 use super::error::{ClaudeError, map_output};
 use super::result::ClaudeResult;
 use super::runner;
-use crate::os::process::{self, Cancel};
+use crate::os::process::{self, Cancel, OnLine};
 
 /// Minimum Claude Code version (`--restricted`, ADR-022).
 pub const MIN_VERSION: (u32, u32, u32) = (2, 1, 248);
@@ -125,10 +125,57 @@ pub async fn run_task(
     timeout: Duration,
     cancel: &Cancel,
 ) -> Result<ClaudeResult, ClaudeError> {
+    run_task_inner(exe, args, cwd, prompt, task_dir, timeout, cancel, None).await
+}
+
+/// [`run_task`] for stream-json output: each stdout line goes to `on_line` as it arrives.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "mirrors run_task plus the line callback"
+)]
+pub async fn run_task_streaming(
+    exe: &ClaudeExecutable,
+    args: Vec<OsString>,
+    cwd: &Path,
+    prompt: &str,
+    task_dir: &Path,
+    timeout: Duration,
+    cancel: &Cancel,
+    on_line: OnLine<'_>,
+) -> Result<ClaudeResult, ClaudeError> {
+    run_task_inner(
+        exe,
+        args,
+        cwd,
+        prompt,
+        task_dir,
+        timeout,
+        cancel,
+        Some(on_line),
+    )
+    .await
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "run_task plus the optional line callback"
+)]
+async fn run_task_inner(
+    exe: &ClaudeExecutable,
+    args: Vec<OsString>,
+    cwd: &Path,
+    prompt: &str,
+    task_dir: &Path,
+    timeout: Duration,
+    cancel: &Cancel,
+    on_line: Option<OnLine<'_>>,
+) -> Result<ClaudeResult, ClaudeError> {
     let spec = runner::process_spec(exe, args, cwd, Some(prompt), timeout);
-    let output = process::run(&spec, cancel)
-        .await
-        .map_err(ClaudeError::from_process)?;
+    let output = match on_line {
+        Some(on_line) => process::run_streaming(&spec, cancel, on_line).await,
+        None => process::run(&spec, cancel).await,
+    }
+    .map_err(ClaudeError::from_process)?;
     match map_output(&output, Some(task_dir)) {
         Err(ClaudeError::Failed { message, detail }) => match auth_status(exe, cwd, cancel).await {
             Ok(auth) if !auth.signed_in() => Err(ClaudeError::NotSignedIn { detail }),

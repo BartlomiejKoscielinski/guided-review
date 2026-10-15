@@ -1,9 +1,10 @@
 //! GitLab: REST v4 and GraphQL client (`client.rs`), errors, TLS (S6), the account (F-19.5), MR
-//! lists (F-02, ADR-024), one MR (`mr.rs`, F-05) and the project of a remote; poller and
-//! draft-note positions come with M5.
+//! lists (F-02, ADR-024), one MR (`mr.rs`, F-05), its discussions (read only, F-06.9) and the
+//! project of a remote; poller and draft-note positions come with M5.
 
 pub mod account;
 pub mod client;
+pub mod discussions;
 pub mod error;
 pub mod mr;
 pub mod mrs;

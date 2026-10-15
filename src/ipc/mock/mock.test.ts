@@ -21,6 +21,11 @@ const session: UnfinishedSession = {
   mode: 'focus',
   updatedAt: '2026-10-11T09:00:00Z',
   resume: { screen: 'S-03', sessionId: 's1' },
+  source: { kind: 'local', scope: { kind: 'uncommitted' } },
+  title: 'chore/compiled-bindings',
+  reviewedSteps: 2,
+  totalSteps: 6,
+  drafts: 0,
 };
 
 describe('mock IPC client', () => {

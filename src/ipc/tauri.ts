@@ -5,7 +5,17 @@ import { toIpcError } from './errors';
 import { createTauriWindowControls } from './tauri-window';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
+import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
+import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
+import type { DecisionOutcome } from './types/DecisionOutcome';
+import type { Draft } from './types/Draft';
+import type { PlanView } from './types/PlanView';
+import type { ResumedSession } from './types/ResumedSession';
+import type { SessionState } from './types/SessionState';
+import type { StepAnalysis } from './types/StepAnalysis';
+import type { StepOrder } from './types/StepOrder';
+import type { StepView } from './types/StepView';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
@@ -14,6 +24,7 @@ import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
+import type { Source } from './types/Source';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
@@ -66,6 +77,53 @@ export function createTauriClient(): IpcClient {
     },
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
+    sessionSource: (sessionId) => call<Source>('session_source', { sessionId }),
+    reviewPlan: (sessionId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<PlanView>>();
+      ch.onmessage = onEvent;
+      return call<PlanView>('review_plan', { session: sessionId, ch });
+    },
+    reviewSetStrategy: (sessionId, strategy) =>
+      call<StepOrder>('review_set_strategy', { session: sessionId, strategy }),
+    reviewReorderSteps: (sessionId, stepIds) =>
+      call<StepOrder>('review_reorder_steps', { session: sessionId, order: stepIds }),
+    reviewStep: (sessionId, stepId) =>
+      call<StepView>('review_step', { session: sessionId, step: stepId }),
+    reviewFindings: (sessionId, stepId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<StepAnalysis>>();
+      ch.onmessage = onEvent;
+      return call<StepAnalysis>('review_findings', { session: sessionId, step: stepId, ch });
+    },
+    reviewAsk: (sessionId, stepId, question, selection, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<AskAnswer>>();
+      ch.onmessage = onEvent;
+      return call<AskAnswer>('review_ask', {
+        session: sessionId,
+        step: stepId,
+        question,
+        selection,
+        ch,
+      });
+    },
+    reviewDecide: (sessionId, findingId, decision) =>
+      call<DecisionOutcome>('review_decide', { session: sessionId, finding: findingId, decision }),
+    reviewMarkStep: (sessionId, stepId, reviewed) =>
+      call<string[]>('review_mark_step', { session: sessionId, step: stepId, reviewed }),
+    sessionState: (sessionId) => call<SessionState>('session_state', { session: sessionId }),
+    sessionSetStep: (sessionId, stepId) =>
+      call<undefined>('session_set_step', { session: sessionId, step: stepId }),
+    sessionSetLayout: (sessionId, layout) =>
+      call<undefined>('session_set_layout', { session: sessionId, layout }),
+    sessionSetScroll: (sessionId, stepId, top) =>
+      call<undefined>('session_set_scroll', { session: sessionId, step: stepId, top }),
+    sessionSetChecklist: (sessionId, stepId, ticked) =>
+      call<undefined>('session_set_checklist', { session: sessionId, step: stepId, ticked }),
+    sessionResume: (sessionId) =>
+      call<ResumedSession | null>('session_resume', { session: sessionId }),
+    draftsList: (sessionId) => call<Draft[]>('drafts_list', { sessionId }),
+    draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
+    draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),
+    draftsDelete: (id) => call<undefined>('drafts_delete', { id }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),

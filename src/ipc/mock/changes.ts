@@ -1,12 +1,10 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
-import { layerOf } from './layer';
+import { keyOf, toFileDiff } from './diff';
 import { createMockRepos, type MockRepos } from './repos';
 import type { CommitInfo } from '../types/CommitInfo';
 import type { FileDiff } from '../types/FileDiff';
 import type { FileGroup } from '../types/FileGroup';
-import type { Hunk } from '../types/Hunk';
-import type { Line } from '../types/Line';
 import type { LocalChanges } from '../types/LocalChanges';
 import type { RepoOperation } from '../types/RepoOperation';
 import type { StageState } from '../types/StageState';
@@ -20,7 +18,6 @@ import {
   NEW_COMMIT,
   stagedAtStart,
   type MockFile,
-  type MockRow,
 } from './fixtures/changes';
 import { mrFiles } from './fixtures/mr';
 
@@ -54,10 +51,6 @@ type ChangesClient = Pick<
   | 'riderOpen'
   | 'onRepoChanged'
 >;
-
-/** Key of a change line: `o12` (deleted, HEAD number) or `n14` (added, working-tree number). */
-const keyOf = (row: MockRow): string | null =>
-  row[0] === 'd' ? `o${String(row[1])}` : row[0] === 'a' ? `n${String(row[1])}` : null;
 
 const splitPath = (path: string): [string, string] => {
   const i = path.lastIndexOf('/');
@@ -132,68 +125,11 @@ export function createChangesBackend(
     if (stagedAtStart(file.path)) changeKeys(file).forEach((k) => set(staged, file.path).add(k));
   }
 
-  const toDiff = (file: MockFile, local: boolean): FileDiff => {
-    const done = local ? committed.get(file.path) : undefined;
-    const inIndex = local ? staged.get(file.path) : undefined;
-    const hunks: Hunk[] = [];
-    for (const hunk of file.hunks) {
-      const lines: Line[] = [];
-      for (const row of hunk.rows) {
-        const key = keyOf(row);
-        if (row[0] === 'c') {
-          lines.push({ kind: 'ctx', oldNo: row[1], newNo: row[2], text: row[3], emphasis: [] });
-        } else if (key && done?.has(key)) {
-          // Committed: an added line is now context, a deleted line is gone.
-          if (row[0] === 'a') {
-            lines.push({ kind: 'ctx', oldNo: row[1], newNo: row[1], text: row[2], emphasis: [] });
-          }
-        } else if (row[0] === 'a') {
-          lines.push({
-            kind: 'add',
-            newNo: row[1],
-            text: row[2],
-            emphasis: [],
-            ...(local ? { staged: inIndex?.has(key ?? '') ?? false } : {}),
-          });
-        } else {
-          lines.push({
-            kind: 'del',
-            oldNo: row[1],
-            text: row[2],
-            emphasis: [],
-            ...(local ? { staged: inIndex?.has(key ?? '') ?? false } : {}),
-          });
-        }
-      }
-      if (!lines.some((l) => l.kind !== 'ctx')) continue;
-      const oldNos = lines.map((l) => l.oldNo).filter((n): n is number => n !== undefined);
-      const newNos = lines.map((l) => l.newNo).filter((n): n is number => n !== undefined);
-      hunks.push({
-        id: hunk.id,
-        oldStart: oldNos[0] ?? 0,
-        oldLines: oldNos.length,
-        newStart: newNos[0] ?? 0,
-        newLines: newNos.length,
-        header: hunk.header,
-        lines,
-        fileLevel: false,
-        stagedDiffers: false,
-      });
-    }
-    const count = (kind: Line['kind']) =>
-      hunks.flatMap((h) => h.lines).filter((l) => l.kind === kind).length;
-    return {
-      oldPath: file.status === 'added' ? undefined : (file.oldPath ?? file.path),
-      newPath: file.status === 'deleted' ? undefined : file.path,
-      status: file.status,
-      binary: false,
-      additions: count('add'),
-      deletions: count('del'),
-      layer: layerOf(file.path),
-      hunks,
-      lineStaging: local,
-    };
-  };
+  const toDiff = (file: MockFile, local: boolean): FileDiff =>
+    toFileDiff(
+      file,
+      local ? { done: committed.get(file.path), staged: staged.get(file.path) } : undefined,
+    );
 
   const treeFile = (file: MockFile, local: boolean): TreeFile => {
     const diff = toDiff(file, local);

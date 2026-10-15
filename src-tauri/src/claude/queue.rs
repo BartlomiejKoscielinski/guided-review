@@ -204,6 +204,39 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn f09_6_current_step_before_plan_before_prefetch() {
+        let queue = Queue::new(1);
+        let busy = queue
+            .acquire(Priority::Other, &Cancel::new())
+            .await
+            .unwrap();
+        let order = Arc::new(Mutex::new(Vec::new()));
+        let mut handles = Vec::new();
+        // Queued in the opposite order of their priority.
+        for (p, name) in [
+            (Priority::Other, "other step"),
+            (Priority::Prefetch, "prefetch"),
+            (Priority::Plan, "plan"),
+            (Priority::CurrentStep, "current step"),
+        ] {
+            let (queue, order) = (queue.clone(), order.clone());
+            handles.push(tokio::spawn(async move {
+                let _permit = queue.acquire(p, &Cancel::new()).await.unwrap();
+                order.lock().unwrap().push(name);
+            }));
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+        drop(busy);
+        for h in handles {
+            h.await.unwrap();
+        }
+        assert_eq!(
+            *order.lock().unwrap(),
+            ["current step", "plan", "prefetch", "other step"]
+        );
+    }
+
+    #[tokio::test]
     async fn f18_7_limit_pauses_background_tasks_until_retry() {
         let queue = Queue::new(2);
         queue.pause();

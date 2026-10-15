@@ -23,7 +23,7 @@ async function run<T>(action: () => Promise<T>): Promise<T> {
 /**
  * Window controls through the Tauri window API. Needs the capabilities
  * core:window:allow-minimize, -toggle-maximize, -close and -start-dragging
- * (is-maximized and the resize event are in core:default).
+ * (is-maximized is in core:window:default, the resize event in core:event:default).
  */
 export function createTauriWindowControls(): WindowControls {
   const win = () => getCurrentWindow();

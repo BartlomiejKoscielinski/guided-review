@@ -13,6 +13,7 @@ use super::exec;
 use super::models::{self, TaskGroup};
 use super::prompts;
 use super::queue::{Priority, Queue};
+use super::result::clamp;
 use super::runner::{self, OutputFormat, Task};
 use super::task_dir::TaskDir;
 use crate::git::Git;
@@ -106,14 +107,6 @@ pub fn message_from(structured: Option<&Value>) -> Result<String, ClaudeError> {
     } else {
         format!("{summary}\n\n{body}")
     })
-}
-
-fn clamp(text: &str, max: usize) -> String {
-    if text.chars().count() <= max {
-        return text.to_owned();
-    }
-    let kept: String = text.chars().take(max.saturating_sub(1)).collect();
-    format!("{}…", kept.trim_end())
 }
 
 /// Everything a run needs from the app.

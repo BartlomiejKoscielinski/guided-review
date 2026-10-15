@@ -39,6 +39,7 @@ query MrList(
         webUrl
         createdAt
         updatedAt
+        diffHeadSha
         author {
           username
           name

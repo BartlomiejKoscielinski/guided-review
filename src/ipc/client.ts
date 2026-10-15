@@ -1,7 +1,23 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AppHealth } from './types/AppHealth';
+import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
+import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
+import type { DecisionOutcome } from './types/DecisionOutcome';
+import type { Draft } from './types/Draft';
+import type { DraftPatch } from './types/DraftPatch';
+import type { FindingDecision } from './types/FindingDecision';
+import type { Layout } from './types/Layout';
+import type { LineSelection } from './types/LineSelection';
+import type { NewDraft } from './types/NewDraft';
+import type { PlanView } from './types/PlanView';
+import type { ResumedSession } from './types/ResumedSession';
+import type { SessionState } from './types/SessionState';
+import type { StepOrder } from './types/StepOrder';
+import type { StepView } from './types/StepView';
+import type { Strategy } from './types/Strategy';
+import type { StepAnalysis } from './types/StepAnalysis';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { CommitRange } from './types/CommitRange';
@@ -12,6 +28,7 @@ import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
+import type { Source } from './types/Source';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
@@ -90,6 +107,88 @@ export interface IpcClient {
    * Starts no GitLab work.
    */
   sessionMr(sessionId: string): Promise<SessionMr | null>;
+  /** What the session reviews (F-17.1): S-02's header of a commit or local session. */
+  sessionSource(sessionId: string): Promise<Source>;
+
+  // S-02 plan (F-06). Claude task events go to `onEvent`.
+  /**
+   * The session's plan (F-06.2): from the cache `queued` → `done` with `cachedAt` and no
+   * `claude`, else `queued`, `started`, then `done` or `failed` (F-06.12).
+   */
+  reviewPlan(
+    sessionId: string,
+    onEvent: (event: ClaudeTaskEvent<PlanView>) => void,
+  ): Promise<PlanView>;
+  /** Contract to UI, Tests first or File order (F-06.4); clears a dragged order. No Claude. */
+  reviewSetStrategy(sessionId: string, strategy: Strategy): Promise<StepOrder>;
+  /** A dragged order naming every step once (F-06.5); saved in the session. */
+  reviewReorderSteps(sessionId: string, stepIds: string[]): Promise<StepOrder>;
+
+  // S-03 steps, questions and decisions (F-09, F-10). Claude task events go to `onEvent`.
+  /**
+   * A step of the planned session (F-07.2, F-07.3): "STEP n OF m" in the reader's order, its
+   * files with only its hunks, the threads inside them, the reviewed flag. No Claude.
+   */
+  reviewStep(sessionId: string, stepId: string): Promise<StepView>;
+  /**
+   * A step's notes (F-09.6): `queued`, `started` unless already analyzed, then `done` or
+   * `failed`; the next step is prefetched. Notes come with their stored decisions.
+   */
+  reviewFindings(
+    sessionId: string,
+    stepId: string,
+    onEvent: (event: ClaudeTaskEvent<StepAnalysis>) => void,
+  ): Promise<StepAnalysis>;
+  /**
+   * A question on a step and, if any, the selected lines (F-10.1): `partialText` pieces, then
+   * `done` with the whole answer; follow-ups continue the step's Claude session (F-10.2).
+   */
+  reviewAsk(
+    sessionId: string,
+    stepId: string,
+    question: string,
+    selection: LineSelection | null,
+    onEvent: (event: ClaudeTaskEvent<AskAnswer>) => void,
+  ): Promise<AskAnswer>;
+  /**
+   * Add to drafts, Edit and add, Dismiss or Undo on a note of the session (F-09.2, F-09.4). Local
+   * only. The session names the note: another review can hold a note with the same ID.
+   */
+  reviewDecide(
+    sessionId: string,
+    findingId: string,
+    decision: FindingDecision,
+  ): Promise<DecisionOutcome>;
+  /**
+   * Mark reviewed (Space) or its undo (F-07.2); the plan's reviewed steps for the done checks
+   * and progress segments (F-07.1). No Claude.
+   */
+  reviewMarkStep(sessionId: string, stepId: string, reviewed: boolean): Promise<string[]>;
+
+  // S-03 session state (F-04.3): read when S-03 opens, written on change; database only.
+  /** The step S-03 was on, the session's layout, scroll per step and checklist ticks. */
+  sessionState(sessionId: string): Promise<SessionState>;
+  /** The step S-03 is on. */
+  sessionSetStep(sessionId: string, stepId: string): Promise<void>;
+  /** The layout chosen for the session (F-07.1). */
+  sessionSetLayout(sessionId: string, layout: Layout): Promise<void>;
+  /** Where the step was scrolled, in pixels (written debounced). */
+  sessionSetScroll(sessionId: string, stepId: string, top: number): Promise<void>;
+  /** The step's ticked "For you to judge" items (F-08.7); an empty list unticks all. */
+  sessionSetChecklist(sessionId: string, stepId: string, ticked: string[]): Promise<void>;
+  /**
+   * S-03 restored on start (F-30.4): the cached plan, the step the session was on without the
+   * MR's threads, and its notes when they are cached; null when the plan isn't cached. Starts
+   * no Claude or GitLab work.
+   */
+  sessionResume(sessionId: string): Promise<ResumedSession | null>;
+
+  // Drafts (F-09.2, F-10.3): kept on this PC; nothing reaches GitLab without Publish.
+  draftsList(sessionId: string): Promise<Draft[]>;
+  draftsCreate(draft: NewDraft): Promise<Draft>;
+  /** Edits the text or the Publish tick; a published draft is refused. */
+  draftsUpdate(id: string, patch: DraftPatch): Promise<Draft>;
+  draftsDelete(id: string): Promise<void>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */

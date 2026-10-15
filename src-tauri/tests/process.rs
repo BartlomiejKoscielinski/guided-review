@@ -1,5 +1,9 @@
 //! `os/process.rs` against a real child process (`gr-test-child`, see `tests/bin/`).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "test helpers")]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "tests check the process tree with tasklist and taskkill"
+)]
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -168,6 +172,17 @@ async fn process_decodes_utf8_and_keeps_crlf() {
         .unwrap();
     assert_eq!(output.stdout, "zażółć gęślą jaźń\r\nZAŻÓŁĆ\n");
     assert!(!output.lossy);
+}
+
+#[tokio::test]
+async fn process_streams_stdout_lines_and_keeps_the_whole_output() {
+    let mut lines = Vec::new();
+    let mut on_line = |line: &str| lines.push(line.to_owned());
+    let output = process::run_streaming(&child().arg("utf8"), &Cancel::new(), &mut on_line)
+        .await
+        .unwrap();
+    assert_eq!(lines, ["zażółć gęślą jaźń", "ZAŻÓŁĆ"]);
+    assert_eq!(output.stdout, "zażółć gęślą jaźń\r\nZAŻÓŁĆ\n");
 }
 
 #[tokio::test]

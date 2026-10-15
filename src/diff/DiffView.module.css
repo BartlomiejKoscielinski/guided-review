@@ -164,3 +164,97 @@
   font-size: 13.5px;
   color: var(--text-muted);
 }
+
+/* S-03 gutter markers (Review.dc.html: 60px new-side gutter, markers left of the number). */
+.half.wide {
+  grid-template-columns: 64px 16px minmax(0, 1fr);
+}
+
+.marked {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.markers {
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Fold row (Review.dc.html): a mechanical region collapsed with Show. */
+.fold {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 16px 9px 56px;
+  background: var(--panel-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.show {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--yellow);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.insert {
+  background: var(--bg);
+}
+
+/* Rows scroll with the page (S-03): no own scroller, no side padding. */
+.inline {
+  position: relative;
+}
+
+/* S-03 (Review.dc.html): no sign column; 48px old and 60px new gutter, number padded 10px, code
+   10px from it. */
+.noSigns .half {
+  grid-template-columns: 48px minmax(0, 1fr);
+}
+.noSigns .half.wide {
+  grid-template-columns: 60px minmax(0, 1fr);
+}
+.noSigns .sign {
+  display: none;
+}
+.noSigns .lineNo {
+  padding: 0 10px;
+}
+.noSigns .wide .lineNo {
+  padding-left: 8px;
+}
+.noSigns .code {
+  padding-left: 10px;
+}
+/* Equal code widths: the old half is 12px narrower than the new one (48px vs 60px gutter). */
+.noSigns .split:has(.wide) {
+  grid-template-columns: minmax(0, calc(50% - 7px)) minmax(0, 1fr);
+}
+
+/* S-03 selected lines (F-10.1): a yellow wash over the line, the number in yellow. */
+.half.selected {
+  position: relative;
+}
+.half.selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--yellow) 10%, transparent);
+  pointer-events: none;
+}
+.selected .lineNo {
+  color: var(--yellow);
+  font-weight: 600;
+}

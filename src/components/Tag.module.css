@@ -55,6 +55,11 @@
   --tag-text: var(--text);
 }
 
+.muted {
+  --tag-color: var(--text-muted);
+  --tag-text: var(--text-muted);
+}
+
 .filled {
   background: var(--tag-color);
 }

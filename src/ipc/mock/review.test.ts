@@ -1,0 +1,294 @@
+import { describe, expect, it } from 'vitest';
+import { createMockClient } from '.';
+import type { AskAnswer } from '../types/AskAnswer';
+import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
+import type { LineSelection } from '../types/LineSelection';
+import { NOTES_STEP } from './fixtures/review';
+import type { ReviewScenario } from './review';
+
+const SESSION = 'mock-mr-session-1';
+
+const client = (review: ReviewScenario = {}) => createMockClient({ latencyMs: 0, review });
+
+function recorder<T>() {
+  const events: ClaudeTaskEvent<T>[] = [];
+  const kinds = () =>
+    events.map((e) => (e.kind === 'partialText' ? `partialText:${e.text}` : e.kind));
+  return { events, kinds, push: (e: ClaudeTaskEvent<T>) => events.push(e) };
+}
+
+describe('mock review backend', () => {
+  it('F-09.6 step notes: queued, started, done; opened again from the cache', async () => {
+    const mock = client();
+    const first = recorder();
+    const analysis = await mock.reviewFindings(SESSION, NOTES_STEP, first.push);
+    expect(first.kinds()).toEqual(['queued', 'started', 'done']);
+    expect(analysis.findings.map((f) => f.id)).toEqual(['f1', 'f2', 'f3', 'f4']);
+    expect(analysis.findings.map((f) => f.severity)).toEqual(['q', 'fix', 'nit', 'fix']);
+    expect(analysis.findings.every((f) => f.decision === 'open')).toBe(true);
+    expect(analysis.checklist).toHaveLength(3);
+
+    const again = recorder();
+    await mock.reviewFindings(SESSION, NOTES_STEP, again.push);
+    expect(again.kinds()).toEqual(['queued', 'done']);
+    // Other steps: "Nothing stood out."
+    expect((await mock.reviewFindings(SESSION, 's1', () => undefined)).findings).toEqual([]);
+  });
+
+  it('F-09.1 each mock note has severity, title, body, line (file, side, line), evidence and a suggested comment, as in Main.dc.html', async () => {
+    const mock = client();
+    const { findings } = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    const vm = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
+    // Main.dc.html's F[]: severity, line, title and the "Checked in" chip of each note.
+    expect(
+      findings.map((f) => [f.severity, f.file, f.side, f.line, f.title, f.evidence.length]),
+    ).toEqual([
+      ['q', vm, 'new', 46, 'The whole photo goes into SQLite as byte[]', 1],
+      ['fix', vm, 'new', 49, 'PendingCount won’t refresh after upload', 1],
+      ['nit', vm, 'new', 51, 'Status texts are hardcoded', 1],
+      ['fix', vm, 'new', 54, 'catch (Exception) also catches camera cancellation', 1],
+    ]);
+    // The mock's chips abbreviate the folders; the file name and the line are what it shows.
+    const chips = findings.map((f) => {
+      const [first] = f.evidence;
+      return `${(first?.file ?? '').split('/').pop() ?? ''}:${String(first?.line)}`;
+    });
+    expect(chips[0]).toBe('PendingUpload.cs:5');
+    expect(chips[1]).toBe('UploadWorker.cs:58');
+    expect(chips[2]).toMatch(/\.resx:\d+$/);
+    expect(chips[3]).toBe('CameraService.cs:31');
+    for (const f of findings) {
+      expect(f.body.length).toBeGreaterThan(40);
+      expect(f.suggestedComment.length).toBeGreaterThan(20);
+      for (const e of f.evidence) {
+        expect(e.file).not.toMatch(/\\|^\//);
+        expect(e.line).toBeGreaterThanOrEqual(1);
+        expect(e.note.length).toBeGreaterThan(0);
+      }
+    }
+    expect(findings[1]?.body).toBe(
+      'The counter is only computed when adding. UploadWorker from step 3 removes items from the queue but never notifies the ViewModel, so the offline banner will show a stale number.',
+    );
+    expect(findings[1]?.suggestedComment).toBe(
+      'Could IUploadQueue publish changes (an event or WeakReferenceMessenger) so the ViewModel refreshes PendingCount after each upload?',
+    );
+  });
+
+  it('F-09.6 a failing step task sends failed and rejects with CLAUDE_FAILED', async () => {
+    const mock = client({ stepFails: true });
+    const run = recorder();
+    await expect(mock.reviewFindings(SESSION, NOTES_STEP, run.push)).rejects.toMatchObject({
+      code: 'CLAUDE_FAILED',
+      retryable: true,
+    });
+    expect(run.kinds()).toEqual(['queued', 'started', 'failed']);
+  });
+
+  it('F-09.2 add to drafts, dismiss and undo; decisions survive reopening the step', async () => {
+    const mock = client();
+    await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+
+    const added = await mock.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
+    expect(added.finding.decision).toBe('draft');
+    expect(added.draft).toMatchObject({
+      sessionId: SESSION,
+      findingId: 'f2',
+      body: added.finding.suggestedComment,
+      position: { file: added.finding.file, side: 'new', line: 49 },
+      severity: 'fix',
+      include: true,
+    });
+    const edited = await mock.reviewDecide(SESSION, 'f4', {
+      kind: 'editAndAdd',
+      body: 'Catch it apart?',
+    });
+    expect(edited.draft?.body).toBe('Catch it apart?');
+    const dismissed = await mock.reviewDecide(SESSION, 'f3', { kind: 'dismiss' });
+    expect(dismissed).toMatchObject({ finding: { decision: 'dismissed' }, draft: null });
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2', 'f4']);
+
+    await expect(mock.reviewDecide(SESSION, 'f2', { kind: 'dismiss' })).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
+    await expect(mock.reviewDecide(SESSION, 'nope', { kind: 'dismiss' })).rejects.toMatchObject({
+      code: 'INVALID_INPUT',
+      message: 'This note no longer exists.',
+    });
+
+    const reopened = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    expect(reopened.findings.map((f) => f.decision)).toEqual([
+      'open',
+      'draft',
+      'dismissed',
+      'draft',
+    ]);
+
+    await mock.reviewDecide(SESSION, 'f2', { kind: 'undo' });
+    await mock.reviewDecide(SESSION, 'f3', { kind: 'undo' });
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f4']);
+    await expect(mock.reviewDecide(SESSION, 'f3', { kind: 'undo' })).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
+  });
+
+  it('F-09.2 undo of Edit and add removes its draft only; a blank edit is refused like the core does', async () => {
+    const mock = client();
+    await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+
+    await mock.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
+    const edited = await mock.reviewDecide(SESSION, 'f4', {
+      kind: 'editAndAdd',
+      body: 'Catch it apart?',
+    });
+    expect(edited.finding.decision).toBe('draft');
+    const undone = await mock.reviewDecide(SESSION, 'f4', { kind: 'undo' });
+    expect(undone).toMatchObject({ finding: { id: 'f4', decision: 'open' }, draft: null });
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2']);
+
+    // Undone, the note takes Edit and add again; its suggested comment is untouched.
+    const again = await mock.reviewDecide(SESSION, 'f4', {
+      kind: 'editAndAdd',
+      body: 'Second try.',
+    });
+    expect(again.draft?.body).toBe('Second try.');
+    expect(again.finding.suggestedComment).toBe(edited.finding.suggestedComment);
+
+    // Blank text is refused with the core's copy and leaves the note open (nothing half done).
+    await expect(
+      mock.reviewDecide(SESSION, 'f1', { kind: 'editAndAdd', body: '  ' }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT', message: 'Write a comment first.' });
+    const { findings } = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    expect(findings.map((f) => f.decision)).toEqual(['open', 'draft', 'open', 'draft']);
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2', 'f4']);
+  });
+
+  it('F-09.4 another review raising a note with the same ID keeps its own decision, like the core', async () => {
+    const mock = client();
+    const other = 'mock-commit-session-1';
+    await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    await mock.reviewDecide(SESSION, 'f3', { kind: 'dismiss' });
+    await mock.reviewDecide(SESSION, 'f2', { kind: 'addToDrafts' });
+
+    const there = await mock.reviewFindings(other, NOTES_STEP, () => undefined);
+    expect(there.findings.map((f) => f.decision)).toEqual(['open', 'open', 'open', 'open']);
+    await mock.reviewDecide(other, 'f2', { kind: 'addToDrafts' });
+    await mock.reviewDecide(other, 'f2', { kind: 'undo' });
+    // Undo there deletes only that review's draft; the MR's note and draft stay.
+    expect((await mock.draftsList(SESSION)).map((d) => d.findingId)).toEqual(['f2']);
+    const here = await mock.reviewFindings(SESSION, NOTES_STEP, () => undefined);
+    expect(here.findings.map((f) => f.decision)).toEqual(['open', 'draft', 'dismissed', 'open']);
+  });
+
+  it('F-09.2 local drafts: create, update, delete with the core’s error copy', async () => {
+    const mock = client();
+    await expect(
+      mock.draftsCreate({
+        sessionId: SESSION,
+        findingId: null,
+        body: '  ',
+        position: null,
+        severity: null,
+      }),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT', message: 'Write a comment first.' });
+
+    const draft = await mock.draftsCreate({
+      sessionId: SESSION,
+      findingId: null,
+      body: 'Why a queue here?',
+      position: null,
+      severity: null,
+    });
+    expect(draft).toMatchObject({ include: true, publishedNoteId: null, error: null });
+    const updated = await mock.draftsUpdate(draft.id, { body: null, include: false });
+    expect(updated).toMatchObject({ body: 'Why a queue here?', include: false });
+    expect(await mock.draftsList('another-session')).toEqual([]);
+
+    await mock.draftsDelete(draft.id);
+    expect(await mock.draftsList(SESSION)).toEqual([]);
+    await expect(mock.draftsDelete(draft.id)).rejects.toMatchObject({
+      code: 'INVALID_INPUT',
+      message: 'This draft no longer exists.',
+    });
+  });
+
+  it('F-10.2 a question streams partialText pieces, then done; the next one is a follow-up', async () => {
+    const mock = client();
+    const run = recorder();
+    const answer = await mock.reviewAsk(SESSION, NOTES_STEP, 'Why a queue?', null, run.push);
+    const kinds = run.kinds();
+    expect(kinds.slice(0, 2)).toEqual(['queued', 'started']);
+    expect(kinds.at(-1)).toBe('done');
+    const streamed = run.events.flatMap((e) => (e.kind === 'partialText' ? [e.text] : []));
+    expect(streamed.length).toBeGreaterThan(1);
+    expect(answer).toEqual({ text: streamed.join('').trim(), followUp: false });
+
+    const followUp = await mock.reviewAsk(
+      SESSION,
+      NOTES_STEP,
+      'And offline?',
+      null,
+      () => undefined,
+    );
+    expect(followUp.followUp).toBe(true);
+    await expect(
+      mock.reviewAsk(SESSION, NOTES_STEP, ' ', null, () => undefined),
+    ).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+  });
+
+  describe('F-10.1 a question about lines of the step', () => {
+    const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
+    const QUEUE = 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs';
+    const ask = (mock: ReturnType<typeof client>, selection: LineSelection | null) =>
+      mock.reviewAsk(SESSION, NOTES_STEP, 'Why?', selection, () => undefined);
+
+    it('F-10.1 lines of the step are answered, on either side and in either order', async () => {
+      const mock = client();
+      const lines: LineSelection[] = [
+        { file: VM, side: 'new', start: 47, end: 50 },
+        { file: VM, side: 'new', start: 50, end: 47 },
+        { file: VM, side: 'old', start: 37, end: 38 },
+        // Some of the lines are in the step: that is enough, as in the core.
+        { file: VM, side: 'new', start: 50, end: 200 },
+      ];
+      for (const selection of lines) {
+        expect((await ask(mock, selection)).text).not.toBe('');
+      }
+    });
+
+    it('F-10.1 lines that are not in the step are refused like the core, and the refused question is not the first of the step', async () => {
+      const mock = client();
+      const outside: LineSelection[] = [
+        { file: 'README.md', side: 'new', start: 1, end: 1 },
+        // A file of step 2, not of step 4.
+        { file: QUEUE, side: 'new', start: 1, end: 3 },
+        // A file of the step, but lines no hunk of it covers.
+        { file: VM, side: 'new', start: 1, end: 3 },
+        { file: VM, side: 'new', start: 100, end: 101 },
+      ];
+      for (const selection of outside) {
+        const run = recorder<AskAnswer>();
+        await expect(
+          mock.reviewAsk(SESSION, NOTES_STEP, 'Why?', selection, run.push),
+        ).rejects.toMatchObject({
+          code: 'INVALID_INPUT',
+          message: 'The selected lines are not in this step.',
+        });
+        expect(run.kinds().filter((k) => k.startsWith('partialText') || k === 'done')).toEqual([]);
+      }
+      expect((await ask(mock, null)).followUp).toBe(false);
+    });
+
+    it('F-10.1 an empty question is refused before the lines are looked at', async () => {
+      const mock = client();
+      await expect(
+        mock.reviewAsk(
+          SESSION,
+          NOTES_STEP,
+          ' ',
+          { file: 'README.md', side: 'new', start: 1, end: 1 },
+          () => undefined,
+        ),
+      ).rejects.toMatchObject({ code: 'INVALID_INPUT', message: 'Type a question first.' });
+    });
+  });
+});

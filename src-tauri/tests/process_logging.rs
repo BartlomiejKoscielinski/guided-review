@@ -2,6 +2,10 @@
 //! A test binary of its own: it installs the global logger, which a scoped one in a
 //! multi-threaded test binary can't replace reliably (tracing caches callsite interest).
 #![allow(clippy::unwrap_used, reason = "test helpers")]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "own test binary: it installs the global logger"
+)]
 
 use std::sync::Arc;
 

@@ -1,5 +1,5 @@
 //! MAUI layer of a changed file from its path (F-05.4, M2 decision 4, 05 › Layers). The plan,
-//! the "File order" strategy and the UI tags use the same names.
+//! the file-order fallback without Claude and the UI tags use the same names.
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;

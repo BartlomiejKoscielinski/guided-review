@@ -1,0 +1,23 @@
+/* Progress segments (Review.dc.html: title bar of layout B, guide panel of layout C). */
+.segment {
+  flex: 0 0 auto;
+  background: var(--line);
+}
+
+.bar {
+  width: 18px;
+  height: 6px;
+}
+
+.guide {
+  width: 10px;
+  height: 10px;
+}
+
+.done {
+  background: var(--green);
+}
+
+.now {
+  background: var(--yellow);
+}

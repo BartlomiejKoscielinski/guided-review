@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { Line } from '../ipc/types/Line';
 import { cx } from '../components/cx';
 import type { DiffTokens } from './highlight';
@@ -13,12 +14,14 @@ export interface UnifiedRowProps {
   dim: boolean;
   last: boolean;
   staging?: DiffStaging;
+  /** Gutter markers of the line (F-07.5). */
+  marker?: ReactNode;
 }
 
 const SIGN = { add: '+', del: '−', ctx: '' } as const;
 
 /** One line of the unified diff: old and new numbers, sign, code. */
-export function UnifiedRow({ line, tokens, dim, last, staging }: UnifiedRowProps) {
+export function UnifiedRow({ line, tokens, dim, last, staging, marker }: UnifiedRowProps) {
   const side = line.kind === 'del' ? tokens?.old : tokens?.new;
   const no = line.kind === 'del' ? line.oldNo : line.newNo;
   const toggle = staging
@@ -33,7 +36,7 @@ export function UnifiedRow({ line, tokens, dim, last, staging }: UnifiedRowProps
       data-staged={line.staged === undefined ? undefined : String(line.staged)}
     >
       <LineNumber no={line.oldNo} line={line} onShiftClick={toggle} />
-      <LineNumber no={line.newNo} line={line} onShiftClick={toggle} />
+      <LineNumber no={line.newNo} line={line} onShiftClick={toggle} marker={marker} />
       <span className={styles.sign} aria-hidden="true">
         {SIGN[line.kind]}
       </span>
