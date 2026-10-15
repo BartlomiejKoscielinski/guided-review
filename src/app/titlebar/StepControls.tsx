@@ -5,6 +5,7 @@ import { Segmented } from '../../components/Segmented';
 import type { FocusLayout } from '../../state/focus';
 import { ContextText } from './ContextText';
 import { PLACEHOLDER } from './placeholders';
+import { useFinishReview } from './useFinishReview';
 
 const P = PLACEHOLDER;
 const noop = () => undefined;
@@ -61,6 +62,7 @@ export interface StepControlsProps {
 
 /** Focus/Detailed toggle (F-08.1, M4), the layout switch (F-07.1) and Finish review (F-30.3, M4). */
 export function StepControls({ mode, model, layout = 'A', onLayout = noop }: StepControlsProps) {
+  const finishReview = useFinishReview();
   return (
     <>
       <Segmented label="Mode" size="bar" options={MODE_OPTIONS} value={mode} onChange={noop} />
@@ -74,7 +76,7 @@ export function StepControls({ mode, model, layout = 'A', onLayout = noop }: Ste
         />
       )}
       {model}
-      <Button variant="primary" size={28}>
+      <Button variant="primary" size={28} onClick={finishReview}>
         Finish review
       </Button>
     </>

@@ -72,6 +72,37 @@ async function step4(page: Page, layout: 'A' | 'B' | 'C') {
 /** Review.dc.html is on step 4 with steps 1 to 3 done; !482 is the first MR session of an empty mock. */
 const MR_482_REVIEWED = { 'mock-mr-session-1': ['s1', 's2', 's3'] };
 
+/** The first local session of an empty mock, with all 8 steps marked reviewed (SummaryDesk.dc.html). */
+const LOCAL_ALL_REVIEWED = { 'mock-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'] };
+
+/**
+ * S-05 of a self-review (F-17.4): Review before push on staged changes, the four notes of step 4
+ * kept to fix, then Finish review. The mock's five drafts become four kept notes.
+ */
+async function selfReviewSummary(page: Page) {
+  const mine = page.getByRole('region', { name: 'My changes' });
+  await mine.getByRole('radio', { name: /Staged only/ }).check();
+  await mine.getByRole('button', { name: 'Review before push' }).click();
+  await page.getByRole('button', { name: /Start step 1/ }).click();
+  await page
+    .getByRole('navigation', { name: 'Steps' })
+    .getByRole('button', { name: /ViewModel/ })
+    .click();
+  await page.getByText('Fields and constructor: 3 new dependencies').waitFor();
+  for (const title of [
+    'catch (Exception) also catches camera cancellation',
+    'PendingCount won’t refresh after upload',
+    'The whole photo goes into SQLite as byte[]',
+    'Status texts are hardcoded',
+  ]) {
+    const note = page.getByRole('article', { name: `Claude note: ${title}` });
+    await note.getByRole('button', { name: 'Keep to fix' }).click();
+    await note.getByRole('button', { name: 'Undo' }).waitFor();
+  }
+  await page.getByTestId('title-bar').getByRole('button', { name: 'Finish review' }).click();
+  await page.getByText('Back to steps').waitFor();
+}
+
 const SHOTS: Shot[] = [
   {
     screen: 'S01',
@@ -209,6 +240,13 @@ const SHOTS: Shot[] = [
     lastRoute: { screen: 'S-01' },
     reviewed: MR_482_REVIEWED,
     prepare: (page) => step4(page, 'C'),
+  },
+  {
+    screen: 'S05',
+    state: 'summary-self-review',
+    lastRoute: { screen: 'S-01' },
+    reviewed: LOCAL_ALL_REVIEWED,
+    prepare: selfReviewSummary,
   },
   { screen: 'S06', state: 'changes-local', lastRoute: { screen: 'S-06' }, prepare: changesLocal },
   {
