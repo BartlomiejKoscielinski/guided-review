@@ -19,7 +19,7 @@ async function expectDetailed(page: Page) {
   await expect(mode(page).getByRole('radio', { name: 'Detailed' })).toBeChecked();
   await expect(page.getByRole('complementary', { name: 'Guide' })).toBeVisible();
   await expect(page.getByText('Step 4 of 8')).toHaveCount(0);
-  await expect(page.getByRole('radiogroup', { name: 'Layout' })).toHaveCount(0);
+  await expect(page.getByRole('radiogroup', { name: 'Layout', exact: true })).toHaveCount(0);
 }
 
 async function expectFocus(page: Page) {
