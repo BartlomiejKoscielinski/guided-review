@@ -70,7 +70,7 @@ test('F-02.5 the row of an MR with a cached plan says "plan is ready", once', as
   await expect(mrs(page).getByText(/plan is ready/)).toHaveCount(1);
 });
 
-test('F-03.1 F-03.2 search, Shift+click range and Review opens the step review', async ({
+test('F-03.1 F-03.2 F-17.1 search, Shift+click range and Review opens the review plan', async ({
   page,
 }) => {
   const column = commits(page);
@@ -88,7 +88,7 @@ test('F-03.1 F-03.2 search, Shift+click range and Review opens the step review',
   await expect(column.getByRole('option', { selected: true })).toHaveCount(3);
   await expect(column.getByRole('button', { name: 'Browse files' })).toBeDisabled();
   await column.getByRole('button', { name: 'Review e07d3f1..9be0d47' }).click();
-  await expect(page.getByRole('main', { name: 'Step review' })).toBeVisible();
+  await expect(page.getByRole('main', { name: 'Review plan' })).toBeVisible();
 });
 
 test('F-03.2 Browse files opens S-06 in commit mode', async ({ page }) => {
@@ -96,6 +96,13 @@ test('F-03.2 Browse files opens S-06 in commit mode', async ({ page }) => {
   await commits(page).getByRole('button', { name: 'Browse files' }).click();
   const details = page.getByRole('complementary', { name: 'Commit details' });
   await expect(details.getByText('a3f9c12')).toBeVisible();
+});
+
+test('F-17.1 Review of a commit opens the review plan, like a merge request', async ({ page }) => {
+  await commits(page).getByRole('option').first().click();
+  await commits(page).getByRole('button', { name: 'Review a3f9c12' }).click();
+  await expect(page.getByRole('main', { name: 'Review plan' })).toBeVisible({ timeout: 5000 });
+  await expect(page).toHaveURL(/\/session\/[^/]+\/plan$/);
 });
 
 test('F-03.3 F-03.4 scopes with counts; Review before push opens a self-review', async ({

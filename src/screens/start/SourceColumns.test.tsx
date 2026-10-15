@@ -90,7 +90,7 @@ describe('S-01 Commits', () => {
     const sessionOpenCommit = vi.fn<IpcClient['sessionOpenCommit']>((range) =>
       base.sessionOpenCommit(range),
     );
-    const { router } = renderStart({ sessionOpenCommit });
+    renderStart({ sessionOpenCommit });
     const list = await rows();
     await shiftClick(user, list[1] as HTMLElement);
     await user.click(commits().getByRole('button', { name: 'Review 9be0d47..a3f9c12' }));
@@ -98,8 +98,27 @@ describe('S-01 Commits', () => {
       from: '51c2e8a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6',
       to: 'a3f9c12b7e4d6f8091a2b3c4d5e6f708192a3b4c',
     });
+  });
+
+  it('F-17.1 Review of a commit range opens the review plan (S-02), not the step', async () => {
+    const user = userEvent.setup();
+    const { router } = renderStart();
+    const list = await rows();
+    await shiftClick(user, list[1] as HTMLElement);
+    await user.click(commits().getByRole('button', { name: 'Review 9be0d47..a3f9c12' }));
     await waitFor(() => {
-      expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/step$/);
+      expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
+    });
+  });
+
+  it('F-17.1 Review of one commit opens the review plan (S-02), not the step', async () => {
+    const user = userEvent.setup();
+    const { router } = renderStart();
+    const list = await rows();
+    await user.click(list[0] as HTMLElement);
+    await user.click(commits().getByRole('button', { name: 'Review a3f9c12' }));
+    await waitFor(() => {
+      expect(router.state.location.pathname).toMatch(/^\/session\/mock-session-\d+\/plan$/);
     });
   });
 

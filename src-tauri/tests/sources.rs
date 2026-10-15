@@ -468,9 +468,10 @@ async fn f01_3_session_for_a_commit_and_a_range() {
     assert_eq!(resolved.base_sha, parent);
     assert_eq!(resolved.head_sha, head);
     let (id, route) = save(&store, repo_id, resolved);
+    // F-17.1 (M3 decision 12): a commit opens the plan like local changes and MRs.
     assert_eq!(
         route,
-        Route::Step {
+        Route::Plan {
             session_id: id.clone()
         }
     );
@@ -479,7 +480,7 @@ async fn f01_3_session_for_a_commit_and_a_range() {
         .unwrap()
         .unwrap();
     assert_eq!(stored.repo_id, repo_id);
-    assert_eq!(stored.status, Some(SessionStatus::Reviewing));
+    assert_eq!(stored.status, Some(SessionStatus::Planning));
     let source: Source = serde_json::from_str(&stored.source_json).unwrap();
     assert_eq!(
         source,
