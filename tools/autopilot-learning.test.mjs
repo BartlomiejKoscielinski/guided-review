@@ -1,6 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { addEntry, curate, empty, rate, render, select, touch } from './autopilot/playbook-lib.mjs';
+import {
+  addEntry,
+  curate,
+  empty,
+  existing,
+  merge,
+  rate,
+  render,
+  select,
+  touch,
+} from './autopilot/playbook-lib.mjs';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -250,4 +260,62 @@ test('autopilot metrics: the first gate call decides first pass; record.mjs take
   const bad = record('built');
   assert.equal(bad.status, 2);
   assert.match(bad.stderr, /--result done\|partial\|live\|blocked\|needs-owner/);
+});
+
+test('autopilot playbook E17: promotion by helpful count, a lesson confirmed by id, merge, lessons to compare', () => {
+  const pb = empty();
+  addEntry(pb, { tags: ['core', 'tests'], text: 'Assert what can fail.' }, 't');
+  addEntry(pb, { tags: ['ui', 'implement', 'src/screens/**'], text: 'Seed the mock.' }, 't');
+  addEntry(
+    pb,
+    { tags: ['ui', 'tests'], text: 'Name the change that would fail the assertion.' },
+    't',
+  );
+  addEntry(pb, { tags: ['mixed', 'fix'], text: 'Run new test binaries several times.' }, 't');
+  for (let i = 0; i < 3; i++) rate(pb, 'P-002', 'helpful');
+  for (let i = 0; i < 4; i++) rate(pb, 'P-004', 'helpful');
+  rate(pb, 'P-004', 'harmful');
+  const again = addEntry(
+    pb,
+    { same: 'P-001', tags: ['src-tauri/tests/**'], source: 'F-09.5' },
+    't',
+  );
+  assert.deepEqual(again, { id: 'P-001', duplicate: true });
+  addEntry(pb, { same: 'P-001', tags: [] }, 't');
+  assert.deepEqual(pb.entries[0].tags, ['core', 'tests', 'src-tauri/tests/**']);
+  assert.throws(() => addEntry(pb, { same: 'P-099' }, 't'), /no entry P-099/);
+  assert.deepEqual(
+    curate(structuredClone(pb)).proposals.map((e) => e.id),
+    ['P-001', 'P-002'],
+  );
+  assert.deepEqual(
+    existing(pb, { kind: 'core', paths: ['src/screens/step/Step.tsx'], offered: ['P-004'] }).map(
+      (e) => e.id,
+    ),
+    ['P-002', 'P-001', 'P-004'],
+  );
+  assert.deepEqual(existing(pb, { kind: 'core' }, 3), []);
+  const kept = merge(pb, 'P-001', 'P-003');
+  assert.deepEqual(
+    [kept.seen, kept.helpful, kept.harmful, kept.tags],
+    [4, 0, 0, ['core', 'tests', 'src-tauri/tests/**', 'ui']],
+  );
+  assert.deepEqual(
+    pb.entries.map((e) => e.id),
+    ['P-001', 'P-002', 'P-004'],
+  );
+  assert.throws(() => merge(pb, 'P-001', 'P-001'), /two entries/);
+  assert.throws(() => merge(pb, 'P-001', 'P-003'), /two entries/);
+  const row = buildRow({
+    item: 'F-09.5',
+    run: 'ap-1',
+    result: 'live',
+    endedAt: 't',
+    verdicts: {
+      reflect: {
+        lessons: [{ text: 'x', tags: [] }, { same: 'P-001', tags: [] }, { same: 'P-002' }],
+      },
+    },
+  });
+  assert.deepEqual(row.lessons, { new: 1, same: 2 });
 });

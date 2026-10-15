@@ -2,6 +2,7 @@
 // `{{field}}` filled from the backlog, the run, the worktree and `.autopilot/items/<id>/`.
 // Pure functions; I/O in prompt.mjs.
 import { RESULTS } from './items-lib.mjs';
+import { existing, render } from './playbook-lib.mjs';
 import { AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
 
 export const ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'curate', 'live'];
@@ -23,6 +24,12 @@ export function fields(text) {
 export function offeredIds(contextMd) {
   const section = (contextMd ?? '').split(/^## /m).find((s) => s.startsWith('Playbook')) ?? '';
   return [...section.matchAll(/^- \[(P-\d+)\]/gm)].map((m) => m[1]);
+}
+
+/** Paths of the context pack's "## Files" section (`- src/a.ts (120 lines)`). */
+export function contextFiles(contextMd) {
+  const section = (contextMd ?? '').split(/^## /m).find((s) => s.startsWith('Files')) ?? '';
+  return [...section.matchAll(/^- (\S+)/gm)].map((m) => m[1]);
 }
 
 /** The backlog items waiting for a live check, one line each: id, criterion, its note. */
@@ -121,7 +128,8 @@ export function itemHistory({ note, attempts = [] }) {
  * The field values of one role prompt. `item` is the backlog item (null for plan and curate),
  * `files` the parsed contents of `.autopilot/items/<id>/` ({ context, impl, review, gates,
  * attempts: [{ n, dir, impl, review, fixes, gates }] from its `attempt-N` folders }),
- * `live` the backlog items (for the live role), `extra` overrides or adds fields (e.g. `problems`).
+ * `live` the backlog items (for the live role), `playbook` docs/process/playbook.json (the reflector
+ * compares its lessons with the matching ones), `extra` overrides or adds fields (e.g. `problems`).
  * Missing values stay undefined.
  */
 export function promptValues({
@@ -135,6 +143,7 @@ export function promptValues({
   itemDir,
   files = {},
   live,
+  playbook,
   extra,
 }) {
   const port = AUTOPILOT_PORT;
@@ -191,6 +200,16 @@ export function promptValues({
       history: itemHistory({ note: item?.note, attempts: files.attempts }),
       verdictsDir: slash(itemDir),
       offered: offeredIds(files.context).join(', ') || 'none',
+      existing:
+        role === 'reflect'
+          ? render(
+              existing(playbook ?? { entries: [] }, {
+                kind: item?.kind,
+                paths: [...contextFiles(files.context), ...tests].map(slash),
+                offered: offeredIds(files.context),
+              }),
+            ) || 'none'
+          : undefined,
       result: RESULTS.includes(item?.status) ? item.status : undefined,
     };
   }

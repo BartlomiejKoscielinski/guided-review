@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 // Autopilot playbook CLI (docs/process/playbook.json; docs/process/AUTOPILOT.md §4 B6).
 //   node tools/autopilot/playbook.mjs add '{"tags":["ui","src/screens/**"],"text":"…","source":"F-07.2"}'
+//   node tools/autopilot/playbook.mjs add '{"same":"P-003","tags":["core"],"source":"F-07.2"}'   (an existing lesson again: seen + 1)
 //   node tools/autopilot/playbook.mjs select --tags ui,implement [--paths a,b] [--max-tokens 1500] [--touch]
 //   node tools/autopilot/playbook.mjs rate P-003 helpful|harmful
 //   node tools/autopilot/playbook.mjs tick                (one more item done: ages the entries)
 //   node tools/autopilot/playbook.mjs curate [--dry-run] | promoted P-003 | list
+//   node tools/autopilot/playbook.mjs merge P-003 P-018   (same advice: P-018's counts and tags into P-003, P-018 deleted)
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { addEntry, curate, empty, rate, render, select, touch } from './playbook-lib.mjs';
+import { addEntry, curate, empty, merge, rate, render, select, touch } from './playbook-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const FILE = join(root, 'docs', 'process', 'playbook.json');
@@ -61,9 +63,20 @@ try {
       console.log(
         JSON.stringify({
           removed: out.removed,
-          proposals: out.proposals.map((e) => ({ id: e.id, text: e.text })),
+          proposals: out.proposals.map((e) => ({
+            id: e.id,
+            helpful: e.helpful,
+            seen: e.seen,
+            text: e.text,
+          })),
         }),
       );
+      break;
+    }
+    case 'merge': {
+      const e = merge(pb, argv[1], argv[2]);
+      save();
+      console.log(`${argv[2]} merged into ${e.id}: +${e.helpful} -${e.harmful} ×${e.seen}`);
       break;
     }
     case 'promoted': {
@@ -82,7 +95,7 @@ try {
       }
       break;
     default:
-      console.error('usage: playbook.mjs add|select|rate|tick|curate|promoted|list');
+      console.error('usage: playbook.mjs add|select|rate|tick|curate|merge|promoted|list');
       process.exit(2);
   }
 } catch (e) {

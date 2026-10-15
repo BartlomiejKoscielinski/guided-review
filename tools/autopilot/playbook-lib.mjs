@@ -6,8 +6,11 @@ import { globToRegExp } from '../lanes-lib.mjs';
 const HARM_MARGIN = 2;
 /** Unhelpful entries not selected for this many items are pruned. */
 const STALE_ITEMS = 30;
-/** A lesson seen this often becomes a rule proposal for a skill. */
+/** A lesson seen this often becomes a rule proposal for a role (E17: or confirmed helpful this often, never harmful). */
 const PROMOTE_SEEN = 3;
+const PROMOTE_HELPFUL = 3;
+/** Budget of the existing lessons the reflector compares its own with (E17). */
+const EXISTING_TOKENS = 2500;
 
 export const empty = () => ({ items: 0, entries: [] });
 
@@ -18,15 +21,25 @@ const normalize = (text) =>
     .replace(/\s+/g, ' ')
     .trim();
 
-/** Adds a lesson; the same lesson again only counts `seen` and merges tags. */
-export function addEntry(pb, { tags = [], text, source = '' }, now) {
+/**
+ * Adds a lesson; the same lesson again only counts `seen` and merges tags. The same lesson is the
+ * same text, or `same: "P-003"` when the reflector found its lesson already in the playbook (E17).
+ */
+export function addEntry(pb, { tags = [], text, source = '', same }, now) {
+  if (same) {
+    const e = pb.entries.find((x) => x.id === same);
+    if (!e) throw new Error(`no entry ${same}`);
+    e.seen += 1;
+    e.tags = [...new Set([...e.tags, ...tags])];
+    return { id: e.id, duplicate: true };
+  }
   if (!text?.trim()) throw new Error('a lesson needs text');
   const key = normalize(text);
-  const same = pb.entries.find((e) => normalize(e.text) === key);
-  if (same) {
-    same.seen += 1;
-    same.tags = [...new Set([...same.tags, ...tags])];
-    return { id: same.id, duplicate: true };
+  const dup = pb.entries.find((e) => normalize(e.text) === key);
+  if (dup) {
+    dup.seen += 1;
+    dup.tags = [...new Set([...dup.tags, ...tags])];
+    return { id: dup.id, duplicate: true };
   }
   const n = pb.entries.reduce((max, e) => Math.max(max, Number(e.id.slice(2))), 0) + 1;
   const id = `P-${String(n).padStart(3, '0')}`;
@@ -67,6 +80,33 @@ export function select(pb, query, maxTokens = 1500) {
   return out;
 }
 
+/**
+ * The lessons the reflector compares its own with (E17): those matching the item kind or its files,
+ * best first within the budget, then the ones the context pack offered.
+ */
+export function existing(pb, { kind, paths = [], offered = [] }, maxTokens = EXISTING_TOKENS) {
+  const chosen = select(pb, { tags: kind ? [kind] : [], paths }, maxTokens);
+  const ids = new Set(chosen.map((e) => e.id));
+  return [...chosen, ...pb.entries.filter((e) => offered.includes(e.id) && !ids.has(e.id))];
+}
+
+/** Merges `drop` into `keep` (same advice in other words): counts summed, tags joined, `drop` deleted. */
+export function merge(pb, keep, drop) {
+  const k = pb.entries.find((e) => e.id === keep);
+  const d = pb.entries.find((e) => e.id === drop);
+  if (!k || !d || k === d) throw new Error(`merge needs two entries: ${keep} ${drop}`);
+  for (const n of ['helpful', 'harmful', 'seen']) k[n] += d[n];
+  k.tags = [...new Set([...k.tags, ...d.tags])];
+  k.lastUsedItem = Math.max(k.lastUsedItem, d.lastUsedItem);
+  if (d.promoted) k.promoted = true;
+  pb.entries = pb.entries.filter((e) => e !== d);
+  return k;
+}
+
+/** A rule proposal: seen 3× or more, or helpful 3× or more and never harmful (E17). */
+export const promotable = (e) =>
+  !e.promoted && (e.seen >= PROMOTE_SEEN || (e.helpful >= PROMOTE_HELPFUL && e.harmful === 0));
+
 export function touch(pb, ids) {
   for (const e of pb.entries) if (ids.includes(e.id)) e.lastUsedItem = pb.items;
 }
@@ -88,7 +128,7 @@ export function curate(pb) {
       (e.helpful === 0 && pb.items - e.lastUsedItem >= STALE_ITEMS),
   );
   pb.entries = pb.entries.filter((e) => !removed.includes(e));
-  const proposals = pb.entries.filter((e) => e.seen >= PROMOTE_SEEN && !e.promoted);
+  const proposals = pb.entries.filter(promotable);
   return { removed: removed.map((e) => e.id), proposals };
 }
 

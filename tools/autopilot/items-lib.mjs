@@ -86,6 +86,11 @@ export function buildRow({ item, run, result, verdicts, startedAt, endedAt, usag
     findings,
     testDispute: verdicts.review?.testDispute ?? null,
     decisions: (verdicts.impl?.decisions ?? []).length + (verdicts.tests?.decisions ?? []).length,
+    // E17: the reflector's new lessons and its confirmations of existing ones (`same`).
+    lessons: {
+      new: (verdicts.reflect?.lessons ?? []).filter((l) => !l?.same).length,
+      same: (verdicts.reflect?.lessons ?? []).filter((l) => l?.same).length,
+    },
     tokens,
     tokenSource: usage ? 'transcript' : 'agent',
     cacheRead: usage ? usage.cacheRead : null,

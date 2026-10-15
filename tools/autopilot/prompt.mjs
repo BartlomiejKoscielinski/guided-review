@@ -93,6 +93,7 @@ try {
       wt: worktreePath(root),
       itemDir,
       files,
+      playbook: json(join(root, 'docs', 'process', 'playbook.json')),
       extra,
     });
   }

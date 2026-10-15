@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import {
   ROLES,
   composePrompt,
+  contextFiles,
   fields,
   fixProblems,
   itemHistory,
@@ -277,4 +278,31 @@ test('autopilot prompt: the CLI reads the attempt-N folders of the item', async 
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+});
+
+test('autopilot prompt E17: the reflector gets the existing lessons of the item kind and files', () => {
+  const entry = (id, tags, text) => ({ id, tags, text, helpful: 0, harmful: 0, seen: 1 });
+  const playbook = {
+    items: 3,
+    entries: [
+      entry('P-001', ['ui', 'implement'], 'One lesson.'),
+      entry('P-002', ['ui', 'tests', 'tests/e2e/**'], 'Assert the screen, not the URL.'),
+      entry('P-003', ['core', 'fix', 'src/a.ts'], 'Map store errors.'),
+      entry('P-004', ['core', 'review'], 'Not for this item.'),
+    ],
+  };
+  assert.deepEqual(contextFiles(CONTEXT), ['src/a.ts']);
+  assert.deepEqual(contextFiles('# x\n## Playbook\n- [P-001] y\n'), []);
+  const reflect = composePrompt(
+    COMMON,
+    role('reflect'),
+    promptValues(args('reflect', { item: { ...ITEM, kind: 'ui' }, playbook })),
+  );
+  assert.match(reflect, /^- \[P-001\] One lesson\.$/m);
+  assert.match(reflect, /^- \[P-002\] Assert the screen/m);
+  assert.match(reflect, /^- \[P-003\] Map store errors\.$/m);
+  assert.doesNotMatch(reflect, /P-004/);
+  assert.match(reflect, /"same": "P-003"/);
+  const none = composePrompt(COMMON, role('reflect'), promptValues(args('reflect')));
+  assert.match(none, /its files \(id and text\):\nnone\n/);
 });
