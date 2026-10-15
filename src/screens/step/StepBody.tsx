@@ -8,8 +8,10 @@ import { useFocusStore } from '../../state/focus';
 import { selectionOf, type AskState } from './askState';
 import { GuidePanel } from './GuidePanel';
 import { NotesRequest } from './notesRequest';
+import { SelectionBar } from './SelectionBar';
 import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
+import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
 import { useStepScroll } from './useStepScroll';
 import styles from './Step.module.css';
@@ -63,6 +65,21 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   const openAsk = (selection: AskState['selection'], question?: string) => {
     setAsk((old) => ({ selection, question, focusInput: true, nonce: (old?.nonce ?? 0) + 1 }));
   };
+  // Questions from the toolbar, the guide and the "Selected lines" group are about the selected
+  // lines, if any; otherwise about the whole step (F-10.1).
+  const lines = useLineSelection();
+  const selected = lines.selection && {
+    selection: lines.selection,
+    bar: (
+      <SelectionBar
+        selection={lines.selection}
+        onAsk={() => {
+          openAsk(lines.selection);
+        }}
+        onClear={lines.clear}
+      />
+    ),
+  };
 
   // The diff's virtualizers look for `main` when they mount and refs attach children first, so
   // the step is drawn into `main` once it is in the page; otherwise they attach later and move it
@@ -104,6 +121,8 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             onAsk={(finding) => {
               openAsk(selectionOf(finding));
             }}
+            selected={selected}
+            onPickLine={lines.pick}
           />
         )}
       </main>
@@ -118,7 +137,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
           ask={ask}
           onToggleReviewed={toggleReviewed}
           onAskQuestion={(question) => {
-            openAsk(null, question);
+            openAsk(lines.selection, question);
           }}
           onAsk={(finding) => {
             openAsk(selectionOf(finding));
@@ -131,7 +150,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
           onGo={onGo}
           onToggleReviewed={toggleReviewed}
           onAsk={() => {
-            openAsk(null);
+            openAsk(lines.selection);
           }}
         />
       )}

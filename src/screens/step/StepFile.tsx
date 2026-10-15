@@ -4,6 +4,7 @@ import { lineKey, type DiffFold } from '../../diff/rows';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
 import type { Fold } from '../../ipc/types/Fold';
+import type { LineSelection } from '../../ipc/types/LineSelection';
 import type { Thread } from '../../ipc/types/Thread';
 import { pathOf } from './diffPath';
 import { NoteMark, ThreadMark } from './GutterMarks';
@@ -27,6 +28,10 @@ export interface StepFileProps {
   guide?: boolean;
   /** The answer card (F-10) under the selected lines, in layouts A and B. */
   answer?: { side: 'old' | 'new'; line: number; node: ReactNode; file: string };
+  /** The step's selected lines (F-10.1) with their "Selected lines" group, in any file. */
+  selected?: { selection: LineSelection; bar: ReactNode } | null;
+  /** A click on a line number of this file (F-10.1). */
+  onPickLine?: (at: { file: string; side: 'old' | 'new'; no: number }, extend: boolean) => void;
 }
 
 /** Where a thread sits in the diff: its new-side line, else its old-side line. */
@@ -54,8 +59,11 @@ export function StepFile({
   onAsk,
   guide = false,
   answer,
+  selected,
+  onPickLine,
 }: StepFileProps) {
   const path = pathOf(file);
+  const selection = selected?.selection.file === path ? selected.selection : null;
   const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
@@ -74,6 +82,14 @@ export function StepFile({
   const push = (map: Map<string, ReactNode[]>, key: string, node: ReactNode) => {
     map.set(key, [...(map.get(key) ?? []), node]);
   };
+  // The "Selected lines" group sits right under the last selected line (F-10.1).
+  if (selected && selection) {
+    push(
+      inserts,
+      lineKey(selection.side, Math.max(selection.start, selection.end)),
+      <div key="selection">{selected.bar}</div>,
+    );
+  }
   for (const { finding, number } of findings) {
     const key = lineKey(finding.side, finding.line);
     const focused = finding.id === focus;
@@ -162,6 +178,14 @@ export function StepFile({
         folds={diffFolds}
         markers={markers}
         inserts={inserts}
+        selection={selection}
+        onPickLine={
+          onPickLine
+            ? (side, no, extend) => {
+                onPickLine({ file: path, side, no }, extend);
+              }
+            : undefined
+        }
         scrollRoot={scrollRoot}
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />

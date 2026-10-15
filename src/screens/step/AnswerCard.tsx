@@ -6,6 +6,7 @@ import { useAsk } from '../../ipc/hooks/useReview';
 import type { DiffPosition } from '../../ipc/types/DiffPosition';
 import type { LineSelection } from '../../ipc/types/LineSelection';
 import { ClaudeLabel } from './ClaudeLabel';
+import { selectionLabel } from './lineSelection';
 import { decisionCopy } from './noteCopy';
 import styles from './Notes.module.css';
 
@@ -74,6 +75,8 @@ export function AnswerCard({
   return (
     <article className={styles.card} aria-label="Claude answer">
       <div className={styles.head}>
+        {/* The lines the question is about (F-10.1); the guide shows the card away from them. */}
+        {selection && <span className={styles.lines}>{selectionLabel(selection)}</span>}
         {question !== null && <span className={styles.title}>{question}</span>}
         <ClaudeLabel />
       </div>

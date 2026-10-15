@@ -348,6 +348,23 @@
   color: var(--text-lineno);
 }
 
+/* "Selected lines" under the last selected line (F-10.1) */
+.selectionBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 24px 6px 56px;
+  background: var(--bg);
+  font-family: var(--font-ui);
+}
+
+.selectionLabel {
+  margin-right: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+
 /* Inline cards under a line */
 .inlineCard {
   padding: 10px 24px 16px 56px;

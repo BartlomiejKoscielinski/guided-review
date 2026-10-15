@@ -9,7 +9,7 @@ import type { FocusLayout } from '../../state/focus';
 import { AnswerCard } from './AnswerCard';
 import type { AskState } from './askState';
 import { pathOf } from './diffPath';
-import { StepFile } from './StepFile';
+import { StepFile, type StepFileProps } from './StepFile';
 import { StepNotes } from './StepNotes';
 import styles from './Step.module.css';
 
@@ -27,6 +27,9 @@ export interface StepMainProps {
   onToggleReviewed: () => void;
   ask: AskState | null;
   onAsk: (finding: Finding) => void;
+  /** The step's selected lines with their "Selected lines" group (F-10.1). */
+  selected: StepFileProps['selected'];
+  onPickLine: NonNullable<StepFileProps['onPickLine']>;
 }
 
 /**
@@ -47,6 +50,8 @@ export function StepMain({
   onToggleReviewed,
   ask,
   onAsk,
+  selected,
+  onPickLine,
 }: StepMainProps) {
   const findings = analysis?.findings ?? [];
   const next = view.next;
@@ -130,6 +135,8 @@ export function StepMain({
                 ? { file: sel.file, side: sel.side, line: sel.end, node: answerNode }
                 : undefined
             }
+            selected={selected}
+            onPickLine={onPickLine}
           />
         );
       })}

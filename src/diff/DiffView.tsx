@@ -32,6 +32,10 @@ export interface DiffViewProps {
   markers?: ReadonlyMap<string, ReactNode>;
   /** Rows under a line by `lineKey`: note and thread cards (F-07.6). */
   inserts?: ReadonlyMap<string, ReactNode>;
+  /** Selected lines of one side, highlighted (F-10.1; split layout). */
+  selection?: { side: 'old' | 'new'; start: number; end: number } | null;
+  /** A click on a line number: select it, Shift+click extends (F-10.1; split layout). */
+  onPickLine?: (side: 'old' | 'new', no: number, extend: boolean) => void;
   /** Scroll with this element instead of an own scroller (S-03's main column). */
   scrollRoot?: RefObject<HTMLElement | null>;
   /** The +/− column; S-03 has none (Review.dc.html: 48px and 60px gutters, number then code). */
@@ -64,6 +68,8 @@ export function DiffView({
   folds,
   markers,
   inserts,
+  selection,
+  onPickLine,
   scrollRoot,
   signs = true,
 }: DiffViewProps) {
@@ -112,6 +118,14 @@ export function DiffView({
     return no === undefined ? undefined : markers?.get(lineKey(side, no));
   };
 
+  const isSelected = (side: 'old' | 'new', line: Line): boolean => {
+    if (selection?.side !== side) return false;
+    const no = side === 'new' ? line.newNo : line.oldNo;
+    const low = Math.min(selection.start, selection.end);
+    const high = Math.max(selection.start, selection.end);
+    return no !== undefined && no >= low && no <= high;
+  };
+
   const render = (row: DiffRow): ReactNode => {
     switch (row.kind) {
       case 'hunk':
@@ -148,6 +162,8 @@ export function DiffView({
             last={row.last}
             staging={staging}
             markerOf={markers ? markerOf : undefined}
+            isSelected={selection ? isSelected : undefined}
+            onPick={onPickLine}
           />
         );
       case 'fold':

@@ -242,3 +242,19 @@
 .noSigns .split:has(.wide) {
   grid-template-columns: minmax(0, calc(50% - 7px)) minmax(0, 1fr);
 }
+
+/* S-03 selected lines (F-10.1): a yellow wash over the line, the number in yellow. */
+.half.selected {
+  position: relative;
+}
+.half.selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--yellow) 10%, transparent);
+  pointer-events: none;
+}
+.selected .lineNo {
+  color: var(--yellow);
+  font-weight: 600;
+}
