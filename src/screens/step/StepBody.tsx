@@ -2,8 +2,6 @@ import { useCallback, useEffect, useState, type RefObject } from 'react';
 import { cx } from '../../components/cx';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
-import type { Finding } from '../../ipc/types/Finding';
-import type { Severity } from '../../ipc/types/Severity';
 import { useFocusStore } from '../../state/focus';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf, type AskState } from './askState';
@@ -15,20 +13,9 @@ import { StepToolbar } from './StepToolbar';
 import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
 import { useSelfReview } from './useSelfReview';
+import { useStepFocus } from './useStepFocus';
 import { useStepScroll } from './useStepScroll';
 import styles from './Step.module.css';
-
-const SEVERITY_RANK: Record<Severity, number> = { fix: 0, q: 1, nit: 2 };
-
-/**
- * The note focused when a step opens: the first open note of the highest severity (Review.dc.html
- * opens on its first Should fix, f2), else the first note.
- */
-function firstFocus(findings: Finding[]): string | null {
-  const open = findings.filter((f) => f.decision === 'open');
-  const pick = [...open].sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity])[0];
-  return pick?.id ?? findings[0]?.id ?? null;
-}
 
 export interface StepBodyProps {
   sessionId: string;
@@ -64,16 +51,8 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   useEffect(() => {
     claim(key);
   }, [claim, key]);
-  const focus = useStepReview(key, 'focus');
   const ask = useStepReview(key, 'ask');
-  const setFocus = (id: string) => {
-    change(key, () => ({ focus: id }));
-  };
-  // Picked once per set of notes, so deciding the focused note doesn't move the focus away.
-  const [initial, setInitial] = useState<{ ids: string; id: string | null } | null>(null);
-  const ids = findings.map((f) => f.id).join(' ');
-  if (initial?.ids !== ids) setInitial({ ids, id: firstFocus(findings) });
-  const focused = focus ?? (initial?.ids === ids ? initial.id : firstFocus(findings));
+  const { focused, setFocus } = useStepFocus(key, findings);
 
   const openAsk = (selection: AskState['selection'], question?: string) => {
     change(key, (s) => ({

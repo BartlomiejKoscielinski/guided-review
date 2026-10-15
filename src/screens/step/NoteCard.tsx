@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import { MenuButton, type MenuAction } from '../../components/MenuButton';
 import { Tag } from '../../components/Tag';
-import { useDecide } from '../../ipc/hooks/useReview';
 import type { Finding } from '../../ipc/types/Finding';
-import type { FindingDecision } from '../../ipc/types/FindingDecision';
 import { ClaudeLabel } from './ClaudeLabel';
 import { DISMISSED, SEVERITY_TAG, decisionCopy } from './noteCopy';
+import { useNoteDecision } from './useNoteDecision';
 import styles from './Notes.module.css';
 
 export interface NoteCardProps {
@@ -25,50 +23,28 @@ export interface NoteCardProps {
  * confirmation and Undo. Decisions stay on this PC.
  */
 export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: NoteCardProps) {
-  const decide = useDecide(sessionId);
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(finding.suggestedComment);
-  const undo = useRef<HTMLButtonElement>(null);
-  const add = useRef<HTMLButtonElement>(null);
-  const textarea = useRef<HTMLTextAreaElement>(null);
-  /** Where the keyboard focus goes once a decision made on this card settles. */
-  const focusNext = useRef<'undo' | 'add' | null>(null);
+  const {
+    open,
+    editing,
+    pending,
+    error,
+    text,
+    setText,
+    addRef,
+    undoRef,
+    textareaRef,
+    startEdit,
+    cancelEdit,
+    add,
+    addEdited,
+    dismiss,
+    undo,
+  } = useNoteDecision(finding, sessionId);
   const copy = decisionCopy(selfReview);
   const tag = SEVERITY_TAG[finding.severity];
-  const open = finding.decision === 'open';
-  const pending = decide.isPending;
 
-  // A decision hands the focus to Undo; Undo hands it back to Add to drafts (the buttons are
-  // disabled while the decision is pending, so wait for it to settle).
-  useEffect(() => {
-    if (pending) return;
-    if (focusNext.current === 'undo' && !open) undo.current?.focus();
-    if (focusNext.current === 'add' && open) add.current?.focus();
-    focusNext.current = null;
-  }, [open, pending]);
-  useEffect(() => {
-    if (editing) textarea.current?.focus();
-  }, [editing]);
-
-  const send = (decision: FindingDecision) => {
-    focusNext.current = decision.kind === 'undo' ? 'add' : 'undo';
-    decide.mutate(
-      { findingId: finding.id, decision },
-      {
-        onSuccess: () => {
-          setEditing(false);
-        },
-      },
-    );
-  };
   const more: MenuAction[] = [
-    {
-      label: copy.editAndAdd,
-      onSelect: () => {
-        setText(finding.suggestedComment);
-        setEditing(true);
-      },
-    },
+    { label: copy.editAndAdd, onSelect: startEdit },
     ...(onAsk
       ? [
           {
@@ -105,11 +81,11 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
           className={styles.editor}
           onSubmit={(event) => {
             event.preventDefault();
-            send({ kind: 'editAndAdd', body: text.trim() });
+            addEdited();
           }}
         >
           <textarea
-            ref={textarea}
+            ref={textareaRef}
             className={styles.textarea}
             aria-label="Suggested comment"
             value={text}
@@ -118,19 +94,10 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
             }}
           />
           <div className={styles.actions}>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={text.trim() === '' || decide.isPending}
-            >
+            <Button type="submit" variant="primary" disabled={text.trim() === '' || pending}>
               {copy.add}
             </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setEditing(false);
-              }}
-            >
+            <Button variant="ghost" onClick={cancelEdit}>
               Cancel
             </Button>
           </div>
@@ -139,22 +106,10 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
 
       {open && !editing && (
         <div className={styles.actions}>
-          <Button
-            ref={add}
-            variant="primary"
-            disabled={decide.isPending}
-            onClick={() => {
-              send({ kind: 'addToDrafts' });
-            }}
-          >
+          <Button ref={addRef} variant="primary" disabled={pending} onClick={add}>
             {copy.add}
           </Button>
-          <Button
-            disabled={decide.isPending}
-            onClick={() => {
-              send({ kind: 'dismiss' });
-            }}
-          >
+          <Button disabled={pending} onClick={dismiss}>
             Dismiss
           </Button>
           <MenuButton label="More" menuLabel={`More for ${finding.title}`} actions={more} />
@@ -166,22 +121,15 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
           className={cx(styles.status, finding.decision === 'dismissed' && styles.statusDismissed)}
         >
           <span>{finding.decision === 'draft' ? copy.added : DISMISSED}</span>
-          <Button
-            ref={undo}
-            size={30}
-            disabled={decide.isPending}
-            onClick={() => {
-              send({ kind: 'undo' });
-            }}
-          >
+          <Button ref={undoRef} size={30} disabled={pending} onClick={undo}>
             Undo
           </Button>
         </div>
       )}
 
-      {decide.error && (
+      {error && (
         <p className={styles.error} role="alert">
-          {decide.error.message}
+          {error.message}
         </p>
       )}
     </article>
