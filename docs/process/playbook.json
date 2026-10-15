@@ -177,14 +177,15 @@
       "tags": [
         "mixed",
         "implement",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "ui"
       ],
-      "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, because F-05.5 left it unset so the Skim row is not visible in dev:mock and has no e2e test until F-06.6.",
+      "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
-      "lastUsedItem": 3,
+      "lastUsedItem": 5,
       "source": "F-05.5"
     },
     {
@@ -259,21 +260,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
-      "lastUsedItem": 5,
-      "source": "F-06.6"
-    },
-    {
-      "id": "P-018",
-      "tags": [
-        "ui",
-        "implement",
-        "src/ipc/mock/**"
-      ],
-      "text": "Before setting a core flag in the mock as P-012 asks, list the existing tests that read the unflagged rows, because F-06.6 skipped Hunk.mechanical to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T15:13:07.804Z",
       "lastUsedItem": 5,
       "source": "F-06.6"
     },
@@ -375,12 +361,12 @@
         "tests",
         "tests/e2e/**"
       ],
-      "text": "When the pinned Playwright browser is missing on this PC, the tests role reports the e2e command as not run with the missing browser path instead of pointing Playwright at another binary, because F-09.1's tests verdict claimed an e2e run through a temporary config while the review could not run it and gate-1 verify never runs e2e.",
+      "text": "When the pinned Playwright browser is missing on this PC, the tests role reports the e2e command as not run with the missing browser path instead of pointing Playwright at another binary, because F-09.1 claimed an e2e run through a temporary config while the review could not run it and gate-1 verify never runs e2e; the conductor should make the pinned chromium available before the tests stage, since F-09.2 ended with e2e not run (chromium-1248 missing) after 135k tokens against 67k for implement, whose verify then ran the same e2e green.",
       "helpful": 1,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T21:00:04.409Z",
-      "lastUsedItem": 8,
+      "lastUsedItem": 9,
       "source": "F-09.1"
     },
     {
@@ -410,21 +396,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T06:35:59.945Z",
-      "lastUsedItem": 9,
-      "source": "F-09.2"
-    },
-    {
-      "id": "P-028",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "Make the pinned Playwright chromium available before the tests stage: the F-09.2 tests verdict ended with e2e not run (chromium-1248 missing) after 135k tokens, against 67k for implement, and the implement verify then ran the same e2e green.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T06:36:00.004Z",
       "lastUsedItem": 9,
       "source": "F-09.2"
     },
