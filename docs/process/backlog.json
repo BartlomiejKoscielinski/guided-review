@@ -1,338 +1,146 @@
 {
-  "milestone": "M3",
-  "updated": "2026-10-15T15:05:45.510Z",
+  "milestone": "M4",
+  "updated": "2026-10-15T15:56:38.255Z",
   "items": [
     {
-      "id": "F-02.5",
-      "milestone": "M3",
-      "title": "If a plan for an MR is already cached for its current head, the row says \"plan is ready\".",
+      "id": "F-08.1",
+      "milestone": "M4",
+      "title": "Mode toggle Focus | Detailed in the title bar (Ctrl+D); both modes show the same session state.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "`diffHeadSha` + `MrRow.planReady` (b0092de), `review/plan_cache.rs` + migration 004 + list command (5cfcb59, e207a9b); row note UI + Vitest",
-      "lockSha": "cd12450",
-      "tests": [
-        "src/screens/start/StartScreen.test.tsx",
-        "src/ipc/mock/gitlab.test.ts",
-        "tests/e2e/start.spec.ts"
-      ]
-    },
-    {
-      "id": "F-04.1",
-      "milestone": "M3",
-      "title": "\"Pick up where you left off\" lists unfinished sessions with progress (\"5 of 9 steps · 3 drafts\"…",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "a9ff402",
-      "tests": [
-        "src-tauri/src/store/sessions_progress_tests.rs",
-        "src/screens/start/ResumeCards.test.tsx",
-        "tests/e2e/start.spec.ts"
-      ]
-    },
-    {
-      "id": "F-04.3",
-      "milestone": "M3",
-      "title": "Session state (reviewed steps, note decisions, drafts, layout, scroll position per step, \"For you to…",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "checklist ticks stored; UI wiring comes with F-08.7 (M4); live restart check via /app not run",
-      "lockSha": "4a20f66",
-      "tests": [
-        "src-tauri/src/store/session_state_tests.rs",
-        "src-tauri/src/store/session_state_notes_tests.rs",
-        "src/ipc/mock/session-state.test.ts",
-        "tests/e2e/step.spec.ts"
-      ]
-    },
-    {
-      "id": "F-05.5",
-      "milestone": "M3",
-      "title": "Mechanical hunks are detected without AI where possible (whitespace-only, .csproj package bumps, .resx key…",
-      "kind": "core",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "`review/mechanical.rs` → `Hunk.mechanical` (bd8d436); plan input `mechanical_file` (355331f); Skim row UI (3d); fold rows inside a step (2575c46)",
-      "lockSha": "451a89a",
-      "tests": [
-        "src-tauri/tests/mechanical.rs"
-      ]
-    },
-    {
-      "id": "F-06.5",
-      "milestone": "M3",
-      "title": "Rows can be reordered by drag and drop; the custom order is saved in the session.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "live mouse drag in tauri dev (/app) not tried yet",
-      "lockSha": "7e0176f",
-      "tests": [
-        "tests/e2e/plan.spec.ts",
-        "src/ipc/mock/plan.test.ts",
-        "src/ipc/tauri.test.ts"
-      ]
-    },
-    {
-      "id": "F-06.6",
-      "milestone": "M3",
-      "title": "Skim row: \"Skim: N mechanical files\" with a short reason and Show.",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Show in the real app (/app) not tried; stand-in MRs have no skim group",
-      "lockSha": "5db5191",
-      "tests": [
-        "src/screens/plan/SkimRow.test.tsx",
-        "src/screens/plan/PlanList.test.tsx",
-        "tests/e2e/plan.spec.ts"
-      ]
-    },
-    {
-      "id": "F-06.9",
-      "milestone": "M3",
-      "title": "Aside Already discussed: existing threads summary; Claude does not repeat them and shows them in their…",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "live check on an MR with threads (/app) open; stand-in !6 needs a DiffNote",
-      "lockSha": "d6383ce",
-      "tests": [
-        "src-tauri/tests/plan_threads.rs",
-        "src/ipc/mock/step.test.ts",
-        "src/screens/plan/PlanAside.test.tsx",
-        "src/screens/plan/PlanPrepared.test.tsx",
-        "src/screens/step/StepScreen.test.tsx",
-        "tests/e2e/plan.spec.ts",
-        "tests/e2e/step.spec.ts"
-      ]
-    },
-    {
-      "id": "F-07.1",
-      "milestone": "M3",
-      "title": "Three layouts switchable in the title bar and with Ctrl+1/2/3, sharing all state: A Sidebar (steps list…",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "live check in tauri dev (Ctrl+1/2/3 in WebView2, checks, segments) not tried",
-      "lockSha": "19fdc34",
-      "tests": [
-        "src/screens/step/StepProgress.test.tsx",
-        "tests/e2e/step.spec.ts"
-      ]
-    },
-    {
-      "id": "F-07.2",
-      "milestone": "M3",
-      "title": "Step header: \"STEP 4 OF 8\", title, a one- or two-sentence description; Mark reviewed (Space) and next.",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 0,
-      "note": "review_step data core + mock (9748265, 530d516); header UI and next (f604e59); `review_mark_step` core, command, client, mock (ecc02ae); open: Mark reviewed (Space) wired in A/B/C"
-    },
-    {
-      "id": "F-07.3",
-      "milestone": "M3",
-      "title": "File header: path, +add −del, number of notes in this file (\"3 notes\").",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 0,
-      "note": "step files with +add −del (9748265, 530d516); file header UI and notes count (f604e59); open: live check in `tauri dev`"
-    },
-    {
-      "id": "F-07.4",
-      "milestone": "M3",
-      "title": "Split diff with old/new line numbers, intraline emphasis and syntax highlighting. Mechanical regions…",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 0,
-      "note": "fold rows + Show (2575c46, f604e59), S-03 gutters (d88eac2); open: live check in `tauri dev`"
-    },
-    {
-      "id": "F-07.7",
-      "milestone": "M3",
-      "title": "Layout C shows \"Worth a look\": numbered notes in line order, the focused one expanded; \"+N minor\"…",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 0,
-      "note": "guide panel, numbered notes, +N minor, Ask input (3976bc2, 48cdbf3); `review_mark_step` (ecc02ae); open: Mark reviewed wired in C"
-    },
-    {
-      "id": "F-07.8",
-      "milestone": "M3",
-      "title": "Layout B's toolbar: previous, \"Step 4 of 8\", next, Mark reviewed, Ask Claude.",
-      "kind": "ui",
-      "deps": [],
-      "status": "done",
-      "attempts": 0,
-      "note": "toolbar with previous, Step n of m, next, Ask Claude (3976bc2); `review_mark_step` (ecc02ae); open: Mark reviewed wired in B"
-    },
-    {
-      "id": "F-07.9",
-      "milestone": "M3",
-      "title": "The chosen layout is remembered globally and per session.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
+      "status": "todo",
       "attempts": 0,
       "note": ""
     },
     {
-      "id": "F-09.1",
-      "milestone": "M3",
-      "title": "Each note has severity, title, body, line (file, side, line), evidence (file:line list) and a suggested…",
-      "kind": "core",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "`review/findings.rs` validation → `StepAnalysis` (75dcfbd), model + types (8d92b37); findings table `review/decisions.rs` record (1f1e6c5); `review_findings` command + types + mock f1–f4 (b42a11c, 4772c33); NoteCard shows severity, title, body, suggested comment via Edit and add/Copy (87b700d); evidence chips with S-04",
-      "lockSha": "fb9bfc6",
-      "tests": [
-        "src-tauri/src/review/findings_tests.rs",
-        "src-tauri/src/review/decisions_tests.rs",
-        "src/ipc/mock/review.test.ts",
-        "src/screens/step/StepScreen.test.tsx",
-        "tests/e2e/step.spec.ts"
-      ]
-    },
-    {
-      "id": "F-09.2",
-      "milestone": "M3",
-      "title": "Decisions: Add to drafts (creates a draft from the suggested comment), Edit and add (opens the text for…",
+      "id": "F-08.2",
+      "milestone": "M4",
+      "title": "Info header: branch block, author · age, N files +add −del, step progress segments with done/total, drafts…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 2,
-      "note": "`review/decisions.rs` decide + undo (1f1e6c5), local drafts `review/drafts.rs` (b645db8); `review_decide` + `drafts_*` commands (b42a11c), mock + hooks (4772c33); NoteCard Add to drafts / Edit and add / Dismiss / Undo (87b700d); e2e in 3e",
-      "lockSha": "f1f5aa2",
-      "tests": [
-        "src-tauri/src/review/decisions_tests.rs",
-        "src/ipc/mock/review.test.ts",
-        "src/screens/step/NoteCard.test.tsx",
-        "src/screens/step/StepLayouts.test.tsx",
-        "tests/e2e/step.spec.ts"
-      ]
-    },
-    {
-      "id": "F-09.4",
-      "milestone": "M3",
-      "title": "Dismissed notes are fingerprinted (rule = the note's kind + file + normalized code: the line with…",
-      "kind": "core",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "`review/fingerprint.rs` (8d92b37), dismissed fingerprints filtered + kinds in `step.md` (75dcfbd, 513d0fa); `dismissals` written on Dismiss, removed on Undo, read by `decisions::dismissed` (1f1e6c5); `review_decide` command, subject per MR (b42a11c); Dismiss on the NoteCard (87b700d)",
-      "lockSha": "78ee197",
-      "tests": [
-        "src-tauri/src/review/decisions_tests.rs",
-        "src-tauri/tests/step_task.rs"
-      ]
-    },
-    {
-      "id": "F-09.5",
-      "milestone": "M3",
-      "title": "Notes never duplicate existing GitLab threads on the same line and topic (Claude gets the thread list as…",
-      "kind": "core",
-      "deps": [],
-      "status": "done",
-      "attempts": 3,
-      "note": "Threads in the step task + prompt rule on base (513d0fa, 39c183c, c2d9e0d); eval seed fixed (60c8232); eval topic check counts the topic in the title and suggested comment, and in the body only in sentences that do not point at the open thread (a06cf62, 36e569b). Left: run npm run eval:claude (golden case: control raises async void, run with the thread does not).",
-      "lockSha": "39c183c",
-      "tests": [
-        "src-tauri/tests/step_threads.rs",
-        "src/ipc/mock/step-notes-threads.test.ts"
-      ]
-    },
-    {
-      "id": "F-09.6",
-      "milestone": "M3",
-      "title": "Notes appear progressively: steps are analyzed in the background, the next step is pre-fetched while the…",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
+      "status": "todo",
       "attempts": 0,
-      "note": "step task + cache + CurrentStep/prefetch N+1 only (6692508, 513d0fa); in-flight dedupe + events (a39b778), `review_findings` with prefetch spawn (b42a11c), mock + `useStepFindings` (4772c33); S-03 states in StepNotes (87b700d), in the S-03 screen (f604e59); open: live check of prefetch in `tauri dev`"
+      "note": ""
     },
     {
-      "id": "F-10.1",
-      "milestone": "M3",
-      "title": "Questions are asked in the context of the current step and, if any, the selected lines.",
-      "kind": "core",
+      "id": "F-08.3",
+      "milestone": "M4",
+      "title": "Rail: a first item \"Change overview\" (intent, risks, plan; links to S-02, done once the plan was opened)…",
+      "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "`claude/tasks/ask.rs` step + selection (`selection_block`) (3ed3792); `review_ask` command (b42a11c), mock + `useAsk` (4772c33); AnswerCard (0f656e9); placed in A/B/C (3976bc2); open: no line-selection UI (asks use the note's line or the whole step)",
-      "lockSha": "e5af190",
-      "tests": [
-        "src/screens/step/LineSelection.test.tsx",
-        "src/ipc/mock/review.test.ts",
-        "tests/e2e/step-ask.spec.ts",
-        "src-tauri/tests/ask_task.rs"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-17.1",
-      "milestone": "M3",
-      "title": "Same plan and step flow as an MR, on the selected local scope; worktree is not needed (reads the working…",
-      "kind": "core",
+      "id": "F-08.4",
+      "milestone": "M4",
+      "title": "Step header: \"Step 4 / 8\", \"builds on\" chips (click jumps to that step), previous, Mark reviewed (Space)…",
+      "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 2,
-      "note": "Core and locked tests on base from attempt 1; attempt 2 logs every failed step as WARN 'step analysis failed' with code and reason (Claude detail never logged, NFR-08) and findings::validate accepts absolute/backslash paths of the step's files (8962057, 6a887df, 7d8dec4). Left: in tauri dev, re-run a local Uncommitted session with untracked files in a dot directory (.idea); S-03 must show notes; if it fails, read 'step analysis failed' in guided-review.log for the rule.",
-      "lockSha": "efbb6ac",
-      "tests": [
-        "src-tauri/tests/self_review.rs",
-        "src-tauri/tests/sources.rs",
-        "src/ipc/mock/sources.test.ts",
-        "src/screens/start/SourceColumns.test.tsx",
-        "tests/e2e/start.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-17.2",
-      "milestone": "M3",
-      "title": "No publish, approve or thread actions are shown. Notes can be turned into a \"fix list\" and into Fix with…",
-      "kind": "ui",
+      "id": "F-08.5",
+      "milestone": "M4",
+      "title": "Sticky file bar: path, +/−, Split | Unified, Ignore whitespace, Open in Rider.",
+      "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "1f1c357",
-      "tests": [
-        "src/screens/step/SelfReview.test.tsx",
-        "src/ipc/mock/selfReview.test.ts",
-        "tests/e2e/step-self-review.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-17.4",
-      "milestone": "M3",
-      "title": "The self-review summary reuses the S-05 drafts list styling without publish, approve or threads: notes…",
-      "kind": "ui",
+      "id": "F-08.6",
+      "milestone": "M4",
+      "title": "Full note callout: tag, title, Claude label, body, \"Checked in\" evidence chips, Suggested comment, Add to…",
+      "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "9b5ffbe",
-      "tests": [
-        "src/screens/summary/SelfReviewSummary.test.tsx",
-        "tests/e2e/summary-self-review.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-08.7",
+      "milestone": "M4",
+      "title": "Guide aside: Code notes in line order (N cycles), \"For you to judge\" checklist with progress (1/3)…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-08.8",
+      "milestone": "M4",
+      "title": "Footer: shortcut hints (J K hunk, [ ] step, N note, C comment, A ask, Space reviewed, ? all) and Claude…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-08.9",
+      "milestone": "M4",
+      "title": "End-of-step card: \"End of step 4\", next step title with stats, Next step.",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-09.7",
+      "milestone": "M4",
+      "title": "C (or the comment action on a selected line) opens an inline composer under the line in the note-card…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-19.1",
+      "milestone": "M4",
+      "title": "General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-19.3",
+      "milestone": "M4",
+      "title": "Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App).",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-30.3",
+      "milestone": "M4",
+      "title": "Finish review (review screens) opens S-05.",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-30.6",
+      "milestone": "M4",
+      "title": "Shortcuts: ] next step, [ previous step, Space mark reviewed, J/K next/previous hunk, N next note, D add…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     }
   ]
 }
