@@ -12,6 +12,7 @@ import type { AskState } from './askState';
 import { pathOf } from './diffPath';
 import { StepFile, type StepFileProps } from './StepFile';
 import { StepNotes } from './StepNotes';
+import type { FileMarks } from './useFileMarks';
 import type { CurrentHunk } from './useReviewKeys';
 import styles from './Step.module.css';
 
@@ -40,6 +41,8 @@ export interface StepMainProps {
   current?: CurrentHunk | null;
   /** A note N picked: its card comes into view once per `nonce` (F-30.6). */
   noteReveal?: { id: string; nonce: number } | null;
+  /** The step's file marks: each file header's Reviewed toggle (F-07.10). */
+  marks?: FileMarks;
 }
 
 /**
@@ -67,6 +70,7 @@ export function StepMain({
   comments,
   current,
   noteReveal,
+  marks,
 }: StepMainProps) {
   const findings = analysis?.findings ?? [];
   const next = view.next;
@@ -166,6 +170,14 @@ export function StepMain({
             comments={comments}
             current={current?.file === path ? current : undefined}
             revealFocus={noteReveal?.id === focused ? noteReveal.nonce : undefined}
+            reviewed={marks?.isReviewed(path)}
+            onReviewed={
+              marks
+                ? () => {
+                    marks.toggle(path);
+                  }
+                : undefined
+            }
           />
         );
       })}

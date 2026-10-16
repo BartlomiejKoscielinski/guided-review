@@ -86,23 +86,23 @@ describe('S-04 footer (F-08.8)', () => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(800);
   });
 
-  it('F-08.8 the footer hints J K hunk, [ ] step, N note, C comment, A ask, Space reviewed, ? all shortcuts', async () => {
+  it('F-08.8 the footer hints ↑ ↓ change, ← → file, Space file reviewed, N note, C comment, A ask, ? all shortcuts', async () => {
     await openDetailed({ reviewAnalysisStatus: () => Promise.resolve(status()) });
     await waitFor(() => {
       expect(footer().querySelectorAll('kbd')).toHaveLength(9);
     });
     const keys = Array.from(footer().querySelectorAll('kbd')).map((k) => k.textContent);
-    expect(keys).toEqual(['J', 'K', '[', ']', 'N', 'C', 'A', 'Space', '?']);
+    expect(keys).toEqual(['↑', '↓', '←', '→', 'Space', 'N', 'C', 'A', '?']);
     expect(squash(footer().textContent)).toContain(
-      squash('J K hunk [ ] step N note C comment A ask Space reviewed ? all shortcuts'),
+      squash('↑ ↓ change ← → file Space file reviewed N note C comment A ask ? all shortcuts'),
     );
     for (const hint of [
-      'J K hunk',
-      '[ ] step',
+      '↑ ↓ change',
+      '← → file',
+      'Space file reviewed',
       'N note',
       'C comment',
       'A ask',
-      'Space reviewed',
       '? all shortcuts',
     ]) {
       expect(await piece(hint, true)).toBeInTheDocument();

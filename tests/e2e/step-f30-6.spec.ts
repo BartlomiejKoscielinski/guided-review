@@ -2,12 +2,13 @@ import { expect, test, type Page } from '@playwright/test';
 import { openStep1 } from './stepHelpers';
 
 // F-30.6 against the mock backend (M4 plan, decision 14; the roadmap demo): a review of !482 with
-// the keyboard only. Steps with ] and [, Space marks reviewed, J/K the current hunk (its focus
+// the keyboard only. Steps with ] and [, Space marks a file reviewed, J/K the current hunk (its focus
 // outline is the one element marked aria-current="true"), N the next note, D and X on the focused
 // note, C the line composer and Esc to close it, Ctrl+D to Detailed and back, A ask, ? the list of
 // shortcuts.
 
 const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
+const QUEUE = 'src/Mobile.Core/Uploads/IUploadQueue.cs';
 const ADDED = 'Added to drafts. It reaches GitLab only when you publish.';
 const DISMISSED = "Dismissed. Claude won't raise it again for this commit.";
 
@@ -20,11 +21,15 @@ const currentHunk = (page: Page) => page.locator('[aria-current="true"]');
 test('F-30.6 a whole review with the keyboard only', async ({ page }) => {
   await openStep1(page);
 
-  // Space marks the step reviewed.
+  // Space marks the current file reviewed (F-07.10): before any move, the step's first file; step 1
+  // has two files, so the step is not reviewed yet.
   await page.keyboard.press('Space');
-  await expect(page.getByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+  await expect(
+    page.getByRole('button', { name: `Mark ${QUEUE} reviewed`, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Mark reviewed', exact: true })).toHaveAttribute(
     'aria-pressed',
-    'true',
+    'false',
   );
 
   // ] and [ move between steps.

@@ -21,7 +21,7 @@ export interface Shortcut extends ShortcutHint {
 export const SHORTCUTS: readonly Shortcut[] = [
   { group: 'Review', label: 'Next step', keys: [']'] },
   { group: 'Review', label: 'Previous step', keys: ['['] },
-  { group: 'Review', label: 'Mark step reviewed', keys: ['Space'] },
+  { group: 'Review', label: 'Mark file reviewed', keys: ['Space'] },
   { group: 'Review', label: 'Next hunk', keys: ['J'] },
   { group: 'Review', label: 'Previous hunk', keys: ['K'] },
   { group: 'Review', label: 'Next note', keys: ['N'] },
@@ -43,13 +43,13 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { group: 'App', label: 'All shortcuts', keys: ['?'] },
 ];
 
-/** S-04's footer hints (F-08.8, Main.dc.html); `?` lists every shortcut (F-30.6). */
+/** S-04's footer hints (F-08.8 after M4 decision 15 and F-07.10); `?` lists every shortcut (F-30.6). */
 export const DETAILED_FOOTER_HINTS: readonly ShortcutHint[] = [
-  { keys: ['J', 'K'], label: 'hunk' },
-  { keys: ['[', ']'], label: 'step' },
+  { keys: ['↑', '↓'], label: 'change' },
+  { keys: ['←', '→'], label: 'file' },
+  { keys: ['Space'], label: 'file reviewed' },
   { keys: ['N'], label: 'note' },
   { keys: ['C'], label: 'comment' },
   { keys: ['A'], label: 'ask' },
-  { keys: ['Space'], label: 'reviewed' },
   { keys: ['?'], label: 'all shortcuts' },
 ];

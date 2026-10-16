@@ -13,7 +13,7 @@ interface Row {
 const REVIEW: readonly Row[] = [
   { label: 'Next step', keys: [']'] },
   { label: 'Previous step', keys: ['['] },
-  { label: 'Mark step reviewed', keys: ['Space'] },
+  { label: 'Mark file reviewed', keys: ['Space'] },
   { label: 'Next hunk', keys: ['J'] },
   { label: 'Previous hunk', keys: ['K'] },
   { label: 'Next note', keys: ['N'] },

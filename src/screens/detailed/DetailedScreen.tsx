@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
+import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf } from '../step/askState';
 import { pathOf } from '../step/diffPath';
 import { nextNonce } from '../step/lineComment';
 import { pickedSelection } from '../step/lineSelection';
+import { useFileMarks } from '../step/useFileMarks';
 import { useLineComments } from '../step/useLineComments';
 import { useReviewKeys } from '../step/useReviewKeys';
 import { useSelfReviewKnown } from '../step/useSelfReview';
@@ -20,6 +22,8 @@ import { GuideAside } from './GuideAside';
 import { InfoHeader } from './InfoHeader';
 import { Rail } from './Rail';
 import styles from './Detailed.module.css';
+
+const NO_FILES: readonly FileDiff[] = [];
 
 /**
  * S-04 Step review in Detailed mode (F-08.1, ADR-010): the regions of Main.dc.html - info header
@@ -74,6 +78,15 @@ export function DetailedScreen() {
     focused,
     selection: picked ? pickedSelection(picked) : null,
   });
+  // File marks (F-07.10): each sticky file bar's Reviewed toggle; Space toggles the file of the
+  // current change, else the step's first file (the step header's Mark reviewed marks them all).
+  const marks = useFileMarks({
+    sessionId,
+    stepId: step?.id ?? '',
+    files: files.data?.files ?? NO_FILES,
+    stepReviewed: step && view ? view.reviewed.includes(step.id) : undefined,
+    current: keys.current?.file,
+  });
   // Line comments (F-09.7): S-04 draws no line selection, so C opens the composer under the line
   // S-03 left selected, else in the hunk J/K made current, else under the step's first changed
   // line (no Claude folds here).
@@ -126,6 +139,10 @@ export function DetailedScreen() {
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
                 comments={comments.cards}
                 current={keys.current?.file === pathOf(file) ? keys.current : undefined}
+                reviewed={marks.isReviewed(pathOf(file))}
+                onReviewed={() => {
+                  marks.toggle(pathOf(file));
+                }}
               />
             ))}
           {/* Under the files once they are read (or under their error), so it does not jump. */}

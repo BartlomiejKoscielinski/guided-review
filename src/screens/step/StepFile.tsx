@@ -7,6 +7,7 @@ import type { Fold } from '../../ipc/types/Fold';
 import type { LineSelection } from '../../ipc/types/LineSelection';
 import type { Thread } from '../../ipc/types/Thread';
 import { pathOf } from './diffPath';
+import { FileReviewed } from './FileReviewed';
 import { NoteMark, ThreadMark } from './GutterMarks';
 import type { LineCard } from './useLineComments';
 import { NoteCard } from './NoteCard';
@@ -42,6 +43,10 @@ export interface StepFileProps {
   current?: { hunk: string; nonce: number };
   /** Brings the focused note's card into view once per value, a `nextNonce` (N, F-30.6). */
   revealFocus?: number;
+  /** The file is marked reviewed in the step (F-07.10). */
+  reviewed?: boolean;
+  /** The header's Reviewed toggle (F-07.10); without it the header has none. */
+  onReviewed?: () => void;
 }
 
 /** Where a thread sits in the diff: its new-side line, else its old-side line. */
@@ -53,8 +58,9 @@ function threadAt(thread: Thread): { key: string; line: number } | null {
 }
 
 /**
- * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes", then the split diff with fold
- * rows, gutter squares and thread icons, the focused note and open threads under their lines.
+ * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes" and the Reviewed toggle
+ * (F-07.10), then the split diff with fold rows, gutter squares and thread icons, the focused note
+ * and open threads under their lines.
  */
 export function StepFile({
   sessionId,
@@ -74,6 +80,8 @@ export function StepFile({
   comments = [],
   current,
   revealFocus,
+  reviewed = false,
+  onReviewed,
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
@@ -208,12 +216,15 @@ export function StepFile({
             <span className={styles.del}>−{file.deletions}</span>
           </span>
         </span>
-        {findings.length > 0 && (
-          <span className={styles.noteCount}>
-            <span className={styles.noteSquare} aria-hidden="true" />
-            {open === 1 ? '1 note' : `${String(open)} notes`}
-          </span>
-        )}
+        <span className={styles.fileTools}>
+          {findings.length > 0 && (
+            <span className={styles.noteCount}>
+              <span className={styles.noteSquare} aria-hidden="true" />
+              {open === 1 ? '1 note' : `${String(open)} notes`}
+            </span>
+          )}
+          {onReviewed && <FileReviewed path={path} reviewed={reviewed} onToggle={onReviewed} />}
+        </span>
       </div>
       <DiffView
         path={path}

@@ -9,8 +9,8 @@ import { renderApp } from '../../test/renderApp';
 
 // F-08.4: the S-04 step header (Main.dc.html): "Step 4 / 8" in the reader's order, "builds on"
 // chips `<number in current order> · <short title>` from `Step.buildsOn` that open that step,
-// Previous step, Mark reviewed (Space) and Next step (`]`), with the H1 title and the description
-// below.
+// Previous step, Mark reviewed (Space hint) and Next step (`]`, not drawn on the button since
+// F-07.10), with the H1 title and the description below.
 
 const SESSION = 'mock-mr-session-1';
 const DETAILED = pathFor({ screen: 'S-04', sessionId: SESSION });
@@ -122,10 +122,10 @@ describe('S-04 step header (F-08.4)', () => {
     await expectStep(router, 's3', 'Step 3 / 8', 'UploadWorker with retries');
   });
 
-  it('F-08.4 Next step opens the next step in the reader’s order and shows its key ]', async () => {
+  it('F-08.4 Next step opens the next step in the reader’s order (no ] hint since F-07.10)', async () => {
     const { router } = await openDetailed(await backend());
     await screen.findByText('Step 4 / 8');
-    expect(within(next()).getByText(']')).toBeInTheDocument();
+    expect(next()).toHaveAccessibleName('Next step');
     await userEvent.click(next());
     await expectStep(router, 's5', 'Step 5 / 8', 'Offline banner in the view');
   });
@@ -180,12 +180,15 @@ describe('S-04 step header (F-08.4)', () => {
     expect(markStep).toHaveBeenCalledTimes(2);
   });
 
-  it('F-08.4 Space marks the step reviewed and takes it back', async () => {
+  it('F-08.4 Space marks the one file of the step, so the step is reviewed, and takes it back', async () => {
     const client = await backend();
     const markStep = vi.fn<IpcClient['reviewMarkStep']>((session, step, reviewed) =>
       client.reviewMarkStep(session, step, reviewed),
     );
-    await openDetailed({ ...client, reviewMarkStep: markStep });
+    const markFile = vi.fn<IpcClient['reviewMarkFile']>((session, step, file, reviewed) =>
+      client.reviewMarkFile(session, step, file, reviewed),
+    );
+    await openDetailed({ ...client, reviewMarkStep: markStep, reviewMarkFile: markFile });
     await screen.findByText('Step 4 / 8');
     await userEvent.keyboard(' ');
     await waitFor(() => {
@@ -196,6 +199,8 @@ describe('S-04 step header (F-08.4)', () => {
     await waitFor(() => {
       expect(markButton()).toHaveAttribute('aria-pressed', 'false');
     });
-    expect(markStep.mock.calls.map((call) => call[2])).toEqual([true, false]);
+    // Space is the current file's since F-07.10; step 4 has one file.
+    expect(markFile.mock.calls.map((call) => call[3])).toEqual([true, false]);
+    expect(markStep).not.toHaveBeenCalled();
   });
 });

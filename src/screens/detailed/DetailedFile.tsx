@@ -34,6 +34,10 @@ export interface DetailedFileProps {
   current?: { hunk: string; nonce: number };
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
+  /** The file is marked reviewed in the step (F-07.10). */
+  reviewed?: boolean;
+  /** The file bar's Reviewed toggle (F-07.10). */
+  onReviewed?: () => void;
 }
 
 /**
@@ -53,6 +57,8 @@ export function DetailedFile({
   reveal,
   current,
   comments = [],
+  reviewed,
+  onReviewed,
 }: DetailedFileProps) {
   const path = pathOf(file);
   const layout = useDetailedStore((s) => s.layout);
@@ -139,6 +145,8 @@ export function DetailedFile({
         onLayout={setLayout}
         ignoreWhitespace={ignore}
         onIgnoreWhitespace={setIgnore}
+        reviewed={reviewed}
+        onReviewed={onReviewed}
       />
       <DiffView
         path={path}

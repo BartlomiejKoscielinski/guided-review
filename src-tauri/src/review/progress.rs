@@ -224,6 +224,22 @@ mod tests {
     }
 
     #[test]
+    fn f07_10_a_file_outside_the_step_is_refused_with_its_message() {
+        let error: AppError = ProgressError::NotInStep.into();
+        assert_eq!(error.code, ErrorCode::InvalidInput);
+        assert_eq!(error.message, "The file is not in the step.");
+        let store = Store::open_in_memory().unwrap();
+        store
+            .with_conn(|c| {
+                let error = mark_file(c, "r1", &plan(&["s1"]), &[], "s1", "a.cs", true);
+                assert!(matches!(error, Err(ProgressError::NotInStep)));
+                assert!(steps_state::files(c, "r1", "s1")?.is_empty());
+                Ok(())
+            })
+            .unwrap();
+    }
+
+    #[test]
     fn f07_2_mark_touches_the_session() {
         let store = Store::open_in_memory().unwrap();
         let plan = plan(&["s1"]);

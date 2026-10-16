@@ -3,6 +3,7 @@ import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { cx } from '../../components/cx';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
+import type { FileDiff } from '../../ipc/types/FileDiff';
 import { useFocusStore } from '../../state/focus';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf, type AskState } from './askState';
@@ -13,6 +14,7 @@ import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
 import { lastLine, nextNonce } from './lineComment';
 import { useLineComments } from './useLineComments';
+import { useFileMarks } from './useFileMarks';
 import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
 import { useReviewKeys } from './useReviewKeys';
@@ -21,6 +23,8 @@ import { useStepFocus } from './useStepFocus';
 import { useStepScroll } from './useStepScroll';
 import { useStepKeys } from './useStepKeys';
 import styles from './Step.module.css';
+
+const NO_FILES: readonly FileDiff[] = [];
 
 export interface StepBodyProps {
   sessionId: string;
@@ -96,6 +100,15 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
       else if (layout === 'C') setGuideAsk((n) => n + 1);
       else openAsk(lines.selection);
     },
+  });
+  // File marks (F-07.10): each file header's Reviewed toggle; Space toggles the file of the
+  // current change, else the step's first file.
+  const marks = useFileMarks({
+    sessionId,
+    stepId,
+    files: step.data?.files ?? NO_FILES,
+    stepReviewed: step.data?.reviewed,
+    current: keys.current?.file,
   });
   // Line comments (F-09.7): C or Comment opens the composer under the last selected line, else in
   // the hunk J/K made current (M4 decision 13).
@@ -174,6 +187,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             comments={comments.cards}
             current={keys.current}
             noteReveal={noteReveal}
+            marks={marks}
           />
         )}
       </main>

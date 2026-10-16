@@ -237,6 +237,13 @@
   margin-bottom: 10px;
 }
 
+.fileTools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
 .fileName {
   display: flex;
   align-items: baseline;

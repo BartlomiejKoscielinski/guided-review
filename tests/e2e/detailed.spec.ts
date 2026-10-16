@@ -118,12 +118,12 @@ test('F-08.2 the info header: branch block, author · age, files, step segments,
   await openStep1(page);
   // Steps 1 to 3 marked reviewed in layout A, then step 4 is open.
   await page.getByRole('button', { name: 'Mark reviewed' }).click();
-  await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toBeVisible();
   for (const position of [2, 3]) {
     await page.getByRole('button', { name: 'Next step' }).click();
     await expect(page.getByText(`Step ${String(position)} of 8`)).toBeVisible();
     await page.keyboard.press('Space');
-    await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Next step' }).click();
   await expect(page.getByText('Step 4 of 8')).toBeVisible();
@@ -165,12 +165,12 @@ test('F-08.3 the rail: Change overview, step states and draft counts, Skim, Chan
 }) => {
   await openStep1(page);
   await page.getByRole('button', { name: 'Mark reviewed' }).click();
-  await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toBeVisible();
   for (const position of [2, 3]) {
     await page.getByRole('button', { name: 'Next step' }).click();
     await expect(page.getByText(`Step ${String(position)} of 8`)).toBeVisible();
     await page.keyboard.press('Space');
-    await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Next step' }).click();
   await expect(page.getByText('Step 4 of 8')).toBeVisible();
@@ -217,7 +217,8 @@ test('F-08.3 the rail: Change overview, step states and draft counts, Skim, Chan
 
 // F-08.4: the S-04 step header (Main.dc.html): "Step n / 8" in the reader's order, "builds on"
 // chips `<number> · <short title>` that open that step, Previous step, Mark reviewed (Space) and
-// Next step (`]`) with the H1 title below. Step 1 builds on nothing; step 4 builds on 1 and 3.
+// Next step (`]`, not drawn since F-07.10) with the H1 title below. Step 1 builds on nothing; step
+// 4 builds on 1 and 3.
 test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
   await openStep1(page);
   await page.keyboard.press('Control+d');
@@ -234,7 +235,8 @@ test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
   await expect(title).toHaveText('Queue contract');
   await expect(previous).toBeDisabled();
   await expect(buildsOn).toHaveCount(0);
-  await expect(next).toContainText(']');
+  // No `]` hint on the header's Next step since F-07.10 (M4 plan row).
+  await expect(next).toHaveAccessibleName('Next step');
 
   await next.click();
   await expect(kicker(2)).toBeVisible();

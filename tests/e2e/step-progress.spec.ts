@@ -151,21 +151,21 @@ test('F-07.2 F-07.8 F-07.7 Mark reviewed and Space in A, B and C; the marks surv
   // A: the header's button marks step 1 and turns to Reviewed; the list counts it.
   await expect(list).toContainText('0/8');
   await page.getByRole('button', { name: 'Mark reviewed' }).click();
-  await expect(page.getByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
   await expect(list).toContainText('1/8');
   // Reviewed is green, also under the pointer that just clicked it (Review.dc.html).
   await expect
-    .poll(() => backgrounds(page.getByRole('button', { name: 'Reviewed' })))
+    .poll(() => backgrounds(page.getByRole('button', { name: 'Reviewed', exact: true })))
     .toEqual([GREEN]);
 
   // Space marks step 2, a second Space takes the mark back, a third puts it on again.
   await page.getByRole('button', { name: 'Next step' }).click();
   await expect(page.getByText('Step 2 of 8')).toBeVisible();
   await page.keyboard.press('Space');
-  await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toBeVisible();
   await expect(list).toContainText('2/8');
   await page.keyboard.press('Space');
   await expect(page.getByRole('button', { name: 'Mark reviewed' })).toBeVisible();
@@ -180,12 +180,12 @@ test('F-07.2 F-07.8 F-07.7 Mark reviewed and Space in A, B and C; the marks surv
   await bar.getByRole('button', { name: 'Next step' }).click();
   await expect(bar).toContainText('Step 3 of 8');
   await bar.getByRole('button', { name: 'Mark reviewed' }).click();
-  await expect(bar.getByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+  await expect(bar.getByRole('button', { name: 'Reviewed', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
   await expect
-    .poll(() => backgrounds(bar.getByRole('button', { name: 'Reviewed' })))
+    .poll(() => backgrounds(bar.getByRole('button', { name: 'Reviewed', exact: true })))
     .toEqual([GREEN]);
   await expect
     .poll(() => backgrounds(barSegments(page, 3)))
@@ -206,12 +206,12 @@ test('F-07.2 F-07.8 F-07.7 Mark reviewed and Space in A, B and C; the marks surv
     'false',
   );
   await guide.getByRole('button', { name: 'Mark reviewed' }).click();
-  await expect(guide.getByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+  await expect(guide.getByRole('button', { name: 'Reviewed', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
   await expect
-    .poll(() => backgrounds(guide.getByRole('button', { name: 'Reviewed' })))
+    .poll(() => backgrounds(guide.getByRole('button', { name: 'Reviewed', exact: true })))
     .toEqual([GREEN]);
   // The current step stays yellow even when it is reviewed.
   await expect
@@ -220,7 +220,7 @@ test('F-07.2 F-07.8 F-07.7 Mark reviewed and Space in A, B and C; the marks surv
 
   // After a restart the marks are still there, in C and back in A.
   await restartApp(page);
-  await expect(guide.getByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+  await expect(guide.getByRole('button', { name: 'Reviewed', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );

@@ -3,6 +3,7 @@ import { Segmented } from '../../components/Segmented';
 import type { DiffLayout } from '../../diff/rows';
 import { useRiderOpen } from '../../ipc/hooks/useChanges';
 import type { FileDiff } from '../../ipc/types/FileDiff';
+import { FileReviewed } from '../step/FileReviewed';
 import styles from './FileBar.module.css';
 
 export interface FileBarProps {
@@ -15,6 +16,10 @@ export interface FileBarProps {
   onLayout: (layout: DiffLayout) => void;
   ignoreWhitespace: boolean;
   onIgnoreWhitespace: (on: boolean) => void;
+  /** The file is marked reviewed in the step (F-07.10). */
+  reviewed?: boolean;
+  /** The bar's Reviewed toggle (F-07.10); without it the bar has none. */
+  onReviewed?: () => void;
 }
 
 const LAYOUTS = [
@@ -24,9 +29,9 @@ const LAYOUTS = [
 
 /**
  * The S-04 file bar (F-08.5, Main.dc.html), sticky at the top of the main column while its file
- * scrolls: the path with the file name in bold, `+add −del`, Split | Unified, Ignore whitespace and
- * Open in Rider at the file's first hunk, from the session's folder (F-24.1). A failed open shows
- * its error under the bar.
+ * scrolls: the path with the file name in bold, `+add −del`, Split | Unified, Ignore whitespace,
+ * Open in Rider at the file's first hunk, from the session's folder (F-24.1), and the file's
+ * Reviewed toggle (F-07.10). A failed open shows its error under the bar.
  */
 export function FileBar({
   sessionId,
@@ -36,6 +41,8 @@ export function FileBar({
   onLayout,
   ignoreWhitespace,
   onIgnoreWhitespace,
+  reviewed = false,
+  onReviewed,
 }: FileBarProps) {
   const rider = useRiderOpen();
   const slash = path.lastIndexOf('/');
@@ -47,7 +54,7 @@ export function FileBar({
       <div className={styles.bar}>
         <div className={styles.file}>
           <span className={styles.path} title={path}>
-            {dir}
+            {dir && <span className={styles.dir}>{dir}</span>}
             <b className={styles.name}>{name}</b>
           </span>
           <span className={styles.add}>{`+${String(file.additions)}`}</span>
@@ -82,6 +89,9 @@ export function FileBar({
           >
             Open in Rider
           </Button>
+          {onReviewed && (
+            <FileReviewed path={path} reviewed={reviewed} onToggle={onReviewed} size={30} />
+          )}
         </div>
       </div>
       {rider.error && (
