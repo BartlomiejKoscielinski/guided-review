@@ -1,35 +1,28 @@
 import { useEffect } from 'react';
 import { useMatches, useNavigate } from 'react-router';
 import { layoutShortcut, useFocusStore } from '../state/focus';
+import { isShortcutChord, isShortcutKey } from './shortcuts';
 import { useStartStore } from '../state/start';
 import { pathFor, SETTINGS_ROUTE, SHORTCUTS_SETTINGS_ROUTE } from './routes';
 import { useModeSwitch } from './useModeSwitch';
 
-/** Ctrl+, without Alt (so AltGr chords on Polish keyboards don't trigger it). */
+// The App and Code chords are read from the shortcuts table (`./shortcuts.ts`, F-30.6; F-19.7
+// edits it), with exactly the modifiers it lists, so AltGr chords on Polish keyboards don't
+// trigger them.
+
+/** Ctrl+, (the table's Settings): Settings (F-19.4). */
 export function isSettingsShortcut(event: KeyboardEvent): boolean {
-  return event.ctrlKey && !event.altKey && !event.metaKey && event.key === ',';
+  return isShortcutChord(event, 'settings');
 }
 
-/** Ctrl+K without Alt or Shift: S-01 with the input focused (F-01.4). */
+/** Ctrl+K (the table's Open anything): S-01 with the input focused (F-01.4). */
 export function isSourceShortcut(event: KeyboardEvent): boolean {
-  return (
-    event.ctrlKey &&
-    !event.altKey &&
-    !event.shiftKey &&
-    !event.metaKey &&
-    event.key.toLowerCase() === 'k'
-  );
+  return isShortcutChord(event, 'openAnything');
 }
 
-/** Ctrl+D without Alt or Shift: Focus | Detailed on S-03 and S-04 (F-08.1). */
+/** Ctrl+D (the table's Switch Focus / Detailed): Focus | Detailed on S-03 and S-04 (F-08.1). */
 export function isModeShortcut(event: KeyboardEvent): boolean {
-  return (
-    event.ctrlKey &&
-    !event.altKey &&
-    !event.shiftKey &&
-    !event.metaKey &&
-    event.key.toLowerCase() === 'd'
-  );
+  return isShortcutChord(event, 'mode');
 }
 
 /**
@@ -105,9 +98,12 @@ export function isPrevStepShortcut(event: KeyboardEvent): boolean {
   return isPrintable(event, '[');
 }
 
-/** `?` as `]` (Shift types it on most layouts): every shortcut, Settings › Shortcuts (F-30.6). */
+/**
+ * `?` (the table's All shortcuts) as typed, with the Shift or AltGr the layout needs: every
+ * shortcut, Settings › Shortcuts (F-30.6).
+ */
 export function isAllShortcutsShortcut(event: KeyboardEvent): boolean {
-  return isPrintable(event, '?');
+  return isShortcutChord(event, 'allShortcuts');
 }
 
 /** A printable key without Ctrl, Alt or Meta; AltGr (Ctrl+Alt on Windows) still counts. */
@@ -116,20 +112,14 @@ function isPrintable(event: KeyboardEvent, key: string): boolean {
   return event.key === key && !event.metaKey && (altGr || (!event.ctrlKey && !event.altKey));
 }
 
-/** Ctrl+Shift+O without Alt: Open in Rider at the current line (F-24.1, F-30.6). */
+/** Ctrl+Shift+O (the table's Open in Rider): Rider at the current line (F-24.1, F-30.6). */
 export function isRiderShortcut(event: KeyboardEvent): boolean {
-  return (
-    event.ctrlKey &&
-    event.shiftKey &&
-    !event.altKey &&
-    !event.metaKey &&
-    event.key.toLowerCase() === 'o'
-  );
+  return isShortcutChord(event, 'rider');
 }
 
-/** Space without modifiers: Mark reviewed or its undo on S-03 (F-07.2, F-30.6). */
+/** Space (the table's Mark file reviewed) without modifiers (F-07.10, F-30.6). */
 export function isMarkReviewedShortcut(event: KeyboardEvent): boolean {
-  return event.key === ' ' && !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey;
+  return isShortcutKey(event, 'markFile');
 }
 
 /**

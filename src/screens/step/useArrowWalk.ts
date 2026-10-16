@@ -174,7 +174,12 @@ export function useArrowWalk({
       if (!repeat) leave(1);
       return;
     }
-    if (pageChange(here.file, here.hunk, 1)) return;
+    if (pageChange(here.file, here.hunk, 1)) {
+      // Paging into a tall first change leaves the pause at the step's start: the next `↑` pages
+      // back (and pauses again) instead of opening the previous step.
+      if (current.pause === 'start') setCurrent({ ...current, pause: undefined });
+      return;
+    }
     const after = stops[at + 1];
     if (after && after.file === here.file) {
       show(after, 'change');

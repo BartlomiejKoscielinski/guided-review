@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { isTypingOrControl } from '../../app/keyboard';
 import { pathFor, stepScreen } from '../../app/routes';
+import { isShortcutKey } from '../../app/shortcuts';
 import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
@@ -55,13 +56,12 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
     if (view !== undefined && unmarked) markPlanOpened();
   }, [view, unmarked, markPlanOpened]);
 
-  // Enter outside controls and fields starts step 1 (F-06.11).
+  // Enter (the table's Primary action) outside controls and fields starts step 1 (F-06.11, F-30.6).
   useEffect(() => {
     if (!canStart) return undefined;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Enter' || event.defaultPrevented || isTypingOrControl(event.target))
-        return;
-      if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
+      if (!isShortcutKey(event, 'primary') || event.defaultPrevented) return;
+      if (isTypingOrControl(event.target)) return;
       event.preventDefault();
       void navigate(startPath);
     };
