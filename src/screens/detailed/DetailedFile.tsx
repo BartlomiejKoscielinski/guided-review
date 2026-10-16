@@ -151,10 +151,13 @@ export function DetailedFile({
       latest = { at, nonce: card.reveal };
     }
   }
-  // Threads show under their lines as in S-03, with the gutter thread icon (M5 decision 3).
+  // Threads show under their lines as in S-03, with the gutter thread icon (M5 decision 3); a
+  // thread's line is never folded, the fold of a mechanical hunk is cut around it (F-11.3).
+  const keep = new Set<string>();
   for (const row of threadRows) {
     markers.set(row.key, [...(markers.get(row.key) ?? []), row.mark]);
     if (row.card) inserts.set(row.key, [...(inserts.get(row.key) ?? []), row.card]);
+    keep.add(row.key);
   }
 
   return (
@@ -179,6 +182,7 @@ export function DetailedFile({
         markers={markers}
         inserts={inserts.size > 0 ? inserts : undefined}
         unfold={unfold}
+        keep={keep}
         reveal={latest}
         current={current}
         stickyTop={barHeight}

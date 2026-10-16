@@ -4,10 +4,9 @@ import { bringIntoView } from '../../diff/currentChange';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
-import type { Thread } from '../../ipc/types/Thread';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf } from '../step/askState';
-import { pathOf } from '../step/diffPath';
+import { pathOf, threadOnFile } from '../step/diffPath';
 import { nextNonce } from '../step/lineComment';
 import { pickedSelection } from '../step/lineSelection';
 import { useArrowWalk, useCurrentChange } from '../step/useArrowWalk';
@@ -129,11 +128,11 @@ export function DetailedScreen() {
     current,
   });
   // The step's threads on a file's lines, under their lines as in S-03 (F-11.1, M5 decision 3).
-  const onFile = (path: string) => (t: Thread) =>
-    t.position?.newPath === path || t.position?.oldPath === path;
-  const threadsIn = (path: string) => (files.data?.threads ?? []).filter(onFile(path));
+  // A thread written before a rename matches the renamed file by its old path (F-11.3).
+  const threadsIn = (file: FileDiff) => (files.data?.threads ?? []).filter(threadOnFile(file));
   // Threads no step shows on a line, on the file header of their first step (F-11.3).
-  const fileThreadsIn = (path: string) => (files.data?.fileThreads ?? []).filter(onFile(path));
+  const fileThreadsIn = (file: FileDiff) =>
+    (files.data?.fileThreads ?? []).filter(threadOnFile(file));
   const onAsk = (finding: Finding) => {
     if (key === null) return;
     change(key, (s) => ({
@@ -175,8 +174,8 @@ export function DetailedScreen() {
                 onAsk={onAsk}
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
                 comments={comments.cards}
-                threads={threadsIn(pathOf(file))}
-                fileThreads={fileThreadsIn(pathOf(file))}
+                threads={threadsIn(file)}
+                fileThreads={fileThreadsIn(file)}
                 current={current?.file === pathOf(file) ? current : undefined}
                 reviewed={marks.isReviewed(pathOf(file))}
                 onReviewed={() => {
