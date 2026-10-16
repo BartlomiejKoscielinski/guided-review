@@ -40,6 +40,8 @@ export interface DiffViewProps {
   markers?: ReadonlyMap<string, ReactNode>;
   /** Rows under a line by `lineKey`: note and thread cards (F-07.6). */
   inserts?: ReadonlyMap<string, ReactNode>;
+  /** Line keys (`lineKey`) whose fold opens on its own: line comments (F-09.7). */
+  unfold?: ReadonlySet<string>;
   /** Selected lines of one side, highlighted (F-10.1; split layout). */
   selection?: { side: 'old' | 'new'; start: number; end: number } | null;
   /** A click on a line number: select it, Shift+click extends (F-10.1; split layout). */
@@ -82,6 +84,7 @@ export function DiffView({
   folds,
   markers,
   inserts,
+  unfold,
   selection,
   onPickLine,
   scrollRoot,
@@ -93,6 +96,7 @@ export function DiffView({
   const tokens = useHighlight(path, diff);
   const [shown, setShown] = useState<ReadonlySet<string>>(() => new Set());
   const insertKeys = [...(inserts?.keys() ?? [])].join(' ');
+  const unfoldKeys = [...(unfold ?? [])].join(' ');
   const rows = useMemo(
     () =>
       buildRows(diff, layout, {
@@ -101,8 +105,9 @@ export function DiffView({
         folds,
         shown,
         inserts: new Set(insertKeys.split(' ')),
+        unfold: new Set(unfoldKeys.split(' ')),
       }),
-    [diff, layout, note, headers, folds, shown, insertKeys],
+    [diff, layout, note, headers, folds, shown, insertKeys, unfoldKeys],
   );
   const margin = useScrollMargin(scrollRoot, listRef);
   // TanStack Virtual returns fresh functions each render; this component isn't memoized.

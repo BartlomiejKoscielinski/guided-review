@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T08:47:29.492Z",
+  "updated": "2026-10-16T09:37:40.234Z",
   "items": [
     {
       "id": "F-08.1",
@@ -167,9 +167,16 @@
       "title": "C (or the comment action on a selected line) opens an inline composer under the line in the note-card…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "991f647",
+      "tests": [
+        "src-tauri/src/review/drafts_tests.rs",
+        "src/screens/step/LineComposer.test.tsx",
+        "src/screens/detailed/DetailedComposer.test.tsx",
+        "tests/e2e/step-f09-7.spec.ts"
+      ]
     },
     {
       "id": "F-19.1",
@@ -177,9 +184,15 @@
       "title": "General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "d17fe88",
+      "tests": [
+        "src/screens/settings/GeneralSection.test.tsx",
+        "tests/e2e/settings-f19-1.spec.ts"
+      ],
+      "forkSha": "d8ea6c8"
     },
     {
       "id": "F-19.3",

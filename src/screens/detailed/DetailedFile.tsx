@@ -106,9 +106,12 @@ export function DetailedFile({
   // with every request (`nextNonce`).
   let latest =
     reveal !== undefined && focusedAt !== undefined ? { at: focusedAt, nonce: reveal } : undefined;
+  // A line comment opens the mechanical hunk's fold it is in (F-09.7).
+  const unfold = new Set<string>();
   for (const card of comments) {
     if (card.file !== path) continue;
     const at = lineKey(card.side, card.line);
+    unfold.add(at);
     inserts.set(at, [
       ...(inserts.get(at) ?? []),
       <div key={card.id} className={styles.row}>
@@ -138,6 +141,7 @@ export function DetailedFile({
         scrollRoot={scrollRoot}
         markers={markers}
         inserts={inserts.size > 0 ? inserts : undefined}
+        unfold={unfold}
         reveal={latest}
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />

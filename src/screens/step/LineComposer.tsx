@@ -15,8 +15,10 @@ export interface LineComposerProps {
   selfReview: boolean;
   /** The draft the card shows with the confirmation and Undo; null: the text area to write one. */
   draft: { id: string; body: string } | null;
-  /** The text the composer opens with (Undo brings a draft's text back). */
+  /** The text it opens with: what was typed before a remount, or the text Undo brought back. */
   text?: string;
+  /** Each change of the text: the screen keeps it, so a remount (mode switch, scroll) keeps it. */
+  onText?: (text: string) => void;
   /** A new number moves the keyboard focus back to the text area. */
   focus?: number;
   /** The draft was made: the screen keeps the card on it. */
@@ -25,6 +27,11 @@ export interface LineComposerProps {
   onCancel?: () => void;
   /** Undo deleted the draft: the screen opens the composer with its text again. */
   onUndone: (body: string) => void;
+  /**
+   * Asked before Undo deletes the draft: false keeps it, as a comment being written elsewhere
+   * takes the focus instead and keeps its text.
+   */
+  canUndo?: () => boolean;
 }
 
 /**
@@ -40,9 +47,11 @@ export function LineComposer({
   draft,
   text: initialText = '',
   focus = 0,
+  onText,
   onAdded,
   onCancel,
   onUndone,
+  canUndo,
 }: LineComposerProps) {
   const copy = decisionCopy(selfReview);
   const [text, setText] = useState(initialText);
@@ -110,6 +119,7 @@ export function LineComposer({
             value={text}
             onChange={(event) => {
               setText(event.target.value);
+              onText?.(event.target.value);
             }}
             onKeyDown={(event) => {
               if (event.key !== 'Enter' || !event.ctrlKey) return;
@@ -140,7 +150,7 @@ export function LineComposer({
               size={30}
               disabled={remove.isPending}
               onClick={() => {
-                remove.mutate(draft.id);
+                if (canUndo?.() !== false) remove.mutate(draft.id);
               }}
             >
               Undo

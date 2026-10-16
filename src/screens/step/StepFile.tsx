@@ -130,10 +130,13 @@ export function StepFile({
       </div>,
     );
   }
+  // A line comment opens the fold it is in, so the reader finds it where they wrote it (F-09.7).
+  const unfold = new Set<string>();
   let reveal: { at: string; nonce: number } | undefined;
   for (const card of comments) {
     if (card.file !== path) continue;
     const at = lineKey(card.side, card.line);
+    unfold.add(at);
     push(
       inserts,
       at,
@@ -195,6 +198,7 @@ export function StepFile({
         folds={diffFolds}
         markers={markers}
         inserts={inserts}
+        unfold={unfold}
         selection={selection}
         onPickLine={
           onPickLine
