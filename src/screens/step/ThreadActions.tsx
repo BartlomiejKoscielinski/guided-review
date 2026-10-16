@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '../../components/Button';
 import { CheckIcon } from '../../components/icons';
-import { useReplyThread, useResolveThread } from '../../ipc/hooks/useThreadActions';
 import type { Thread } from '../../ipc/types/Thread';
 import { ThreadReply } from './ThreadReply';
+import { useThreadCard, type ThreadScope } from './useThreadCard';
 import styles from './Thread.module.css';
 
 export interface ThreadActionsProps {
-  sessionId: string;
+  scope: ThreadScope;
   thread: Thread;
 }
 
@@ -18,13 +18,13 @@ type Target = 'resolve' | 'reopen' | 'reply';
  * (green) and **Reply**; resolved, the "Resolved" tag and **Reopen**. Each one goes to GitLab at
  * once and the card changes only when GitLab has it. The pressed button is busy meanwhile; a
  * failure keeps the card and the reply text and says why in one line under the buttons. The
- * keyboard focus moves to the button that took the pressed one's place.
+ * keyboard focus moves to the button that took the pressed one's place. The composer, its text,
+ * the busy state and the error outlive the card (`useThreadCard`); an open composer stays open
+ * when the thread is resolved meanwhile (GitLab takes replies on resolved threads too) and closes
+ * only on Cancel, Esc or a sent reply.
  */
-export function ThreadActions({ sessionId, thread }: ThreadActionsProps) {
-  const resolve = useResolveThread(sessionId);
-  const reply = useReplyThread(sessionId);
-  const [composing, setComposing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function ThreadActions({ scope, thread }: ThreadActionsProps) {
+  const card = useThreadCard(scope, thread.id);
   const resolveRef = useRef<HTMLButtonElement>(null);
   const reopenRef = useRef<HTMLButtonElement>(null);
   const replyRef = useRef<HTMLButtonElement>(null);
@@ -39,7 +39,8 @@ export function ThreadActions({ sessionId, thread }: ThreadActionsProps) {
         : next === 'reopen'
           ? reopenRef.current
           : next === 'reply'
-            ? replyRef.current
+            ? // A resolved thread has no Reply: its Reopen takes the composer's focus.
+              (replyRef.current ?? reopenRef.current)
             : null;
     if (!button || button.disabled) return;
     button.focus();
@@ -47,25 +48,9 @@ export function ThreadActions({ sessionId, thread }: ThreadActionsProps) {
   });
 
   const setResolved = (resolved: boolean) => {
-    if (resolve.isPending) return;
-    setError(null);
-    resolve.mutate(
-      { discussion: thread.id, resolved },
-      {
-        onSuccess: () => {
-          focusNext.current = resolved ? 'reopen' : 'resolve';
-        },
-        onError: (e) => {
-          const what = resolved ? 'resolve the thread' : 'reopen the thread';
-          setError(`Couldn't ${what}. ${e.message}`);
-        },
-      },
-    );
-  };
-
-  const closeComposer = () => {
-    setComposing(false);
-    focusNext.current = 'reply';
+    card.setResolved(resolved, () => {
+      focusNext.current = resolved ? 'reopen' : 'resolve';
+    });
   };
 
   return (
@@ -76,7 +61,7 @@ export function ThreadActions({ sessionId, thread }: ThreadActionsProps) {
           <Button
             ref={reopenRef}
             size={30}
-            disabled={resolve.isPending}
+            disabled={card.resolving}
             onClick={() => {
               setResolved(false);
             }}
@@ -90,7 +75,7 @@ export function ThreadActions({ sessionId, thread }: ThreadActionsProps) {
             ref={resolveRef}
             variant="approve"
             className={styles.resolve}
-            disabled={resolve.isPending}
+            disabled={card.resolving}
             onClick={() => {
               setResolved(true);
             }}
@@ -98,41 +83,34 @@ export function ThreadActions({ sessionId, thread }: ThreadActionsProps) {
             <CheckIcon size={13} strokeWidth={2.6} />
             Resolve
           </Button>
-          {!composing && (
-            <Button
-              ref={replyRef}
-              className={styles.reply}
-              onClick={() => {
-                setError(null);
-                setComposing(true);
-              }}
-            >
+          {!card.composing && (
+            <Button ref={replyRef} className={styles.reply} onClick={card.open}>
               Reply
             </Button>
           )}
         </div>
       )}
-      {composing && !thread.resolved && (
+      {card.composing && (
         <ThreadReply
-          busy={reply.isPending}
-          onCancel={closeComposer}
+          text={card.text}
+          focus={card.focus}
+          onFocused={card.focused}
+          onText={card.type}
+          busy={card.sending}
+          onCancel={() => {
+            card.close();
+            focusNext.current = 'reply';
+          }}
           onSend={(body) => {
-            setError(null);
-            reply.mutate(
-              { discussion: thread.id, body },
-              {
-                onSuccess: closeComposer,
-                onError: (e) => {
-                  setError(`Couldn't send the reply. ${e.message}`);
-                },
-              },
-            );
+            card.reply(body, () => {
+              focusNext.current = 'reply';
+            });
           }}
         />
       )}
-      {error !== null && (
+      {card.error !== null && (
         <p className={styles.error} role="alert">
-          {error}
+          {card.error}
         </p>
       )}
     </>

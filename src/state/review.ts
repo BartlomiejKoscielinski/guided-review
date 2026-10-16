@@ -19,6 +19,34 @@ export interface AskThread {
   added: boolean;
 }
 
+/**
+ * A thread card's own state (F-11.2, M5 decisions 1 and 2), by discussion id: kept here so it
+ * outlives the card, which the diff's virtual list unmounts once it scrolls out of view.
+ */
+export interface ThreadCardState {
+  /** The reply composer is open; it stays open when the thread is resolved meanwhile. */
+  composing: boolean;
+  /** The reply typed so far. */
+  text: string;
+  /** The composer was just opened: it takes the keyboard focus when it shows. */
+  focus: boolean;
+  /** Resolve or Reopen is on its way to GitLab. */
+  resolving: boolean;
+  /** A reply is on its way to GitLab. */
+  sending: boolean;
+  /** The last action's failure, one line under the buttons; null: none. */
+  error: string | null;
+}
+
+export const NO_THREAD_CARD: ThreadCardState = {
+  composing: false,
+  text: '',
+  focus: false,
+  resolving: false,
+  sending: false,
+  error: null,
+};
+
 /** What the reader did on the step that is open: the step body's state (F-07.1, F-08.1). */
 export interface StepReview {
   /** The note the reader focused; null: the step's first open note of the highest severity. */
@@ -30,6 +58,8 @@ export interface StepReview {
   thread: AskThread | null;
   /** The open line comment composer (F-09.7). */
   comment: LineComment | null;
+  /** The thread cards' composers, calls in flight and errors, by discussion id (F-11.2). */
+  threadCards: Readonly<Record<string, ThreadCardState>>;
 }
 
 export const NO_REVIEW: StepReview = {
@@ -38,6 +68,7 @@ export const NO_REVIEW: StepReview = {
   ask: null,
   thread: null,
   comment: null,
+  threadCards: {},
 };
 
 type Patch = (state: StepReview) => Partial<StepReview>;

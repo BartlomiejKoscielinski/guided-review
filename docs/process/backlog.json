@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-16T18:09:36.816Z",
+  "updated": "2026-10-16T19:09:33.309Z",
   "items": [
     {
       "id": "F-11.1",
@@ -24,9 +24,18 @@
       "title": "Actions: Resolve (green), Reply, Reopen on resolved threads. Resolve/unresolve are sent immediately and…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (2898715): Resolve/Reopen/Reply on thread cards in S-03/S-04, gitlab_resolve/gitlab_reply commands, cached threads updated after an action, composer state kept in the review store. Live check left: with the stand-in GitLab, Resolve, Reopen and Reply change the thread on the server and the card; a 403 shows the plain-language error; scroll-away keeps typed reply.",
+      "lockSha": "ef15d47",
+      "tests": [
+        "src-tauri/tests/gitlab_thread_actions.rs",
+        "src/ipc/mock/threadActions.test.ts",
+        "src/ipc/tauriThreadActions.test.ts",
+        "src/screens/step/ThreadActions.test.tsx",
+        "src/screens/detailed/DetailedThreadActions.test.tsx",
+        "tests/e2e/step-f11-2.spec.ts"
+      ]
     },
     {
       "id": "F-11.3",
@@ -34,9 +43,18 @@
       "title": "Threads on outdated lines (from an older version) are shown on the closest matching line (same line text…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "e4d7d22",
+      "tests": [
+        "src-tauri/tests/thread_place.rs",
+        "src/ipc/mock/threads-outdated.test.ts",
+        "src/screens/step/ThreadOutdated.test.tsx",
+        "src/screens/detailed/DetailedThreadsOutdated.test.tsx",
+        "tests/e2e/step-f11-3.spec.ts"
+      ],
+      "forkSha": "4141214"
     },
     {
       "id": "F-12.1",

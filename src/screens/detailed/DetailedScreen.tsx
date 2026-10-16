@@ -161,6 +161,7 @@ export function DetailedScreen() {
               <DetailedFile
                 key={pathOf(file)}
                 sessionId={sessionId}
+                stepId={step.id}
                 file={file}
                 scrollRoot={mainRef}
                 findings={findings

@@ -18,6 +18,8 @@ const NO_THREADS: readonly Thread[] = [];
 
 export interface DetailedFileProps {
   sessionId: string;
+  /** The step shown: its thread cards keep their state with the step's (F-11.2). */
+  stepId: string;
   file: FileDiff;
   /** S-04's main column, which scrolls the step and its files. */
   scrollRoot: RefObject<HTMLElement | null>;
@@ -54,6 +56,7 @@ export interface DetailedFileProps {
  */
 export function DetailedFile({
   sessionId,
+  stepId,
   file,
   scrollRoot,
   findings = [],
@@ -69,7 +72,7 @@ export function DetailedFile({
   onReviewed,
 }: DetailedFileProps) {
   const path = pathOf(file);
-  const threadRows = useThreadRows(threads, sessionId);
+  const threadRows = useThreadRows(threads, { sessionId, stepId });
   const layout = useDetailedStore((s) => s.layout);
   const setLayout = useDetailedStore((s) => s.setLayout);
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);

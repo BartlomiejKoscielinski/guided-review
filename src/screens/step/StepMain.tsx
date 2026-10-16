@@ -140,6 +140,7 @@ export function StepMain({
           <StepFile
             key={path}
             sessionId={sessionId}
+            stepId={stepId}
             file={file}
             findings={findings
               .map((finding, i) => ({ finding, number: i + 1 }))
