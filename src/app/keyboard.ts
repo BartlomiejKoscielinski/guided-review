@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
 import { useMatches, useNavigate } from 'react-router';
 import { layoutShortcut, useFocusStore } from '../state/focus';
-import { isShortcutChord, isShortcutKey } from './shortcuts';
+import {
+  isShortcutChord,
+  isShortcutKey,
+  shortcutKeys,
+  typesInField,
+  type ShortcutId,
+} from './shortcuts';
 import { useStartStore } from '../state/start';
 import { pathFor, SETTINGS_ROUTE, SHORTCUTS_SETTINGS_ROUTE } from './routes';
 import { useModeSwitch } from './useModeSwitch';
@@ -10,19 +16,27 @@ import { useModeSwitch } from './useModeSwitch';
 // edits it), with exactly the modifiers it lists, so AltGr chords on Polish keyboards don't
 // trigger them.
 
+/**
+ * An App or Code shortcut with its keys now, where it acts: keys the user gave it without Ctrl,
+ * Alt or Win (`J`, `,`, F-19.7) type in a text field, as `?` does, so there they don't act.
+ */
+export function isAppShortcut(event: KeyboardEvent, id: ShortcutId): boolean {
+  return isShortcutChord(event, id) && !(typesInField(shortcutKeys(id)) && isTyping(event.target));
+}
+
 /** Ctrl+, (the table's Settings): Settings (F-19.4). */
 export function isSettingsShortcut(event: KeyboardEvent): boolean {
-  return isShortcutChord(event, 'settings');
+  return isAppShortcut(event, 'settings');
 }
 
 /** Ctrl+K (the table's Open anything): S-01 with the input focused (F-01.4). */
 export function isSourceShortcut(event: KeyboardEvent): boolean {
-  return isShortcutChord(event, 'openAnything');
+  return isAppShortcut(event, 'openAnything');
 }
 
 /** Ctrl+D (the table's Switch Focus / Detailed): Focus | Detailed on S-03 and S-04 (F-08.1). */
 export function isModeShortcut(event: KeyboardEvent): boolean {
-  return isShortcutChord(event, 'mode');
+  return isAppShortcut(event, 'mode');
 }
 
 /**
@@ -114,7 +128,7 @@ function isPrintable(event: KeyboardEvent, key: string): boolean {
 
 /** Ctrl+Shift+O (the table's Open in Rider): Rider at the current line (F-24.1, F-30.6). */
 export function isRiderShortcut(event: KeyboardEvent): boolean {
-  return isShortcutChord(event, 'rider');
+  return isAppShortcut(event, 'rider');
 }
 
 /** Space (the table's Mark file reviewed) without modifiers (F-07.10, F-30.6). */
@@ -126,8 +140,8 @@ export function isMarkReviewedShortcut(event: KeyboardEvent): boolean {
  * App-wide shortcuts that work on every screen (F-30.6 › App group). `Ctrl+,` opens
  * Settings (F-19.4), `Ctrl+K` the S-01 input (F-01.4); `Ctrl+D` Focus | Detailed on S-03 and
  * S-04 (F-08.1), also from a text field; `Ctrl+1/2/3` the Focus layouts on S-03 (F-07.1); `?`
- * Settings › Shortcuts (F-19.3), except in a text field, where it types. The review keys live on
- * their screens (`step/useArrowWalk.ts`, `step/useReviewKeys.ts`, `step/useFileMarks.ts`,
+ * Settings › Shortcuts (F-19.3), except in a text field, where it types, as does any key the user
+ * gave these actions without Ctrl, Alt or Win (F-19.7). The review keys live on their screens (`step/useArrowWalk.ts`, `step/useReviewKeys.ts`, `step/useFileMarks.ts`,
  * `useRiderKey.ts`).
  */
 export function useGlobalShortcuts(): void {
@@ -156,7 +170,7 @@ export function useGlobalShortcuts(): void {
         void navigate(pathFor(SHORTCUTS_SETTINGS_ROUTE));
       } else if (onStep) {
         // Ctrl+1/2/3 switch the Focus layout on S-03 (F-07.1).
-        const layout = layoutShortcut(event);
+        const layout = layoutShortcut(event, isAppShortcut);
         if (layout) {
           event.preventDefault();
           setLayout(layout);

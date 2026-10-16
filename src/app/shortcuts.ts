@@ -198,6 +198,19 @@ export function isShortcutChord(event: KeyboardEvent, id: ShortcutId): boolean {
   return matchesKeys(event, shortcutKeys(id));
 }
 
+/** A function key (`F2`, `F12`): it types and edits nothing in a text field. */
+const FUNCTION_KEY = /^F\d{1,2}$/;
+
+/**
+ * Keys without Ctrl, Alt or Win (`J`, `Shift+R`, `,`, `Enter`) type or edit in a text field, so an
+ * App or Code action the user gave them (F-19.7) leaves them to the field there; chords with Ctrl,
+ * Alt or Win and the function keys act from a field too.
+ */
+export function typesInField(keys: readonly string[]): boolean {
+  const modifier = keys.some((key) => key === 'Ctrl' || key === 'Alt' || key === 'Win');
+  return !modifier && !FUNCTION_KEY.test(keys.at(-1) ?? '');
+}
+
 /** The keys of a title or an accessible name: `Ctrl+Shift+O`. */
 export function keysText(keys: readonly string[]): string {
   return keys.join('+');

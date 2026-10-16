@@ -30,8 +30,12 @@ const LAYOUT_SHORTCUTS: readonly [ShortcutId, FocusLayout][] = [
 
 /**
  * The layout of a pressed layout shortcut (`Ctrl+1/2/3` in the shortcuts table), with exactly its
- * modifiers (so AltGr chords on Polish keyboards don't trigger it).
+ * modifiers (so AltGr chords on Polish keyboards don't trigger it). `matches` narrows where a key
+ * acts: the app's keys leave a key without Ctrl, Alt or Win to a text field (F-19.7).
  */
-export function layoutShortcut(event: KeyboardEvent): FocusLayout | null {
-  return LAYOUT_SHORTCUTS.find(([id]) => isShortcutChord(event, id))?.[1] ?? null;
+export function layoutShortcut(
+  event: KeyboardEvent,
+  matches: (event: KeyboardEvent, id: ShortcutId) => boolean = isShortcutChord,
+): FocusLayout | null {
+  return LAYOUT_SHORTCUTS.find(([id]) => matches(event, id))?.[1] ?? null;
 }
