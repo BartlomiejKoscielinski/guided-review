@@ -180,8 +180,9 @@ export function StepFile({
       reveal = { at, nonce: card.reveal };
     }
   }
-  // A thread's line is never folded: the fold is cut around it, so the thread shows on its line
-  // with the rest of the fold still closed (F-11.3, an outdated thread placed inside a fold).
+  // A thread's line is never folded: the fold is cut around it and 3 lines on each side, so the
+  // thread shows on its line with the lines around it and the rest of the fold still closed
+  // (F-11.3, an outdated thread placed inside a fold).
   const keep = new Set<string>();
   for (const row of threadRows) {
     push(markers, row.key, row.mark);

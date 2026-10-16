@@ -12,7 +12,8 @@ import { renderApp } from '../../test/renderApp';
 // F-11.3 on S-04 as on S-03 (M5 decisions 3 and 4, no diff thread disappears from the review):
 // a thread written on the old name of a file renamed later shows on the renamed file (matched by
 // its old path, as `thread_place::same_file`); a thread on a line of a mechanical hunk cuts its
-// line out of the fold, so the card shows with the rest of the hunk still folded.
+// line and 3 lines on each side out of the fold, so the card shows with the lines around it and
+// the rest of the hunk still folded.
 
 const SESSION = 'mock-mr-session-1';
 const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
@@ -93,7 +94,7 @@ describe('S-04 threads placed as in S-03 (F-11.3)', () => {
     expect(header).toHaveTextContent(FILE_BODY);
   });
 
-  it('F-11.3 a thread on a line of a mechanical hunk shows under its line, the rest of the hunk stays folded', async () => {
+  it('F-11.3 a thread on a line of a mechanical hunk shows under its line with 3 lines on each side, the rest of the hunk stays folded', async () => {
     await openDetailed(
       await backend((v) => ({
         ...withVm(v, (f) => ({
@@ -111,7 +112,11 @@ describe('S-04 threads placed as in S-03 (F-11.3)', () => {
     const card = await within(file).findByRole('region', { name: 'Thread at line 14' });
     expect(card).toHaveTextContent(LINE_BODY);
     expect(file.querySelector('[data-kind="add"] [data-line-no="14"]')).not.toBeNull();
-    // The other lines of the hunk are still in a closed fold.
+    // 3 lines on each side of the thread's line show; the other lines of the hunk are still in a
+    // closed fold.
+    expect(file.querySelector('[data-kind="add"] [data-line-no="15"]')).not.toBeNull();
+    expect(file.querySelector('[data-kind="ctx"] [data-line-no="17"]')).not.toBeNull();
+    expect(file.querySelector('[data-kind="add"] [data-line-no="20"]')).toBeNull();
     expect(within(file).getAllByText('Whitespace only').length).toBeGreaterThan(0);
   });
 });

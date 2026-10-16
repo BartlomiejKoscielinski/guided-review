@@ -35,11 +35,15 @@ export interface RowOptions {
   /** Line keys whose fold opens on its own: a line comment is never hidden in a fold (F-09.7). */
   unfold?: ReadonlySet<string>;
   /**
-   * Line keys shown even inside a fold, which is cut around them: a thread's line stays in view
-   * with its card while the rest of the fold stays closed (F-11.3).
+   * Line keys shown even inside a fold, which is cut around them and `KEEP_CONTEXT` lines on each
+   * side: a thread's line stays in view with its card and the lines around it, while the rest of
+   * the fold stays closed (F-11.3).
    */
   keep?: ReadonlySet<string>;
 }
+
+/** Lines on each side of a kept line that its fold shows with it: git's default diff context. */
+const KEEP_CONTEXT = 3;
 
 /** Labels of mechanical hunks (docs/05 › Mechanical hunks). */
 export const MECHANICAL_LABEL: Record<MechanicalReason, string> = {
@@ -125,7 +129,8 @@ function holds(s: Segment, keys: ReadonlySet<string> | undefined): boolean {
 
 /**
  * Splits a hunk into runs of lines that are folded or not. A mechanical hunk is one fold; a
- * deleted line belongs where the next new-side line is; a line in `keep` is never folded.
+ * deleted line belongs where the next new-side line is; a line in `keep` is never folded, nor are
+ * the lines of its fold within `KEEP_CONTEXT` of it.
  */
 function segment(
   hunk: Hunk,
@@ -143,12 +148,20 @@ function segment(
     }
     return end;
   };
+  const base = hunk.lines.map((_, i) => {
+    const pos = position(i);
+    return mechanical ?? folds.find((f) => pos >= f.newStart && pos <= f.newEnd);
+  });
+  // The kept lines inside a fold, with the fold they cut.
+  const kept = hunk.lines.flatMap((line, i) => {
+    const fold = base[i];
+    return fold && keysOf(line).some((k) => keep?.has(k)) ? [{ pos: position(i), fold }] : [];
+  });
   const out: Segment[] = [];
   hunk.lines.forEach((line, i) => {
     const pos = position(i);
-    const fold = keysOf(line).some((k) => keep?.has(k))
-      ? undefined
-      : (mechanical ?? folds.find((f) => pos >= f.newStart && pos <= f.newEnd));
+    const near = kept.some((k) => k.fold === base[i] && Math.abs(k.pos - pos) <= KEEP_CONTEXT);
+    const fold = near ? undefined : base[i];
     const last = out.at(-1);
     if (last && last.fold === fold) last.lines.push(line);
     else out.push({ lines: [line], index: out.length, ...(fold ? { fold } : {}) });

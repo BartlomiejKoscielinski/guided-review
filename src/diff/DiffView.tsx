@@ -43,7 +43,7 @@ export interface DiffViewProps {
   inserts?: ReadonlyMap<string, ReactNode>;
   /** Line keys (`lineKey`) whose fold opens on its own: line comments (F-09.7). */
   unfold?: ReadonlySet<string>;
-  /** Line keys never folded: the fold is cut around them (a thread's line, F-11.3). */
+  /** Line keys never folded: the fold is cut around them and 3 lines each side (threads, F-11.3). */
   keep?: ReadonlySet<string>;
   /** Selected lines of one side, highlighted (F-10.1; split layout). */
   selection?: { side: 'old' | 'new'; start: number; end: number } | null;
