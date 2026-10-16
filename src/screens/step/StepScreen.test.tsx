@@ -199,7 +199,7 @@ describe('S-03 layout A', () => {
     ).toBeInTheDocument();
   });
 
-  it('F-07.5 the thread icon marks the line and toggles the read-only thread card', async () => {
+  it('F-07.5 the thread icon marks the line and toggles the thread card', async () => {
     renderStep('s4');
     const icon = await screen.findByRole('button', { name: 'Thread by Paweł S. at line 48' });
     expect(icon).toHaveAttribute('aria-expanded', 'true');
@@ -211,14 +211,18 @@ describe('S-03 layout A', () => {
       'Kick only releases a semaphore, the upload runs in the background.',
     );
     expect(within(thread).getByText('Marta K.')).toBeInTheDocument();
-    // Read-only until F-11 (M3 decision 1).
-    expect(within(thread).queryByRole('button')).toBeNull();
+    // Its actions since F-11.2: exactly Resolve and Reply on an open thread.
+    expect(
+      within(thread)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['Resolve', 'Reply']);
     await userEvent.click(icon);
     expect(icon).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('region', { name: 'Thread at line 48' })).toBeNull();
   });
 
-  it('F-06.9 a step shows the existing threads on its own lines as read-only context', async () => {
+  it('F-06.9 a step shows the existing threads on its own lines as context', async () => {
     // The diff is virtualized and jsdom lays nothing out: only the first rows exist here, so
     // step 2's thread at line 24 is checked; the one at line 61 is in the e2e (scrolled to).
     renderStep('s2');
@@ -231,9 +235,13 @@ describe('S-03 layout A', () => {
       'It runs once per connection; I can move it to the migration step.',
     );
     expect(within(thread).getByText('Anna K.')).toBeInTheDocument();
-    // Step 4's thread is not here, and the card has no Resolve, Reply or Reopen before F-11.
+    // Step 4's thread is not here; the card's actions are F-11.2's Resolve and Reply.
     expect(screen.queryByRole('region', { name: 'Thread at line 48' })).toBeNull();
-    expect(within(thread).queryByRole('button')).toBeNull();
+    expect(
+      within(thread)
+        .getAllByRole('button')
+        .map((b) => b.textContent),
+    ).toEqual(['Resolve', 'Reply']);
   });
 
   it('F-06.9 a step with no thread on its lines shows no thread card', async () => {

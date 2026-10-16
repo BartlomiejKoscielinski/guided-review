@@ -1,10 +1,17 @@
 import { formatAge } from '../../format/age';
 import type { Thread } from '../../ipc/types/Thread';
 import styles from './Step.module.css';
+import { ThreadActions } from './ThreadActions';
+import threadStyles from './Thread.module.css';
 
 export interface ThreadCardProps {
   thread: Thread;
   line: number;
+  /**
+   * The MR session: the card has Resolve, Reply and Reopen (F-11.2). Without it the card is
+   * read-only context.
+   */
+  sessionId?: string;
 }
 
 const AVATAR = ['orange', 'green', 'blue', 'purple'] as const;
@@ -20,10 +27,10 @@ function initials(name: string): string {
 }
 
 /**
- * An existing GitLab thread as step context (F-06.9): avatars, author · age, text and replies.
- * Read-only until F-11 (M5) adds Resolve, Reply and Reopen (M3 decision 1).
+ * An existing GitLab thread as step context (F-06.9): avatars, author · age, text and replies,
+ * then its actions (F-11.2): Resolve and Reply, or the "Resolved" tag and Reopen.
  */
-export function ThreadCard({ thread, line }: ThreadCardProps) {
+export function ThreadCard({ thread, line, sessionId }: ThreadCardProps) {
   const authors = [...new Set(thread.notes.map((n) => n.author.username))];
   return (
     <div className={styles.inlineCard}>
@@ -46,7 +53,15 @@ export function ThreadCard({ thread, line }: ThreadCardProps) {
             </span>
           </div>
         ))}
-        {thread.resolved && <span className={styles.resolved}>Resolved</span>}
+        {sessionId !== undefined ? (
+          <ThreadActions sessionId={sessionId} thread={thread} />
+        ) : (
+          thread.resolved && (
+            <div className={threadStyles.resolvedRow}>
+              <span className={threadStyles.tag}>Resolved</span>
+            </div>
+          )
+        )}
       </div>
     </div>
   );

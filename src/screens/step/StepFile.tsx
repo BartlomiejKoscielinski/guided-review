@@ -77,7 +77,7 @@ export function StepFile({
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
-  const threadRows = useThreadRows(threads);
+  const threadRows = useThreadRows(threads, sessionId);
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
   const diffFolds = useMemo<DiffFold[]>(

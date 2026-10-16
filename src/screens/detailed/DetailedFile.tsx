@@ -69,7 +69,7 @@ export function DetailedFile({
   onReviewed,
 }: DetailedFileProps) {
   const path = pathOf(file);
-  const threadRows = useThreadRows(threads);
+  const threadRows = useThreadRows(threads, sessionId);
   const layout = useDetailedStore((s) => s.layout);
   const setLayout = useDetailedStore((s) => s.setLayout);
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
