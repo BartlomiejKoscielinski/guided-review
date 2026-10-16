@@ -9,8 +9,8 @@ import { renderApp } from '../../test/renderApp';
 
 // F-08.4: the S-04 step header (Main.dc.html): "Step 4 / 8" in the reader's order, "builds on"
 // chips `<number in current order> · <short title>` from `Step.buildsOn` that open that step,
-// Previous step, Mark reviewed (Space hint) and Next step (`]`, not drawn on the button since
-// F-07.10), with the H1 title and the description below.
+// Previous step, Mark reviewed and Next step (neither draws a key since F-07.10: Space marks only
+// the current file, decision 15), with the H1 title and the description below.
 
 const SESSION = 'mock-mr-session-1';
 const DETAILED = pathFor({ screen: 'S-04', sessionId: SESSION });
@@ -148,7 +148,7 @@ describe('S-04 step header (F-08.4)', () => {
     expect(next()).toBeEnabled();
   });
 
-  it('F-08.4 Mark reviewed marks the step and takes it back, and shows its key Space', async () => {
+  it('F-08.4 Mark reviewed marks the step and takes it back, and shows no Space hint', async () => {
     const client = await backend();
     const markStep = vi.fn<IpcClient['reviewMarkStep']>((session, step, reviewed) =>
       client.reviewMarkStep(session, step, reviewed),
@@ -158,7 +158,7 @@ describe('S-04 step header (F-08.4)', () => {
     const button = markButton();
     expect(button).toHaveTextContent(/^Mark reviewed/);
     expect(button).toHaveAttribute('aria-pressed', 'false');
-    expect(within(button).getByText('Space')).toBeInTheDocument();
+    expect(button.querySelector('kbd')).toBeNull();
 
     await userEvent.click(button);
     await waitFor(() => {

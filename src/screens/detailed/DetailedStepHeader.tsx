@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router';
 import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon, CheckIcon } from '../../components/icons';
-import { Kbd } from '../../components/Kbd';
 import type { PlanView } from '../../ipc/types/PlanView';
 import type { Step } from '../../ipc/types/Step';
 import { useMarkReviewed } from '../step/useMarkReviewed';
@@ -21,9 +20,9 @@ export interface DetailedStepHeaderProps {
 /**
  * The S-04 step header (F-08.4, Main.dc.html's main `<section>`): "Step 4 / 8" in the reader's
  * order, "builds on" chips `<number> · <short title>` from `Step.buildsOn` that open that step,
- * Previous step (`[`), Mark reviewed (all the step's files, F-07.10; it keeps the mock's Space
- * hint) and Next step (`]`, no longer drawn on the button: M4 plan row F-07.10); the H1 title and
- * the description below.
+ * Previous step (`[`), Mark reviewed (all the step's files, F-07.10; no Space hint, since Space
+ * toggles only the current file: M4 decision 15) and Next step (`]`, no longer drawn on the button:
+ * M4 plan row F-07.10); the H1 title and the description below.
  * On the last step `]` finishes the review (F-30.3) and the button stays disabled, since the end
  * card's Finish review takes its place (F-08.9).
  */
@@ -94,7 +93,6 @@ export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeader
           >
             <CheckIcon size={14} strokeWidth={2.6} />
             <span>{reviewed ? 'Reviewed' : 'Mark reviewed'}</span>
-            <Kbd>Space</Kbd>
           </Button>
           <Button
             size={36}

@@ -216,8 +216,8 @@ test('F-08.3 the rail: Change overview, step states and draft counts, Skim, Chan
 });
 
 // F-08.4: the S-04 step header (Main.dc.html): "Step n / 8" in the reader's order, "builds on"
-// chips `<number> · <short title>` that open that step, Previous step, Mark reviewed (Space) and
-// Next step (`]`, not drawn since F-07.10) with the H1 title below. Step 1 builds on nothing; step
+// chips `<number> · <short title>` that open that step, Previous step, Mark reviewed and Next step
+// (no key hints since F-07.10, decision 15) with the H1 title below. Step 1 builds on nothing; step
 // 4 builds on 1 and 3.
 test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
   await openStep1(page);
@@ -262,9 +262,10 @@ test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
   await expect(kicker(2)).toBeVisible();
   await expect(title).toHaveText('SqliteUploadQueue');
 
-  // Mark reviewed: the button turns green and reads Reviewed; Space on the page takes it back.
+  // Mark reviewed: the button turns green and reads Reviewed; Space on the page takes it back (this
+  // step has one file, so marking the current file is the whole step).
   await expect(mark).toHaveText(/^Mark reviewed/);
-  await expect(mark).toContainText('Space');
+  await expect(mark.locator('kbd')).toHaveCount(0);
   await mark.click();
   await expect(mark).toHaveAttribute('aria-pressed', 'true');
   await expect(mark).toHaveText(/^Reviewed/);
