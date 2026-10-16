@@ -105,6 +105,9 @@ async function openWithThreads(page: Page) {
   );
   await page.reload();
   await expect(page.getByText('Step 4 of 8')).toBeVisible();
+  // A restored step shows no threads (D-07(2), D-36(4)): opening the step again reads them.
+  await openStep(page, /SqliteUploadQueue/, 2);
+  await openStep(page, /ViewModel/, 4);
   await expect(fileOf(page)).toBeVisible();
 }
 
