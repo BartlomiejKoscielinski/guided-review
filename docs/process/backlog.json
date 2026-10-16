@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-16T19:09:33.309Z",
+  "updated": "2026-10-16T20:58:17.622Z",
   "items": [
     {
       "id": "F-11.1",
@@ -43,10 +43,10 @@
       "title": "Threads on outdated lines (from an older version) are shown on the closest matching line (same line text…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "e4d7d22",
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (7ce6cca): line_map.rs/thread_place.rs place outdated threads on the nearest matching line (±20) or the file header, Outdated tag, header cards in S-03/S-04, rename-aware file match, fold opens thread line ±3. Live check left: with the stand-in GitLab, a thread written on an older MR version whose commit is not in the object store (git fetch origin <sha>; REST compare + files/raw fallback if GitLab refuses, **verify** in docs/05) is placed correctly; Outdated tag and header card look right in S-03 layouts A/B/C and S-04.",
+      "lockSha": "9d165ba",
       "tests": [
         "src-tauri/tests/thread_place.rs",
         "src/ipc/mock/threads-outdated.test.ts",
@@ -54,7 +54,9 @@
         "src/screens/detailed/DetailedThreadsOutdated.test.tsx",
         "tests/e2e/step-f11-3.spec.ts"
       ],
-      "forkSha": "4141214"
+      "disputes": [
+        "tests/e2e/step-f11-3.spec.ts@a23c36b"
+      ]
     },
     {
       "id": "F-12.1",
@@ -62,9 +64,15 @@
       "title": "\"SUMMARY\" with \"All N steps reviewed.\" (or \"N of M steps reviewed.\") and Back to steps.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "50c8bb3",
+      "tests": [
+        "src/screens/summary/MrSummary.test.tsx",
+        "tests/e2e/summary-f12-1.spec.ts"
+      ],
+      "forkSha": "fdf25ae"
     },
     {
       "id": "F-12.2",

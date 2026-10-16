@@ -1,5 +1,5 @@
 {
-  "items": 38,
+  "items": 39,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 22,
+      "helpful": 23,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -133,7 +133,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -165,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 24,
+      "helpful": 25,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -185,7 +185,7 @@
         "src/screens/step/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
-      "helpful": 21,
+      "helpful": 22,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-14T15:13:07.675Z",
@@ -202,7 +202,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 17,
+      "helpful": 18,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -287,7 +287,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 15,
+      "helpful": 16,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -405,7 +405,7 @@
         "src-tauri/tests/**"
       ],
       "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T07:10:35.609Z",
@@ -589,7 +589,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 13,
+      "helpful": 14,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -873,7 +873,7 @@
       "text": "A red e2e never runs the lines after its first failing assertion, so before the tests commit prove the rest can pass: run a scratch copy without the red assertions, run its setup and return path at baseline or in a throwaway variant without the new control, and run a new row or layout locator helper against throwaway markup shaped like the mock (delete the scratch files afterwards). F-08.9's toHaveURL lines behind a red check cost a test dispute and a fix round, F-19.1's broken mock return path pushed out-of-item work onto the implementer (153k tokens), while F-19.3 did this and passed with no dispute and no fix round.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 4,
+      "seen": 5,
       "created": "2026-10-16T08:24:28.933Z",
       "lastUsedItem": 30,
       "source": "F-08.9",
@@ -1093,6 +1093,38 @@
       "created": "2026-10-16T19:09:32.193Z",
       "lastUsedItem": 37,
       "source": "F-11.2"
+    },
+    {
+      "id": "P-086",
+      "tags": [
+        "mixed",
+        "implement",
+        "**"
+      ],
+      "text": "Never use git stash or stash pop in a lane worktree, because refs/stash is shared by every worktree of the repo and F-11.3's implementer popped another lane's stash (m3/self-review) with conflicts, stray files and two foreign stashes left behind; park work in a WIP commit, or compare with git diff <base> -- <path>.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T20:58:16.213Z",
+      "lastUsedItem": 38,
+      "source": "F-11.3"
+    },
+    {
+      "id": "P-087",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/screens/detailed/**",
+        "src/ipc/mock/**"
+      ],
+      "text": "When the core decides which file a thread (or any path-keyed record) belongs to by both old and new path (thread_place::same_file), lock a renamed-file case in the tests stage (a record written on the old path of a file renamed later) on S-03 and S-04, and use one shared matcher in the UI and mock, because the UI filtered by new path only and that was F-11.3's only severe review finding (threads vanished on renamed files), fixed in fix-1 with a shared threadOnFile and new regression tests.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T20:58:16.312Z",
+      "lastUsedItem": 38,
+      "source": "F-11.3"
     }
   ]
 }
