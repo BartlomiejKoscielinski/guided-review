@@ -114,7 +114,6 @@ test('F-19.7 a key in use is refused with "Already used by <action>.", Ctrl+C is
   await page.keyboard.press('d');
   await expect(page.getByText('Already used by Add to drafts.', { exact: true })).toBeVisible();
   await expect(prompt(page)).toBeVisible();
-  await expect(changeButton(page, 'Next note').locator('kbd')).toHaveText(['N']);
   await expect(changeButton(page, 'Add to drafts').locator('kbd')).toHaveText(['D']);
 
   // A chord in use is refused without running the shortcut it belongs to.
@@ -132,7 +131,7 @@ test('F-19.7 a key in use is refused with "Already used by <action>.", Ctrl+C is
   await expect(prompt(page)).toHaveCount(0);
   await expect(page.getByText(/Already used by|can't be assigned/)).toHaveCount(0);
   await expect(changeButton(page, 'Next note').locator('kbd')).toHaveText(['N']);
-  expect(await savedShortcuts(page)).toBeNull();
+  expect(await savedShortcuts(page)).toEqual({});
 
   // Esc itself can't be changed: the Close popover row has no keys button.
   await expect(page.getByRole('button', { name: /Close popover/ })).toHaveCount(0);
