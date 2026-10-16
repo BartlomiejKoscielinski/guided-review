@@ -177,6 +177,7 @@
   width: 17px;
   height: 17px;
   margin: 2px 0 0;
+  color: var(--text-2);
   accent-color: var(--green);
 }
 
