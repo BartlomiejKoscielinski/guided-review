@@ -116,6 +116,86 @@ fn f09_2_published_drafts_cannot_be_changed_locally() {
     });
 }
 
+// F-09.7: the line comment composer makes a draft with the line's position and no note; it
+// belongs to the step holding that line's hunk (`line_step`, from `step_at`), so S-03 and S-04 show
+// it under its line when the step is opened again, and Undo deletes it.
+
+/// The session's drafts of one step, in the order they were made.
+fn of_step(c: &Connection, session: &str, step: &str) -> Result<Vec<Draft>, DraftError> {
+    Ok(list(c, session)?
+        .into_iter()
+        .filter(|d| d.step_id.as_deref() == Some(step))
+        .collect())
+}
+
+#[test]
+fn f09_7_a_line_comment_is_a_draft_with_its_position_its_step_and_no_note() {
+    with(|c| {
+        let draft = create_at(
+            c,
+            &new(
+                "r1",
+                "Is the worker started before the first Kick?",
+                on_line(50),
+            ),
+            Some("s4".into()),
+        )?;
+        assert_eq!(draft.finding_id, None);
+        assert_eq!(draft.severity, None);
+        assert_eq!(draft.position, on_line(50));
+        assert_eq!(draft.step_id.as_deref(), Some("s4"));
+        assert_eq!(draft.body, "Is the worker started before the first Kick?");
+        assert!(
+            draft.include,
+            "a line comment goes out with the next Publish"
+        );
+        assert_eq!(draft.published_note_id, None);
+        // Read back as stored, with the old side kept for a deleted line.
+        let old = create_at(
+            c,
+            &NewDraft {
+                position: on_line(38).map(|p| DiffPosition {
+                    side: Side::Old,
+                    ..p
+                }),
+                ..new("r1", "Why is the dialog gone?", None)
+            },
+            Some("s4".into()),
+        )?;
+        assert_eq!(get(c, &old.id)?, old);
+        assert_eq!(
+            old.position.map(|p| (p.side, p.line)),
+            Some((Side::Old, 38))
+        );
+        Ok(())
+    });
+}
+
+#[test]
+fn f09_7_line_comments_are_listed_per_step_and_deleted_by_undo() {
+    with(|c| {
+        let s4 = || Some("s4".to_owned());
+        let first = create_at(c, &new("r1", "First on step 4.", on_line(47)), s4())?;
+        let other = create_at(c, &new("r1", "On step 5.", on_line(12)), Some("s5".into()))?;
+        let second = create_at(c, &new("r1", "Second on step 4.", on_line(50)), s4())?;
+        // A comment on the merge request has no line, so it belongs to no step.
+        let whole = create_at(c, &new("r1", "On the whole MR.", None), s4())?;
+        // A line in no step (between hunks, a skim group).
+        let loose = create_at(c, &new("r1", "In a skim group.", on_line(5)), None)?;
+        assert_eq!(whole.step_id, None);
+        assert_eq!(loose.step_id, None);
+        assert_eq!(of_step(c, "r1", "s4")?, [first.clone(), second.clone()]);
+        assert_eq!(of_step(c, "r1", "s5")?, [other]);
+        assert_eq!(of_step(c, "r2", "s4")?, []);
+
+        delete(c, &first.id)?;
+        assert_eq!(of_step(c, "r1", "s4")?, [second]);
+        assert!(matches!(get(c, &first.id), Err(DraftError::NotFound(_))));
+        assert_eq!(list(c, "r1")?.len(), 4);
+        Ok(())
+    });
+}
+
 // F-08.3: a draft on a line without a note (the line comment composer, F-09.7) belongs to the
 // plan step holding the hunk of that line: `step_at` finds it from the diff and the plan.
 mod f08_3 {
