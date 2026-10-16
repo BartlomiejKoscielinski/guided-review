@@ -118,7 +118,7 @@ Rules for Claude Code:
 - [x] F-09.7 C (or the comment action on a selected line) opens an inline composer under the line in the note-card… (991f647, d8ea6c8, ef68a16)
 - [x] F-19.1 General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start… (d17fe88, a01427a, 9efd76e)
 - [x] F-19.3 Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App). (22b9148, 169a20d)
-- [ ] F-30.3 Finish review (review screens) opens S-05.
+- [x] F-30.3 Finish review (review screens) opens S-05. (ee41de3, f2d70ce)
 - [ ] F-30.6 Shortcuts: ] next step, [ previous step, Space mark reviewed, J/K next/previous hunk, N next note, D add…
 
 ## M5 · Talking to GitLab: threads, publish, approve
