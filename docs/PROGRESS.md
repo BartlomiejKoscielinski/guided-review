@@ -126,7 +126,7 @@ Rules for Claude Code:
 ## M5 · Talking to GitLab: threads, publish, approve
 - [x] F-11.1 Threads on lines in the current step show inline (avatars, author · age, text, replies). (497757e, f1a6090, ba6e480)
 - [ ] F-11.2 Actions: Resolve (green), Reply, Reopen on resolved threads. Resolve/unresolve are sent immediately and… — partial: autopilot (398585a, f753db9, dbdf75d, 4141214, 862d1cb, c3bff09)
-- [ ] F-11.3 Threads on outdated lines (from an older version) are shown on the closest matching line (same line text…
+- [ ] F-11.3 Threads on outdated lines (from an older version) are shown on the closest matching line (same line text… — partial: autopilot (e4d7d22, 9dacf17, 001ba1b, 5756c64, b476d4e, fdf25ae, a23c36b, ea1568c, 5eca792)
 - [ ] F-12.1 "SUMMARY" with "All N steps reviewed." (or "N of M steps reviewed.") and Back to steps.
 - [ ] F-12.2 Tabs Drafts N and Threads N open.
 - [ ] F-12.3 Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note "Only you…
