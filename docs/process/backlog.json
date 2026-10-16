@@ -1,311 +1,166 @@
 {
-  "milestone": "M4",
-  "updated": "2026-10-16T16:22:30.555Z",
+  "milestone": "M5",
+  "updated": "2026-10-16T17:37:55.824Z",
   "items": [
     {
-      "id": "F-08.1",
-      "milestone": "M4",
-      "title": "Mode toggle Focus | Detailed in the title bar (Ctrl+D); both modes show the same session state.",
+      "id": "F-11.1",
+      "milestone": "M5",
+      "title": "Threads on lines in the current step show inline (avatars, author · age, text, replies).",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "7a0fb2f",
-      "tests": [
-        "src-tauri/src/store/session_mode_tests.rs",
-        "src/ipc/mock/state.test.ts",
-        "src/screens/detailed/DetailedScreen.test.tsx",
-        "src/screens/plan/PlanPrepared.test.tsx",
-        "tests/e2e/detailed.spec.ts"
-      ],
-      "disputes": [
-        "tests/e2e/detailed.spec.ts@6e108e3"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.2",
-      "milestone": "M4",
-      "title": "Info header: branch block, author · age, N files +add −del, step progress segments with done/total, drafts…",
+      "id": "F-11.2",
+      "milestone": "M5",
+      "title": "Actions: Resolve (green), Reply, Reopen on resolved threads. Resolve/unresolve are sent immediately and…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "1f3ecd3",
-      "tests": [
-        "src/screens/detailed/InfoHeader.test.tsx",
-        "tests/e2e/detailed.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.3",
-      "milestone": "M4",
-      "title": "Rail: a first item \"Change overview\" (intent, risks, plan; links to S-02, done once the plan was opened)…",
+      "id": "F-11.3",
+      "milestone": "M5",
+      "title": "Threads on outdated lines (from an older version) are shown on the closest matching line (same line text…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "8be2ace",
-      "tests": [
-        "src/screens/detailed/Rail.test.tsx",
-        "src/ipc/mock/rail.test.ts",
-        "tests/e2e/detailed.spec.ts",
-        "src-tauri/src/store/session_plan_opened_tests.rs",
-        "src-tauri/src/review/decisions_tests.rs",
-        "src-tauri/src/review/drafts_tests.rs"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.4",
-      "milestone": "M4",
-      "title": "Step header: \"Step 4 / 8\", \"builds on\" chips (click jumps to that step), previous, Mark reviewed (Space)…",
+      "id": "F-12.1",
+      "milestone": "M5",
+      "title": "\"SUMMARY\" with \"All N steps reviewed.\" (or \"N of M steps reviewed.\") and Back to steps.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "d1eab46",
-      "tests": [
-        "src/screens/detailed/DetailedStepHeader.test.tsx",
-        "tests/e2e/detailed.spec.ts"
-      ],
-      "disputes": [
-        "src/screens/detailed/DetailedStepHeader.test.tsx@083a2e8"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.5",
-      "milestone": "M4",
-      "title": "Sticky file bar: path, +/−, Split | Unified, Ignore whitespace, Open in Rider.",
+      "id": "F-12.2",
+      "milestone": "M5",
+      "title": "Tabs Drafts N and Threads N open.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "6cc2631",
-      "tests": [
-        "src/diff/whitespace.test.ts",
-        "src/screens/detailed/FileBar.test.tsx",
-        "tests/e2e/detailed.spec.ts"
-      ],
-      "disputes": [
-        "tests/e2e/detailed.spec.ts@f224f5b"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.6",
-      "milestone": "M4",
-      "title": "Full note callout: tag, title, Claude label, body, \"Checked in\" evidence chips, Suggested comment, Add to…",
+      "id": "F-12.3",
+      "milestone": "M5",
+      "title": "Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note \"Only you…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "3b09fa2",
-      "tests": [
-        "src/screens/detailed/NoteCallout.test.tsx",
-        "tests/e2e/detailed.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.7",
-      "milestone": "M4",
-      "title": "Guide aside: Code notes in line order (N cycles), \"For you to judge\" checklist with progress (1/3)…",
+      "id": "F-12.4",
+      "milestone": "M5",
+      "title": "\"Add a summary comment\" checkbox reveals a text area prefilled by Claude with a short overall summary.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "9b7279f",
-      "tests": [
-        "src-tauri/src/review/file_place_tests.rs",
-        "src/screens/detailed/GuideAside.test.tsx",
-        "src/screens/detailed/AskBox.test.tsx",
-        "tests/e2e/detailed.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.8",
-      "milestone": "M4",
-      "title": "Footer: shortcut hints (J K hunk, [ ] step, N note, C comment, A ask, Space reviewed, ? all) and Claude…",
+      "id": "F-12.5",
+      "milestone": "M5",
+      "title": "Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "e93c14c",
-      "tests": [
-        "src-tauri/tests/analysis_status.rs",
-        "src/screens/detailed/Footer.test.tsx",
-        "src/ipc/mock/analysisStatus.test.ts",
-        "tests/e2e/detailed-f08-8.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-08.9",
-      "milestone": "M4",
-      "title": "End-of-step card: \"End of step 4\", next step title with stats, Next step.",
+      "id": "F-12.6",
+      "milestone": "M5",
+      "title": "Publishing never approves the MR.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "f39a398",
-      "tests": [
-        "src/screens/detailed/EndOfStepCard.test.tsx",
-        "tests/e2e/detailed-f08-9.spec.ts"
-      ],
-      "disputes": [
-        "tests/e2e/detailed-f08-9.spec.ts@404222a"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-09.7",
-      "milestone": "M4",
-      "title": "C (or the comment action on a selected line) opens an inline composer under the line in the note-card…",
+      "id": "F-12.7",
+      "milestone": "M5",
+      "title": "Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "991f647",
-      "tests": [
-        "src-tauri/src/review/drafts_tests.rs",
-        "src/screens/step/LineComposer.test.tsx",
-        "src/screens/detailed/DetailedComposer.test.tsx",
-        "tests/e2e/step-f09-7.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-19.1",
-      "milestone": "M4",
-      "title": "General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start…",
+      "id": "F-13.1",
+      "milestone": "M5",
+      "title": "Filters All / Open N / Resolved N.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "8d017f4",
-      "tests": [
-        "src/screens/settings/GeneralSection.test.tsx",
-        "tests/e2e/settings-f19-1.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-19.3",
-      "milestone": "M4",
-      "title": "Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App).",
+      "id": "F-13.2",
+      "milestone": "M5",
+      "title": "Each thread: first message, author · replies · file:line, Resolve or Reopen.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "2d6ea48",
-      "tests": [
-        "src/screens/settings/ShortcutsSection.test.tsx",
-        "tests/e2e/settings-f19-3.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-30.3",
-      "milestone": "M4",
-      "title": "Finish review (review screens) opens S-05.",
+      "id": "F-13.3",
+      "milestone": "M5",
+      "title": "Claude hint chip when the thread looks addressed by a later commit (\"Claude: index added in a91f2c0\").",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "6aa2132",
-      "tests": [
-        "src/app/titlebar/FinishReview.test.tsx",
-        "tests/e2e/detailed-f30-3.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-07.10",
-      "milestone": "M4",
-      "title": "Each file of a step can be marked reviewed on its own (S-03 and S-04): Space toggles the current file…",
+      "id": "F-14.1",
+      "milestone": "M5",
+      "title": "Approval tile: state (\"NOT APPROVED YET\" with dashed square / approved in solid green), \"Approvals: X of…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (7910c33; commits 740c339 ce99121 37f9f1a 1667e3a ef85005): per-file Reviewed toggles in the S-03 file header and S-04 file bar, Space toggles the current file, step reviewed when all its files are, Mark reviewed marks/unmarks all files, marks survive restarts (migration 007). Live check left: on step 5 of an MR press each file's Reviewed toggle, Space before and after a move, green fill, restart the app and check the marks stay. The ↓ marking clause is built by F-30.6.",
-      "lockSha": "740c339",
-      "tests": [
-        "src-tauri/src/store/file_marks_tests.rs",
-        "src/ipc/mock/fileMarks.test.ts",
-        "src/screens/step/FileMarks.test.tsx",
-        "src/screens/detailed/FileMarks.test.tsx",
-        "src/screens/detailed/FileMarksHints.test.tsx",
-        "tests/e2e/step-f07-10.spec.ts",
-        "tests/e2e/detailed-f07-10.spec.ts"
-      ],
-      "disputes": [
-        "src/screens/detailed/FileMarksHints.test.tsx@1667e3a"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-30.6",
-      "milestone": "M4",
-      "title": "Shortcuts: ↓/↑ next/previous change (a change taller than the screen scrolls a screen at a time first;…",
+      "id": "F-14.2",
+      "milestone": "M5",
+      "title": "Approve MR / Revoke approval. Approval is sent with the head SHA that was reviewed; if the MR changed…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 2,
-      "note": "Built and merged (1d47d99; commits 1518e85 2bd46af 7ecf85f b8fb09f): arrow-key walk on S-03/S-04 (↓/↑ changes with tall-change paging, ↓ marks a file past its last change, pauses at step start/end, focus to Finish review at the end of the last step), ←/→ files, Space file mark, all keys and chords read from src/app/shortcuts.ts; ] [ J K removed; S-04 fresh-mount scroll fixed in DiffView useScrollMargin. Live check left (WebView2): open MR !4, Start step 1, next step, Ctrl+D, press ↓ 3 times: main.scrollTop moves and each hunk sits under the sticky bar; hold ↓ on a file (stops at file end); ↓ at the end of the last step focuses Finish review; AltGr+arrow on a Polish keyboard does nothing. F-07.10's live check (file toggles, Space, marks after restart) can run in the same session.",
-      "lockSha": "1518e85",
-      "tests": [
-        "src/screens/step/ArrowWalk.test.tsx",
-        "src/screens/step/ArrowWalkEnds.test.tsx",
-        "src/screens/detailed/ArrowWalk.test.tsx",
-        "src/test/walk.tsx",
-        "src/screens/step/ReviewKeys.test.tsx",
-        "src/screens/step/ReviewKeysTargets.test.tsx",
-        "src/screens/step/FileMarks.test.tsx",
-        "src/screens/detailed/ReviewKeys.test.tsx",
-        "src/screens/detailed/FileMarks.test.tsx",
-        "src/screens/detailed/FileMarksHints.test.tsx",
-        "src/screens/detailed/EndOfStepCard.test.tsx",
-        "src/screens/detailed/DetailedStepHeader.test.tsx",
-        "src/screens/settings/ShortcutsSection.test.tsx",
-        "src/app/titlebar/FinishReview.test.tsx",
-        "tests/e2e/step-f30-6.spec.ts",
-        "tests/e2e/detailed-f30-6.spec.ts",
-        "tests/e2e/walkHelpers.ts",
-        "tests/e2e/detailed-f30-3.spec.ts",
-        "tests/e2e/detailed-f08-9.spec.ts",
-        "tests/e2e/detailed.spec.ts",
-        "tests/e2e/settings-f19-3.spec.ts",
-        "tests/e2e/step-f07-10.spec.ts"
-      ],
-      "disputes": [
-        "tests/e2e/detailed-f30-6.spec.ts@7ecf85f"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-19.7",
-      "milestone": "M4",
-      "title": "Shortcuts can be changed in Settings › Shortcuts: a row's keys are a button (\"Change shortcut for <action>\");…",
+      "id": "F-14.3",
+      "milestone": "M5",
+      "title": "The tile states \"Approving doesn't publish comments.\" and the number of open threads (\"Open threads: 3.\"…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "15465b9",
-      "tests": [
-        "src-tauri/src/store/shortcut_settings_tests.rs",
-        "src/ipc/mock/shortcutSettings.test.ts",
-        "src/screens/settings/ShortcutsChange.test.tsx",
-        "src/app/ShortcutOverrides.test.tsx",
-        "src/app/ShortcutHints.test.tsx",
-        "src/test/shortcutSettings.ts",
-        "tests/e2e/settings-f19-7.spec.ts"
-      ],
-      "disputes": [
-        "tests/e2e/settings-f19-7.spec.ts@816fc36"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     }
   ]
 }
