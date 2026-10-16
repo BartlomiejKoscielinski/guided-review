@@ -24,6 +24,8 @@ mod session_plan_opened_tests;
 mod session_state_notes_tests;
 #[cfg(test)]
 mod session_state_tests;
+#[cfg(test)]
+mod shortcut_settings_tests;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
