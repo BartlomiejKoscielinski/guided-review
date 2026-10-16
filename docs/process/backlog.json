@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-16T20:58:17.622Z",
+  "updated": "2026-10-16T20:58:31.268Z",
   "items": [
     {
       "id": "F-11.1",
@@ -64,15 +64,14 @@
       "title": "\"SUMMARY\" with \"All N steps reviewed.\" (or \"N of M steps reviewed.\") and Back to steps.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "impl",
+      "attempts": 1,
       "note": "",
-      "lockSha": "50c8bb3",
+      "lockSha": "d2a77bf",
       "tests": [
         "src/screens/summary/MrSummary.test.tsx",
         "tests/e2e/summary-f12-1.spec.ts"
-      ],
-      "forkSha": "fdf25ae"
+      ]
     },
     {
       "id": "F-12.2",
