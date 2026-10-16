@@ -10,6 +10,7 @@ import { useStepFocus } from '../step/useStepFocus';
 import { useStepSession } from '../step/useStepSession';
 import { DetailedFile } from './DetailedFile';
 import { DetailedStepHeader } from './DetailedStepHeader';
+import { Footer } from './Footer';
 import { GuideAside } from './GuideAside';
 import { InfoHeader } from './InfoHeader';
 import { Rail } from './Rail';
@@ -109,7 +110,7 @@ export function DetailedScreen() {
           <aside aria-label="Guide" className={styles.guide} />
         )}
       </div>
-      <footer className={styles.footer} />
+      <Footer sessionId={sessionId} order={order} current={step?.id} />
     </div>
   );
 }

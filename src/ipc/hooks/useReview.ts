@@ -13,6 +13,7 @@ import type { DecisionOutcome } from '../types/DecisionOutcome';
 import type { FindingDecision } from '../types/FindingDecision';
 import type { StepAnalysis } from '../types/StepAnalysis';
 import type { StepView } from '../types/StepView';
+import { analysisStatusKey } from './useAnalysisStatus';
 import { CLAUDE_STATUS_KEY } from './useClaude';
 import { draftsKey } from './useDrafts';
 
@@ -60,6 +61,10 @@ export function useStepFindings(
       try {
         return await ipc.reviewFindings(sessionId, stepId, (event) => {
           if (event.kind !== 'partialText') setPhase(event.kind);
+          // S-04's footer: the step started, ended or failed (F-08.8).
+          if (event.kind === 'started' || event.kind === 'done' || event.kind === 'failed') {
+            void queryClient.invalidateQueries({ queryKey: analysisStatusKey(sessionId) });
+          }
         });
       } finally {
         void queryClient.invalidateQueries({ queryKey: CLAUDE_STATUS_KEY });

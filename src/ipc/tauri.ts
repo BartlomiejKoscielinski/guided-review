@@ -4,6 +4,7 @@ import type { IpcClient } from './client';
 import { toIpcError } from './errors';
 import { createTauriWindowControls } from './tauri-window';
 import type { ActiveRepo } from './types/ActiveRepo';
+import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
@@ -109,6 +110,8 @@ export function createTauriClient(): IpcClient {
       call<DecisionOutcome>('review_decide', { session: sessionId, finding: findingId, decision }),
     reviewMarkStep: (sessionId, stepId, reviewed) =>
       call<string[]>('review_mark_step', { session: sessionId, step: stepId, reviewed }),
+    reviewAnalysisStatus: (sessionId) =>
+      call<AnalysisStatus>('review_analysis_status', { session: sessionId }),
     sessionState: (sessionId) => call<SessionState>('session_state', { session: sessionId }),
     sessionSetStep: (sessionId, stepId) =>
       call<undefined>('session_set_step', { session: sessionId, step: stepId }),

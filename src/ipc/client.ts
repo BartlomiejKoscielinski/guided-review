@@ -1,5 +1,6 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
+import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
@@ -165,6 +166,11 @@ export interface IpcClient {
    * and progress segments (F-07.1). No Claude.
    */
   reviewMarkStep(sessionId: string, stepId: string, reviewed: boolean): Promise<string[]>;
+  /**
+   * S-04's footer (F-08.8): the session's steps whose analysis is ready, running now or failed,
+   * in the reader's order, and the code Claude reads. Caches only: no Claude run.
+   */
+  reviewAnalysisStatus(sessionId: string): Promise<AnalysisStatus>;
 
   // S-03 session state (F-04.3): read when S-03 opens, written on change; database only.
   /** The step S-03 was on, the session's layout, scroll per step and checklist ticks. */

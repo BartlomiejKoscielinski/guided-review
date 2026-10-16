@@ -9,6 +9,7 @@ import type { Finding } from '../types/Finding';
 import type { NewDraft } from '../types/NewDraft';
 import type { StepAnalysis } from '../types/StepAnalysis';
 import type { FileDiff } from '../types/FileDiff';
+import type { MockStepRuns } from './analysisStatus';
 import { mockPlan } from './fixtures/plan';
 import { mockFallbackView } from './fixtures/planFallback';
 import { ANSWER_PARTS, stepAnalysis } from './fixtures/review';
@@ -99,6 +100,7 @@ export function createReviewBackend(
   respond: <T>(value: T) => Promise<T>,
   pause: (ms: number) => Promise<void>,
   store: MockSessionData,
+  runs: MockStepRuns,
 ): ReviewClient {
   const { data } = store;
   const asked = new Set<string>();
@@ -157,10 +159,14 @@ export function createReviewBackend(
       const key = analyzedKey(sessionId, stepId);
       onEvent({ kind: 'queued' });
       if (!data.analyzed.includes(key)) {
+        // Running before `started` and settled before the last event, as the core (F-08.8).
+        runs.running.add(key);
         onEvent({ kind: 'started' });
         await pause(MOCK_STEP_MS);
+        runs.running.delete(key);
         if (scenario.stepFails) {
           const failure = error('CLAUDE_FAILED', 'Claude Code failed.', true);
+          runs.failed.add(key);
           onEvent({
             kind: 'failed',
             error: { code: failure.code, message: failure.message, retryable: true },
@@ -169,6 +175,7 @@ export function createReviewBackend(
         }
         if (!data.analyzed.includes(key)) data.analyzed.push(key);
       }
+      runs.failed.delete(key);
       const result = decided(data, sessionId, stepId);
       store.save();
       onEvent({ kind: 'done', result: structuredClone(result) });

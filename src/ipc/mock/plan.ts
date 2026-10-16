@@ -2,6 +2,7 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { Plan } from '../types/Plan';
 import type { PlanView } from '../types/PlanView';
+import { analysisStatus, type MockStepRuns } from './analysisStatus';
 import type { StepOrder } from '../types/StepOrder';
 import {
   MOCK_ORDERS,
@@ -17,7 +18,12 @@ import type { MockSessionData, SessionData, SessionPlan } from './session-data';
 
 type PlanClient = Pick<
   IpcClient,
-  'reviewPlan' | 'reviewSetStrategy' | 'reviewReorderSteps' | 'reviewStep' | 'reviewMarkStep'
+  | 'reviewPlan'
+  | 'reviewSetStrategy'
+  | 'reviewReorderSteps'
+  | 'reviewStep'
+  | 'reviewMarkStep'
+  | 'reviewAnalysisStatus'
 >;
 
 /** Pause while Claude plans, so S-02's Planning state is visible. */
@@ -72,6 +78,7 @@ export function createPlanBackend(
   respond: <T>(value: T) => Promise<T>,
   pause: (ms: number) => Promise<void>,
   store: MockSessionData,
+  runs: MockStepRuns,
 ): PlanClient {
   const { data } = store;
   /** The last plan of a session whose plan task failed (the file-order fallback). */
@@ -171,6 +178,15 @@ export function createPlanBackend(
         data.marks[sessionId] = [...marked];
         store.save();
         return respond(reviewedIn(data, sessionId, plan));
+      } catch (e: unknown) {
+        return Promise.reject(e instanceof Error ? e : new Error(String(e)));
+      }
+    },
+    reviewAnalysisStatus: (sessionId) => {
+      try {
+        // The fallback plan's order or the planned one's; "The plan isn't ready yet." before.
+        const order = fallbacks.get(sessionId)?.order.order ?? orderOf(planned(sessionId)).order;
+        return respond(analysisStatus(data, runs, sessionId, order));
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));
       }

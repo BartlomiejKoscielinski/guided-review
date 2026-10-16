@@ -1,5 +1,6 @@
 import type { IpcClient } from '../client';
 import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
+import { createStepRuns } from './analysisStatus';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
@@ -134,6 +135,7 @@ export function createMockClient({
     sessions.some((s) => s.id === id) || id in data.data.mrs || data.data.local.includes(id);
   const pause = (ms: number) => (latencyMs > 0 ? wait(ms) : Promise.resolve());
   const reviewScenario = loadJson(storage, MOCK_REVIEW_KEY, reviewOption);
+  const runs = createStepRuns();
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -145,8 +147,8 @@ export function createMockClient({
     ...createPrepareBackend(repos, pause, data, focusLayout, startIn),
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
-    ...createReviewBackend(reviewScenario, respond, pause, data),
-    ...createPlanBackend(reviewScenario, respond, pause, data),
+    ...createReviewBackend(reviewScenario, respond, pause, data, runs),
+    ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),
     ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),
     // The browser has no window to move; the mock only tracks the maximized state.

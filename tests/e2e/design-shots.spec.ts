@@ -19,6 +19,8 @@ interface Shot {
   reviewed?: Record<string, string[]>;
   /** Drafts the mock keeps (the S-04 rail's per-step counts, F-08.3). */
   drafts?: Record<string, unknown>[];
+  /** Steps in Claude's cache as `session\0step` (the S-04 footer's ready steps, F-08.8). */
+  analyzed?: string[];
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -269,10 +271,13 @@ const SHOTS: Shot[] = [
     lastRoute: { screen: 'S-01' },
     reviewed: MR_482_REVIEWED,
     drafts: MR_482_DRAFTS,
+    // Main.dc.html's footer: "Claude: steps 5–6 ready" (the mock runs no step for "analyzing 7").
+    analyzed: ['mock-mr-session-1\0s5', 'mock-mr-session-1\0s6'],
     prepare: async (page) => {
       await step4(page, 'A');
       await page.keyboard.press('Control+d');
       await page.getByText('Claude · step 4').waitFor();
+      await page.getByText('Claude: steps 5–6 ready', { exact: true }).waitFor();
       // Main.dc.html opens with the first "For you to judge" check ticked (1/3).
       await page
         .getByRole('checkbox', {
@@ -324,15 +329,16 @@ const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
 
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
-    await page.addInitScript(({ lastRoute, sessions, review, reviewed, drafts }) => {
+    await page.addInitScript(({ lastRoute, sessions, review, reviewed, drafts, analyzed }) => {
       if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
-      if (reviewed || drafts) {
+      if (reviewed || drafts || analyzed) {
         localStorage.setItem(
           'guided-review.mock.sessionData',
           JSON.stringify({
             marks: reviewed ?? {},
             drafts: drafts ?? [],
             nextDraft: (drafts?.length ?? 0) + 1,
+            analyzed: analyzed ?? [],
           }),
         );
       }
