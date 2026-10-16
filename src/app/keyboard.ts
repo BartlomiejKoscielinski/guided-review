@@ -40,12 +40,28 @@ export function isTypingOrControl(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest('button, a, input, textarea, select') !== null;
 }
 
-/** Focus in a field, where a printable key types: `]` leaves the key to it, buttons don't. */
+/** Inputs where a printable key types nothing: a click on one leaves the focus there. */
+const NON_TEXT_INPUTS = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+]);
+
+/**
+ * Focus in a field, where a printable key types: `]`, `N` and `A` leave the key to it. Buttons,
+ * checkboxes, radios and other inputs that type nothing don't (a ticked check keeps the focus).
+ */
 export function isTyping(target: EventTarget | null): boolean {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable || target.closest('input, textarea, select') !== null)
-  );
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  if (target instanceof HTMLInputElement) return !NON_TEXT_INPUTS.has(target.type);
+  return target.closest('textarea, select') !== null;
 }
 
 /**
