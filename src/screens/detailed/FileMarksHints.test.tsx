@@ -7,9 +7,9 @@ import { renderApp } from '../../test/renderApp';
 
 // F-07.10 changes what S-04 advertises (M4 plan row F-07.10, decision 15): the footer hints follow
 // the arrow-key walk (F-08.8: "↑ ↓ change, ← → file, Space file reviewed, N note, C comment, A ask,
-// ? all shortcuts"), and the step header's Next step (F-08.4) loses its `]` hint. Space on the
-// header's Mark reviewed stays as the mock draws it, and the end-of-step card's Next step (F-08.9)
-// keeps its `]` until F-30.6 removes the key: the plan row names only F-08.4.
+// ? all shortcuts"), and the step header's Next step (F-08.4) loses its `]` hint. The header's
+// Mark reviewed loses its Space hint too, since Space now toggles only the current file (decision
+// 15), and the end-of-step card's Next step (F-08.9) keeps its `]` until F-30.6 removes the key.
 
 const SESSION = 'mock-mr-session-1';
 
@@ -53,16 +53,19 @@ describe('S-04 hints after file marks (F-07.10)', () => {
     );
   });
 
-  it('F-07.10 the step header’s Next step has no ] hint; Mark reviewed keeps its Space hint', async () => {
+  it('F-07.10 the step header’s Next step has no ] hint and Mark reviewed has no Space hint', async () => {
     await openDetailed();
     const [header] = screen.getAllByRole('button', { name: /^Next step/ });
     if (!header) throw new Error('no Next step button');
     expect(header).toHaveAccessibleName('Next step');
     expect(within(header).queryByText(']')).not.toBeInTheDocument();
     expect(header.querySelector('kbd')).toBeNull();
-    // Mark reviewed still draws its key as the mock does.
+    // Space marks only the current file now (decision 15), so Mark reviewed (all the step's files)
+    // names no key: a hint must name the key that does what the button does.
     const mark = screen.getByRole('button', { name: /^Mark reviewed/ });
-    expect(within(mark).getByText('Space')).toBeInTheDocument();
+    expect(mark).toHaveAccessibleName('Mark reviewed');
+    expect(within(mark).queryByText('Space')).not.toBeInTheDocument();
+    expect(mark.querySelector('kbd')).toBeNull();
   });
 
   it('F-07.10 the end-of-step card’s Next step keeps its ] hint until F-30.6', async () => {
