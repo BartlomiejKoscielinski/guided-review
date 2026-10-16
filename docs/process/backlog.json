@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T11:28:32.217Z",
+  "updated": "2026-10-16T11:52:35.704Z",
   "items": [
     {
       "id": "F-08.1",
@@ -229,9 +229,9 @@
       "title": "Shortcuts: ] next step, [ previous step, Space mark reviewed, J/K next/previous hunk, N next note, D add…",
       "kind": "mixed",
       "deps": [],
-      "status": "live",
+      "status": "todo",
       "attempts": 1,
-      "note": "Built and merged (901e537): all review keys on S-03/S-04 (]/[, Space, J/K current hunk with outline, N, D/X, C at current hunk, A, Esc), ? to Settings > Shortcuts, Ctrl+Shift+O to Rider on S-03/S-04/S-06. Left: live check in tauri dev (keys in WebView2, outline and scroll under the S-04 sticky bar, Ctrl+Shift+O launching Rider). F12/Shift+F12 act from M9 (F-23); Enter on S-09 waits for S-09.",
+      "note": "live check failed: live check failed: J/K do not scroll S-04 when it is freshly mounted by Ctrl+D (Focus to Detailed): open MR !4, Start step 1, ] to step 2, Ctrl+D, J x3 -> outline moves but main.scrollTop stays 0. Suspected src/diff/DiffView.tsx useScrollMargin returns early while root.current is null on first layout and never re-measures. Everything else passed in WebView2 (see .autopilot/live/ap-20261016-0847.json).",
       "lockSha": "468ddc2",
       "tests": [
         "src/screens/step/ReviewKeys.test.tsx",
