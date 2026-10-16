@@ -164,6 +164,21 @@ describe('DiffView', () => {
     expect(rows[at - 1]?.querySelector('[data-line-no="24"]')).not.toBeNull();
   });
 
+  it('F-07.5 in the unified layout a removed line’s marker sits on its old-side number', () => {
+    render(
+      <DiffView
+        path="a.xaml"
+        diff={diff}
+        layout="unified"
+        headers={false}
+        markers={new Map([['o21', <span key="m">old marker</span>]])}
+      />,
+    );
+    const cell = screen.getByText('old marker').closest('[data-line-no]');
+    expect(cell).toHaveAttribute('data-line-no', '21');
+    expect(cell?.closest('[data-kind]')).toHaveAttribute('data-kind', 'del');
+  });
+
   it('F-05.2 a binary file shows a note instead of lines', () => {
     const binary: FileDiff = {
       ...diff,

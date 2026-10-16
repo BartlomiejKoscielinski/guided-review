@@ -124,7 +124,7 @@ Rules for Claude Code:
 - [x] F-19.7 Shortcuts can be changed in Settings › Shortcuts: a row's keys are a button ("Change shortcut for <action>");… (af369bf, f2b6d46, 49c5c75, 5c8591d, 816fc36, 16dec67)
 
 ## M5 · Talking to GitLab: threads, publish, approve
-- [ ] F-11.1 Threads on lines in the current step show inline (avatars, author · age, text, replies).
+- [x] F-11.1 Threads on lines in the current step show inline (avatars, author · age, text, replies). (497757e, f1a6090, ba6e480)
 - [ ] F-11.2 Actions: Resolve (green), Reply, Reopen on resolved threads. Resolve/unresolve are sent immediately and…
 - [ ] F-11.3 Threads on outdated lines (from an older version) are shown on the closest matching line (same line text…
 - [ ] F-12.1 "SUMMARY" with "All N steps reviewed." (or "N of M steps reviewed.") and Back to steps.

@@ -1,5 +1,5 @@
 {
-  "items": 36,
+  "items": 37,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 20,
+      "helpful": 21,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -165,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 22,
+      "helpful": 23,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -185,7 +185,7 @@
         "src/screens/step/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
-      "helpful": 20,
+      "helpful": 21,
       "harmful": 0,
       "seen": 5,
       "created": "2026-10-14T15:13:07.675Z",
@@ -251,7 +251,7 @@
         "src/screens/plan/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:34:55.903Z",
@@ -287,7 +287,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 13,
+      "helpful": 14,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -589,7 +589,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -1046,6 +1046,22 @@
       "created": "2026-10-16T16:12:38.452Z",
       "lastUsedItem": 35,
       "source": "F-19.7"
+    },
+    {
+      "id": "P-083",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/detailed/**",
+        "src/diff/**"
+      ],
+      "text": "When a tests decision says a card, icon or mark shows in every layout of a shared diff view (Split and Unified), lock one red test per layout and per line kind (added, context, removed), because the F-11.1 tests ran only in Split (beforeEach set layout 'split'), so review found that a thread on a removed line got no gutter icon in Unified, and that cost a severe finding and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T18:09:30.535Z",
+      "lastUsedItem": 36,
+      "source": "F-11.1"
     }
   ]
 }

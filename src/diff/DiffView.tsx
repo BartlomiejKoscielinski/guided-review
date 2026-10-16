@@ -263,11 +263,7 @@ export function DiffView({
       case 'line':
         return (
           <UnifiedRow
-            marker={
-              row.line.newNo === undefined
-                ? undefined
-                : markers?.get(lineKey('new', row.line.newNo))
-            }
+            markerOf={markers ? markerOf : undefined}
             line={row.line}
             tokens={tokens}
             dim={isDim(row.hunk)(row.line)}
