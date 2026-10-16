@@ -44,6 +44,17 @@ pub async fn place(git: &Git, threads: &mut [Thread], base: &str, head: &str, ca
     }
 }
 
+/// Copies `outdated` and `placed_line` from `placed` to the threads of `fresh` with the same ID
+/// (GitLab's list again after an action: the positions didn't change).
+pub fn carry(placed: &[Thread], fresh: &mut [Thread]) {
+    for thread in fresh {
+        if let Some(old) = placed.iter().find(|t| t.id == thread.id) {
+            thread.outdated = old.outdated;
+            thread.placed_line = old.placed_line;
+        }
+    }
+}
+
 /// The line a thread shows on, `(new side, line)`: an outdated thread's placed line, a current
 /// one's position line; the new side first, the old side for a removed line.
 fn line_of(thread: &Thread) -> Option<(bool, u32)> {
@@ -116,4 +127,50 @@ pub fn on_headers(
         })
         .cloned()
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn thread(id: &str) -> Thread {
+        Thread {
+            id: id.to_owned(),
+            resolvable: true,
+            resolved: false,
+            position: None,
+            notes: Vec::new(),
+            outdated: false,
+            placed_line: None,
+        }
+    }
+
+    #[test]
+    fn f11_3_threads_listed_again_keep_their_places() {
+        let placed = vec![
+            Thread {
+                outdated: true,
+                placed_line: Some(32),
+                ..thread("moved")
+            },
+            Thread {
+                outdated: true,
+                ..thread("header")
+            },
+        ];
+        let mut fresh = vec![thread("header"), thread("new"), thread("moved")];
+        carry(&placed, &mut fresh);
+        let places: Vec<_> = fresh
+            .iter()
+            .map(|t| (t.id.as_str(), t.outdated, t.placed_line))
+            .collect();
+        assert_eq!(
+            places,
+            [
+                ("header", true, None),
+                ("new", false, None),
+                ("moved", true, Some(32))
+            ]
+        );
+    }
 }

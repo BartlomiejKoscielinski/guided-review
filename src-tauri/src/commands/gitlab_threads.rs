@@ -11,6 +11,7 @@ use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::gitlab::{discussions, thread_actions};
 use crate::review::step_context::MrRef;
+use crate::review::thread_place;
 use crate::source::model::Source;
 use crate::store::{self, Store};
 
@@ -72,7 +73,11 @@ pub async fn gitlab_reply(
         }),
         // Sent, but GitLab's answer wasn't a note: the threads as GitLab has them now.
         None => match discussions::list(&client, &mr.project, mr.iid).await {
-            Ok(fresh) => review.update_threads(&session, |threads| *threads = fresh),
+            Ok(mut fresh) => review.update_threads(&session, |threads| {
+                // A reply moves no thread: each keeps the place it had (F-11.3).
+                thread_place::carry(threads, &mut fresh);
+                *threads = fresh;
+            }),
             Err(error) => tracing::warn!(%error, "threads not reloaded after a reply"),
         },
     }
