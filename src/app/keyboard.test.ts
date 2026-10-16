@@ -27,4 +27,15 @@ describe('Next step shortcut (F-08.4)', () => {
     expect(isTyping(document.body)).toBe(false);
     expect(isTyping(null)).toBe(false);
   });
+
+  it('F-08.4 on a checkbox, radio or other input that types nothing ] is the shortcut', () => {
+    const input = (type: string) => Object.assign(document.createElement('input'), { type });
+    for (const type of ['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'color']) {
+      expect(isTyping(input(type))).toBe(false);
+    }
+    for (const type of ['text', 'search', 'number', 'email', 'password', 'url']) {
+      expect(isTyping(input(type))).toBe(true);
+    }
+    expect(isTyping(document.createElement('select'))).toBe(true);
+  });
 });

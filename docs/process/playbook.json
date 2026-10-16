@@ -1,5 +1,5 @@
 {
-  "items": 25,
+  "items": 26,
   "entries": [
     {
       "id": "P-002",
@@ -92,7 +92,7 @@
         "src/ipc/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.020Z",
@@ -173,7 +173,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -220,7 +220,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -239,7 +239,7 @@
         "src/screens/detailed/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T15:13:07.675Z",
@@ -256,7 +256,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -322,7 +322,7 @@
         "tests/e2e/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T16:11:26.716Z",
@@ -338,7 +338,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -400,7 +400,7 @@
         "src/screens/**"
       ],
       "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T06:36:00.066Z",
@@ -451,7 +451,7 @@
         "src-tauri/tests/**"
       ],
       "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T07:10:35.609Z",
@@ -599,7 +599,7 @@
         "src/screens/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-15T09:26:23.811Z",
@@ -649,7 +649,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -842,6 +842,52 @@
       "created": "2026-10-15T20:40:04.671Z",
       "lastUsedItem": 24,
       "source": "F-08.6"
+    },
+    {
+      "id": "P-062",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/keyboard.ts",
+        "src/screens/detailed/**"
+      ],
+      "text": "When an item adds single-letter shortcuts (N, A, ]) to a screen that has checkboxes, lock a red test that clicks a checkbox and then presses the key, because the shared isTyping treated every input element as typing, so N, A and ] died after the first tick and only review found it (F-08.7 fix round 1).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T07:25:08.741Z",
+      "lastUsedItem": 25,
+      "source": "F-08.7"
+    },
+    {
+      "id": "P-063",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**/*.test.tsx"
+      ],
+      "text": "Keep locked userEvent tests that type long text well under the 5000 ms vitest timeout (use paste, fireEvent or an explicit per-test timeout), because two locked AskBox cases timed out once when the test step took 94 s instead of 39-55 s, and the implementer could not change them.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T07:25:08.791Z",
+      "lastUsedItem": 25,
+      "source": "F-08.7"
+    },
+    {
+      "id": "P-064",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/detailed/**"
+      ],
+      "text": "Never key React lists by strings that come from Claude's output (read.file, checklist text) without the index, because the core does not dedupe files_read or checklist and duplicates give React key warnings and rows that tick together.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T07:25:08.837Z",
+      "lastUsedItem": 25,
+      "source": "F-08.7"
     }
   ]
 }

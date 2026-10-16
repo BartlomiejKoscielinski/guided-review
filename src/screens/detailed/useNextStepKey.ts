@@ -3,7 +3,8 @@ import { isNextStepShortcut, isTyping } from '../../app/keyboard';
 
 /**
  * `]` opens the next step of the reader's order on S-04 (F-08.4). In a field the key types; on a
- * button it still moves on, since `]` presses nothing there. On the last step there is no next.
+ * button or a checkbox it still moves on, since `]` presses nothing there. On the last step there
+ * is no next.
  */
 export function useNextStepKey(next: string | undefined, go: (stepId: string) => void): void {
   useEffect(() => {
