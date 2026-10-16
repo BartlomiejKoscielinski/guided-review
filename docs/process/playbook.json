@@ -1,5 +1,5 @@
 {
-  "items": 29,
+  "items": 30,
   "entries": [
     {
       "id": "P-002",
@@ -27,7 +27,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 14,
+      "helpful": 15,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -57,12 +57,13 @@
       "tags": [
         "core",
         "tests",
-        "src-tauri/src/store/**"
+        "src-tauri/src/store/**",
+        "src-tauri/src/review/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
       "helpful": 6,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T10:02:39.330Z",
       "lastUsedItem": 1,
       "source": "F-04.1",
@@ -145,7 +146,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -179,7 +180,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -228,7 +229,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 15,
+      "helpful": 16,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -247,7 +248,7 @@
         "src/screens/detailed/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 13,
+      "helpful": 14,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T15:13:07.675Z",
@@ -264,7 +265,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -330,7 +331,7 @@
         "tests/e2e/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T16:11:26.716Z",
@@ -348,7 +349,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -593,12 +594,13 @@
         "src/screens/plan/**",
         "src/screens/detailed/**",
         "implement",
-        "src/screens/**"
+        "src/screens/**",
+        "src/screens/settings/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
-      "seen": 6,
+      "seen": 7,
       "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 15,
       "source": "F-17.2",
@@ -646,7 +648,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -965,6 +967,21 @@
       "created": "2026-10-16T09:37:32.759Z",
       "lastUsedItem": 28,
       "source": "F-09.7"
+    },
+    {
+      "id": "P-070",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "A red e2e never executes the steps after its first failing assertion, so before locking it run its setup and return path (here: start a review, then go back to the step through the dock's Review tile) at baseline or in a throwaway variant without the new control, because F-19.1's return path was broken in the mock and the implementer had to make out-of-item changes (UNFINISHED_KEY invalidation in useUpdateSettings, a new mock unfinished.ts, 3 extra tests) and spent 153k tokens against 116k for tests.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T10:10:39.775Z",
+      "lastUsedItem": 29,
+      "source": "F-19.1"
     }
   ]
 }

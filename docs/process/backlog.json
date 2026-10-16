@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T09:37:40.234Z",
+  "updated": "2026-10-16T10:10:46.537Z",
   "items": [
     {
       "id": "F-08.1",
@@ -184,15 +184,14 @@
       "title": "General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "d17fe88",
+      "lockSha": "8d017f4",
       "tests": [
         "src/screens/settings/GeneralSection.test.tsx",
         "tests/e2e/settings-f19-1.spec.ts"
-      ],
-      "forkSha": "d8ea6c8"
+      ]
     },
     {
       "id": "F-19.3",
@@ -200,9 +199,15 @@
       "title": "Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App).",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "22b9148",
+      "tests": [
+        "src/screens/settings/ShortcutsSection.test.tsx",
+        "tests/e2e/settings-f19-3.spec.ts"
+      ],
+      "forkSha": "9efd76e"
     },
     {
       "id": "F-30.3",
