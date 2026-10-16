@@ -127,6 +127,11 @@ export function DetailedScreen() {
     selfReview: selfReview ?? false,
     current,
   });
+  // The step's threads on a file's lines, under their lines as in S-03 (F-11.1, M5 decision 3).
+  const threadsIn = (path: string) =>
+    (files.data?.threads ?? []).filter(
+      (t) => t.position?.newPath === path || t.position?.oldPath === path,
+    );
   const onAsk = (finding: Finding) => {
     if (key === null) return;
     change(key, (s) => ({
@@ -167,6 +172,7 @@ export function DetailedScreen() {
                 onAsk={onAsk}
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
                 comments={comments.cards}
+                threads={threadsIn(pathOf(file))}
                 current={current?.file === pathOf(file) ? current : undefined}
                 reviewed={marks.isReviewed(pathOf(file))}
                 onReviewed={() => {

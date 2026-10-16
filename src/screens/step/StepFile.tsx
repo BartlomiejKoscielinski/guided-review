@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode, type RefObject } from 'react';
+import { useMemo, type ReactNode, type RefObject } from 'react';
 import { DiffView, type DiffCurrent } from '../../diff/DiffView';
 import { lineKey, type DiffFold } from '../../diff/rows';
 import type { FileDiff } from '../../ipc/types/FileDiff';
@@ -8,10 +8,10 @@ import type { LineSelection } from '../../ipc/types/LineSelection';
 import type { Thread } from '../../ipc/types/Thread';
 import { pathOf } from './diffPath';
 import { FileReviewed } from './FileReviewed';
-import { NoteMark, ThreadMark } from './GutterMarks';
+import { NoteMark } from './GutterMarks';
 import type { LineCard } from './useLineComments';
+import { useThreadRows } from './useThreadRows';
 import { NoteCard } from './NoteCard';
-import { ThreadCard } from './ThreadCard';
 import styles from './Step.module.css';
 
 export interface StepFileProps {
@@ -49,14 +49,6 @@ export interface StepFileProps {
   onReviewed?: () => void;
 }
 
-/** Where a thread sits in the diff: its new-side line, else its old-side line. */
-function threadAt(thread: Thread): { key: string; line: number } | null {
-  const pos = thread.position;
-  if (pos?.newLine !== undefined) return { key: lineKey('new', pos.newLine), line: pos.newLine };
-  if (pos?.oldLine !== undefined) return { key: lineKey('old', pos.oldLine), line: pos.oldLine };
-  return null;
-}
-
 /**
  * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes" and the Reviewed toggle
  * (F-07.10), then the split diff with fold rows, gutter squares and thread icons, the focused note
@@ -85,7 +77,7 @@ export function StepFile({
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
-  const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
+  const threadRows = useThreadRows(threads);
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
   const diffFolds = useMemo<DiffFold[]>(
@@ -180,30 +172,9 @@ export function StepFile({
       reveal = { at, nonce: card.reveal };
     }
   }
-  for (const thread of threads) {
-    const at = threadAt(thread);
-    if (!at) continue;
-    const isOpen = !closed.has(thread.id);
-    push(
-      markers,
-      at.key,
-      <ThreadMark
-        key={thread.id}
-        thread={thread}
-        line={at.line}
-        open={isOpen}
-        onToggle={() => {
-          setClosed((old) => {
-            const next = new Set(old);
-            if (isOpen) next.add(thread.id);
-            else next.delete(thread.id);
-            return next;
-          });
-        }}
-      />,
-    );
-    if (isOpen)
-      push(inserts, at.key, <ThreadCard key={thread.id} thread={thread} line={at.line} />);
+  for (const row of threadRows) {
+    push(markers, row.key, row.mark);
+    if (row.card) push(inserts, row.key, row.card);
   }
 
   return (

@@ -4,13 +4,17 @@ import { lineKey } from '../../diff/rows';
 import { ignoreWhitespace } from '../../diff/whitespace';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
+import type { Thread } from '../../ipc/types/Thread';
 import { useDetailedStore } from '../../state/detailed';
 import { pathOf } from '../step/diffPath';
 import { NoteMark } from '../step/GutterMarks';
 import type { LineCard } from '../step/useLineComments';
+import { useThreadRows } from '../step/useThreadRows';
 import { FileBar } from './FileBar';
 import { NoteCallout } from './NoteCallout';
 import styles from './NoteCallout.module.css';
+
+const NO_THREADS: readonly Thread[] = [];
 
 export interface DetailedFileProps {
   sessionId: string;
@@ -34,6 +38,8 @@ export interface DetailedFileProps {
   current?: DiffCurrent;
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
+  /** The existing GitLab threads on this file's lines in the step (F-11.1). */
+  threads?: readonly Thread[];
   /** The file is marked reviewed in the step (F-07.10). */
   reviewed?: boolean;
   /** The file bar's Reviewed toggle (F-07.10). */
@@ -43,7 +49,8 @@ export interface DetailedFileProps {
 /**
  * One file of the S-04 step (F-08.5): its sticky file bar, then the diff in the view's layout,
  * with whitespace-only changes shown as unchanged lines when Ignore whitespace is on. Each note
- * is a numbered mark on its line; the focused note's full callout sits under it (F-08.6).
+ * is a numbered mark on its line; the focused note's full callout sits under it (F-08.6). The
+ * existing threads sit under their lines with their gutter icon, as in S-03 (F-11.1).
  */
 export function DetailedFile({
   sessionId,
@@ -57,10 +64,12 @@ export function DetailedFile({
   reveal,
   current,
   comments = [],
+  threads = NO_THREADS,
   reviewed,
   onReviewed,
 }: DetailedFileProps) {
   const path = pathOf(file);
+  const threadRows = useThreadRows(threads);
   const layout = useDetailedStore((s) => s.layout);
   const setLayout = useDetailedStore((s) => s.setLayout);
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
@@ -133,6 +142,11 @@ export function DetailedFile({
     if (card.reveal !== undefined && card.reveal > (latest?.nonce ?? 0)) {
       latest = { at, nonce: card.reveal };
     }
+  }
+  // Threads show under their lines as in S-03, with the gutter thread icon (M5 decision 3).
+  for (const row of threadRows) {
+    markers.set(row.key, [...(markers.get(row.key) ?? []), row.mark]);
+    if (row.card) inserts.set(row.key, [...(inserts.get(row.key) ?? []), row.card]);
   }
 
   return (
