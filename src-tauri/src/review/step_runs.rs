@@ -3,7 +3,7 @@
 //! N+1 share a `claude` process; the result is recorded with its decisions (F-09.2). Questions
 //! (F-10.1, F-10.2): the answer streams as `partialText` and ends with `done`.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Mutex;
 
 use tokio::sync::watch;
@@ -32,10 +32,17 @@ enum Role {
     Joiner(watch::Receiver<RunState>),
 }
 
-/// Step runs in flight, by session and step.
+/// Step runs in flight, and the steps whose last run failed (the S-04 footer, F-08.8), by
+/// session and step.
 #[derive(Debug, Default)]
 pub struct StepRuns {
     inflight: Mutex<HashMap<String, watch::Receiver<RunState>>>,
+    failed: Mutex<HashSet<String>>,
+}
+
+/// The key of a session's step in `StepRuns`.
+fn run_key(session_id: &str, step_id: &str) -> String {
+    format!("{session_id}\u{0}{step_id}")
 }
 
 /// Removes the owner's entry however its run ends (result, error or a dropped future).
@@ -53,6 +60,34 @@ impl Drop for Entry<'_> {
 }
 
 impl StepRuns {
+    /// Whether `claude` is analyzing the session's step now: started and not yet ended (a run
+    /// waiting in the queue is not running yet).
+    pub fn is_running(&self, session_id: &str, step_id: &str) -> bool {
+        self.inflight.lock().is_ok_and(|inflight| {
+            inflight
+                .get(&run_key(session_id, step_id))
+                .is_some_and(|rx| matches!(*rx.borrow(), RunState::Running))
+        })
+    }
+
+    /// Whether the session's step's last run failed; a run of it that succeeds clears it.
+    pub fn has_failed(&self, session_id: &str, step_id: &str) -> bool {
+        self.failed
+            .lock()
+            .is_ok_and(|failed| failed.contains(&run_key(session_id, step_id)))
+    }
+
+    /// Notes how the run of `key` ended.
+    fn settle(&self, key: &str, failed: bool) {
+        if let Ok(mut set) = self.failed.lock() {
+            if failed {
+                set.insert(key.to_owned());
+            } else {
+                set.remove(key);
+            }
+        }
+    }
+
     fn claim(&self, key: &str) -> Result<Role, ClaudeError> {
         let mut inflight = self
             .inflight
@@ -155,18 +190,26 @@ pub async fn findings(
     emit: &(dyn Fn(ClaudeTaskEvent<StepAnalysis>) + Sync),
 ) -> Result<StepAnalysis, RunError> {
     emit(ClaudeTaskEvent::Queued);
-    let key = format!("{session_id}\u{0}{}", req.step_id);
+    let key = run_key(session_id, req.step_id);
     let started = || emit(ClaudeTaskEvent::Started);
     let result = match runs.run(&key, ctx, req, priority, &started, cancel).await {
         Ok(outcome) => record(ctx, session_id, req, outcome.analysis).map_err(RunError::App),
         Err(error) => Err(RunError::Claude(error)),
     };
+    // Settled before the last event, so a status read on `done` or `failed` sees it (F-08.8);
+    // a cancelled run changes nothing.
     emit(match &result {
-        Ok(analysis) => ClaudeTaskEvent::Done {
-            result: analysis.clone(),
-        },
+        Ok(analysis) => {
+            runs.settle(&key, false);
+            ClaudeTaskEvent::Done {
+                result: analysis.clone(),
+            }
+        }
         Err(error) => {
             let error: AppError = error.clone().into();
+            if error.code != ErrorCode::Cancelled {
+                runs.settle(&key, true);
+            }
             log_failure(req.step_id, priority, &error);
             ClaudeTaskEvent::Failed { error }
         }

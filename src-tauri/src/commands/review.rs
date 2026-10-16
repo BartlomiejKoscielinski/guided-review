@@ -45,6 +45,11 @@ impl ReviewApp {
         }
     }
 
+    /// The step runs in flight and the failed ones (the S-04 footer's status, F-08.8).
+    pub(super) fn runs(&self) -> &StepRuns {
+        &self.runs
+    }
+
     pub(super) fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
         self.contexts
             .lock()
@@ -105,7 +110,7 @@ pub(super) async fn step_context(
 }
 
 /// The steps in the session's order: its strategy's, or the dragged one (F-06.4, F-06.5).
-async fn order(store: &Store, cx: Arc<StepContext>) -> AppResult<Vec<String>> {
+pub(super) async fn order(store: &Store, cx: Arc<StepContext>) -> AppResult<Vec<String>> {
     let order = with_store(store, move |c| Ok(cx.step_order(c))).await??;
     Ok(order.order)
 }
