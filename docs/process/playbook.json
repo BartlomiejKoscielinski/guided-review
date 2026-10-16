@@ -1,5 +1,5 @@
 {
-  "items": 32,
+  "items": 33,
   "entries": [
     {
       "id": "P-002",
@@ -27,7 +27,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 17,
+      "helpful": 18,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -229,7 +229,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -248,7 +248,7 @@
         "src/screens/detailed/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 16,
+      "helpful": 17,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T15:13:07.675Z",
@@ -332,7 +332,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -412,7 +412,7 @@
         "src/screens/**"
       ],
       "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T06:36:00.066Z",
@@ -649,7 +649,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -1031,6 +1031,54 @@
       "created": "2026-10-16T10:39:05.255Z",
       "lastUsedItem": 31,
       "source": "F-30.3"
+    },
+    {
+      "id": "P-074",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/screens/detailed/**"
+      ],
+      "text": "When an item adds shared state that other keys or features read (here the J/K current hunk), grep the milestone plan decisions for that state's name and lock every existing consumer (C composer start line, Ctrl+Shift+O target) as its own red test in the tests stage, because M4 decision 13 (C opens at the current hunk) was not locked and became the only severe review finding.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T11:28:31.515Z",
+      "lastUsedItem": 32,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-075",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/step/**",
+        "src/app/**"
+      ],
+      "text": "Build a shortcut from the same predicate its matching button uses (FileBar's deleted-file disable, DiffPane canOpen) and make a key that opens a card or thread reuse an open one instead of resetting it, because Ctrl+Shift+O started Rider on a deleted file and A threw away a streamed Claude answer, both found only by review.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T11:28:31.565Z",
+      "lastUsedItem": 32,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-076",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/diff/**",
+        "src/screens/step/**"
+      ],
+      "text": "Make a nonce-based reveal or scroll request one-shot by having the consumer (DiffView) remember the last nonce it handled, because choosing the largest nonce among several request sources re-fired the old N reveal after Esc cleared a newer composer reveal and the view jumped back.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T11:28:31.616Z",
+      "lastUsedItem": 32,
+      "source": "F-30.6"
     }
   ]
 }
