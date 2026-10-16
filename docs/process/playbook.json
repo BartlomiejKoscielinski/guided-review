@@ -2,23 +2,6 @@
   "items": 33,
   "entries": [
     {
-      "id": "P-002",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**",
-        "src/ipc/mock/**",
-        "mixed"
-      ],
-      "text": "Before changing what a mock returns or requires (moving a suffix out of a mock note into a UI helper, adding a precondition such as requiring reviewPlan first), grep the existing tests for the full old row string and for calls that skip the new precondition, since the F-02.2 mock assertion had to change when the suffix moved and an F-10.2 mock test asks without a plan.",
-      "helpful": 2,
-      "harmful": 0,
-      "seen": 2,
-      "created": "2026-10-14T08:53:29.521Z",
-      "lastUsedItem": 12,
-      "source": "F-02.5"
-    },
-    {
       "id": "P-003",
       "tags": [
         "ui",
@@ -37,22 +20,6 @@
       "promotedTo": "tests"
     },
     {
-      "id": "P-004",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/store/**"
-      ],
-      "text": "Derive every count a card shows from the validated plan the screen uses (after coverage enforcement adds the Other step and drops duplicates), never from the raw cached model output.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T10:02:39.282Z",
-      "lastUsedItem": 1,
-      "source": "F-04.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
       "id": "P-005",
       "tags": [
         "core",
@@ -68,21 +35,6 @@
       "lastUsedItem": 1,
       "source": "F-04.1",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-006",
-      "tags": [
-        "ui",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "Before locking an e2e order or position assertion, check the mock's CSS layout (grid auto-fit puts cards side by side, not stacked), since a stacked-order assumption cost a test dispute and a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T10:02:39.379Z",
-      "lastUsedItem": 1,
-      "source": "F-04.1"
     },
     {
       "id": "P-007",
@@ -120,22 +72,6 @@
       "source": "F-04.3",
       "promoted": true,
       "promotedTo": "implement"
-    },
-    {
-      "id": "P-009",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/review/**",
-        "src-tauri/src/store/**"
-      ],
-      "text": "Before showing restored per-step state keyed by step id (dismissed notes, cached findings), check it still belongs to the current plan's step, because with_dismissed restores every dismissed note for a session and step id and a re-plan that reuses step ids could surface old notes.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T14:05:35.142Z",
-      "lastUsedItem": 2,
-      "source": "F-04.3"
     },
     {
       "id": "P-010",
@@ -245,14 +181,15 @@
         "tests",
         "src/screens/**",
         "mixed",
-        "src/screens/detailed/**"
+        "src/screens/detailed/**",
+        "src/screens/step/**"
       ],
-      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
+      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
       "helpful": 17,
       "harmful": 0,
-      "seen": 4,
+      "seen": 5,
       "created": "2026-10-14T15:13:07.675Z",
-      "lastUsedItem": 7,
+      "lastUsedItem": 31,
       "source": "F-06.6",
       "promoted": true,
       "promotedTo": "tests"
@@ -409,14 +346,17 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed",
+        "src/screens/step/**",
+        "src/screens/detailed/**"
       ],
-      "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
+      "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry. For shared state that other keys or features read (the J/K current hunk), also grep the milestone plan decisions for its name and lock every existing consumer (C composer start line, Ctrl+Shift+O target) as its own red test, because unlocked M4 decision 13 became the only severe review finding of F-30.6.",
       "helpful": 4,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T06:36:00.066Z",
-      "lastUsedItem": 9,
+      "lastUsedItem": 32,
       "source": "F-09.2",
       "promoted": true,
       "promotedTo": "tests"
@@ -926,15 +866,19 @@
       "tags": [
         "ui",
         "tests",
-        "tests/e2e/**"
+        "tests/e2e/**",
+        "mixed",
+        "src/screens/settings/**"
       ],
-      "text": "When a new e2e test is red at its first assertion, every later line never ran, so before the tests commit run a scratch copy with the red assertions removed (or grep tests/e2e for the matcher you use) to prove the rest can pass, because F-08.9's two toHaveURL lines sat behind the red 'End of step N' check, were never exercised, and cost a test dispute and a test-only fix round (50k tokens).",
+      "text": "A red e2e never runs the lines after its first failing assertion, so before the tests commit prove the rest can pass: run a scratch copy without the red assertions, run its setup and return path at baseline or in a throwaway variant without the new control, and run a new row or layout locator helper against throwaway markup shaped like the mock (delete the scratch files afterwards). F-08.9's toHaveURL lines behind a red check cost a test dispute and a fix round, F-19.1's broken mock return path pushed out-of-item work onto the implementer (153k tokens), while F-19.3 did this and passed with no dispute and no fix round.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 3,
       "created": "2026-10-16T08:24:28.933Z",
-      "lastUsedItem": 27,
-      "source": "F-08.9"
+      "lastUsedItem": 30,
+      "source": "F-08.9",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-068",
@@ -943,78 +887,16 @@
         "tests",
         "src/screens/step/**",
         "src/screens/detailed/**",
-        "src/diff/**"
+        "src/diff/**",
+        "ui"
       ],
-      "text": "For anything the user writes anchored to a diff line (line comment, note), lock a red test that it is still visible where it was written after a mode switch or reopening the step, including when that line sits in a collapsed fold or mechanical hunk, because F-09.7's tests only skipped folds when choosing where to open the composer, and review found a comment written on L14 in Detailed hidden inside Claude's closed fold in S-03 (a normal finding that cost a fix round).",
+      "text": "For anything the user writes anchored to a diff line (line comment, note) or types into a composer whose open state is kept in a store, lock red tests in the tests stage that it survives a mode switch (Ctrl+D), reopening the step and a remount (scrolling out of the virtual window): a saved comment stays visible where it was written, also inside a collapsed fold or mechanical hunk, and opening another composer or clicking Undo on another draft never silently drops typed text. F-09.7's tests covered none of this and review raised a hidden L14 comment and lost text as normal findings that cost a fix round.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-16T09:37:32.711Z",
       "lastUsedItem": 28,
       "source": "F-09.7"
-    },
-    {
-      "id": "P-069",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/step/**",
-        "src/screens/detailed/**"
-      ],
-      "text": "For a text composer whose open state is kept in a store, lock in the tests stage that the unsaved text survives a remount (Ctrl+D mode switch, scrolling out of the virtual window) and that opening another composer or clicking Undo on another draft never silently drops typed text, because F-09.7's 17 locked Vitest tests covered neither and review raised both as a normal finding that needed a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T09:37:32.759Z",
-      "lastUsedItem": 28,
-      "source": "F-09.7"
-    },
-    {
-      "id": "P-070",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "A red e2e never executes the steps after its first failing assertion, so before locking it run its setup and return path (here: start a review, then go back to the step through the dock's Review tile) at baseline or in a throwaway variant without the new control, because F-19.1's return path was broken in the mock and the implementer had to make out-of-item changes (UNFINISHED_KEY invalidation in useUpdateSettings, a new mock unfinished.ts, 3 extra tests) and spent 153k tokens against 116k for tests.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T10:10:39.775Z",
-      "lastUsedItem": 29,
-      "source": "F-19.1"
-    },
-    {
-      "id": "P-071",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/settings/**",
-        "tests/e2e/**"
-      ],
-      "text": "Before committing a row or layout locator helper for a screen built from a design mock, run it against throwaway markup shaped like the mock and delete the file afterwards, because it shows the red test can go green; F-19.3 did this and its implementer passed the locked Vitest and e2e files unchanged, with no test dispute and no fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T10:22:42.811Z",
-      "lastUsedItem": 30,
-      "source": "F-19.3"
-    },
-    {
-      "id": "P-072",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/step/**",
-        "src/screens/detailed/**"
-      ],
-      "text": "When a control keeps its accessible name or shortcut hint while its action changes in an edge state (last step: the arrow keeps 'Next step' but now opens S-05; the header's disabled 'Next step ]' keeps the ] hint while the end card's Finish review, which ] now triggers, shows none), lock the edge-state name, tooltip and hint in the tests decision with an assertion, because both review nits (WCAG 2.4.6, recognition over recall) came from that reading being left unlocked.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T10:39:05.203Z",
-      "lastUsedItem": 31,
-      "source": "F-30.3"
     },
     {
       "id": "P-073",
@@ -1022,31 +904,20 @@
         "mixed",
         "tests",
         "src/screens/step/**",
-        "src/app/**"
+        "src/app/**",
+        "ui",
+        "src/screens/**",
+        "src/ipc/mock/**"
       ],
-      "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time.",
-      "helpful": 0,
+      "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
+      "helpful": 2,
       "harmful": 0,
-      "seen": 1,
+      "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
       "lastUsedItem": 31,
-      "source": "F-30.3"
-    },
-    {
-      "id": "P-074",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/step/**",
-        "src/screens/detailed/**"
-      ],
-      "text": "When an item adds shared state that other keys or features read (here the J/K current hunk), grep the milestone plan decisions for that state's name and lock every existing consumer (C composer start line, Ctrl+Shift+O target) as its own red test in the tests stage, because M4 decision 13 (C opens at the current hunk) was not locked and became the only severe review finding.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T11:28:31.515Z",
-      "lastUsedItem": 32,
-      "source": "F-30.6"
+      "source": "F-30.3",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-075",
