@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T10:22:50.728Z",
+  "updated": "2026-10-16T10:39:05.964Z",
   "items": [
     {
       "id": "F-08.1",
@@ -214,15 +214,14 @@
       "title": "Finish review (review screens) opens S-05.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "ee41de3",
+      "lockSha": "6aa2132",
       "tests": [
         "src/app/titlebar/FinishReview.test.tsx",
         "tests/e2e/detailed-f30-3.spec.ts"
-      ],
-      "forkSha": "169a20d"
+      ]
     },
     {
       "id": "F-30.6",

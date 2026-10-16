@@ -1,5 +1,5 @@
 {
-  "items": 31,
+  "items": 32,
   "entries": [
     {
       "id": "P-002",
@@ -27,7 +27,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 16,
+      "helpful": 17,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -229,7 +229,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 17,
+      "helpful": 18,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -248,7 +248,7 @@
         "src/screens/detailed/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 15,
+      "helpful": 16,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T15:13:07.675Z",
@@ -314,7 +314,7 @@
         "src/screens/plan/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:34:55.903Z",
@@ -332,7 +332,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -350,7 +350,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -649,7 +649,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -667,7 +667,7 @@
         "ui"
       ],
       "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe. When the screen still renders a stub for that source or state, decide its content in the tests stage and lock it, because F-17.1 left it 'outside this item' and the fix round had to build the non-MR plan screen.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-15T11:47:51.456Z",
@@ -999,6 +999,38 @@
       "created": "2026-10-16T10:22:42.811Z",
       "lastUsedItem": 30,
       "source": "F-19.3"
+    },
+    {
+      "id": "P-072",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/screens/detailed/**"
+      ],
+      "text": "When a control keeps its accessible name or shortcut hint while its action changes in an edge state (last step: the arrow keeps 'Next step' but now opens S-05; the header's disabled 'Next step ]' keeps the ] hint while the end card's Finish review, which ] now triggers, shows none), lock the edge-state name, tooltip and hint in the tests decision with an assertion, because both review nits (WCAG 2.4.6, recognition over recall) came from that reading being left unlocked.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T10:39:05.203Z",
+      "lastUsedItem": 31,
+      "source": "F-30.3"
+    },
+    {
+      "id": "P-073",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/app/**"
+      ],
+      "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T10:39:05.255Z",
+      "lastUsedItem": 31,
+      "source": "F-30.3"
     }
   ]
 }
