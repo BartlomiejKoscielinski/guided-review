@@ -117,7 +117,7 @@ Rules for Claude Code:
 - [x] F-08.9 End-of-step card: "End of step 4", next step title with stats, Next step. (157eac8, cc19376, 404222a)
 - [x] F-09.7 C (or the comment action on a selected line) opens an inline composer under the line in the note-card… (991f647, d8ea6c8, ef68a16)
 - [x] F-19.1 General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start… (d17fe88, a01427a, 9efd76e)
-- [ ] F-19.3 Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App).
+- [x] F-19.3 Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App). (22b9148, 169a20d)
 - [ ] F-30.3 Finish review (review screens) opens S-05.
 - [ ] F-30.6 Shortcuts: ] next step, [ previous step, Space mark reviewed, J/K next/previous hunk, N next note, D add…
 
