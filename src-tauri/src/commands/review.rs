@@ -50,6 +50,16 @@ impl ReviewApp {
         &self.runs
     }
 
+    /// Applies a thread action GitLab accepted (F-11.2) to the remembered context, so the next
+    /// `review_step` shows the thread as it is now. A session not loaded yet fetches them anew.
+    pub(super) fn update_threads(&self, session: &str, apply: impl FnOnce(&mut Vec<Thread>)) {
+        if let Ok(mut contexts) = self.contexts.lock()
+            && let Some(cx) = contexts.get_mut(session)
+        {
+            apply(&mut Arc::make_mut(cx).threads);
+        }
+    }
+
     pub(super) fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
         self.contexts
             .lock()

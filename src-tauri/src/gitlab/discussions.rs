@@ -1,7 +1,7 @@
 //! MR discussions, read only (F-06.9, M3 decision 5): `GET /projects/:id/merge_requests/:iid/
 //! discussions` → threads. System notes ("requested review from …") are dropped. The threads
 //! file renders them for the plan and step tasks; without Claude the aside says "N open threads."
-//! Resolve and reply come with F-11 (M5).
+//! Resolve and reply are in `thread_actions.rs` (F-11.2).
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -154,6 +154,13 @@ pub fn parse(items: Vec<Value>) -> Result<Vec<Thread>, GitlabError> {
         });
     }
     Ok(threads)
+}
+
+/// One note as GitLab answers a new reply (F-11.2).
+pub fn parse_note(item: Value) -> Result<ThreadNote, GitlabError> {
+    serde_json::from_value(item)
+        .map(note)
+        .map_err(|e| GitlabError::Decode(format!("note: {e}")))
 }
 
 fn position(raw: &RawPosition) -> Option<ThreadPosition> {

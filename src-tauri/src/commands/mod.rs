@@ -6,6 +6,7 @@ pub mod claude;
 pub mod drafts;
 pub mod git;
 pub mod gitlab;
+pub mod gitlab_threads;
 pub mod os;
 pub mod repo;
 pub mod review;

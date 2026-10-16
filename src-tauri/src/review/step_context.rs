@@ -39,7 +39,7 @@ pub struct MrRef {
     pub iid: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StepContext {
     pub session_id: String,
     pub repo_id: i64,
