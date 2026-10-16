@@ -15,6 +15,8 @@ export const METRICS = {
   severe: { better: 'lower', of: (r) => r.findings?.severe ?? 0 },
   rounds: { better: 'lower', of: (r) => r.rounds ?? 0 },
   wallMin: { better: 'lower', of: (r) => r.wallMin ?? 0 },
+  // E22: an accepted dispute means the locked tests were wrong.
+  disputes: { better: 'lower', of: (r) => (r.testDispute === 'accept' ? 1 : 0) },
 };
 /** A change this much worse (relative; absolute for rates) is reverted. */
 const WORSE = 0.1;
@@ -148,10 +150,27 @@ export function judge(rows, { since, metric, k = 5 }) {
   return { metric, verdict: worse ? 'revert' : 'keep', before: b, after: a, n: [k, k] };
 }
 
-/** Means of every metric over the rows (of one run when given). */
+/**
+ * Minutes per finished criterion (`done` or `live`) of one run's rows, from the start of its first
+ * item to the end of its last (E22: with tests ahead the items overlap, so their own times do not
+ * add up). Null without a timed row or a finished item.
+ */
+export function pace(rows) {
+  const timed = rows.filter((r) => r.wallMin != null && r.ts);
+  const finished = new Set(
+    rows.filter((r) => r.result === 'done' || r.result === 'live').map((r) => r.item),
+  );
+  if (!timed.length || !finished.size) return null;
+  const start = Math.min(...timed.map((r) => Date.parse(r.ts) - r.wallMin * 60_000));
+  const end = Math.max(...timed.map((r) => Date.parse(r.ts)));
+  return Math.round(((end - start) / 60_000 / finished.size) * 10) / 10;
+}
+
+/** Means of every metric over the rows (of one run when given, then with its `pace`). */
 export function summary(rows, run = null) {
   const pick = run ? rows.filter((r) => r.run === run) : rows;
   const out = { items: pick.length };
   for (const [name, m] of Object.entries(METRICS)) out[name] = mean(pick.map(m.of));
+  if (run) out.pace = pace(pick);
   return out;
 }

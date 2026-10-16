@@ -3,7 +3,7 @@
 // Pure functions; I/O in prompt.mjs.
 import { RESULTS } from './items-lib.mjs';
 import { existing, render } from './playbook-lib.mjs';
-import { AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
+import { AHEAD_PORT, AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
 
 export const ROLES = ['plan', 'tests', 'implement', 'review', 'fix', 'reflect', 'curate', 'live'];
 /** Roles that work in the main checkout; the others in the autopilot worktree. */
@@ -130,7 +130,8 @@ export function itemHistory({ note, attempts = [] }) {
  * attempts: [{ n, dir, impl, review, fixes, gates }] from its `attempt-N` folders }),
  * `live` the backlog items (for the live role), `playbook` docs/process/playbook.json (the reflector
  * compares its lessons with the matching ones), `extra` overrides or adds fields (e.g. `problems`).
- * Missing values stay undefined.
+ * `ahead` = the item before, for tests written ahead in ../gr-ap-2 (E22): its branch is the base,
+ * the port is 1511, and the history says what that means. Missing values stay undefined.
  */
 export function promptValues({
   role,
@@ -145,9 +146,11 @@ export function promptValues({
   live,
   playbook,
   extra,
+  ahead,
 }) {
-  const port = AUTOPILOT_PORT;
-  const common = { role, runId: run?.runId, base, port };
+  const port = ahead ? AHEAD_PORT : AUTOPILOT_PORT;
+  const from = ahead ? `ap/${itemSlug(ahead)}` : base;
+  const common = { role, runId: run?.runId, base: from, port };
   let values;
   if (MAIN_CHECKOUT.includes(role)) {
     const milestone = role === 'plan' ? id : run?.milestone;
@@ -188,6 +191,7 @@ export function promptValues({
       title: item?.title,
       wt: slash(wt),
       branch: `ap/${itemSlug(id)}`,
+      slug: itemSlug(id),
       context: files.context != null ? `${slash(itemDir)}/context.md` : undefined,
       rustPrefix: id.toLowerCase().replace(/-/g, '').replace(/\./g, '_'),
       tests: tests.length ? tests.join(', ') : undefined,
@@ -197,7 +201,13 @@ export function promptValues({
           ? (files.impl?.testDispute ?? 'none')
           : disputeVerdict(files.review, files.impl),
       problems: fixProblems(files),
-      history: itemHistory({ note: item?.note, attempts: files.attempts }),
+      history: [
+        ahead &&
+          `- Tests ahead: ap/${itemSlug(id)} starts from ${from}, where ${ahead} is implemented and still in review (a fix round may change it); ${base} is merged in before the implementer of ${id} starts. Test ${id} only, and leave the files ${ahead} changed alone where you can: a merge conflict with its fix round discards your tests.`,
+        itemHistory({ note: item?.note, attempts: files.attempts }),
+      ]
+        .filter(Boolean)
+        .join('\n'),
       verdictsDir: slash(itemDir),
       offered: offeredIds(files.context).join(', ') || 'none',
       existing:
@@ -213,7 +223,8 @@ export function promptValues({
       result: RESULTS.includes(item?.status) ? item.status : undefined,
     };
   }
-  return { ...values, ...extra };
+  // `extra.base` names the milestone branch; tests ahead still start from the item before.
+  return { ...values, ...extra, ...(ahead && { base: from }) };
 }
 
 /** `_common.md` + the role file, conductor comments removed; throws when a used field is empty. */

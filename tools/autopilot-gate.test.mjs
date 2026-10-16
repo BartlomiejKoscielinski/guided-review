@@ -264,3 +264,41 @@ test('autopilot gate: a dispute the backlog remembers applies to every later cal
     await rm(r.dir, { recursive: true, force: true });
   }
 });
+
+test('E22 autopilot gate: after the base is merged in, commits are the item own and the locked tests compare with the merge', async () => {
+  const r = repo();
+  const id = ['-c', 'user.name=t', '-c', 'user.email=t@t'];
+  try {
+    // The branch started from the item before (implemented, in review), then got its tests.
+    const before = r.commit({ 'src/shared.test.ts': 'a\nb\nc\nd\ne\nf\n' }, 'impl F-00.9');
+    const lock = r.commit(
+      { 'src/shared.test.ts': 'a\nb\nc\nd\ne\nf\ntest("F-01.1 y");\n', 'src/y.test.ts': 'y\n' },
+      'tests',
+    );
+    // The item before merges with a fix round that changes its own line of the shared test file.
+    r.git(['merge', '--ff-only', '-q', before]);
+    writeFileSync(join(r.main, 'src', 'shared.test.ts'), 'A\nb\nc\nd\ne\nf\n');
+    r.git([...id, 'commit', '-q', '-am', 'fix F-00.9']);
+    r.git([...id, 'merge', '-q', '--no-edit', 'm3-test'], r.wt);
+    const merge = r.git(['rev-parse', '--short', 'HEAD'], r.wt);
+    const impl = r.commit({ 'src/a.ts': 'export const a = 2;\n' }, 'impl');
+    const tests = ['--tests', 'src/shared.test.ts,src/y.test.ts', '--complete'];
+    const lockedCheck = (v) => v.checks.find((c) => c.name === 'locked-tests');
+
+    const old = r.gate('--lock', lock, ...tests);
+    assert.equal(old.code, 1);
+    assert.match(lockedCheck(old.verdict).detail, /src\/shared\.test\.ts changed after the lock/);
+    const ok = r.gate('--lock', merge, ...tests);
+    assert.equal(ok.code, 0, JSON.stringify(ok.verdict.checks));
+    assert.deepEqual(ok.verdict.commits, [lock, impl], 'neither the merge nor the base commits');
+    assert.equal(r.git(['rev-parse', '--short', 'HEAD']), ok.verdict.merged);
+    assert.equal(readFileSync(join(r.main, 'src', 'shared.test.ts'), 'utf8').split('\n')[0], 'A');
+    assert.ok(
+      readFileSync(join(r.main, 'docs', 'PROGRESS.md'), 'utf8').includes(
+        `- [x] F-01.1 Something. (${lock}, ${impl})\n`,
+      ),
+    );
+  } finally {
+    await rm(r.dir, { recursive: true, force: true });
+  }
+});

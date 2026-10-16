@@ -20,7 +20,7 @@ import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildRow, judge, roleUsage, summary } from './autopilot/items-lib.mjs';
+import { buildRow, judge, pace, roleUsage, summary } from './autopilot/items-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -222,6 +222,20 @@ test('autopilot metrics: judge waits for k rows, keeps or reverts by direction',
   assert.throws(() => judge(before, { since: 'x', metric: 'nope' }), /metric/);
   assert.equal(summary([...before, ...cheaper]).tokens, 90);
   assert.equal(summary([...before, row('2026-10-09', { run: 'ap-2' })], 'ap-2').items, 1);
+});
+
+test('autopilot metrics E22: pace = run time per finished criterion; accepted test disputes', () => {
+  const rows = [
+    row('2026-10-15T10:30:00.000Z', { item: 'F-08.1', wallMin: 30, testDispute: 'accept' }),
+    row('2026-10-15T11:00:00.000Z', { item: 'F-08.2', wallMin: 20, result: 'blocked' }),
+    row('2026-10-15T11:20:00.000Z', { item: 'F-08.3', wallMin: 15, result: 'live' }),
+    row('2026-10-15T11:00:00.000Z', { item: 'F-09.1', wallMin: 5, run: 'ap-2' }),
+  ];
+  const run = summary(rows, 'ap-1');
+  assert.equal(run.pace, 40, '10:00 to 11:20 over F-08.1 and F-08.3');
+  assert.equal(run.disputes, 1 / 3);
+  assert.equal(summary(rows).pace, undefined, 'only per run');
+  assert.equal(pace([row('2026-10-15T10:00:00.000Z', { result: 'blocked', wallMin: 5 })]), null);
 });
 
 test('autopilot metrics: the first gate call decides first pass; record.mjs takes the live result', () => {

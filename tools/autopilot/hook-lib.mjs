@@ -51,17 +51,29 @@ export const marker = (runId) => `AUTOPILOT ${runId}`;
  * The skill starts the first item itself, so a run has done `iterations + 1` items and `--cap N`
  * means N items.
  */
+/**
+ * Why the run ends after the current item (STOP, cap, budget), or null. The hook asks it when the
+ * conductor ends a turn; `backlog.mjs ahead` asks it before writing tests for an item that would
+ * never run (E22).
+ */
+export function runEnding({ run, stopFile, spentTokens }) {
+  if (stopFile) return 'the owner asked to stop (.autopilot/STOP)';
+  if (run.iterations + 1 >= run.cap) return `iteration cap ${run.cap} reached`;
+  if (run.budgetTokens && spentTokens >= run.budgetTokens)
+    return `token budget ${run.budgetTokens} spent (${spentTokens})`;
+  return null;
+}
+
+/**
+ * A conductor turn without the marker (waiting for a background test author, E22) is never
+ * continued: the agent's end notification wakes the conductor instead.
+ */
 export function decide({ run, text, stopFile, spentTokens, nextItem }) {
   if (!run) return { block: false, reason: 'no autopilot run' };
   const m = marker(run.runId);
   if (!text.includes(m)) return { block: false, reason: 'not the conductor' };
   if (text.includes(`${m} stop`)) return { block: false, reason: 'the conductor stopped' };
-  let ending = null;
-  if (stopFile) ending = 'the owner asked to stop (.autopilot/STOP)';
-  else if (run.iterations + 1 >= run.cap) ending = `iteration cap ${run.cap} reached`;
-  else if (run.budgetTokens && spentTokens >= run.budgetTokens)
-    ending = `token budget ${run.budgetTokens} spent (${spentTokens})`;
-  else if (nextItem?.none) ending = nextItem.none;
+  const ending = runEnding({ run, stopFile, spentTokens }) ?? nextItem?.none ?? null;
   if (ending) {
     if (run.finalized) return { block: false, reason: ending };
     return {

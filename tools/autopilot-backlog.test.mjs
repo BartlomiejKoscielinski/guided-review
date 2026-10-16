@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   addDecisions,
+  ahead,
   kindOf,
   liveOnly,
   liveTick,
@@ -271,4 +272,72 @@ test('autopilot backlog: an accepted test dispute is remembered per file and sur
   const again = sync({ ...opts, previous: backlog });
   assert.deepEqual(again.items.find((i) => i.id === 'F-17.1').disputes, item().disputes);
   assert.equal(again.items.find((i) => i.id === 'F-07.2').disputes, undefined);
+});
+
+test('autopilot backlog E22: tests ahead go to the item next once the current one is done', () => {
+  const backlog = {
+    milestone: 'M4',
+    items: [
+      { id: 'F-08.1', deps: [], status: 'review', attempts: 1 },
+      { id: 'F-08.2', deps: ['F-08.1'], status: 'todo', attempts: 0 },
+      { id: 'F-08.3', deps: [], status: 'todo', attempts: 0 },
+    ],
+  };
+  const [x, y] = backlog.items;
+  assert.equal(next(backlog).id, 'F-08.1');
+  assert.equal(ahead(backlog, 'F-08.1').id, 'F-08.2', 'ready as soon as F-08.1 is done');
+  y.lockSha = '1111111';
+  assert.match(ahead(backlog, 'F-08.1').none, /F-08\.2 has locked tests already/);
+  delete y.lockSha;
+  assert.throws(() => setItem(backlog, 'F-08.2', { status: 'tests-ready' }, 't'), /--fork/);
+  const tests = ['tests/e2e/detailed-f08-2.spec.ts'];
+  setItem(
+    backlog,
+    'F-08.2',
+    { status: 'tests-ready', lockSha: 'abc1234', tests, fork: 'def5678' },
+    't',
+  );
+  assert.deepEqual(
+    [y.status, y.lockSha, y.forkSha, y.attempts],
+    ['tests-ready', 'abc1234', 'def5678', 0],
+  );
+  assert.equal(next(backlog).id, 'F-08.1', 'the started item first');
+  assert.match(ahead(backlog, 'F-08.1').none, /F-08\.2 comes next \(tests-ready\)/);
+  x.status = 'blocked';
+  assert.equal(next(backlog).id, 'F-08.3', 'tests ahead wait while their deps are not done');
+  x.status = 'done';
+  assert.equal(next(backlog).id, 'F-08.2', 'before a new item');
+  assert.throws(() => ahead(backlog, 'F-09.9'), /no item F-09\.9/);
+
+  // Kept: the lock moves to the merge; the fork is no longer needed.
+  setItem(backlog, 'F-08.2', { status: 'impl', attempt: true, lockSha: '9999999' }, 't');
+  assert.deepEqual(
+    [y.status, y.lockSha, y.forkSha, y.tests, y.attempts],
+    ['impl', '9999999', undefined, tests, 1],
+  );
+  // Discarded: written again from the base, so nothing stays locked.
+  setItem(backlog, 'F-08.3', { status: 'tests-ready', lockSha: 'a', tests, fork: 'b' }, 't');
+  setItem(backlog, 'F-08.3', { status: 'tests', attempt: true, discard: true }, 't');
+  const z = backlog.items[2];
+  assert.deepEqual(
+    [z.status, z.lockSha, z.tests, z.forkSha],
+    ['tests', undefined, undefined, undefined],
+  );
+});
+
+test('autopilot backlog E22: sync keeps tests written ahead with their fork', () => {
+  const opts = { progressMd: PROGRESS, planMd: PLAN, decisionsMd: '', milestone: 'M3', now: 't' };
+  const backlog = sync({ ...opts, previous: null });
+  const tests = ['tests/e2e/step-f07-2.spec.ts'];
+  setItem(
+    backlog,
+    'F-07.2',
+    { status: 'tests-ready', lockSha: 'abc1234', tests, fork: 'def5678' },
+    't',
+  );
+  const again = sync({ ...opts, previous: backlog }).items.find((i) => i.id === 'F-07.2');
+  assert.deepEqual(
+    [again.status, again.lockSha, again.tests, again.forkSha],
+    ['tests-ready', 'abc1234', tests, 'def5678'],
+  );
 });

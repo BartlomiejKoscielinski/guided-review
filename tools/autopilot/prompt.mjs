@@ -6,13 +6,14 @@
 // Exit 1 when a field the prompt uses stays empty.
 //   node tools/autopilot/prompt.mjs tests|implement|review|fix|reflect F-07.2 [--extra '<json>']
 //   node tools/autopilot/prompt.mjs plan M4 · node tools/autopilot/prompt.mjs curate|live
+//   node tools/autopilot/prompt.mjs tests F-07.3 --ahead F-07.2   (tests ahead in ../gr-ap-2, port 1511; E22)
 //   --extra '{"problems": "…"}' overrides or adds fields; --root <dir> reads the data from another checkout (tests).
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MAIN_CHECKOUT, ROLES, composePrompt, promptValues } from './prompt-lib.mjs';
-import { worktreePath } from './worktree-lib.mjs';
+import { aheadPath, worktreePath } from './worktree-lib.mjs';
 
 const tools = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const argv = process.argv.slice(2);
@@ -59,6 +60,8 @@ try {
     process.exit(2);
   }
   const extra = JSON.parse(flag('extra') ?? '{}');
+  const ahead = flag('ahead');
+  if (ahead && role !== 'tests') throw new Error('--ahead is only for the tests role');
   const run = json(join(root, '.autopilot', 'run.json'));
   const backlog = json(join(root, 'docs', 'process', 'backlog.json'));
   const branch = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
@@ -90,11 +93,12 @@ try {
       run,
       base,
       root,
-      wt: worktreePath(root),
+      wt: ahead ? aheadPath(root) : worktreePath(root),
       itemDir,
       files,
       playbook: json(join(root, 'docs', 'process', 'playbook.json')),
       extra,
+      ahead,
     });
   }
   const roles = join(tools, '.claude', 'autopilot', 'roles');

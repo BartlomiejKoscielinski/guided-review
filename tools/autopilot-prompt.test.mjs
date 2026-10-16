@@ -306,3 +306,47 @@ test('autopilot prompt E17: the reflector gets the existing lessons of the item 
   const none = composePrompt(COMMON, role('reflect'), promptValues(args('reflect')));
   assert.match(none, /its files \(id and text\):\nnone\n/);
 });
+
+test('autopilot prompt E22: tests ahead are written in ../gr-ap-2 on port 1511 from the item before', async () => {
+  const ahead = composePrompt(
+    COMMON,
+    role('tests'),
+    promptValues(args('tests', { wt: 'C:\\Repos\\gr-ap-2', ahead: 'F-04.2' })),
+  );
+  assert.match(
+    ahead,
+    /Worktree C:\/Repos\/gr-ap-2, branch ap\/f04-3 from ap\/f04-2\. Mock dev server and e2e port: 1511\./,
+  );
+  assert.match(
+    ahead,
+    /^- Tests ahead: ap\/f04-3 starts from ap\/f04-2, where F-04\.2 is implemented and still in review .*; m3-plan-focus is merged in before the implementer of F-04\.3 starts\./m,
+  );
+  assert.match(ahead, /GR_PORT=1511/);
+  assert.doesNotMatch(ahead, /1510/);
+  const own = composePrompt(COMMON, role('tests'), promptValues(args('tests')));
+  assert.match(own, /a spec of this criterion's own, `tests\/e2e\/<screen>-f04-3\.spec\.ts`/);
+  assert.match(own, /branch ap\/f04-3 from m3-plan-focus\. Mock dev server and e2e port: 1510\./);
+  assert.doesNotMatch(own, /Tests ahead/);
+
+  const dir = mkdtempSync(join(tmpdir(), 'gr prompt ł-'));
+  try {
+    mkdirSync(join(dir, 'docs', 'process'), { recursive: true });
+    mkdirSync(join(dir, '.autopilot', 'items', 'F-04.3'), { recursive: true });
+    const backlog = { milestone: 'M3', items: [{ ...ITEM, status: 'todo' }] };
+    writeFileSync(join(dir, 'docs', 'process', 'backlog.json'), JSON.stringify(backlog));
+    writeFileSync(join(dir, '.autopilot', 'run.json'), JSON.stringify(args('tests').run));
+    writeFileSync(join(dir, '.autopilot', 'items', 'F-04.3', 'context.md'), CONTEXT);
+    const cli = (...a) =>
+      spawnSync(process.execPath, [PROMPT, ...a, '--root', dir, '--extra', '{"base":"m3-x"}'], {
+        encoding: 'utf8',
+      });
+    const ok = cli('tests', 'F-04.3', '--ahead', 'F-04.2');
+    assert.equal(ok.status, 0, ok.stderr);
+    assert.match(ok.stdout, /Worktree [^\n]*\/gr-ap-2, branch ap\/f04-3 from ap\/f04-2\./);
+    const wrong = cli('implement', 'F-04.3', '--ahead', 'F-04.2');
+    assert.equal(wrong.status, 1);
+    assert.match(wrong.stderr, /--ahead is only for the tests role/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

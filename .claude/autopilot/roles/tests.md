@@ -10,7 +10,7 @@ On a repeat attempt (a failed live check or gate), first write a test that repro
 Write:
 - Rust core: unit tests named `{{rustPrefix}}_…` in the module's test file (or `#[cfg(test)] mod tests`).
 - TypeScript: Vitest tests named `'{{item}} …'` next to the component or in `src/ipc/mock/*.test.ts`; mock data must match the mocks.
-- A user flow on a screen: a Playwright test `'{{item}} …'` in `tests/e2e/<screen>.spec.ts` against the mock backend (GR_PORT={{port}}).
+- A user flow on a screen: a Playwright test `'{{item}} …'` in a spec of this criterion's own, `tests/e2e/<screen>-{{slug}}.spec.ts` (new helpers in it too; never add to a spec or helper file another criterion wrote, so a criterion whose tests are written ahead does not conflict), against the mock backend (GR_PORT={{port}}).
 - One test per observable behavior of the criterion text; assert the exact English copy from the spec/mock. No snapshot tests, no tests of private helpers.
 
 Then run only your tests and confirm they fail because the behavior is missing (a compile error from a missing export counts). Commit them: "{{milestone}}: {{item}} tests (autopilot)".
