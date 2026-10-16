@@ -130,6 +130,25 @@ export function ruleViolations(added) {
   return hits;
 }
 
+const JS_STEPS = ['typecheck', 'lint', 'format:check', 'test', 'test:tools'];
+const RUST_STEPS = ['rust:fmt', 'rust:clippy', 'rust:test'];
+
+/**
+ * E15: the verify steps the item's diff can affect, or `null` for all of them. The Rust steps only
+ * when something under src-tauri/ changed, the others only when something outside it changed: the
+ * TypeScript side reads the Rust types only through the committed src/ipc/types/ (ts-rs), so a type
+ * change is a change outside src-tauri/ too. Steps whose inputs did not change passed at the gate
+ * that merged them; the full verify at the Closing of every run is the guard (SKILL.md).
+ */
+export function verifySteps(files, { full = false } = {}) {
+  if (full) return null;
+  const inRust = (f) => f.replace(/\\/g, '/').startsWith('src-tauri/');
+  const rust = files.some(inRust);
+  const other = files.some((f) => !inRust(f));
+  if (rust === other) return null;
+  return rust ? RUST_STEPS : JS_STEPS;
+}
+
 /** Changed files that are protected. */
 export function protectedChanges(files) {
   return files.filter((f) => PROTECTED.includes(f));

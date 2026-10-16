@@ -15,6 +15,7 @@ import {
   protectedChanges,
   ruleViolations,
   tickProgress,
+  verifySteps,
 } from './autopilot/gate-lib.mjs';
 
 const GATE = join(import.meta.dirname, 'autopilot', 'gate.mjs');
@@ -101,6 +102,40 @@ function repo() {
   };
   return { dir, main, wt, git, commit, gate };
 }
+
+test('E15 autopilot gate: verify runs only the steps the diff affects', () => {
+  const js = ['typecheck', 'lint', 'format:check', 'test', 'test:tools'];
+  const rust = ['rust:fmt', 'rust:clippy', 'rust:test'];
+  assert.deepEqual(verifySteps(['src/screens/a.tsx', 'tests/e2e/a-f01-1.spec.ts']), js);
+  assert.deepEqual(verifySteps(['src-tauri/src/gitlab/a.rs', 'src-tauri/tests/a.rs']), rust);
+  assert.deepEqual(verifySteps(['src-tauri\\src\\a.rs']), rust, 'Windows separators');
+  assert.equal(
+    verifySteps(['src-tauri/src/a.rs', 'src/ipc/types/A.ts']),
+    null,
+    'a Rust type change',
+  );
+  assert.equal(verifySteps(['src/a.ts'], { full: true }), null);
+  assert.equal(verifySteps([]), null);
+});
+
+test('E15 autopilot gate: the verdict names the verify steps; --full runs all', async () => {
+  const r = repo();
+  try {
+    r.commit({ 'src/a.ts': 'export const a = 3;\n' }, 'impl');
+    const first = r.gate('--no-merge');
+    assert.deepEqual(first.verdict.verifySteps, [
+      'typecheck',
+      'lint',
+      'format:check',
+      'test',
+      'test:tools',
+    ]);
+    assert.equal(typeof first.verdict.verifySecs, 'number');
+    assert.equal(r.gate('--no-merge', '--full').verdict.verifySteps, 'all');
+  } finally {
+    await rm(r.dir, { recursive: true, force: true });
+  }
+});
 
 test('autopilot gate: a clean item is ticked and fast-forwarded', async () => {
   const r = repo();

@@ -2,12 +2,14 @@
 // Outcome metrics of the autopilot (.metrics/items.jsonl; AUTOPILOT.md §4 B7).
 //   node tools/autopilot/judge.mjs --metric tokens --since 2026-10-14T12:00:00Z [--k 5]  → keep | revert | wait
 //   node tools/autopilot/judge.mjs --summary [--run ap-20261014-1200]
+//   node tools/autopilot/judge.mjs --summary --milestone M5   (the criteria of docs/plans/M5.md; retro mechanism review)
 //   node tools/autopilot/judge.mjs --run <id> --against ap-20261015-1609 --pace-below 40 [--min 3]
 //     → the E22 verdict of a run: keep | revert | wait, with the reasons (items-lib judgeRun)
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { judge, judgeRun, parseRows, summary } from './items-lib.mjs';
+import { planRows } from './backlog-lib.mjs';
+import { judge, judgeRun, milestoneSummary, parseRows, summary } from './items-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const file = join(root, '.metrics', 'items.jsonl');
@@ -27,6 +29,11 @@ try {
       min: Number(flag('min') ?? 3),
     };
     console.log(JSON.stringify(judgeRun(rows, options)));
+  } else if (argv.includes('--summary') && flag('milestone')) {
+    const plan = join(root, 'docs', 'plans', `${flag('milestone').toUpperCase()}.md`);
+    if (!existsSync(plan)) throw new Error(`no plan ${plan}`);
+    const ids = [...planRows(readFileSync(plan, 'utf8')).keys()];
+    console.log(JSON.stringify(milestoneSummary(rows, ids)));
   } else if (argv.includes('--summary')) {
     console.log(JSON.stringify(summary(rows, flag('run'))));
   } else if (flag('metric') && flag('since')) {

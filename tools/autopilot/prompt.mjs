@@ -62,6 +62,10 @@ try {
   const extra = JSON.parse(flag('extra') ?? '{}');
   const ahead = flag('ahead');
   if (ahead && role !== 'tests') throw new Error('--ahead is only for the tests role');
+  // E12: a two-pass item (backlog `split`) runs the implementer as --part core, then --part ui.
+  const part = flag('part');
+  if (part && (role !== 'implement' || !['core', 'ui'].includes(part)))
+    throw new Error('--part core|ui is only for the implement role');
   const run = json(join(root, '.autopilot', 'run.json'));
   const backlog = json(join(root, 'docs', 'process', 'backlog.json'));
   const branch = spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
@@ -99,6 +103,7 @@ try {
       playbook: json(join(root, 'docs', 'process', 'playbook.json')),
       extra,
       ahead,
+      part,
     });
   }
   const roles = join(tools, '.claude', 'autopilot', 'roles');

@@ -3,6 +3,7 @@
 // the milestone branch; checks the item branch in the autopilot worktree and fast-forwards it.
 //   node tools/autopilot/gate.mjs F-07.2 --base m3-plan-focus [--worktree ../gr-ap] [--branch ap/f07-2]
 //        [--lock <sha> --tests a,b [--dispute a@sha]] [--e2e step,plan] [--port 1510] [--complete] [--no-merge] [--out f.json] [--root dir]
+//        [--full]   (every verify step; default: only the steps the diff affects, E15)
 // Accepted test disputes: the item's `disputes` in docs/process/backlog.json of --root (remembered by
 // `backlog.mjs set <id> --dispute file@sha`, so every later call and attempt applies them) plus
 // --dispute (a one-off); each disputed locked test changed only in its own commit (the fix round's
@@ -22,6 +23,7 @@ import {
   protectedChanges,
   ruleViolations,
   tickProgress,
+  verifySteps,
 } from './gate-lib.mjs';
 import { itemSlug } from './worktree-lib.mjs';
 
@@ -132,9 +134,18 @@ const hits = ruleViolations(addedLines(git(['diff', '-U0', `${base}...HEAD`]).ou
 check('rules', hits.length === 0, hits.map((h) => `${h.rule} ${h.file}: ${h.text}`).join('\n'));
 if (!checks.every((c) => c.ok)) finish();
 
-// 2. verify (with e2e for UI items) in the worktree, on the autopilot port.
-const verifyArgs = ['tools/verify.mjs', ...(e2e ? ['--e2e', ...e2e.split(',')] : [])];
+// 2. verify (with e2e for UI items) in the worktree, on the autopilot port; only the steps the
+// diff affects (E15), every step with --full.
+const steps = verifySteps(files, { full: has('full') });
+verdict.verifySteps = steps ?? 'all';
+const verifyArgs = [
+  'tools/verify.mjs',
+  ...(steps ? ['--only', steps.join(',')] : []),
+  ...(e2e ? ['--e2e', ...e2e.split(',')] : []),
+];
+const verifyStart = Date.now();
 const verify = run(process.execPath, verifyArgs, wt, { ...process.env, GR_PORT: port });
+verdict.verifySecs = Math.round((Date.now() - verifyStart) / 1000);
 if (!check('verify', verify.ok, tail(verify.out))) finish();
 
 // 3. PROGRESS tick on the item branch, then audit; a failed audit drops the tick commit.

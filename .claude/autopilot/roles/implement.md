@@ -1,5 +1,6 @@
 <!-- Role: implementer (Opus for core and mixed items, Sonnet for UI items). -->
 Objective: meet {{item}} so that the locked tests pass, following the spec, the mocks and the project conventions.
+Scope: {{scope}}
 
 Read: {{context}} (criterion, screen, mock, plan row, files, and "Playbook" lessons from earlier items: apply the ones that fit). Then only the files you change and what they call.
 

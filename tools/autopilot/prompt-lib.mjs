@@ -40,6 +40,25 @@ export function liveChecks(items) {
     .join('\n');
 }
 
+/**
+ * E12: what the core pass of a two-pass item must get green: the Rust steps and the locked tests of
+ * the IPC client and mock (the screen tests may still fail, so no typecheck or full Vitest run).
+ */
+export function coreVerifyCommand(tests) {
+  const ipc = (tests ?? []).map(slash).filter((t) => /^src\/ipc\/.+\.test\.tsx?$/.test(t));
+  const rust = 'node tools/verify.mjs --only rust:fmt,rust:clippy,rust:test';
+  return ipc.length ? `${rust} && npx vitest run ${ipc.join(' ')}` : rust;
+}
+
+/** What the implementer builds: the whole criterion, or one pass of a two-pass item (E12). */
+export function implementScope(part, tests, itemDir) {
+  if (part === 'core')
+    return `pass 1 of 2 (E12: the criterion adds an IPC command and a screen). Build only the core: the Rust module with its unit tests, the command, \`npm run gen:types\`, the client in src/ipc/client.ts and src/ipc/tauri.ts, and the mock in src/ipc/mock/; no screen code, a second implementer builds the screens on your commits. For this pass "Done when" means \`${coreVerifyCommand(tests)}\` is green; the locked screen tests may still fail. Skip the design-check and answer "complete": false with "partialReason": "core pass".`;
+  if (part === 'ui')
+    return `pass 2 of 2 (E12): the core, the command, the client and the mock are committed by pass 1 (its answer with its notes: ${slash(itemDir)}/impl-core.json). Build the screens on top of them; change the core only to fix a defect you find there, and say so in notes.`;
+  return 'the whole criterion in one pass.';
+}
+
 /** The exact verify command of an item: its locked e2e specs on the autopilot port, else plain. */
 export function verifyCommand(tests, port) {
   const specs = (tests ?? [])
@@ -147,6 +166,7 @@ export function promptValues({
   playbook,
   extra,
   ahead,
+  part,
 }) {
   const port = ahead ? AHEAD_PORT : AUTOPILOT_PORT;
   const from = ahead ? `ap/${itemSlug(ahead)}` : base;
@@ -195,7 +215,8 @@ export function promptValues({
       context: files.context != null ? `${slash(itemDir)}/context.md` : undefined,
       rustPrefix: id.toLowerCase().replace(/-/g, '').replace(/\./g, '_'),
       tests: tests.length ? tests.join(', ') : undefined,
-      verify: verifyCommand(tests, port),
+      verify: part === 'core' ? coreVerifyCommand(tests) : verifyCommand(tests, port),
+      scope: role === 'implement' ? implementScope(part, tests, itemDir) : undefined,
       testDispute:
         role === 'review'
           ? (files.impl?.testDispute ?? 'none')
