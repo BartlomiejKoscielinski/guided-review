@@ -2,6 +2,7 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  type QueryClient,
   type UseMutationResult,
   type UseQueryResult,
 } from '@tanstack/react-query';
@@ -14,11 +15,23 @@ import { UNFINISHED_KEY } from './useUnfinishedSessions';
 
 export const SETTINGS_KEY = ['app', 'settings'] as const;
 
+const SAVE_SHORTCUTS_KEY = ['app', 'settings', 'shortcuts'] as const;
+
+/**
+ * Settings read or saved while a shortcuts save is on its way keep the shortcuts the cache shows
+ * (F-19.7), so an answer the core gave before that save can't bring the old keys back.
+ */
+function keepPendingShortcuts(queryClient: QueryClient, settings: Settings): Settings {
+  const cached = queryClient.getQueryData<Settings>(SETTINGS_KEY);
+  if (!cached || queryClient.isMutating({ mutationKey: SAVE_SHORTCUTS_KEY }) === 0) return settings;
+  return { ...settings, ui: { ...settings.ui, shortcuts: cached.ui.shortcuts } };
+}
+
 export function useSettings(): UseQueryResult<Settings, IpcError> {
   const ipc = useIpc();
   return useQuery<Settings, IpcError>({
     queryKey: SETTINGS_KEY,
-    queryFn: () => ipc.appSettingsGet(),
+    queryFn: async ({ client }) => keepPendingShortcuts(client, await ipc.appSettingsGet()),
   });
 }
 
@@ -29,7 +42,7 @@ export function useUpdateSettings(): UseMutationResult<Settings, IpcError, Setti
   return useMutation<Settings, IpcError, SettingsPatch>({
     mutationFn: (patch) => ipc.appSettingsSet(patch),
     onSuccess: (settings, patch) => {
-      queryClient.setQueryData(SETTINGS_KEY, settings);
+      queryClient.setQueryData(SETTINGS_KEY, keepPendingShortcuts(queryClient, settings));
       // A session resumes at its own last screen, else where its status and mode lead (F-30.2):
       // the Review tile's list depends on ui.lastRoute and on what that screen changed.
       if (patch.ui?.lastRoute) void queryClient.invalidateQueries({ queryKey: UNFINISHED_KEY });
@@ -49,8 +62,6 @@ export interface SaveShortcuts {
   /** Why the last save failed; the shortcuts are back as they were. */
   error: IpcError | null;
 }
-
-const SAVE_SHORTCUTS_KEY = ['app', 'settings', 'shortcuts'] as const;
 
 /**
  * Saves the changed shortcuts at once (F-19.7, S-07: no Save button). The cached settings show
