@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T12:35:30.723Z",
+  "updated": "2026-10-16T13:52:43.819Z",
   "items": [
     {
       "id": "F-08.1",
@@ -229,9 +229,22 @@
       "title": "Each file of a step can be marked reviewed on its own (S-03 and S-04): Space toggles the current file…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (7910c33; commits 740c339 ce99121 37f9f1a 1667e3a ef85005): per-file Reviewed toggles in the S-03 file header and S-04 file bar, Space toggles the current file, step reviewed when all its files are, Mark reviewed marks/unmarks all files, marks survive restarts (migration 007). Live check left: on step 5 of an MR press each file's Reviewed toggle, Space before and after a move, green fill, restart the app and check the marks stay. The ↓ marking clause is built by F-30.6.",
+      "lockSha": "740c339",
+      "tests": [
+        "src-tauri/src/store/file_marks_tests.rs",
+        "src/ipc/mock/fileMarks.test.ts",
+        "src/screens/step/FileMarks.test.tsx",
+        "src/screens/detailed/FileMarks.test.tsx",
+        "src/screens/detailed/FileMarksHints.test.tsx",
+        "tests/e2e/step-f07-10.spec.ts",
+        "tests/e2e/detailed-f07-10.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/detailed/FileMarksHints.test.tsx@1667e3a"
+      ]
     },
     {
       "id": "F-30.6",
