@@ -40,7 +40,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
         │ the test author of the next item runs in the background, §3.4)
         v
   Worktree ../gr-ap (port 1510), branch ap/<item> from the milestone branch
-    1 Test author (Opus)    → failing tests 'F-xx.n …' from spec/screen/mock only → commit, tests locked
+    1 Test author (Sonnet)  → failing tests 'F-xx.n …' from spec/screen/mock only → commit, tests locked
                               (skipped when the item comes with tests written ahead: §3.4)
     2 Implementer (Opus core / Sonnet UI) → code until tests pass, /verify → commit
        ┆ background: test author of the next ready item in ../gr-ap-2 (port 1511),
@@ -138,7 +138,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 
 | Risk | Mitigation |
 | - | - |
-| Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Opus for tests (E16), Sonnet for reflect and UI |
+| Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Sonnet for tests, reflect and UI (Opus for tests in E16, reverted) |
 | Decisions drift in the wrong direction | spec, mocks and design system first, then named UI/UX principles with a "why"; the fresh reviewer judges open UI/UX choices; logged in `DECISIONS-PENDING.md`; an owner veto at any time → rework item |
 | Classifier blocks stall the loop | allow rules; blocked commands are reported, never worked around |
 | Agents game the tests | lock + gate diff check; reviewer sees the tests and the diff |
