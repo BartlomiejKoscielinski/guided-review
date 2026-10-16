@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T11:59:31.470Z",
+  "updated": "2026-10-16T12:34:14.268Z",
   "items": [
     {
       "id": "F-08.1",
@@ -236,12 +236,12 @@
     {
       "id": "F-30.6",
       "milestone": "M4",
-      "title": "Shortcuts: ↓ (or ]) next step, ↑ (or [) previous step, →/← next/previous file of the step, Space mark…",
+      "title": "Shortcuts: ↓/↑ next/previous change (a change taller than the screen scrolls a screen at a time first;…",
       "kind": "mixed",
       "deps": [],
       "status": "todo",
       "attempts": 1,
-      "note": "live check failed: J/K do not scroll S-04 when it is freshly mounted by Ctrl+D (open MR !4, Start step 1, ] to step 2, Ctrl+D, J x3: outline moves but main.scrollTop stays 0; suspected src/diff/DiffView.tsx useScrollMargin returns early while root.current is null on first layout). Spec changed 2026-10-16 by the owner (M4 decision 15, F-07.10): arrows left/right move between files of the step, up/down change steps (] and [ stay), Space marks the current file reviewed. Update the first attempt's tests that lock Space = step reviewed, the F-19.3 Settings list test (decision 3) and the F-08.8 footer hints test; do not delete them.",
+      "note": "live check failed: J/K did not scroll S-04 when it is freshly mounted by Ctrl+D (open MR !4, Start step 1, next step, Ctrl+D, J x3: outline moves but main.scrollTop stays 0; suspected src/diff/DiffView.tsx useScrollMargin returns early while root.current is null on first layout). Spec changed 2026-10-16 by the owner (M4 decisions 14-16, F-07.10, F-30.6): Down/Up walk the changes (a tall change scrolls a screen first; past a file's last change Down marks it reviewed and goes on; one pause at the end of a step; at the end of the last step the focus goes to Finish review), Left/Right move between files without marking, Space toggles the current file's mark; ], [, J and K are removed. Rewrite (do not delete) the first attempt's tests that lock J/K, ]/[ and Space = step reviewed, F-30.3's ] on the last step, the F-19.3 Settings list test (decision 3) and the F-08.8 footer hints test. Keys must come from the one table in src/app/shortcuts.ts (F-19.7 edits it).",
       "lockSha": "468ddc2",
       "tests": [
         "src/screens/step/ReviewKeys.test.tsx",
@@ -249,6 +249,16 @@
         "src/app/ShortcutKeys.test.tsx",
         "tests/e2e/step-f30-6.spec.ts"
       ]
+    },
+    {
+      "id": "F-19.7",
+      "milestone": "M4",
+      "title": "Shortcuts can be changed in Settings › Shortcuts: a row's keys are a button (\"Change shortcut for <action>\");…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     }
   ]
 }
