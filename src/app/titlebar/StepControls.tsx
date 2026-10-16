@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { keysText, useShortcutKeys } from '../shortcuts';
 import { Button } from '../../components/Button';
 import { LayoutGuideIcon, LayoutMinimalIcon, LayoutSidebarIcon } from '../../components/icons';
 import { Segmented } from '../../components/Segmented';
@@ -16,26 +17,32 @@ const MODE_OPTIONS = [
   { value: 'detailed', label: 'Detailed' },
 ] as const;
 
-const LAYOUT_OPTIONS = [
-  {
-    value: 'A',
-    label: 'Sidebar layout (Ctrl+1)',
-    title: 'Sidebar · Ctrl+1',
-    icon: <LayoutSidebarIcon />,
-  },
-  {
-    value: 'B',
-    label: 'Minimal layout (Ctrl+2)',
-    title: 'Minimal · Ctrl+2',
-    icon: <LayoutMinimalIcon />,
-  },
-  {
-    value: 'C',
-    label: 'Guide layout (Ctrl+3)',
-    title: 'Guide · Ctrl+3',
-    icon: <LayoutGuideIcon />,
-  },
-] as const;
+/** The layout switch's options with the keys of the layout shortcuts now (F-07.1, F-19.7). */
+function useLayoutOptions() {
+  const sidebar = keysText(useShortcutKeys('sidebarLayout'));
+  const minimal = keysText(useShortcutKeys('minimalLayout'));
+  const guide = keysText(useShortcutKeys('guideLayout'));
+  return [
+    {
+      value: 'A',
+      label: `Sidebar layout (${sidebar})`,
+      title: `Sidebar · ${sidebar}`,
+      icon: <LayoutSidebarIcon />,
+    },
+    {
+      value: 'B',
+      label: `Minimal layout (${minimal})`,
+      title: `Minimal · ${minimal}`,
+      icon: <LayoutMinimalIcon />,
+    },
+    {
+      value: 'C',
+      label: `Guide layout (${guide})`,
+      title: `Guide · ${guide}`,
+      icon: <LayoutGuideIcon />,
+    },
+  ] as const;
+}
 
 export function SessionContext({
   iid = P.mr.iid,
@@ -72,6 +79,7 @@ export function StepControls({
   onLayout = noop,
 }: StepControlsProps) {
   const finishReview = useFinishReview();
+  const layoutOptions = useLayoutOptions();
   return (
     <>
       <Segmented label="Mode" size="bar" options={MODE_OPTIONS} value={mode} onChange={onMode} />
@@ -79,7 +87,7 @@ export function StepControls({
         <Segmented
           label="Layout"
           size="bar"
-          options={LAYOUT_OPTIONS}
+          options={layoutOptions}
           value={layout}
           onChange={onLayout}
         />

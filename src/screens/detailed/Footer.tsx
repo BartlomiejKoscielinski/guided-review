@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { DETAILED_FOOTER_HINTS } from '../../app/shortcuts';
+import { detailedFooterHints, useShortcutStore } from '../../app/shortcuts';
 import { cx } from '../../components/cx';
 import { Kbd } from '../../components/Kbd';
 import { useAnalysisStatus } from '../../ipc/hooks/useAnalysisStatus';
@@ -24,6 +24,7 @@ export interface FooterProps {
 export function Footer({ sessionId, order, current }: FooterProps) {
   const status = useAnalysisStatus(sessionId).data;
   const claude = useClaudeStatus().data;
+  const hints = detailedFooterHints(useShortcutStore((state) => state.changed));
   const unusable = isUnusable(claude);
   let line: string | null = null;
   if (unusable) line = statusText(claude);
@@ -32,10 +33,10 @@ export function Footer({ sessionId, order, current }: FooterProps) {
   return (
     <footer className={styles.footer}>
       <div className={styles.group}>
-        {DETAILED_FOOTER_HINTS.map((hint) => (
+        {hints.map((hint) => (
           <span key={hint.label}>
             {hint.keys.map((key, i) => (
-              <Fragment key={key}>
+              <Fragment key={`${String(i)}-${key}`}>
                 {i > 0 && ' '}
                 <Kbd>{key}</Kbd>
               </Fragment>

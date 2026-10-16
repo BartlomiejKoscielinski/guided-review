@@ -5,6 +5,7 @@ import { routeFor, screenInfo, type ScreenId } from './routes';
 import { ScreenTitleBar } from './titlebar/ScreenTitleBar';
 import { useDiffColors } from './useDiffColors';
 import { useLastRouteSaver } from './useLastRouteSaver';
+import { useShortcutOverrides } from './useShortcutOverrides';
 import styles from './Shell.module.css';
 
 /** Route `handle` of a screen: which S-xx it is. */
@@ -24,6 +25,7 @@ export function Shell() {
   useGlobalShortcuts();
   useLastRouteSaver(routeFor(screen, match?.params ?? {}));
   useDiffColors();
+  useShortcutOverrides();
 
   return (
     <div className={styles.shell}>

@@ -1,6 +1,15 @@
-/* Settings › Shortcuts (F-19.3, Settings.dc.html `{"section":"shortcuts"}`). */
+/* Settings › Shortcuts (F-19.3, Settings.dc.html `{"section":"shortcuts"}`; F-19.7 changing keys). */
 .content {
   gap: 30px;
+}
+
+/* F-19.7: Reset all sits right of the heading, shown once anything is changed. */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 50px;
 }
 
 /* M4 decision 3: a small label over each group's grid. */
@@ -39,4 +48,53 @@
 .keys {
   display: flex;
   gap: 4px;
+}
+
+/* F-19.7: the label with the reason a key was refused under it. */
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.message {
+  font-size: 13px;
+  color: var(--orange-text);
+}
+
+/* Reset (changed rows only) left of the keys, so the keys stay at the row's right edge. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* The keys are the button that changes them (M4 decision 16): the mock's look, a fill on hover. */
+.keysButton {
+  align-items: center;
+  min-height: 28px;
+  margin: -4px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.keysButton:hover:not(:disabled),
+.capturing {
+  background: var(--raised-2);
+}
+
+.keysButton:disabled {
+  cursor: default;
+}
+
+.prompt {
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--yellow);
 }

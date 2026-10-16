@@ -3,6 +3,7 @@ import { CommitIcon, MergeRequestIcon, ReviewIcon, SettingsIcon } from '../../co
 import { useUnfinishedSessions } from '../../ipc/hooks/useUnfinishedSessions';
 import type { Route } from '../../ipc/types/Route';
 import { pathFor, SETTINGS_ROUTE, type DockArea } from '../routes';
+import { keysText, useShortcutKeys } from '../shortcuts';
 import { DockTile } from './DockTile';
 import styles from './Dock.module.css';
 
@@ -21,6 +22,7 @@ export function Dock({ active }: DockProps) {
   const navigate = useNavigate();
   const sessions = useUnfinishedSessions();
   const resume = sessions.data?.[0]?.resume;
+  const settingsKeys = keysText(useShortcutKeys('settings'));
   const go = (route: Route) => () => {
     void navigate(pathFor(route));
   };
@@ -54,7 +56,7 @@ export function Dock({ active }: DockProps) {
         label="Settings"
         icon={<SettingsIcon />}
         active={active === 'settings'}
-        title="Settings · Ctrl+,"
+        title={`Settings · ${settingsKeys}`}
         onSelect={go(SETTINGS_ROUTE)}
       />
     </nav>

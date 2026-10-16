@@ -1,7 +1,7 @@
 import { useId } from 'react';
+import { ShortcutKeys } from '../../app/ShortcutKeys';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
-import { Kbd } from '../../components/Kbd';
 import { Tag } from '../../components/Tag';
 import type { Evidence } from '../../ipc/types/Evidence';
 import type { Finding } from '../../ipc/types/Finding';
@@ -130,7 +130,7 @@ export function NoteCallout({ finding, sessionId, number, selfReview, onAsk }: N
       {copy && open && !editing && (
         <div className={styles.actions}>
           <Button ref={addRef} variant="primary" disabled={pending} onClick={add}>
-            {copy.add} <Kbd>D</Kbd>
+            {copy.add} <ShortcutKeys id="addToDrafts" />
           </Button>
           <Button disabled={pending} onClick={startEdit}>
             {copy.editAndAdd}
@@ -146,7 +146,7 @@ export function NoteCallout({ finding, sessionId, number, selfReview, onAsk }: N
             </Button>
           )}
           <Button variant="ghost" disabled={pending} onClick={dismiss}>
-            Dismiss <Kbd>X</Kbd>
+            Dismiss <ShortcutKeys id="dismissNote" />
           </Button>
         </div>
       )}

@@ -1,3 +1,5 @@
+import { create } from 'zustand';
+
 /** A shortcut hint: its keys and what they do ("↑ ↓ change"). */
 export interface ShortcutHint {
   keys: readonly string[];
@@ -41,8 +43,9 @@ export interface Shortcut extends ShortcutHint {
 }
 
 /**
- * Every shortcut of F-30.6, once each, in the order Settings › Shortcuts lists them (F-19.3), and
- * the one place the review keys are read from (F-19.7 edits it). `Ctrl+1/2/3` are three
+ * Every shortcut of F-30.6, once each, in the order Settings › Shortcuts lists them (F-19.3), with
+ * its default keys; every key handler and hint reads them through `shortcutKeys`, which puts the
+ * user's changes over them (F-19.7). `Ctrl+1/2/3` are three
  * shortcuts, as in the mock. The review group is the owner's keymap (M4 decision 15).
  */
 export const SHORTCUTS: readonly Shortcut[] = [
@@ -70,6 +73,72 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: 'allShortcuts', group: 'App', label: 'All shortcuts', keys: ['?'] },
 ];
 
+/** The shortcut the user can't change: `Esc`, which every popover and the key capture rely on. */
+export const FIXED_SHORTCUTS: ReadonlySet<ShortcutId> = new Set<ShortcutId>(['close']);
+
+/** The keys the user gave an action in Settings › Shortcuts (F-19.7), by action. */
+export type ChangedShortcutKeys = Partial<Record<ShortcutId, readonly string[]>>;
+
+/** An action's keys in the table (its default). */
+export function defaultKeys(id: ShortcutId): readonly string[] {
+  return SHORTCUTS.find((shortcut) => shortcut.id === id)?.keys ?? [];
+}
+
+/** Two key lists name the same keys (`Ctrl`, `K`); letters in either case. */
+export function sameKeys(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((key, i) => key.toLowerCase() === b[i]?.toLowerCase());
+}
+
+const isShortcutId = (id: string): id is ShortcutId =>
+  SHORTCUTS.some((shortcut) => shortcut.id === id);
+
+const isKeyList = (keys: unknown): keys is readonly string[] =>
+  Array.isArray(keys) &&
+  keys.length > 0 &&
+  keys.every((key) => typeof key === 'string' && key.trim() !== '');
+
+/**
+ * The changed shortcuts of the saved settings (`ui.shortcuts`) the app can use: an action it has,
+ * other than `Esc`'s, with at least one key and other than its default. Anything else (an action
+ * of another version, an entry without keys) is ignored, so its default keys stay.
+ */
+export function changedShortcutKeys(saved: unknown): ChangedShortcutKeys {
+  const changed: ChangedShortcutKeys = {};
+  if (typeof saved !== 'object' || saved === null || Array.isArray(saved)) return changed;
+  for (const [id, keys] of Object.entries(saved as Record<string, unknown>)) {
+    if (!isShortcutId(id) || FIXED_SHORTCUTS.has(id) || !isKeyList(keys)) continue;
+    if (!sameKeys(keys, defaultKeys(id))) changed[id] = keys;
+  }
+  return changed;
+}
+
+interface ShortcutState {
+  /** The changed shortcuts of the saved settings; the shell keeps them in step (F-19.7). */
+  changed: ChangedShortcutKeys;
+  setChanged: (changed: ChangedShortcutKeys) => void;
+}
+
+/** The changed shortcuts every key handler and hint reads (`useShortcutOverrides` fills it). */
+export const useShortcutStore = create<ShortcutState>()((set) => ({
+  changed: {},
+  setChanged: (changed) => {
+    set({ changed });
+  },
+}));
+
+/** An action's keys now: the user's change (F-19.7) or the table's default. */
+export function shortcutKeys(
+  id: ShortcutId,
+  changed: ChangedShortcutKeys = useShortcutStore.getState().changed,
+): readonly string[] {
+  return changed[id] ?? defaultKeys(id);
+}
+
+/** An action's keys now, for a hint that follows a change at once (F-19.7). */
+export function useShortcutKeys(id: ShortcutId): readonly string[] {
+  return useShortcutStore((state) => state.changed[id]) ?? defaultKeys(id);
+}
+
 /** The table's names of keys that `KeyboardEvent.key` spells differently. */
 const EVENT_KEYS: Readonly<Record<string, string>> = {
   '↓': 'ArrowDown',
@@ -83,30 +152,19 @@ const EVENT_KEYS: Readonly<Record<string, string>> = {
 const MODIFIERS = new Set(['Ctrl', 'Alt', 'Shift', 'Win']);
 
 /**
- * A single-key shortcut of the table (`↓`, `Space`, `N`) pressed alone: without Ctrl, Alt (AltGr
- * on Polish keyboards is Ctrl+Alt), Shift or Win. Letters match in either case. A chord or an
- * unknown id never matches here.
+ * A key of the table the layout types as a character that is neither a letter nor a digit (`?`,
+ * `,`); the arrows are named keys, not typed ones.
  */
-export function isShortcutKey(event: KeyboardEvent, id: ShortcutId): boolean {
-  if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return false;
-  const keys = SHORTCUTS.find((shortcut) => shortcut.id === id)?.keys ?? [];
-  const [key] = keys;
-  if (keys.length !== 1 || key === undefined || MODIFIERS.has(key)) return false;
-  return event.key.toLowerCase() === (EVENT_KEYS[key] ?? key).toLowerCase();
-}
-
-/** A key the layout types as a character that is neither a letter nor a digit (`?`, `,`). */
-const isSymbol = (key: string) => key.length === 1 && !/[\p{L}\p{N}]/u.test(key);
+export const isSymbol = (key: string) =>
+  key.length === 1 && !(key in EVENT_KEYS) && !/[\p{L}\p{N}]/u.test(key);
 
 /**
- * A shortcut of the table with its modifiers (the App and Code groups: `Ctrl+K`, `Ctrl+Shift+O`,
- * `Shift+F12`): Ctrl, Alt, Shift and Win held exactly as the table lists them, so AltGr (Ctrl+Alt
- * on Polish keyboards) never sets off a Ctrl chord. A symbol alone (`?`) matches as typed: the
- * Shift or AltGr the layout types it with counts; Ctrl, Alt or Win alone don't. Letters match in
- * either case.
+ * The pressed key matches `keys`: Ctrl, Alt, Shift and Win held exactly as listed, so AltGr
+ * (Ctrl+Alt on Polish keyboards) never sets off a Ctrl chord and a single key (`↓`, `N`) matches
+ * only alone. A symbol alone (`?`) matches as typed: the Shift or AltGr the layout types it with
+ * counts; Ctrl, Alt or Win alone don't. Letters match in either case.
  */
-export function isShortcutChord(event: KeyboardEvent, id: ShortcutId): boolean {
-  const keys = SHORTCUTS.find((shortcut) => shortcut.id === id)?.keys ?? [];
+function matchesKeys(event: KeyboardEvent, keys: readonly string[]): boolean {
   const key = keys.at(-1);
   if (key === undefined || MODIFIERS.has(key)) return false;
   if (event.key.toLowerCase() !== (EVENT_KEYS[key] ?? key).toLowerCase()) return false;
@@ -122,13 +180,44 @@ export function isShortcutChord(event: KeyboardEvent, id: ShortcutId): boolean {
   );
 }
 
+/**
+ * A review key of the table (`↓`, `Space`, `N`) with its keys now (F-19.7): pressed alone, without
+ * Ctrl, Alt (AltGr on Polish keyboards is Ctrl+Alt), Shift or Win; letters in either case. A
+ * review action the user gave a chord (`Ctrl+Shift+M`) matches that chord exactly.
+ */
+export function isShortcutKey(event: KeyboardEvent, id: ShortcutId): boolean {
+  return matchesKeys(event, shortcutKeys(id));
+}
+
+/**
+ * A shortcut of the table with its modifiers (the App and Code groups: `Ctrl+K`, `Ctrl+Shift+O`,
+ * `Shift+F12`) and its keys now (F-19.7), matched as `matchesKeys` describes: exact modifiers, a
+ * symbol alone (`?`) as typed.
+ */
+export function isShortcutChord(event: KeyboardEvent, id: ShortcutId): boolean {
+  return matchesKeys(event, shortcutKeys(id));
+}
+
+/** The keys of a title or an accessible name: `Ctrl+Shift+O`. */
+export function keysText(keys: readonly string[]): string {
+  return keys.join('+');
+}
+
 /** S-04's footer hints (F-08.8 after M4 decision 15 and F-07.10); `?` lists every shortcut (F-30.6). */
-export const DETAILED_FOOTER_HINTS: readonly ShortcutHint[] = [
-  { keys: ['↑', '↓'], label: 'change' },
-  { keys: ['←', '→'], label: 'file' },
-  { keys: ['Space'], label: 'file reviewed' },
-  { keys: ['N'], label: 'note' },
-  { keys: ['C'], label: 'comment' },
-  { keys: ['A'], label: 'ask' },
-  { keys: ['?'], label: 'all shortcuts' },
+const DETAILED_FOOTER: readonly { ids: readonly ShortcutId[]; label: string }[] = [
+  { ids: ['prevChange', 'nextChange'], label: 'change' },
+  { ids: ['prevFile', 'nextFile'], label: 'file' },
+  { ids: ['markFile'], label: 'file reviewed' },
+  { ids: ['nextNote'], label: 'note' },
+  { ids: ['comment'], label: 'comment' },
+  { ids: ['ask'], label: 'ask' },
+  { ids: ['allShortcuts'], label: 'all shortcuts' },
 ];
+
+/** S-04's footer hints with the keys now (F-19.7): `↑ ↓ change`, `Space file reviewed`, … */
+export function detailedFooterHints(changed: ChangedShortcutKeys): ShortcutHint[] {
+  return DETAILED_FOOTER.map(({ ids, label }) => ({
+    keys: ids.flatMap((id) => shortcutKeys(id, changed)),
+    label,
+  }));
+}

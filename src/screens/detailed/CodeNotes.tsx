@@ -1,6 +1,6 @@
 import { useId } from 'react';
+import { ShortcutKeys } from '../../app/ShortcutKeys';
 import { cx } from '../../components/cx';
-import { Kbd } from '../../components/Kbd';
 import { Tag } from '../../components/Tag';
 import type { Finding } from '../../ipc/types/Finding';
 import { SEVERITY_TAG } from '../step/noteCopy';
@@ -47,7 +47,7 @@ export function CodeNotes({
           Code notes
         </h2>
         <span className={styles.hint}>
-          in line order · <Kbd>N</Kbd>
+          in line order · <ShortcutKeys id="nextNote" />
         </span>
       </div>
       {findings.length === 0 && <StepNotes sessionId={sessionId} stepId={stepId} />}

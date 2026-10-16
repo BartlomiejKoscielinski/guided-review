@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { pathFor } from '../../app/routes';
+import { ShortcutKeys } from '../../app/ShortcutKeys';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import { SearchIcon } from '../../components/icons';
-import { Kbd } from '../../components/Kbd';
 import { useOpenSource, useSourceDetect } from '../../ipc/hooks/useSources';
 import { useStartStore } from '../../state/start';
 import { detectedLabel } from './detectedLabel';
@@ -86,7 +86,7 @@ export function SourceHero() {
         </p>
       )}
       <span className={styles.heroHint}>
-        <Kbd>Ctrl</Kbd> <Kbd>K</Kbd> opens this field from any screen.
+        <ShortcutKeys id="openAnything" /> opens this field from any screen.
       </span>
     </section>
   );
