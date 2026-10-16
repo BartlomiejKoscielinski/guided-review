@@ -11,6 +11,7 @@ All calls go through `git/runner.rs` with `-c core.quotepath=off -c core.longpat
 | Purpose | Command |
 | - | - |
 | Fetch MR head | `git fetch origin +refs/merge-requests/<iid>/head:refs/review/mr/<iid>` and the target branch |
+| Old MR version (F-11.3) | a thread's `head_sha`/`base_sha` read from the object store (`git cat-file blob <sha>:<path>`, `git diff -U0 <from> <to> -- <path>`); missing: `git fetch --no-tags --no-write-fetch-head origin <sha>` once per app run, 60 s, no ref (`review/line_map.rs`). **verify** on the stand-in that GitLab serves an old MR head by SHA; else fallback REST `repository/compare` + `repository/files/:path/raw`. Unreadable: the thread goes to the file header |
 | Review worktree | one per MR at `<worktree_root>\<repo>\<iid>`: `git worktree add --detach <path> <head_sha>`; a new version moves it with `git -C <path> checkout --detach <sha>`; remove with `git worktree remove --force <path>` + `git worktree prune`, only for paths registered in `worktrees` |
 | Fix scratch worktree (ADR-018) | `git stash create` → SHA (empty output = clean tree, use `HEAD`); `git worktree add --detach <tmp path> <sha>`; after the run `git -C <tmp path> status --porcelain=v2 -z` + `git -C <tmp path> diff`; then remove it. The user's checkout is never touched by this |
 | File list + counts | `git diff --name-status -z -M <base> <head>` and `git diff --numstat -z -M <base> <head>` |
