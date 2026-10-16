@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-16T17:37:55.824Z",
+  "updated": "2026-10-16T18:09:36.816Z",
   "items": [
     {
       "id": "F-11.1",
@@ -8,9 +8,15 @@
       "title": "Threads on lines in the current step show inline (avatars, author · age, text, replies).",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "497757e",
+      "tests": [
+        "src/screens/detailed/DetailedThreads.test.tsx",
+        "src/screens/step/ThreadCard.test.tsx",
+        "tests/e2e/detailed-f11-1.spec.ts"
+      ]
     },
     {
       "id": "F-11.2",
