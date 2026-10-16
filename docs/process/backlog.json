@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T08:00:10.749Z",
+  "updated": "2026-10-16T08:24:29.599Z",
   "items": [
     {
       "id": "F-08.1",
@@ -149,15 +149,17 @@
       "title": "End-of-step card: \"End of step 4\", next step title with stats, Next step.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "157eac8",
+      "lockSha": "f39a398",
       "tests": [
         "src/screens/detailed/EndOfStepCard.test.tsx",
         "tests/e2e/detailed-f08-9.spec.ts"
       ],
-      "forkSha": "9326c81"
+      "disputes": [
+        "tests/e2e/detailed-f08-9.spec.ts@404222a"
+      ]
     },
     {
       "id": "F-09.7",
