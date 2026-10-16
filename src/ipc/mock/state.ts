@@ -5,6 +5,7 @@ import type { ResumedSession } from '../types/ResumedSession';
 import type { SessionState } from '../types/SessionState';
 import { mockPlan } from './fixtures/plan';
 import { mockStepView } from './fixtures/step';
+import { reviewedFilesOf } from './fileMarks';
 import { plannedView } from './plan';
 import { cachedFindings } from './review';
 import { stateOf, type MockSessionData } from './session-data';
@@ -54,6 +55,7 @@ export function createStateBackend(
           Object.entries(stored?.checklist ?? {}).filter(([, ticked]) => ticked.length > 0),
         ),
         planOpened: stored?.planOpened === true,
+        reviewedFiles: reviewedFilesOf(data, sessionId),
       };
       return respond(state);
     },

@@ -32,6 +32,8 @@ export interface StoredState {
   planOpened?: boolean;
   scroll: Record<string, number>;
   checklist: Record<string, string[]>;
+  /** The files of each step marked reviewed on their own (F-07.10); missing in older data. */
+  files?: Record<string, string[]>;
   /** When the session was opened (ISO 8601): the core's `updated_at` for its card (F-04.1). */
   openedAt?: string;
 }

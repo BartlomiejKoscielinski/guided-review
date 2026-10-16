@@ -27,4 +27,9 @@ checklist: { [key in string]: Array<string> },
 /**
  * S-02 showed the session's plan: the S-04 rail's "Change overview" is done (F-08.3).
  */
-planOpened: boolean, };
+planOpened: boolean, 
+/**
+ * The files marked reviewed on their own, per step that has any (F-07.10); a reviewed step
+ * (`review_mark_step`) has all its files reviewed whatever is listed here.
+ */
+reviewedFiles: { [key in string]: Array<string> }, };

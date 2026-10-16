@@ -110,6 +110,8 @@ export function createTauriClient(): IpcClient {
       call<DecisionOutcome>('review_decide', { session: sessionId, finding: findingId, decision }),
     reviewMarkStep: (sessionId, stepId, reviewed) =>
       call<string[]>('review_mark_step', { session: sessionId, step: stepId, reviewed }),
+    reviewMarkFile: (sessionId, stepId, file, reviewed) =>
+      call<string[]>('review_mark_file', { session: sessionId, step: stepId, file, reviewed }),
     reviewAnalysisStatus: (sessionId) =>
       call<AnalysisStatus>('review_analysis_status', { session: sessionId }),
     sessionState: (sessionId) => call<SessionState>('session_state', { session: sessionId }),

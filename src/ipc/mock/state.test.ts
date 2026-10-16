@@ -53,6 +53,7 @@ describe('mock session state (F-04.3)', () => {
       scroll: { s2: 300, s4: 245 },
       checklist: { s4: ['Is the retry copy right?'] },
       planOpened: false,
+      reviewedFiles: {},
     });
     // Opened in the layout of the setting at the time, nothing kept yet.
     expect(await after.sessionState(other)).toEqual({
@@ -62,6 +63,7 @@ describe('mock session state (F-04.3)', () => {
       scroll: {},
       checklist: {},
       planOpened: false,
+      reviewedFiles: {},
     });
   });
 

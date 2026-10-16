@@ -187,6 +187,7 @@ describe('S-02 PlanPrepared', () => {
           scroll: {},
           checklist: {},
           planOpened: false,
+          reviewedFiles: {},
         }),
     });
     await screen.findByRole('heading', { name: 'Plan · 8 steps' });

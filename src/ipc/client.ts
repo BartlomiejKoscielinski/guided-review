@@ -162,10 +162,20 @@ export interface IpcClient {
     decision: FindingDecision,
   ): Promise<DecisionOutcome>;
   /**
-   * Mark reviewed (Space) or its undo (F-07.2); the plan's reviewed steps for the done checks
-   * and progress segments (F-07.1). No Claude.
+   * Mark reviewed or its undo (F-07.2): all the step's files or none (F-07.10); the plan's
+   * reviewed steps for the done checks and progress segments (F-07.1). No Claude.
    */
   reviewMarkStep(sessionId: string, stepId: string, reviewed: boolean): Promise<string[]>;
+  /**
+   * A file's Reviewed toggle or Space (F-07.10): marks or unmarks one file of the step; the step
+   * is reviewed when all its files are. The plan's reviewed steps, as `reviewMarkStep`.
+   */
+  reviewMarkFile(
+    sessionId: string,
+    stepId: string,
+    file: string,
+    reviewed: boolean,
+  ): Promise<string[]>;
   /**
    * S-04's footer (F-08.8): the session's steps whose analysis is ready, running now or failed,
    * in the reader's order, and the code Claude reads. Caches only: no Claude run.

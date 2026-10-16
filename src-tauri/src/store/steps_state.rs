@@ -1,6 +1,7 @@
 //! Steps state repository (table `steps_state`): whether the reader marked a step reviewed
 //! (F-07.2), written by `review_mark_step`; where S-03 was scrolled in the step and its ticked
-//! "For you to judge" items (F-04.3). Each write changes only its own column of the step's row.
+//! "For you to judge" items (F-04.3); the files of the step marked reviewed on their own (F-07.10).
+//! Each write changes only its own column of the step's row.
 
 use std::collections::{BTreeMap, HashSet};
 
@@ -141,6 +142,63 @@ pub fn set_checklist(
     conn.execute(
         "INSERT INTO steps_state (session_id, step_id, checklist_json) VALUES (?1, ?2, ?3)
          ON CONFLICT(session_id, step_id) DO UPDATE SET checklist_json = excluded.checklist_json",
+        params![session, step, json],
+    )?;
+    Ok(())
+}
+
+/// The step's files marked reviewed on their own (F-07.10); none when no file was marked.
+pub fn files(conn: &Connection, session: &str, step: &str) -> Result<Vec<String>, StoreError> {
+    let json: Option<Option<String>> = conn
+        .query_row(
+            "SELECT files_json FROM steps_state WHERE session_id = ?1 AND step_id = ?2",
+            params![session, step],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(json.flatten().map(|j| marked_files(&j)).unwrap_or_default())
+}
+
+/// The files marked on their own of every step of the session that has any (F-07.10).
+pub fn files_by_step(
+    conn: &Connection,
+    session: &str,
+) -> Result<BTreeMap<String, Vec<String>>, StoreError> {
+    let mut stmt = conn.prepare(
+        "SELECT step_id, files_json FROM steps_state
+         WHERE session_id = ?1 AND files_json IS NOT NULL",
+    )?;
+    let rows = stmt
+        .query_map(params![session], |row| {
+            Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(rows
+        .into_iter()
+        .map(|(step, json)| (step, marked_files(&json)))
+        .filter(|(_, files)| !files.is_empty())
+        .collect())
+}
+
+/// A row that doesn't parse counts as no file marked.
+fn marked_files(json: &str) -> Vec<String> {
+    serde_json::from_str(json).unwrap_or_else(|error| {
+        tracing::warn!(%error, "unreadable file marks; treated as none");
+        Vec::new()
+    })
+}
+
+/// Replaces the step's files marked on their own (none unmarks all); its other columns stay.
+pub fn set_files(
+    conn: &Connection,
+    session: &str,
+    step: &str,
+    files: &[String],
+) -> Result<(), StoreError> {
+    let json = serde_json::Value::from(files.to_vec()).to_string();
+    conn.execute(
+        "INSERT INTO steps_state (session_id, step_id, files_json) VALUES (?1, ?2, ?3)
+         ON CONFLICT(session_id, step_id) DO UPDATE SET files_json = excluded.files_json",
         params![session, step, json],
     )?;
     Ok(())

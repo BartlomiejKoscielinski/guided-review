@@ -13,6 +13,7 @@ import {
 } from './fixtures/plan';
 import { mockFallbackView } from './fixtures/planFallback';
 import { mockStepView } from './fixtures/step';
+import { markFile, unmarkFiles } from './fileMarks';
 import type { ReviewScenario } from './review';
 import type { MockSessionData, SessionData, SessionPlan } from './session-data';
 
@@ -23,6 +24,7 @@ type PlanClient = Pick<
   | 'reviewReorderSteps'
   | 'reviewStep'
   | 'reviewMarkStep'
+  | 'reviewMarkFile'
   | 'reviewAnalysisStatus'
 >;
 
@@ -176,6 +178,23 @@ export function createPlanBackend(
         if (reviewed) marked.add(stepId);
         else marked.delete(stepId);
         data.marks[sessionId] = [...marked];
+        // All its files or none (F-07.10): the undo takes back the files marked on their own.
+        if (!reviewed) unmarkFiles(data, sessionId, stepId);
+        store.save();
+        return respond(reviewedIn(data, sessionId, plan));
+      } catch (e: unknown) {
+        return Promise.reject(e instanceof Error ? e : new Error(String(e)));
+      }
+    },
+    reviewMarkFile: (sessionId, stepId, file, reviewed) => {
+      try {
+        // The same guards as Mark reviewed: the plan first, then the step, then the file.
+        const fallback = fallbacks.get(sessionId);
+        if (!fallback) planned(sessionId); // "The plan isn't ready yet."
+        const plan = fallback?.plan ?? mockPlan();
+        const step = plan.steps.find((s) => s.id === stepId);
+        if (!step) throw notInPlan();
+        markFile(data, sessionId, step, file, reviewed);
         store.save();
         return respond(reviewedIn(data, sessionId, plan));
       } catch (e: unknown) {
