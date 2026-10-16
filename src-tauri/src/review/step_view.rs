@@ -5,6 +5,8 @@
 use serde::Serialize;
 use ts_rs::TS;
 
+use super::coverage;
+use super::file_place::{self, PlacedFile};
 use super::plan_model::{Plan, Step};
 use super::step_context::StepContext;
 use super::strategy::gitlab_path_cmp;
@@ -34,6 +36,9 @@ pub struct StepView {
     pub reviewed: bool,
     /// The plan is the app's file-order fallback (Claude failed).
     pub fallback: bool,
+    /// Every file of the diff with its place for this step in the reader's order (F-08.7
+    /// Analysis context, M4 decision 8); a file Claude read that isn't here is outside the change.
+    pub places: Vec<PlacedFile>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
@@ -101,6 +106,7 @@ pub fn build(
         threads,
         reviewed,
         fallback: false,
+        places: file_place::places(plan, &coverage::hunk_refs(files), order, step_id),
     })
 }
 

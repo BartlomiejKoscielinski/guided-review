@@ -4,6 +4,7 @@ pub mod config_risk;
 pub mod coverage;
 pub mod decisions;
 pub mod drafts;
+pub mod file_place;
 #[cfg(test)]
 mod file_place_tests;
 pub mod finding_model;

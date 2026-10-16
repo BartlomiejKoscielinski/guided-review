@@ -4,6 +4,7 @@ import type { Plan } from '../../types/Plan';
 import type { StepView } from '../../types/StepView';
 import type { Thread } from '../../types/Thread';
 import { toFileDiff } from '../diff';
+import { mockPlaces } from './filePlace';
 import { mrFiles } from './mr';
 import { gitlabPathCmp } from './planFallback';
 
@@ -118,6 +119,7 @@ export function mockStepView(
     threads: structuredClone(MOCK_THREADS.filter((t) => files.some((f) => holds(f, t)))),
     reviewed,
     fallback,
+    places: mockPlaces(plan, order, stepId),
   };
 }
 
