@@ -95,6 +95,33 @@ export function isShortcutKey(event: KeyboardEvent, id: ShortcutId): boolean {
   return event.key.toLowerCase() === (EVENT_KEYS[key] ?? key).toLowerCase();
 }
 
+/** A key the layout types as a character that is neither a letter nor a digit (`?`, `,`). */
+const isSymbol = (key: string) => key.length === 1 && !/[\p{L}\p{N}]/u.test(key);
+
+/**
+ * A shortcut of the table with its modifiers (the App and Code groups: `Ctrl+K`, `Ctrl+Shift+O`,
+ * `Shift+F12`): Ctrl, Alt, Shift and Win held exactly as the table lists them, so AltGr (Ctrl+Alt
+ * on Polish keyboards) never sets off a Ctrl chord. A symbol alone (`?`) matches as typed: the
+ * Shift or AltGr the layout types it with counts; Ctrl, Alt or Win alone don't. Letters match in
+ * either case.
+ */
+export function isShortcutChord(event: KeyboardEvent, id: ShortcutId): boolean {
+  const keys = SHORTCUTS.find((shortcut) => shortcut.id === id)?.keys ?? [];
+  const key = keys.at(-1);
+  if (key === undefined || MODIFIERS.has(key)) return false;
+  if (event.key.toLowerCase() !== (EVENT_KEYS[key] ?? key).toLowerCase()) return false;
+  if (keys.length === 1 && isSymbol(key)) {
+    const altGr = event.getModifierState('AltGraph');
+    return !event.metaKey && (altGr || (!event.ctrlKey && !event.altKey));
+  }
+  return (
+    event.ctrlKey === keys.includes('Ctrl') &&
+    event.altKey === keys.includes('Alt') &&
+    event.shiftKey === keys.includes('Shift') &&
+    event.metaKey === keys.includes('Win')
+  );
+}
+
 /** S-04's footer hints (F-08.8 after M4 decision 15 and F-07.10); `?` lists every shortcut (F-30.6). */
 export const DETAILED_FOOTER_HINTS: readonly ShortcutHint[] = [
   { keys: ['↑', '↓'], label: 'change' },

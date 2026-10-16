@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T13:52:43.819Z",
+  "updated": "2026-10-16T15:14:48.748Z",
   "items": [
     {
       "id": "F-08.1",
@@ -252,15 +252,36 @@
       "title": "Shortcuts: ↓/↑ next/previous change (a change taller than the screen scrolls a screen at a time first;…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 1,
-      "note": "live check failed: J/K did not scroll S-04 when it is freshly mounted by Ctrl+D (open MR !4, Start step 1, next step, Ctrl+D, J x3: outline moves but main.scrollTop stays 0; suspected src/diff/DiffView.tsx useScrollMargin returns early while root.current is null on first layout). Spec changed 2026-10-16 by the owner (M4 decisions 14-16, F-07.10, F-30.6): Down/Up walk the changes (a tall change scrolls a screen first; past a file's last change Down marks it reviewed and goes on; one pause at the end of a step; at the end of the last step the focus goes to Finish review), Left/Right move between files without marking, Space toggles the current file's mark; ], [, J and K are removed. Rewrite (do not delete) the first attempt's tests that lock J/K, ]/[ and Space = step reviewed, F-30.3's ] on the last step, the F-19.3 Settings list test (decision 3) and the F-08.8 footer hints test. Keys must come from the one table in src/app/shortcuts.ts (F-19.7 edits it).",
-      "lockSha": "468ddc2",
+      "status": "live",
+      "attempts": 2,
+      "note": "Built and merged (1d47d99; commits 1518e85 2bd46af 7ecf85f b8fb09f): arrow-key walk on S-03/S-04 (↓/↑ changes with tall-change paging, ↓ marks a file past its last change, pauses at step start/end, focus to Finish review at the end of the last step), ←/→ files, Space file mark, all keys and chords read from src/app/shortcuts.ts; ] [ J K removed; S-04 fresh-mount scroll fixed in DiffView useScrollMargin. Live check left (WebView2): open MR !4, Start step 1, next step, Ctrl+D, press ↓ 3 times: main.scrollTop moves and each hunk sits under the sticky bar; hold ↓ on a file (stops at file end); ↓ at the end of the last step focuses Finish review; AltGr+arrow on a Polish keyboard does nothing. F-07.10's live check (file toggles, Space, marks after restart) can run in the same session.",
+      "lockSha": "1518e85",
       "tests": [
+        "src/screens/step/ArrowWalk.test.tsx",
+        "src/screens/step/ArrowWalkEnds.test.tsx",
+        "src/screens/detailed/ArrowWalk.test.tsx",
+        "src/test/walk.tsx",
         "src/screens/step/ReviewKeys.test.tsx",
+        "src/screens/step/ReviewKeysTargets.test.tsx",
+        "src/screens/step/FileMarks.test.tsx",
         "src/screens/detailed/ReviewKeys.test.tsx",
-        "src/app/ShortcutKeys.test.tsx",
-        "tests/e2e/step-f30-6.spec.ts"
+        "src/screens/detailed/FileMarks.test.tsx",
+        "src/screens/detailed/FileMarksHints.test.tsx",
+        "src/screens/detailed/EndOfStepCard.test.tsx",
+        "src/screens/detailed/DetailedStepHeader.test.tsx",
+        "src/screens/settings/ShortcutsSection.test.tsx",
+        "src/app/titlebar/FinishReview.test.tsx",
+        "tests/e2e/step-f30-6.spec.ts",
+        "tests/e2e/detailed-f30-6.spec.ts",
+        "tests/e2e/walkHelpers.ts",
+        "tests/e2e/detailed-f30-3.spec.ts",
+        "tests/e2e/detailed-f08-9.spec.ts",
+        "tests/e2e/detailed.spec.ts",
+        "tests/e2e/settings-f19-3.spec.ts",
+        "tests/e2e/step-f07-10.spec.ts"
+      ],
+      "disputes": [
+        "tests/e2e/detailed-f30-6.spec.ts@7ecf85f"
       ]
     },
     {

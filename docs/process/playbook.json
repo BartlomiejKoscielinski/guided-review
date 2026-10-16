@@ -1,5 +1,5 @@
 {
-  "items": 34,
+  "items": 35,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -165,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 20,
+      "helpful": 21,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -185,7 +185,7 @@
         "src/screens/step/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 5,
       "created": "2026-10-14T15:13:07.675Z",
@@ -202,7 +202,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 14,
+      "helpful": 15,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -269,7 +269,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -352,7 +352,7 @@
         "src/screens/detailed/**"
       ],
       "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry. For shared state that other keys or features read (the J/K current hunk), also grep the milestone plan decisions for its name and lock every existing consumer (C composer start line, Ctrl+Shift+O target) as its own red test, because unlocked M4 decision 13 became the only severe review finding of F-30.6.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-15T06:36:00.066Z",
@@ -589,7 +589,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -910,7 +910,7 @@
         "src/ipc/mock/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
@@ -967,6 +967,53 @@
       "created": "2026-10-16T13:52:21.326Z",
       "lastUsedItem": 33,
       "source": "F-07.10"
+    },
+    {
+      "id": "P-078",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/screens/detailed/**"
+      ],
+      "text": "For a key handler with a one-shot pause flag (step-start or step-end pause), lock in the tests stage every key that leaves the flagged state without moving off it (paging a tall change, re-measuring), for example ↑ ↓ ↑ at a first change taller than the screen, because the unlocked sequence left pause 'start' set so the next ↑ skipped a whole step, the only severe review finding of the F-30.6 redo.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T15:14:36.232Z",
+      "lastUsedItem": 34,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-079",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/**",
+        "src/screens/detailed/**"
+      ],
+      "text": "When a plan row says every key is read from the one shortcuts table, grep the key literals (event.key, 'n', Ctrl+K, Ctrl+D, Ctrl+Shift+O) across src/app and src/screens in the tests stage and lock each consumer with a remap test that fails against a hard-coded matcher, because the first implementation converted only the new walk keys and review found S-04 N/A and the App and Code chords still hard-coded, which cost the fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T15:14:36.286Z",
+      "lastUsedItem": 34,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-080",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Write an e2e that pages through content whose height depends on seeded state (an open focused-note callout, viewport size) as 'press until the target change is current, at most N presses, and each extra press must have scrolled', never as an exact press count, because the F-30.6 walk test expected RetryAsync on the third ↓ while a 313 px callout needed a fourth, which cost a test dispute and a test commit in the fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T15:14:36.344Z",
+      "lastUsedItem": 34,
+      "source": "F-30.6"
     }
   ]
 }
