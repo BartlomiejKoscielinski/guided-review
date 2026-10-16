@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T15:14:48.748Z",
+  "updated": "2026-10-16T16:12:44.585Z",
   "items": [
     {
       "id": "F-08.1",
@@ -290,9 +290,22 @@
       "title": "Shortcuts can be changed in Settings › Shortcuts: a row's keys are a button (\"Change shortcut for <action>\");…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "15465b9",
+      "tests": [
+        "src-tauri/src/store/shortcut_settings_tests.rs",
+        "src/ipc/mock/shortcutSettings.test.ts",
+        "src/screens/settings/ShortcutsChange.test.tsx",
+        "src/app/ShortcutOverrides.test.tsx",
+        "src/app/ShortcutHints.test.tsx",
+        "src/test/shortcutSettings.ts",
+        "tests/e2e/settings-f19-7.spec.ts"
+      ],
+      "disputes": [
+        "tests/e2e/settings-f19-7.spec.ts@816fc36"
+      ]
     }
   ]
 }
