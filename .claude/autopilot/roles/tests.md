@@ -30,3 +30,6 @@ Output:
 - Autopilot cannot run /app: cover a drag or other pointer behaviour with the e2e mock and write 'not tried in the real app' under manual, so the next interactive session runs that check. (P-015)
 - When the plan row, the existing code or a state the spec leaves open (status colour, check combination) leaves the reading open, record each reading you choose under decisions and lock it with a red assertion. (P-016)
 - A gap that changes what the user sees or how the app behaves (data missing from a cache key, state shown in no step, a restored view without cards) goes under decisions, not only in notes. (P-021)
+- When the item adds an IPC command that S-03 calls on load, list src/app/shell.test.tsx among your test files and add the command to its F-30.4 allowed list only if it starts no Claude or GitLab work; otherwise the restored screen must not call it. (P-007)
+- In the tests verdict notes, list the locators the implementation must keep (accessible names, role=img text, test ids, span order), so the implementer passes the locked e2e and Vitest tests without a fix round. (P-022)
+- When a prop changes a component's behaviour (NoteCard selfReview), grep every render site and lock a test for each site that must pass it; a site left without the prop goes under decisions, not notes. (P-029)

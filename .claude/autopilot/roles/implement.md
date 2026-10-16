@@ -23,3 +23,5 @@ Output:
 
 - Any user-visible copy that the spec and mock do not give needs a test assertion in the same commit, not only a decision note. (P-017)
 - When a new state changes what a design shot shows, seed that state in tests/e2e/design-shots.spec.ts in the same implement commit, so the design-check compares the screen in that state. (P-023)
+- A command that only reads stored state or caches (restore, resume, status) must not call the Claude binary lookup (executable()) or any other discovery, so it works without Claude Code installed. (P-008)
+- When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, after listing the existing tests that read the unflagged rows, so dev:mock and e2e show the state and those tests stay green. (P-012)

@@ -97,7 +97,9 @@
       "seen": 1,
       "created": "2026-10-14T14:05:35.020Z",
       "lastUsedItem": 2,
-      "source": "F-04.3"
+      "source": "F-04.3",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-008",
@@ -112,7 +114,9 @@
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
       "lastUsedItem": 2,
-      "source": "F-04.3"
+      "source": "F-04.3",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-009",
@@ -178,7 +182,9 @@
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
       "lastUsedItem": 5,
-      "source": "F-05.5"
+      "source": "F-05.5",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-013",
@@ -327,7 +333,9 @@
       "seen": 1,
       "created": "2026-10-14T16:11:26.716Z",
       "lastUsedItem": 7,
-      "source": "F-07.1"
+      "source": "F-07.1",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-023",
@@ -405,7 +413,9 @@
       "seen": 1,
       "created": "2026-10-15T06:36:00.066Z",
       "lastUsedItem": 9,
-      "source": "F-09.2"
+      "source": "F-09.2",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-030",
@@ -522,21 +532,6 @@
       "created": "2026-10-15T08:10:35.925Z",
       "lastUsedItem": 12,
       "source": "F-10.1"
-    },
-    {
-      "id": "P-039",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/**"
-      ],
-      "text": "When a criterion covers a source or state that a screen still renders as a stub, decide its content in the tests stage and lock a content assertion for it, because F-17.1 left the non-MR plan screen as a StubScreen 'outside this item', review rated it severe, and the fix round had to build the header and plan for those sessions.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:58:46.260Z",
-      "lastUsedItem": 13,
-      "source": "F-17.1"
     },
     {
       "id": "P-041",
@@ -666,10 +661,10 @@
         "src/screens/**",
         "ui"
       ],
-      "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe.",
+      "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe. When the screen still renders a stub for that source or state, decide its content in the tests stage and lock it, because F-17.1 left it 'outside this item' and the fix round had to build the non-MR plan screen.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-15T11:47:51.456Z",
       "lastUsedItem": 17,
       "source": "F-17.1",
