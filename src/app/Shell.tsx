@@ -3,6 +3,7 @@ import { Dock } from './dock/Dock';
 import { useGlobalShortcuts } from './keyboard';
 import { routeFor, screenInfo, type ScreenId } from './routes';
 import { ScreenTitleBar } from './titlebar/ScreenTitleBar';
+import { useDiffColors } from './useDiffColors';
 import { useLastRouteSaver } from './useLastRouteSaver';
 import styles from './Shell.module.css';
 
@@ -22,6 +23,7 @@ export function Shell() {
   const screen = isScreenHandle(match?.handle) ? match.handle.screen : 'S-01';
   useGlobalShortcuts();
   useLastRouteSaver(routeFor(screen, match?.params ?? {}));
+  useDiffColors();
 
   return (
     <div className={styles.shell}>

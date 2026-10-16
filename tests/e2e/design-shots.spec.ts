@@ -219,7 +219,17 @@ const SHOTS: Shot[] = [
       await page.getByText('2 unresolved threads from reviewers').waitFor();
     },
   },
-  { screen: 'S07', state: 'settings-general', lastRoute: { screen: 'S-07', section: 'general' } },
+  {
+    screen: 'S07',
+    state: 'settings-general',
+    lastRoute: { screen: 'S-07', section: 'general' },
+    // Settings.dc.html shows Start with Windows on (its default is off: F-19.1).
+    prepare: async (page) => {
+      const startWithWindows = page.getByRole('switch', { name: 'Start with Windows' });
+      await startWithWindows.click();
+      await page.locator('[role=switch][aria-checked=true]').waitFor();
+    },
+  },
   {
     screen: 'S07',
     state: 'settings-claude',
