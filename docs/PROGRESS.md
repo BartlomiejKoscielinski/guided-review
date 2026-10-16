@@ -119,8 +119,8 @@ Rules for Claude Code:
 - [x] F-19.1 General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start… (d17fe88, a01427a, 9efd76e)
 - [x] F-19.3 Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App). (22b9148, 169a20d)
 - [x] F-30.3 Finish review (review screens) opens S-05. (ee41de3, f2d70ce)
-- [ ] F-07.10 Each file of a step can be marked reviewed on its own (S-03 and S-04): Space toggles the current file… — partial: autopilot (740c339, ce99121, 37f9f1a, 1667e3a, ef85005)
-- [ ] F-30.6 Shortcuts: ↓/↑ next/previous change (a change taller than the screen scrolls a screen at a time first;… — partial: autopilot (cf57cb9, 56d19f5, 004936e); autopilot (1518e85, 2bd46af, 7ecf85f, b8fb09f)
+- [x] F-07.10 Each file of a step can be marked reviewed on its own (S-03 and S-04): Space toggles the current file… (740c339, ce99121, 37f9f1a, 1667e3a, ef85005)
+- [x] F-30.6 Shortcuts: ↓/↑ next/previous change (a change taller than the screen scrolls a screen at a time first;… (cf57cb9, 56d19f5, 004936e, 1518e85, 2bd46af, 7ecf85f, b8fb09f)
 - [x] F-19.7 Shortcuts can be changed in Settings › Shortcuts: a row's keys are a button ("Change shortcut for <action>");… (af369bf, f2b6d46, 49c5c75, 5c8591d, 816fc36, 16dec67)
 
 ## M5 · Talking to GitLab: threads, publish, approve

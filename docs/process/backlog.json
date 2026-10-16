@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T16:12:44.585Z",
+  "updated": "2026-10-16T16:22:30.555Z",
   "items": [
     {
       "id": "F-08.1",
@@ -229,7 +229,7 @@
       "title": "Each file of a step can be marked reviewed on its own (S-03 and S-04): Space toggles the current file…",
       "kind": "mixed",
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 1,
       "note": "Built and merged (7910c33; commits 740c339 ce99121 37f9f1a 1667e3a ef85005): per-file Reviewed toggles in the S-03 file header and S-04 file bar, Space toggles the current file, step reviewed when all its files are, Mark reviewed marks/unmarks all files, marks survive restarts (migration 007). Live check left: on step 5 of an MR press each file's Reviewed toggle, Space before and after a move, green fill, restart the app and check the marks stay. The ↓ marking clause is built by F-30.6.",
       "lockSha": "740c339",
@@ -252,7 +252,7 @@
       "title": "Shortcuts: ↓/↑ next/previous change (a change taller than the screen scrolls a screen at a time first;…",
       "kind": "mixed",
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 2,
       "note": "Built and merged (1d47d99; commits 1518e85 2bd46af 7ecf85f b8fb09f): arrow-key walk on S-03/S-04 (↓/↑ changes with tall-change paging, ↓ marks a file past its last change, pauses at step start/end, focus to Finish review at the end of the last step), ←/→ files, Space file mark, all keys and chords read from src/app/shortcuts.ts; ] [ J K removed; S-04 fresh-mount scroll fixed in DiffView useScrollMargin. Live check left (WebView2): open MR !4, Start step 1, next step, Ctrl+D, press ↓ 3 times: main.scrollTop moves and each hunk sits under the sticky bar; hold ↓ on a file (stops at file end); ↓ at the end of the last step focuses Finish review; AltGr+arrow on a Polish keyboard does nothing. F-07.10's live check (file toggles, Space, marks after restart) can run in the same session.",
       "lockSha": "1518e85",
