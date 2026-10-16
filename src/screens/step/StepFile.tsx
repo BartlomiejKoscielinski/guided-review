@@ -16,6 +16,8 @@ import styles from './Step.module.css';
 
 export interface StepFileProps {
   sessionId: string;
+  /** The step shown: its thread cards keep their state with the step's (F-11.2). */
+  stepId: string;
   file: FileDiff;
   /** The step's notes in this file, with their number in the step. */
   findings: { finding: Finding; number: number }[];
@@ -56,6 +58,7 @@ export interface StepFileProps {
  */
 export function StepFile({
   sessionId,
+  stepId,
   file,
   findings,
   folds,
@@ -77,7 +80,7 @@ export function StepFile({
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
-  const threadRows = useThreadRows(threads, sessionId);
+  const threadRows = useThreadRows(threads, { sessionId, stepId });
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
   const diffFolds = useMemo<DiffFold[]>(

@@ -1,8 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { Button } from '../../components/Button';
 import styles from './Thread.module.css';
 
 export interface ThreadReplyProps {
+  /** The text typed so far (kept with the step's state, so a remounted composer shows it). */
+  text: string;
+  /** The composer was just opened: it takes the keyboard focus, then calls `onFocused`. */
+  focus: boolean;
+  onFocused: () => void;
+  onText: (text: string) => void;
   /** A reply is on its way to GitLab: Reply is disabled and a second Ctrl+Enter sends nothing. */
   busy: boolean;
   /** Sends the text as written (never blank). */
@@ -13,16 +19,34 @@ export interface ThreadReplyProps {
 
 /**
  * The reply composer under a thread (F-11.2, M5 decision 1) in the note-card style: "Write a
- * reply…", Reply (yellow, Ctrl+Enter, disabled while blank) and Cancel (Esc). It keeps its text
- * while it is open, so a failed send loses nothing.
+ * reply…", Reply (yellow, Ctrl+Enter, disabled while blank) and Cancel (Esc). Its text lives with
+ * the step's state (`useThreadCard`), so a failed send or a card scrolled out of view and back
+ * loses nothing.
  */
-export function ThreadReply({ busy, onSend, onCancel }: ThreadReplyProps) {
-  const [text, setText] = useState('');
+export function ThreadReply({
+  text,
+  focus,
+  onFocused,
+  onText,
+  busy,
+  onSend,
+  onCancel,
+}: ThreadReplyProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const blank = text.trim() === '';
 
-  useEffect(() => {
-    textareaRef.current?.focus();
+  // Mounted again (the card was out of view): the text comes back as the field's value. Only a
+  // composer just opened takes the focus; one coming back into view leaves it where it is.
+  useLayoutEffect(() => {
+    const field = textareaRef.current;
+    if (!field) return;
+    field.value = text;
+    if (focus) {
+      field.focus();
+      onFocused();
+    }
+    // Once per mount: afterwards the field holds what the reader types.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const send = () => {
@@ -52,7 +76,7 @@ export function ThreadReply({ busy, onSend, onCancel }: ThreadReplyProps) {
         // so nothing on the page reads as the reply before GitLab has it.
         defaultValue=""
         onChange={(event) => {
-          setText(event.target.value);
+          onText(event.target.value);
         }}
         onKeyDown={(event) => {
           if (event.key !== 'Enter' || !event.ctrlKey) return;

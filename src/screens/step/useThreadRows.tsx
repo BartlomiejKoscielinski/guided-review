@@ -3,6 +3,7 @@ import { lineKey } from '../../diff/rows';
 import type { Thread } from '../../ipc/types/Thread';
 import { ThreadMark } from './GutterMarks';
 import { ThreadCard } from './ThreadCard';
+import type { ThreadScope } from './useThreadCard';
 
 /** One thread of a file, keyed by the diff line it sits on (`lineKey`). */
 export interface ThreadRow {
@@ -25,9 +26,9 @@ function threadAt(thread: Thread): { key: string; line: number } | null {
  * The existing GitLab threads on a file's lines (F-06.9, F-11.1), the same in Focus and Detailed
  * mode (M5 decision 3): each one's gutter icon on its line and, open by default, its card under
  * the line. The icon closes and opens the card; that choice lasts while the file is shown. With
- * the session, the cards have Resolve, Reply and Reopen (F-11.2).
+ * the session and step, the cards have Resolve, Reply and Reopen (F-11.2).
  */
-export function useThreadRows(threads: readonly Thread[], sessionId?: string): ThreadRow[] {
+export function useThreadRows(threads: readonly Thread[], scope?: ThreadScope): ThreadRow[] {
   const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
   const rows: ThreadRow[] = [];
   for (const thread of threads) {
@@ -53,7 +54,7 @@ export function useThreadRows(threads: readonly Thread[], sessionId?: string): T
         />
       ),
       card: isOpen ? (
-        <ThreadCard key={thread.id} thread={thread} line={at.line} sessionId={sessionId} />
+        <ThreadCard key={thread.id} thread={thread} line={at.line} scope={scope} />
       ) : null,
     });
   }
