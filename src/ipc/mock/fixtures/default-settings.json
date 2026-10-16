@@ -3,7 +3,8 @@
     "startIn": "focus",
     "focusLayout": "A",
     "diffColors": "blue-orange",
-    "lastRoute": { "screen": "S-01" }
+    "lastRoute": { "screen": "S-01" },
+    "shortcuts": {}
   },
   "os": { "startWithWindows": false, "closeToTray": true },
   "claude": {

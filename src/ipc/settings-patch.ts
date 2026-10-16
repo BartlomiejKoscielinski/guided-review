@@ -1,7 +1,10 @@
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
 
-/** A partial settings change; nested groups merge, a route is always replaced whole. */
+/**
+ * A partial settings change; nested groups merge, a route and the changed shortcuts
+ * (`ui.shortcuts`) are always replaced whole.
+ */
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends Route ? T[K] : T[K] extends object ? DeepPartial<T[K]> : T[K];
 };
@@ -13,7 +16,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 /** Paths whose value replaces the stored one whole (same rule as the core's `REPLACED_WHOLE`). */
-const REPLACED_WHOLE = new Set(['ui.lastRoute']);
+const REPLACED_WHOLE = new Set(['ui.lastRoute', 'ui.shortcuts']);
 
 function merge(target: unknown, patch: unknown, path: string): unknown {
   if (!isPlainObject(target) || !isPlainObject(patch) || REPLACED_WHOLE.has(path)) {

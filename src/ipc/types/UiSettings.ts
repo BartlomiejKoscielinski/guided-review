@@ -20,4 +20,10 @@ diffColors: DiffColors,
 /**
  * F-30.4: the screen to restore on start.
  */
-lastRoute: Route, };
+lastRoute: Route, 
+/**
+ * F-19.7: the shortcuts the user changed, action id (`nextNote`) → keys (`["Ctrl", "J"]`);
+ * only the changed ones, so later default keys still reach the user. The UI owns the action
+ * ids and ignores ones it doesn't have.
+ */
+shortcuts: { [key in string]: Array<string> }, };

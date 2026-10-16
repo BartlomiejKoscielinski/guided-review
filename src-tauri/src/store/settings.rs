@@ -10,7 +10,8 @@ use serde_json::{Map, Value};
 use super::StoreError;
 use crate::settings::{REPLACED_WHOLE, Settings};
 
-/// Object-valued keys that are stored whole in one row (`claude.tasks.<group>`, `ui.lastRoute`).
+/// Object-valued keys that are stored whole in one row (`claude.tasks.<group>`, `ui.lastRoute`,
+/// `ui.shortcuts`).
 fn is_object_key(key: &str) -> bool {
     REPLACED_WHOLE.contains(&key) || key.starts_with("claude.tasks.")
 }
@@ -136,6 +137,7 @@ mod tests {
             "ui.focusLayout",
             "ui.diffColors",
             "ui.lastRoute",
+            "ui.shortcuts",
             "os.startWithWindows",
             "os.closeToTray",
             "claude.path",

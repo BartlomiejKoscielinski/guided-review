@@ -70,7 +70,12 @@ function loadSettings(storage: MockOptions['storage']): Settings {
   const saved = storage?.getItem(MOCK_SETTINGS_KEY);
   if (!saved) return structuredClone(DEFAULT_SETTINGS);
   try {
-    return { ...structuredClone(DEFAULT_SETTINGS), ...(JSON.parse(saved) as Partial<Settings>) };
+    const parsed: unknown = JSON.parse(saved);
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return structuredClone(DEFAULT_SETTINGS);
+    }
+    // Merged like a patch, so settings saved before a key existed get its default.
+    return applySettingsPatch(DEFAULT_SETTINGS, parsed);
   } catch {
     return structuredClone(DEFAULT_SETTINGS);
   }
