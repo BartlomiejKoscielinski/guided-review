@@ -10,7 +10,7 @@ import { createPlanBackend } from './plan';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
-import { createSourcesBackend } from './sources';
+import { createSourcesBackend, mockSessionSource } from './sources';
 import { createStateBackend } from './state';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
@@ -18,6 +18,8 @@ import { health } from './fixtures/app';
 import defaultSettings from './fixtures/default-settings.json';
 import { unfinishedSessions } from './fixtures/sessions';
 import { restoreRoute } from './route-restore';
+import { openedSessions } from './unfinished';
+import { BRANCH } from './fixtures/changes';
 
 export { MOCK_SESSION_DATA_KEY } from './session-data';
 
@@ -141,7 +143,17 @@ export function createMockClient({
     appSettingsGet: () => respond(settings),
     appSettingsSet: (patch) => respond(setSettings(patch)),
     appStartRoute: () => respond(restoreRoute(settings.ui.lastRoute, sessionExists)),
-    sessionsListUnfinished: () => respond(sessions),
+    // Sessions opened in this mock come first, as the core lists them; then the seeded ones.
+    sessionsListUnfinished: () =>
+      respond([
+        ...openedSessions(data.data, {
+          startIn: startIn(),
+          lastRoute: settings.ui.lastRoute,
+          sourceOf: (id) => mockSessionSource(data.data, repos, id),
+          branch: BRANCH,
+        }),
+        ...sessions,
+      ]),
     ...createChangesBackend(changes, respond, repos),
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
     ...createPrepareBackend(repos, pause, data, focusLayout, startIn),

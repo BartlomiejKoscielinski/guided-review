@@ -9,6 +9,7 @@ import { useIpc } from '../IpcContext';
 import type { IpcError } from '../errors';
 import type { SettingsPatch } from '../settings-patch';
 import type { Settings } from '../types/Settings';
+import { UNFINISHED_KEY } from './useUnfinishedSessions';
 
 export const SETTINGS_KEY = ['app', 'settings'] as const;
 
@@ -26,8 +27,11 @@ export function useUpdateSettings(): UseMutationResult<Settings, IpcError, Setti
   const queryClient = useQueryClient();
   return useMutation<Settings, IpcError, SettingsPatch>({
     mutationFn: (patch) => ipc.appSettingsSet(patch),
-    onSuccess: (settings) => {
+    onSuccess: (settings, patch) => {
       queryClient.setQueryData(SETTINGS_KEY, settings);
+      // A session resumes at its own last screen, else where its status and mode lead (F-30.2):
+      // the Review tile's list depends on ui.lastRoute and on what that screen changed.
+      if (patch.ui?.lastRoute) void queryClient.invalidateQueries({ queryKey: UNFINISHED_KEY });
     },
   });
 }

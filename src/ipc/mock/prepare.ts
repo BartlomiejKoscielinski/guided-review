@@ -96,7 +96,11 @@ export function createPrepareBackend(
       data.mrCount += 1;
       const sessionId = `${MR_SESSION}${String(data.mrCount)}`;
       data.mrs[sessionId] = mr;
-      Object.assign(stateOf(data, sessionId), { layout: focusLayout(), mode: startIn() });
+      Object.assign(stateOf(data, sessionId), {
+        layout: focusLayout(),
+        mode: startIn(),
+        openedAt: new Date().toISOString(),
+      });
       store.save();
       const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
       return result;

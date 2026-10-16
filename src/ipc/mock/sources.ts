@@ -12,7 +12,7 @@ import { BRANCHES, branchCommits, STATUS_SUMMARY } from './fixtures/sources';
 import { MOCK_SERVER } from './gitlab';
 import { sessionMrRow } from './prepare';
 import type { MockRepos } from './repos';
-import { stateOf, type MockSessionData } from './session-data';
+import { stateOf, type MockSessionData, type SessionData } from './session-data';
 
 type SourcesClient = Pick<
   IpcClient,
@@ -35,6 +35,23 @@ const CURRENT_BRANCH: Source = {
   kind: 'local',
   scope: { kind: 'branchVsTarget', target: STATUS_SUMMARY.target ?? 'origin/develop' },
 };
+
+/** The source of a mock session as `sessionSource` reports it; undefined for an unknown one. */
+export function mockSessionSource(
+  data: SessionData,
+  repos: MockRepos,
+  sessionId: string,
+): Source | undefined {
+  const source = data.sources[sessionId];
+  if (source) return source;
+  const mr = sessionMrRow(data, sessionId);
+  const active = repos.active()?.path;
+  const project = repos.list().find((r) => r.path === active)?.gitlabProject ?? '';
+  if (mr) return { kind: 'mr', project, iid: mr.iid };
+  // A session saved before the mock kept sources: the current branch, like the core's repo.
+  if (data.local.includes(sessionId)) return CURRENT_BRANCH;
+  return undefined;
+}
 
 const invalid = (message: string) =>
   new IpcError({ code: 'INVALID_INPUT', message, retryable: false });
@@ -66,7 +83,11 @@ export function createSourcesBackend(
     const sessionId = `mock-session-${String(data.localCount)}`;
     data.local.push(sessionId);
     data.sources[sessionId] = source;
-    Object.assign(stateOf(data, sessionId), { layout: focusLayout(), mode: startIn() });
+    Object.assign(stateOf(data, sessionId), {
+      layout: focusLayout(),
+      mode: startIn(),
+      openedAt: new Date().toISOString(),
+    });
     store.save();
     return respond({ sessionId, route: route(sessionId) });
   };
@@ -207,14 +228,8 @@ export function createSourcesBackend(
       return opened(plan, CURRENT_BRANCH);
     },
     sessionSource: async (sessionId) => {
-      const source = data.sources[sessionId];
+      const source = mockSessionSource(store.data, repos, sessionId);
       if (source) return respond(source);
-      const mr = sessionMrRow(data, sessionId);
-      const active = repos.active()?.path;
-      const project = repos.list().find((r) => r.path === active)?.gitlabProject ?? '';
-      if (mr) return respond<Source>({ kind: 'mr', project, iid: mr.iid });
-      // A session saved before the mock kept sources: the current branch, like the core's repo.
-      if (data.local.includes(sessionId)) return respond(CURRENT_BRANCH);
       throw invalid('Unknown session.');
     },
   };

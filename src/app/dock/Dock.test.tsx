@@ -72,6 +72,25 @@ describe('Dock', () => {
     expect(tile('Review')).toHaveAttribute('aria-current', 'page');
   });
 
+  it('F-30.2 the Review tile lights up for a session opened after start, on the next screen', async () => {
+    const user = userEvent.setup();
+    let unfinished: UnfinishedSession[] = [];
+    renderApp(
+      { screen: 'S-01' },
+      { sessionsListUnfinished: () => Promise.resolve(structuredClone(unfinished)) },
+    );
+    await waitFor(() => {
+      expect(tile('Review')).toHaveAttribute('aria-disabled', 'true');
+    });
+    // A review starts (the core now lists it); moving to another screen saves ui.lastRoute,
+    // which the list's resume routes depend on, so the dock asks again.
+    unfinished = [session];
+    await user.click(tile('Settings'));
+    await waitFor(() => {
+      expect(tile('Review')).not.toHaveAttribute('aria-disabled');
+    });
+  });
+
   it('F-30.2 Settings tile is purple and outlined when active', async () => {
     const user = userEvent.setup();
     renderApp();
