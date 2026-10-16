@@ -66,8 +66,18 @@ test('F-30.6 ↓ on an S-04 freshly mounted by Ctrl+D scrolls each hunk under th
   expect(await settledTop(page)).toBeGreaterThan(first);
   expect(Math.abs(await gapUnderBar(page, VM))).toBeLessThanOrEqual(6);
 
+  // SendPhotoAsync holds the focused note's open callout, which can make it taller than the
+  // screen (1040 px against 838 at 1600x1000): ↓ then first scrolls a screen through it (decision
+  // 15) before it reaches RetryAsync, so at most one page comes first.
+  for (let presses = 0; presses < 2; presses += 1) {
+    const before = await settledTop(page);
+    await page.keyboard.press('ArrowDown');
+    const after = await settledTop(page);
+    if ((await currentChange(page).textContent())?.includes('RetryAsync')) break;
+    await expect(currentChange(page)).toContainText('lines 39–60 · SendPhotoAsync');
+    expect(after).toBeGreaterThan(before);
+  }
   // The last hunk may sit too near the end of the column to reach the top; it is on screen.
-  await page.keyboard.press('ArrowDown');
   await expect(currentChange(page)).toContainText('lines 61–74 · RetryAsync');
   await expect(currentChange(page)).toBeInViewport();
 });
