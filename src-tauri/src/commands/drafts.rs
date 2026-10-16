@@ -3,6 +3,7 @@
 
 use tauri::State;
 
+use super::review::ReviewApp;
 use super::with_store;
 use crate::error::AppResult;
 use crate::review::drafts::{self, Draft, DraftPatch, NewDraft};
@@ -16,9 +17,22 @@ pub async fn drafts_list(store: State<'_, Store>, session_id: String) -> AppResu
         .map_err(Into::into)
 }
 
+/// A new draft. One on a line that isn't from a note belongs to the step holding that line's hunk
+/// (F-08.3), found in the session's loaded plan and diff: a line is commented on an open step, so
+/// both are loaded; no Claude Code lookup here.
 #[tauri::command]
-pub async fn drafts_create(store: State<'_, Store>, draft: NewDraft) -> AppResult<Draft> {
-    with_store(&store, move |c| Ok(drafts::create(c, &draft)))
+pub async fn drafts_create(
+    review: State<'_, ReviewApp>,
+    store: State<'_, Store>,
+    draft: NewDraft,
+) -> AppResult<Draft> {
+    let line_step = match (&draft.finding_id, &draft.position) {
+        (None, Some(position)) => review
+            .remembered(&draft.session_id)
+            .and_then(|cx| drafts::step_at(&cx.plan, &cx.files, position)),
+        _ => None,
+    };
+    with_store(&store, move |c| Ok(drafts::create_at(c, &draft, line_step)))
         .await?
         .map_err(Into::into)
 }

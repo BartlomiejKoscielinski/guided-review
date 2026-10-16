@@ -10,7 +10,7 @@ import { GitlabStatusControl } from './GitlabStatusControl';
 import { PlanContext } from './PlanContext';
 import { PlanStatus } from './PlanStatus';
 import { PLACEHOLDER } from './placeholders';
-import { SessionContext, StepControls } from './StepControls';
+import { SessionContext } from './StepControls';
 import { StepTitleBar } from './StepTitleBar';
 import { SettingsContext } from './SettingsContext';
 import { TaskModelChip } from './TaskModelChip';
@@ -52,12 +52,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-03':
       return <StepTitleBar />;
     case 'S-04':
-      return (
-        <TitleBar
-          context={<SessionContext />}
-          controls={<StepControls mode="detailed" model={<TaskModelChip group="step" />} />}
-        />
-      );
+      return <StepTitleBar mode="detailed" />;
     case 'S-05':
       return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-06':

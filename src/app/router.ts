@@ -9,7 +9,7 @@ import { PlanScreen } from '../screens/plan/PlanScreen';
 import { RereviewScreen } from '../screens/rereview/RereviewScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { StartScreen } from '../screens/start/StartScreen';
-import { DetailedScreen } from '../screens/step/DetailedScreen';
+import { DetailedScreen } from '../screens/detailed/DetailedScreen';
 import { StepScreen } from '../screens/step/StepScreen';
 import { SummaryScreen } from '../screens/summary/SummaryScreen';
 import { pathFor, SCREENS, type ScreenId } from './routes';

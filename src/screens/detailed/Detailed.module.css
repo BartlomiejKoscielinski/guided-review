@@ -1,0 +1,82 @@
+/* S-04 Step review in Detailed mode (Main.dc.html; docs/03). Colors only from tokens. */
+.screen {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Info header (F-08.2): InfoHeader.module.css */
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+/* Each region scrolls on its own while they sit side by side, so the sticky file bar (F-08.5)
+   sticks to the main column; wrapped under each other in a narrow window, the body scrolls. */
+.body > * {
+  max-height: 100%;
+}
+
+/* Rail (F-08.3): Rail.module.css */
+
+.main {
+  flex: 999 1 560px;
+  min-width: 0;
+  overflow: auto;
+  background: var(--bg);
+}
+
+/* Step header (F-08.4): DetailedStepHeader.module.css */
+
+/* The step's files could not be read: the message as on S-03 (Step.module.css .error). */
+.error {
+  margin: 0;
+  padding: 0 28px 20px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Guide aside (F-08.7) */
+.guide {
+  flex: 1 1 352px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  overflow: auto;
+}
+
+.guideHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 12px;
+}
+
+.guideName {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.guideMark {
+  width: 14px;
+  height: 14px;
+  background: var(--purple);
+}
+
+.guideStep {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}

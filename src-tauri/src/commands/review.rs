@@ -45,7 +45,12 @@ impl ReviewApp {
         }
     }
 
-    fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
+    /// The step runs in flight and the failed ones (the S-04 footer's status, F-08.8).
+    pub(super) fn runs(&self) -> &StepRuns {
+        &self.runs
+    }
+
+    pub(super) fn remembered(&self, session: &str) -> Option<Arc<StepContext>> {
         self.contexts
             .lock()
             .ok()
@@ -105,7 +110,7 @@ pub(super) async fn step_context(
 }
 
 /// The steps in the session's order: its strategy's, or the dragged one (F-06.4, F-06.5).
-async fn order(store: &Store, cx: Arc<StepContext>) -> AppResult<Vec<String>> {
+pub(super) async fn order(store: &Store, cx: Arc<StepContext>) -> AppResult<Vec<String>> {
     let order = with_store(store, move |c| Ok(cx.step_order(c))).await??;
     Ok(order.order)
 }
@@ -340,8 +345,9 @@ pub async fn review_decide(
     .await?
 }
 
-/// Mark reviewed (Space) and its undo (F-07.2): the step's flag in the session. Returns the plan's
-/// reviewed steps for the steps list checks and the progress segments (F-07.1). No Claude call.
+/// Mark reviewed and its undo (F-07.2): the step's flag in the session, so all its files or none
+/// (F-07.10). Returns the plan's reviewed steps for the steps list checks and the progress
+/// segments (F-07.1). No Claude call.
 #[tauri::command]
 pub async fn review_mark_step(
     review: State<'_, ReviewApp>,
@@ -355,6 +361,36 @@ pub async fn review_mark_step(
     let cx = loaded(&review, &claude, &store, &gitlab, &session).await?;
     with_store(&store, move |c| {
         Ok(progress::mark(c, &cx.session_id, &cx.plan, &step, reviewed))
+    })
+    .await?
+    .map_err(Into::into)
+}
+
+/// A file's Reviewed toggle and Space (F-07.10): marks or unmarks one file of the step; the step
+/// is reviewed when all its files are. Returns the plan's reviewed steps, as `review_mark_step`.
+#[tauri::command]
+#[allow(clippy::too_many_arguments, reason = "Tauri states and IPC arguments")]
+pub async fn review_mark_file(
+    review: State<'_, ReviewApp>,
+    claude: State<'_, ClaudeApp>,
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+    step: String,
+    file: String,
+    reviewed: bool,
+) -> AppResult<Vec<String>> {
+    let cx = loaded(&review, &claude, &store, &gitlab, &session).await?;
+    with_store(&store, move |c| {
+        Ok(progress::mark_file(
+            c,
+            &cx.session_id,
+            &cx.plan,
+            &cx.files,
+            &step,
+            &file,
+            reviewed,
+        ))
     })
     .await?
     .map_err(Into::into)

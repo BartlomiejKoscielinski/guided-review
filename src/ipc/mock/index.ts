@@ -1,5 +1,6 @@
 import type { IpcClient } from '../client';
 import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
+import { createStepRuns } from './analysisStatus';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
@@ -9,7 +10,7 @@ import { createPlanBackend } from './plan';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
-import { createSourcesBackend } from './sources';
+import { createSourcesBackend, mockSessionSource } from './sources';
 import { createStateBackend } from './state';
 import type { Settings } from '../types/Settings';
 import type { UnfinishedSession } from '../types/UnfinishedSession';
@@ -17,6 +18,8 @@ import { health } from './fixtures/app';
 import defaultSettings from './fixtures/default-settings.json';
 import { unfinishedSessions } from './fixtures/sessions';
 import { restoreRoute } from './route-restore';
+import { openedSessions } from './unfinished';
+import { BRANCH } from './fixtures/changes';
 
 export { MOCK_SESSION_DATA_KEY } from './session-data';
 
@@ -67,7 +70,12 @@ function loadSettings(storage: MockOptions['storage']): Settings {
   const saved = storage?.getItem(MOCK_SETTINGS_KEY);
   if (!saved) return structuredClone(DEFAULT_SETTINGS);
   try {
-    return { ...structuredClone(DEFAULT_SETTINGS), ...(JSON.parse(saved) as Partial<Settings>) };
+    const parsed: unknown = JSON.parse(saved);
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return structuredClone(DEFAULT_SETTINGS);
+    }
+    // Merged like a patch, so settings saved before a key existed get its default.
+    return applySettingsPatch(DEFAULT_SETTINGS, parsed);
   } catch {
     return structuredClone(DEFAULT_SETTINGS);
   }
@@ -129,24 +137,36 @@ export function createMockClient({
   // Review sessions survive a reload like the core's SQLite (F-04.3).
   const data = createSessionData(storage);
   const focusLayout = () => settings.ui.focusLayout;
+  const startIn = () => settings.ui.startIn;
   const sessionExists = (id: string) =>
     sessions.some((s) => s.id === id) || id in data.data.mrs || data.data.local.includes(id);
   const pause = (ms: number) => (latencyMs > 0 ? wait(ms) : Promise.resolve());
   const reviewScenario = loadJson(storage, MOCK_REVIEW_KEY, reviewOption);
+  const runs = createStepRuns();
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
     appSettingsSet: (patch) => respond(setSettings(patch)),
     appStartRoute: () => respond(restoreRoute(settings.ui.lastRoute, sessionExists)),
-    sessionsListUnfinished: () => respond(sessions),
+    // Sessions opened in this mock come first, as the core lists them; then the seeded ones.
+    sessionsListUnfinished: () =>
+      respond([
+        ...openedSessions(data.data, {
+          startIn: startIn(),
+          lastRoute: settings.ui.lastRoute,
+          sourceOf: (id) => mockSessionSource(data.data, repos, id),
+          branch: BRANCH,
+        }),
+        ...sessions,
+      ]),
     ...createChangesBackend(changes, respond, repos),
-    ...createSourcesBackend(respond, repos, data, focusLayout),
-    ...createPrepareBackend(repos, pause, data, focusLayout),
+    ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
+    ...createPrepareBackend(repos, pause, data, focusLayout, startIn),
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
-    ...createReviewBackend(reviewScenario, respond, pause, data),
-    ...createPlanBackend(reviewScenario, respond, pause, data),
-    ...createStateBackend(respond, data, focusLayout),
+    ...createReviewBackend(reviewScenario, respond, pause, data, runs),
+    ...createPlanBackend(reviewScenario, respond, pause, data, runs),
+    ...createStateBackend(respond, data, focusLayout, startIn),
     ...createRiderBackend(riderOption, respond, (path) => setSettings({ rider: { path } })),
     // The browser has no window to move; the mock only tracks the maximized state.
     windowMinimize: () => Promise.resolve(),

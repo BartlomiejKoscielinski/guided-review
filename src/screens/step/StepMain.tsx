@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import { CheckIcon, ChevronRightIcon } from '../../components/icons';
@@ -11,6 +12,8 @@ import type { AskState } from './askState';
 import { pathOf } from './diffPath';
 import { StepFile, type StepFileProps } from './StepFile';
 import { StepNotes } from './StepNotes';
+import type { FileMarks } from './useFileMarks';
+import type { CurrentChange } from './useArrowWalk';
 import styles from './Step.module.css';
 
 export interface StepMainProps {
@@ -32,12 +35,21 @@ export interface StepMainProps {
   /** The step's selected lines with their "Selected lines" group (F-10.1). */
   selected: StepFileProps['selected'];
   onPickLine: NonNullable<StepFileProps['onPickLine']>;
+  /** The step's line comments and the open composer (F-09.7). */
+  comments: StepFileProps['comments'];
+  /** The change the arrow keys made current (F-30.6). */
+  current?: CurrentChange | null;
+  /** A note N picked: its card comes into view once per `nonce` (F-30.6). */
+  noteReveal?: { id: string; nonce: number } | null;
+  /** The step's file marks: each file header's Reviewed toggle (F-07.10). */
+  marks?: FileMarks;
 }
 
 /**
  * The step in the main column (F-07.2): "STEP n OF m", title, description, Mark reviewed and
- * next (layout A; B has its toolbar, C its guide panel); the notes state while there are no cards;
- * the step's files. The diff is there before Claude's notes.
+ * next (layout A; B has its toolbar, C its guide panel); on the last step next opens S-05 (F-30.3,
+ * M4 decision 11). The notes state while there are no cards; the step's files. The diff is there
+ * before Claude's notes.
  */
 export function StepMain({
   sessionId,
@@ -55,19 +67,26 @@ export function StepMain({
   onAsk,
   selected,
   onPickLine,
+  comments,
+  current,
+  noteReveal,
+  marks,
 }: StepMainProps) {
   const findings = analysis?.findings ?? [];
   const next = view.next;
+  const finishReview = useFinishReview();
   const guide = layout === 'C';
   const answerNode =
     ask && !guide ? (
       <AnswerCard
         key={ask.nonce}
+        nonce={ask.nonce}
         sessionId={sessionId}
         stepId={stepId}
         selection={ask.selection}
         selfReview={selfReview}
         autoFocus={ask.focusInput}
+        focus={ask.focus}
       />
     ) : null;
 
@@ -97,9 +116,9 @@ export function StepMain({
                 type="button"
                 className={styles.next}
                 aria-label="Next step"
-                disabled={next === undefined}
                 onClick={() => {
                   if (next !== undefined) onGo(next);
+                  else finishReview();
                 }}
               >
                 <ChevronRightIcon size={16} strokeWidth={2.2} />
@@ -137,11 +156,28 @@ export function StepMain({
             guide={guide}
             answer={
               sel && answerNode
-                ? { file: sel.file, side: sel.side, line: sel.end, node: answerNode }
+                ? {
+                    file: sel.file,
+                    side: sel.side,
+                    line: sel.end,
+                    node: answerNode,
+                    reveal: ask.focus,
+                  }
                 : undefined
             }
             selected={selected}
             onPickLine={onPickLine}
+            comments={comments}
+            current={current?.file === path ? current : undefined}
+            revealFocus={noteReveal?.id === focused ? noteReveal.nonce : undefined}
+            reviewed={marks?.isReviewed(path)}
+            onReviewed={
+              marks
+                ? () => {
+                    marks.toggle(path);
+                  }
+                : undefined
+            }
           />
         );
       })}

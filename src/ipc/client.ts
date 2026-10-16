@@ -1,5 +1,6 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
+import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
@@ -9,6 +10,7 @@ import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
 import type { Layout } from './types/Layout';
+import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { PlanView } from './types/PlanView';
@@ -160,10 +162,25 @@ export interface IpcClient {
     decision: FindingDecision,
   ): Promise<DecisionOutcome>;
   /**
-   * Mark reviewed (Space) or its undo (F-07.2); the plan's reviewed steps for the done checks
-   * and progress segments (F-07.1). No Claude.
+   * Mark reviewed or its undo (F-07.2): all the step's files or none (F-07.10); the plan's
+   * reviewed steps for the done checks and progress segments (F-07.1). No Claude.
    */
   reviewMarkStep(sessionId: string, stepId: string, reviewed: boolean): Promise<string[]>;
+  /**
+   * A file's Reviewed toggle or Space (F-07.10): marks or unmarks one file of the step; the step
+   * is reviewed when all its files are. The plan's reviewed steps, as `reviewMarkStep`.
+   */
+  reviewMarkFile(
+    sessionId: string,
+    stepId: string,
+    file: string,
+    reviewed: boolean,
+  ): Promise<string[]>;
+  /**
+   * S-04's footer (F-08.8): the session's steps whose analysis is ready, running now or failed,
+   * in the reader's order, and the code Claude reads. Caches only: no Claude run.
+   */
+  reviewAnalysisStatus(sessionId: string): Promise<AnalysisStatus>;
 
   // S-03 session state (F-04.3): read when S-03 opens, written on change; database only.
   /** The step S-03 was on, the session's layout, scroll per step and checklist ticks. */
@@ -172,6 +189,13 @@ export interface IpcClient {
   sessionSetStep(sessionId: string, stepId: string): Promise<void>;
   /** The layout chosen for the session (F-07.1). */
   sessionSetLayout(sessionId: string, layout: Layout): Promise<void>;
+  /**
+   * The session's mode from the Focus | Detailed toggle or Ctrl+D (F-08.1); Settings › General ›
+   * Start in stays the mode of new sessions (M4 decision 4).
+   */
+  sessionSetMode(sessionId: string, mode: Mode): Promise<void>;
+  /** S-02 showed the session's plan: the S-04 rail's "Change overview" is done (F-08.3). */
+  sessionMarkPlanOpened(sessionId: string): Promise<void>;
   /** Where the step was scrolled, in pixels (written debounced). */
   sessionSetScroll(sessionId: string, stepId: string, top: number): Promise<void>;
   /** The step's ticked "For you to judge" items (F-08.7); an empty list unticks all. */

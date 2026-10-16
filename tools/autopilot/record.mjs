@@ -59,9 +59,16 @@ function sessionSubagents(session) {
 }
 
 const startedAt = flag('started');
+// E22: a test author working ahead started before its item, within the run.
+const runFile = join(root, '.autopilot', 'run.json');
+const runState = existsSync(runFile) ? JSON.parse(readFileSync(runFile, 'utf8')) : null;
 const usage = roleUsage(
   sessionSubagents(flag('session', process.env.CLAUDE_CODE_SESSION_ID ?? null)),
-  { item, since: startedAt },
+  {
+    item,
+    since: startedAt,
+    testsSince: runState?.runId === flag('run') ? (runState.startedAt ?? null) : null,
+  },
 );
 const row = buildRow({
   item,

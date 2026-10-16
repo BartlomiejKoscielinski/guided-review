@@ -342,3 +342,13 @@
 .addRepo {
   align-self: flex-start;
 }
+
+/* General (F-19.1): the mock spaces this section a little tighter and its rows a little wider. */
+.contentGeneral {
+  gap: 36px;
+}
+
+.gridGeneral {
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 18px 24px;
+}

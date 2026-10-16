@@ -16,8 +16,11 @@ import { StepScreen } from './StepScreen';
 
 const SESSION = 'mock-mr-session-1';
 const ignore = () => undefined;
-/** Commands that may run Claude or call GitLab. */
-const WORK = /^(review|gitlab|drafts|claude(?!Status$|Models$))/;
+/**
+ * Commands that may run Claude or call GitLab. Reading the local drafts is neither: S-03 lists the
+ * step's line comments under their lines, also when restored (F-09.7).
+ */
+const WORK = /^(review|gitlab|drafts(?!List$)|claude(?!Status$|Models$))/;
 
 function renderStep(ipc: IpcClient, restored = false) {
   const router = createMemoryRouter(

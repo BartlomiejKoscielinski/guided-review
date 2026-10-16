@@ -18,6 +18,23 @@ pub struct DiffPosition {
     pub line: u32,
 }
 
+/// The number of a diff line on `side`: an added line has none on the old side, a deleted
+/// line none on the new side.
+fn number_on(line: &Line, side: Side) -> Option<u32> {
+    match side {
+        Side::New if line.kind != LineKind::Del => line.new_no,
+        Side::Old if line.kind != LineKind::Add => line.old_no,
+        _ => None,
+    }
+}
+
+impl DiffPosition {
+    /// Whether `line` is this position's line (its file aside).
+    pub fn is_on(&self, line: &Line) -> bool {
+        number_on(line, self.side) == Some(self.line)
+    }
+}
+
 /// Lines `start..=end` of one file, numbered on `side`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -52,14 +69,7 @@ impl LineSelection {
                     .any(|p| *p == self.file)
             })
             .flat_map(|f| f.hunks.iter().flat_map(|h| h.lines.iter()))
-            .filter(|l| {
-                let number = match self.side {
-                    Side::New if l.kind != LineKind::Del => l.new_no,
-                    Side::Old if l.kind != LineKind::Add => l.old_no,
-                    _ => None,
-                };
-                number.is_some_and(|n| (low..=high).contains(&n))
-            })
+            .filter(|l| number_on(l, self.side).is_some_and(|n| (low..=high).contains(&n)))
             .collect()
     }
 }

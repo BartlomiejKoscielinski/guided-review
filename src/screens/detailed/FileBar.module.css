@@ -1,0 +1,92 @@
+/* S-04 file bar (F-08.5, Main.dc.html sticky bar above the diff; docs/03). Colors only from tokens. */
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--panel-2);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 8px 28px;
+}
+
+/* The path takes what the tools leave: its folder shortens first, so the bar stays one row; below
+   about 260px of room the tools go to a row of their own. */
+.file {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 10px;
+  min-width: min(100%, 260px);
+}
+
+.path {
+  display: flex;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* The folder gives way long before the file name does. */
+.dir {
+  flex-shrink: 1000;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.add,
+.del {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.add {
+  color: var(--diff-add-text);
+}
+
+.del {
+  color: var(--diff-del-text);
+}
+
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The group sits darker than the bar (Main.dc.html: #101010 on #1A1A1A). */
+.sticky .layout {
+  background: var(--bg);
+}
+
+/* Ignore whitespace on: the white block of a selected option. */
+.toggle[aria-pressed='true'] {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.alert {
+  margin: 0;
+  padding: 8px 28px;
+  background: var(--orange);
+  color: var(--ink);
+  font-size: 13.5px;
+}

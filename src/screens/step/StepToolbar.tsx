@@ -1,3 +1,4 @@
+import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from '../../components/icons';
 import type { StepView } from '../../ipc/types/StepView';
@@ -13,10 +14,11 @@ export interface StepToolbarProps {
 
 /**
  * Layout B's floating toolbar (F-07.8): previous, "Step 4 of 8", next, Mark reviewed and Ask
- * Claude, centered at the bottom.
+ * Claude, centered at the bottom. On the last step next opens S-05 (F-30.3, M4 decision 11).
  */
 export function StepToolbar({ view, onGo, onToggleReviewed, onAsk }: StepToolbarProps) {
   const { prev, next } = view;
+  const finishReview = useFinishReview();
   return (
     <div role="toolbar" aria-label="Step navigation" className={styles.toolbar}>
       <button
@@ -37,9 +39,9 @@ export function StepToolbar({ view, onGo, onToggleReviewed, onAsk }: StepToolbar
         type="button"
         className={styles.arrow}
         aria-label="Next step"
-        disabled={next === undefined}
         onClick={() => {
           if (next !== undefined) onGo(next);
+          else finishReview();
         }}
       >
         <ChevronRightIcon size={16} strokeWidth={2.2} />

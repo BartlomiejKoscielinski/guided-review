@@ -23,13 +23,21 @@ export function useDrafts(sessionId: string): UseQueryResult<Draft[], IpcError> 
   });
 }
 
-/** A draft from the answer card or a free comment (F-10.3). */
-export function useCreateDraft(): UseMutationResult<Draft, IpcError, NewDraft> {
+/**
+ * A draft from the answer card or a free comment (F-10.3, F-09.7). `onCreated` runs before the
+ * drafts are read again, so a card that shows its own draft can claim it before the list has it.
+ */
+export function useCreateDraft(
+  onCreated?: (draft: Draft) => void,
+): UseMutationResult<Draft, IpcError, NewDraft> {
   const ipc = useIpc();
   const queryClient = useQueryClient();
   return useMutation<Draft, IpcError, NewDraft>({
     mutationFn: (draft) => ipc.draftsCreate(draft),
-    onSuccess: (draft) => queryClient.invalidateQueries({ queryKey: draftsKey(draft.sessionId) }),
+    onSuccess: (draft) => {
+      onCreated?.(draft);
+      return queryClient.invalidateQueries({ queryKey: draftsKey(draft.sessionId) });
+    },
   });
 }
 
@@ -47,7 +55,11 @@ export function useUpdateDraft(): UseMutationResult<Draft, IpcError, UpdateDraft
   });
 }
 
-export function useDeleteDraft(sessionId: string): UseMutationResult<null, IpcError, string> {
+/** Deletes a draft; `onDeleted` runs before the drafts are read again, as `onCreated` does. */
+export function useDeleteDraft(
+  sessionId: string,
+  onDeleted?: (id: string) => void,
+): UseMutationResult<null, IpcError, string> {
   const ipc = useIpc();
   const queryClient = useQueryClient();
   return useMutation<null, IpcError, string>({
@@ -55,6 +67,9 @@ export function useDeleteDraft(sessionId: string): UseMutationResult<null, IpcEr
       await ipc.draftsDelete(id);
       return null;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: draftsKey(sessionId) }),
+    onSuccess: (_, id) => {
+      onDeleted?.(id);
+      return queryClient.invalidateQueries({ queryKey: draftsKey(sessionId) });
+    },
   });
 }

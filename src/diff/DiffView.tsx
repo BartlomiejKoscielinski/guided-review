@@ -1,6 +1,15 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { cx } from '../components/cx';
+import { alignTop, pageThrough, registerPager, rowBox, type Box } from './currentChange';
 import type { FileDiff } from '../ipc/types/FileDiff';
 import type { Hunk } from '../ipc/types/Hunk';
 import type { Line } from '../ipc/types/Line';
@@ -32,6 +41,8 @@ export interface DiffViewProps {
   markers?: ReadonlyMap<string, ReactNode>;
   /** Rows under a line by `lineKey`: note and thread cards (F-07.6). */
   inserts?: ReadonlyMap<string, ReactNode>;
+  /** Line keys (`lineKey`) whose fold opens on its own: line comments (F-09.7). */
+  unfold?: ReadonlySet<string>;
   /** Selected lines of one side, highlighted (F-10.1; split layout). */
   selection?: { side: 'old' | 'new'; start: number; end: number } | null;
   /** A click on a line number: select it, Shift+click extends (F-10.1; split layout). */
@@ -40,6 +51,31 @@ export interface DiffViewProps {
   scrollRoot?: RefObject<HTMLElement | null>;
   /** The +/− column; S-03 has none (Review.dc.html: 48px and 60px gutters, number then code). */
   signs?: boolean;
+  /**
+   * Scrolls to the insert row under the line `at` once per request: each time `nonce` grows past
+   * the last one handled, so the row renders even when it is outside the virtual window (S-04's
+   * callout of a note picked in the Guide aside, F-08.7). An older request shown again (N's note
+   * once the composer opened after it is closed) does not scroll back to it (F-30.6).
+   */
+  reveal?: { at: string; nonce: number };
+  /**
+   * The change (hunk `id`) the arrow keys made current (F-30.6, M4 decisions 14 and 15): its first
+   * row - the hunk header where headers show, a closed fold's row - carries the focus outline and
+   * `aria-current`; each time `nonce` changes it scrolls to the top of the screen (`scroll`
+   * "change", the default), or its file's header does ("file"). The walk pages through it.
+   */
+  current?: DiffCurrent;
+  /** Height of a sticky bar over the diff in `scrollRoot` (S-04's file bar): a hunk scrolled to the top sits under it. */
+  stickyTop?: number;
+}
+
+/** The current change of the walk in this diff (F-30.6). */
+export interface DiffCurrent {
+  /** The hunk's `id`; empty for a file without rows to show (its header is the stop). */
+  hunk: string;
+  nonce: number;
+  /** What scrolls to the top when `nonce` changes: the change (default), its file, or nothing. */
+  scroll?: 'change' | 'file' | 'none';
 }
 
 const LINE = 22;
@@ -68,16 +104,22 @@ export function DiffView({
   folds,
   markers,
   inserts,
+  unfold,
   selection,
   onPickLine,
   scrollRoot,
   signs = true,
+  reveal,
+  current,
+  stickyTop = 0,
 }: DiffViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const tokens = useHighlight(path, diff);
   const [shown, setShown] = useState<ReadonlySet<string>>(() => new Set());
   const insertKeys = [...(inserts?.keys() ?? [])].join(' ');
+  const unfoldKeys = [...(unfold ?? [])].join(' ');
   const rows = useMemo(
     () =>
       buildRows(diff, layout, {
@@ -86,12 +128,12 @@ export function DiffView({
         folds,
         shown,
         inserts: new Set(insertKeys.split(' ')),
+        unfold: new Set(unfoldKeys.split(' ')),
       }),
-    [diff, layout, note, headers, folds, shown, insertKeys],
+    [diff, layout, note, headers, folds, shown, insertKeys, unfoldKeys],
   );
   const margin = useScrollMargin(scrollRoot, listRef);
   // TanStack Virtual returns fresh functions each render; this component isn't memoized.
-  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => (scrollRoot ? scrollRoot.current : scrollRef.current),
@@ -99,7 +141,88 @@ export function DiffView({
     estimateSize: (i) => estimate(rows[i]),
     overscan: 24,
     getItemKey: (i) => rows[i]?.key ?? i,
+    scrollPaddingStart: stickyTop,
   });
+
+  const revealAt = reveal?.at;
+  const revealNonce = reveal?.nonce;
+  const revealed = useRef(-Infinity);
+  useEffect(() => {
+    if (revealAt === undefined || revealNonce === undefined || revealNonce <= revealed.current)
+      return;
+    revealed.current = revealNonce;
+    const index = rows.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' });
+    // Once per request: the rows and the virtualizer change with every scroll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealAt, revealNonce]);
+
+  const currentHunk = current?.hunk;
+  const currentNonce = current?.nonce;
+  const currentScroll = current?.scroll ?? 'change';
+  const hunkRows = (hunk: string | undefined): [number, number] | null => {
+    if (!hunk) return null;
+    const first = rows.findIndex((row) => row.key.startsWith(`${hunk}#`));
+    if (first < 0) return null;
+    return [first, rows.findLastIndex((row) => row.key.startsWith(`${hunk}#`))];
+  };
+  const currentIndex = hunkRows(currentHunk)?.[0] ?? -1;
+  const rootOf = () => (scrollRoot ? scrollRoot.current : scrollRef.current);
+  const boxOf = (index: number): Box | null => {
+    const list = listRef.current;
+    return list
+      ? rowBox(list, virtualizer.measurementsCache, index, virtualizer.options.scrollMargin)
+      : null;
+  };
+  /** The current change on screen, from its first row to its last (notes under it included). */
+  const changeBox = (): Box | null => {
+    const range = hunkRows(currentHunk);
+    const first = range && boxOf(range[0]);
+    const last = range && boxOf(range[1]);
+    return first && last ? { top: first.top, bottom: last.bottom } : null;
+  };
+  /** The current change, or its file's header, to the top of the screen. */
+  const alignCurrent = () => {
+    const root = rootOf();
+    if (!root) return;
+    const box = currentScroll === 'change' && currentIndex >= 0 ? boxOf(currentIndex) : null;
+    if (box) {
+      alignTop(root, stickyTop, box.top);
+      return;
+    }
+    const file = (listRef.current ?? wrapRef.current ?? scrollRef.current)?.closest('section');
+    if (file) alignTop(root, 0, file.getBoundingClientRect().top);
+  };
+  const latest = useRef({ alignCurrent, changeBox, rootOf, stickyTop });
+  useEffect(() => {
+    latest.current = { alignCurrent, changeBox, rootOf, stickyTop };
+  });
+  useEffect(() => {
+    if (currentHunk === undefined || currentScroll === 'none') return undefined;
+    latest.current.alignCurrent();
+    // Rows the virtualizer only estimated are drawn and measured over the next frames: once they
+    // are, the change lands exactly (S-04 under its sticky file bar).
+    let frames = 0;
+    let frame = requestAnimationFrame(function again() {
+      latest.current.alignCurrent();
+      frames += 1;
+      if (frames < 3) frame = requestAnimationFrame(again);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+    // Once per move of the walk, as `reveal`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentHunk, currentNonce]);
+  useEffect(() => {
+    if (!currentHunk) return undefined;
+    return registerPager(path, currentHunk, (direction) => {
+      const { changeBox: box, rootOf: root, stickyTop: sticky } = latest.current;
+      const change = box();
+      const element = root();
+      return change !== null && element !== null && pageThrough(element, sticky, change, direction);
+    });
+  }, [path, currentHunk]);
 
   const hunkDim = useMemo(() => {
     const map = new Map<Hunk, boolean>();
@@ -195,7 +318,8 @@ export function DiffView({
               key={item.key}
               data-index={item.index}
               ref={virtualizer.measureElement}
-              className={styles.row}
+              className={cx(styles.row, item.index === currentIndex && styles.current)}
+              aria-current={item.index === currentIndex ? 'true' : undefined}
               style={{ transform: `translateY(${String(item.start - margin)}px)` }}
             >
               {render(row)}
@@ -205,7 +329,13 @@ export function DiffView({
       </div>
     );
 
-  if (scrollRoot) return <div className={cx(styles.inline, !signs && styles.noSigns)}>{list}</div>;
+  if (scrollRoot) {
+    return (
+      <div ref={wrapRef} className={cx(styles.inline, !signs && styles.noSigns)}>
+        {list}
+      </div>
+    );
+  }
   return (
     <div
       ref={scrollRef}
@@ -219,15 +349,20 @@ export function DiffView({
 
 /**
  * Where the list starts inside an outer scroller, kept up to date as the content above it
- * changes height (notes state, earlier files).
+ * changes height (notes state, earlier files). A column mounted together with its diff (S-04
+ * opened by Ctrl+D with the step already read) attaches its ref after the diff's layout effects,
+ * so the margin is measured again once the column is there.
  */
 function useScrollMargin(
   root: RefObject<HTMLElement | null> | undefined,
   list: RefObject<HTMLDivElement | null>,
 ): number {
   const [margin, setMargin] = useState(0);
+  const [attached, setAttached] = useState(false);
+  const missed = useRef(false);
   useLayoutEffect(() => {
     const outer = root?.current;
+    missed.current = root !== undefined && !outer;
     if (!outer) return;
     const update = () => {
       const el = list.current;
@@ -241,6 +376,9 @@ function useScrollMargin(
     return () => {
       observer.disconnect();
     };
-  }, [root, list]);
+  }, [root, list, attached]);
+  useEffect(() => {
+    if (missed.current && root?.current) setAttached(true);
+  }, [root]);
   return margin;
 }

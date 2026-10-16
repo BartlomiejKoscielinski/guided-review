@@ -32,6 +32,8 @@ export interface RowOptions {
   shown?: ReadonlySet<string>;
   /** Line keys (`lineKey`) with a row of their own under them (note and thread cards). */
   inserts?: ReadonlySet<string>;
+  /** Line keys whose fold opens on its own: a line comment is never hidden in a fold (F-09.7). */
+  unfold?: ReadonlySet<string>;
 }
 
 /** Labels of mechanical hunks (docs/05 › Mechanical hunks). */
@@ -58,20 +60,20 @@ interface Segment {
  * lines become one fold row; inserts follow the line they belong to.
  */
 export function buildRows(diff: FileDiff, layout: DiffLayout, options: RowOptions = {}): DiffRow[] {
-  const { note = false, headers = true, folds = [], shown, inserts } = options;
+  const { note = false, headers = true, folds = [], shown, inserts, unfold } = options;
   const rows: DiffRow[] = [];
   diff.hunks.forEach((hunk, h) => {
     if (hunk.fileLevel) return;
     const segments = segment(hunk, folds);
-    const visible = segments.filter((s) => !s.fold || shown?.has(foldKey(hunk, s)) === true);
-    if (headers && visible.length > 0) {
+    const folded = (s: Segment) =>
+      s.fold !== undefined && shown?.has(foldKey(hunk, s)) !== true && !holds(s, unfold);
+    if (headers && segments.some((s) => !folded(s))) {
       rows.push({ kind: 'hunk', key: `${hunk.id}#h`, hunk, first: h === 0 });
     }
     const hunkRows: DiffRow[] = [];
     for (const s of segments) {
-      const key = foldKey(hunk, s);
-      if (s.fold && shown?.has(key) !== true) {
-        hunkRows.push({ kind: 'fold', key, label: s.fold.label });
+      if (s.fold && folded(s)) {
+        hunkRows.push({ kind: 'fold', key: foldKey(hunk, s), label: s.fold.label });
         continue;
       }
       const lineRows = layout === 'unified' ? unified(hunk, s) : split(hunk, s);
@@ -92,18 +94,28 @@ export function buildRows(diff: FileDiff, layout: DiffLayout, options: RowOption
 
 const foldKey = (hunk: Hunk, s: Segment) => `${hunk.id}#f${String(s.index)}`;
 
+/** A line's keys: its old side unless added, its new side unless deleted. */
+function keysOf(line: Line | undefined): string[] {
+  const keys: string[] = [];
+  if (line?.oldNo !== undefined && line.kind !== 'add') keys.push(lineKey('old', line.oldNo));
+  if (line?.newNo !== undefined) keys.push(lineKey('new', line.newNo));
+  return keys;
+}
+
 function insertKeys(row: DiffRow): string[] {
   const keys: string[] = [];
-  const add = (line: Line | undefined) => {
-    if (line?.oldNo !== undefined && line.kind !== 'add') keys.push(lineKey('old', line.oldNo));
-    if (line?.newNo !== undefined) keys.push(lineKey('new', line.newNo));
-  };
-  if (row.kind === 'line') add(row.line);
+  if (row.kind === 'line') keys.push(...keysOf(row.line));
   if (row.kind === 'pair') {
-    if (row.left !== row.right) add(row.left);
-    add(row.right);
+    if (row.left !== row.right) keys.push(...keysOf(row.left));
+    keys.push(...keysOf(row.right));
   }
   return [...new Set(keys)];
+}
+
+/** The segment has a line with one of `keys`. */
+function holds(s: Segment, keys: ReadonlySet<string> | undefined): boolean {
+  if (!keys || keys.size === 0) return false;
+  return s.lines.some((line) => keysOf(line).some((k) => keys.has(k)));
 }
 
 /**

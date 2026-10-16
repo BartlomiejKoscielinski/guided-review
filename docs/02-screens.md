@@ -113,7 +113,7 @@ Controls whose behaviour belongs to a later milestone are rendered as static pla
   - GitLab: unconfigured state (Server URL, token input, **Check and save**), **Replace token**, **Remove**; repositories with **Add repository**, **Set as default**, **Remove** and the worktree folder per repository (F-19.5, F-19.6). The token is shown only as `glpat-…3f9a`. Status line under the heading: "Signed in as bartek.k on gitlab.local" (green square), "Add your GitLab token" (orange square, no token), the problem's message (orange square, failing check). Expiry reads "expires in N days" / "expires in 1 day" / "expires today" / "expired" / "no expiry". **Replace token** opens the token form with the server filled in and a **Cancel** button. The worktree folder is shown, not edited.
   - Integrations (F-24.4): Rider found → "Found 2026.2" (major.minor of `product-info.json`, green square); not detected → "Not found" (orange square) in the heading and the Path row, with **Change**. "From Rider to this app" and "Code navigation" come with their milestones.
   - Notifications: quiet hours from/to time inputs and a Weekends switch (F-28.5).
-  - Shortcuts: every shortcut of F-30.6, grouped Review · Code · App (F-19.3).
+  - Shortcuts: every shortcut of F-30.6, grouped Review · Code · App (F-19.3); each row's keys can be changed, with **Reset** per changed row and **Reset all** (F-19.7).
 
 ## S-08 Pipeline
 - Mock: `Pipeline.dc.html` · Screens: `S08-pipeline.png`, `S08-pipeline-manual-job.png`, `S08-pipeline-running.png`, `S08-pipeline-old-failed.png`

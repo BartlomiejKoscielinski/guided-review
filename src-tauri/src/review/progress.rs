@@ -1,16 +1,22 @@
-//! Reviewed steps (F-07.1, F-07.2): **Mark reviewed** toggles a step's flag in the session; the
-//! steps list checks and the progress segments show the plan's reviewed steps.
+//! Reviewed steps and files (F-07.1, F-07.2, F-07.10): each file of a step can be marked reviewed
+//! on its own; a step is reviewed when all its files are, and **Mark reviewed** marks all its
+//! files at once (on a reviewed step it unmarks them). The step's flag in `steps_state` is what
+//! the steps list checks and the progress segments count; a step flagged before file marks
+//! existed counts as all its files reviewed.
 
 use rusqlite::Connection;
 
-use super::plan_model::Plan;
+use super::plan_model::{Plan, Step};
 use crate::error::{AppError, ErrorCode};
+use crate::git::model::FileDiff;
 use crate::store::{StoreError, sessions, steps_state};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ProgressError {
     #[error("the step is not in the plan")]
     NotInPlan,
+    #[error("the file is not in the step")]
+    NotInStep,
     #[error(transparent)]
     Store(#[from] StoreError),
 }
@@ -20,6 +26,9 @@ impl From<ProgressError> for AppError {
         match error {
             ProgressError::NotInPlan => {
                 AppError::new(ErrorCode::InvalidInput, "The step is not in the plan.")
+            }
+            ProgressError::NotInStep => {
+                AppError::new(ErrorCode::InvalidInput, "The file is not in the step.")
             }
             ProgressError::Store(e) => e.into(),
         }
@@ -42,8 +51,9 @@ pub fn reviewed_steps(
         .collect())
 }
 
-/// Mark reviewed or its undo (F-07.2); the session counts as used now ("Pick up where you left
-/// off" order). Returns the plan's reviewed steps.
+/// Mark reviewed or its undo (F-07.2, F-07.10): marking flags the step, so all its files count
+/// as reviewed; the undo takes back every file mark of the step. The session counts as used now
+/// ("Pick up where you left off" order). Returns the plan's reviewed steps.
 pub fn mark(
     conn: &Connection,
     session: &str,
@@ -55,6 +65,80 @@ pub fn mark(
         return Err(ProgressError::NotInPlan);
     }
     steps_state::set_reviewed(conn, session, step, reviewed)?;
+    if !reviewed {
+        steps_state::set_files(conn, session, step, &[])?;
+    }
+    sessions::touch(conn, session)?;
+    Ok(reviewed_steps(conn, session, plan)?)
+}
+
+/// The paths of the step's files (new path, else old path), in the diff's order.
+fn step_files(step: &Step, files: &[FileDiff]) -> Vec<String> {
+    files
+        .iter()
+        .filter(|f| f.hunks.iter().any(|h| step.hunk_ids.contains(&h.id)))
+        .filter_map(|f| f.new_path.clone().or_else(|| f.old_path.clone()))
+        .collect()
+}
+
+fn plan_step<'a>(plan: &'a Plan, step: &str) -> Result<&'a Step, ProgressError> {
+    plan.steps
+        .iter()
+        .find(|s| s.id == step)
+        .ok_or(ProgressError::NotInPlan)
+}
+
+/// The step's files marked reviewed (F-07.10), in the diff's order: all of them once the step is
+/// reviewed (also a step marked before file marks existed), else the ones marked on their own.
+pub fn reviewed_files(
+    conn: &Connection,
+    session: &str,
+    plan: &Plan,
+    files: &[FileDiff],
+    step: &str,
+) -> Result<Vec<String>, ProgressError> {
+    let paths = step_files(plan_step(plan, step)?, files);
+    Ok(marked_in(conn, session, step, paths)?)
+}
+
+fn marked_in(
+    conn: &Connection,
+    session: &str,
+    step: &str,
+    paths: Vec<String>,
+) -> Result<Vec<String>, StoreError> {
+    if steps_state::reviewed(conn, session, step)? {
+        return Ok(paths);
+    }
+    let marked = steps_state::files(conn, session, step)?;
+    Ok(paths.into_iter().filter(|p| marked.contains(p)).collect())
+}
+
+/// Marks or unmarks one file of one step (F-07.10; the same file in another step is its own
+/// mark). The step becomes reviewed with its last file and stops being reviewed when a file is
+/// taken back; its other files stay marked. Returns the plan's reviewed steps.
+pub fn mark_file(
+    conn: &Connection,
+    session: &str,
+    plan: &Plan,
+    files: &[FileDiff],
+    step: &str,
+    file: &str,
+    reviewed: bool,
+) -> Result<Vec<String>, ProgressError> {
+    let paths = step_files(plan_step(plan, step)?, files);
+    if !paths.iter().any(|p| p == file) {
+        return Err(ProgressError::NotInStep);
+    }
+    let mut marked = marked_in(conn, session, step, paths.clone())?;
+    marked.retain(|p| p != file);
+    if reviewed {
+        marked.push(file.to_owned());
+    }
+    let all = paths.iter().all(|p| marked.contains(p));
+    let ordered: Vec<String> = paths.into_iter().filter(|p| marked.contains(p)).collect();
+    steps_state::set_files(conn, session, step, &ordered)?;
+    steps_state::set_reviewed(conn, session, step, all)?;
     sessions::touch(conn, session)?;
     Ok(reviewed_steps(conn, session, plan)?)
 }
@@ -134,6 +218,22 @@ mod tests {
                 steps_state::set_reviewed(c, "r1", "s2", true)?;
                 steps_state::set_reviewed(c, "r2", "s1", true)?;
                 assert_eq!(reviewed_steps(c, "r1", &plan(&["s1", "s2"]))?, ["s2"]);
+                Ok(())
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn f07_10_a_file_outside_the_step_is_refused_with_its_message() {
+        let error: AppError = ProgressError::NotInStep.into();
+        assert_eq!(error.code, ErrorCode::InvalidInput);
+        assert_eq!(error.message, "The file is not in the step.");
+        let store = Store::open_in_memory().unwrap();
+        store
+            .with_conn(|c| {
+                let error = mark_file(c, "r1", &plan(&["s1"]), &[], "s1", "a.cs", true);
+                assert!(matches!(error, Err(ProgressError::NotInStep)));
+                assert!(steps_state::files(c, "r1", "s1")?.is_empty());
                 Ok(())
             })
             .unwrap();

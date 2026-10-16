@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import type { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { PlanView } from '../types/PlanView';
 import type { ResumedSession } from '../types/ResumedSession';
 import type { SessionState } from '../types/SessionState';
@@ -29,8 +30,12 @@ export function useSessionState(sessionId: string): UseQueryResult<SessionState,
 export interface SessionStateWriter {
   setStep: (stepId: string) => void;
   setLayout: (layout: Layout) => void;
+  /** The session's mode (F-08.1); Settings › General › Start in is left alone. */
+  setMode: (mode: Mode) => void;
   setScroll: (stepId: string, top: number) => void;
   setChecklist: (stepId: string, ticked: string[]) => void;
+  /** S-02 showed the plan: the S-04 rail's "Change overview" is done (F-08.3). */
+  markPlanOpened: () => void;
 }
 
 /**
@@ -58,6 +63,10 @@ export function useSessionStateWriter(sessionId: string): SessionStateWriter {
         update((s) => ({ ...s, layout }));
         ipc.sessionSetLayout(sessionId, layout).catch(report('layout'));
       },
+      setMode: (mode) => {
+        update((s) => ({ ...s, mode }));
+        ipc.sessionSetMode(sessionId, mode).catch(report('mode'));
+      },
       setScroll: (stepId, top) => {
         const px = Math.max(0, Math.round(top));
         update((s) => ({ ...s, scroll: { ...s.scroll, [stepId]: px } }));
@@ -66,6 +75,10 @@ export function useSessionStateWriter(sessionId: string): SessionStateWriter {
       setChecklist: (stepId, ticked) => {
         update((s) => ({ ...s, checklist: { ...s.checklist, [stepId]: ticked } }));
         ipc.sessionSetChecklist(sessionId, stepId, ticked).catch(report('checklist'));
+      },
+      markPlanOpened: () => {
+        update((s) => ({ ...s, planOpened: true }));
+        ipc.sessionMarkPlanOpened(sessionId).catch(report('opened plan'));
       },
     };
   }, [ipc, queryClient, sessionId]);

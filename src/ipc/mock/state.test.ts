@@ -48,15 +48,22 @@ describe('mock session state (F-04.3)', () => {
     expect(await after.sessionState(session)).toEqual({
       currentStep: 's4',
       layout: 'B',
+      // Opened in ui.startIn (Focus by default); the mode was never toggled.
+      mode: 'focus',
       scroll: { s2: 300, s4: 245 },
       checklist: { s4: ['Is the retry copy right?'] },
+      planOpened: false,
+      reviewedFiles: {},
     });
     // Opened in the layout of the setting at the time, nothing kept yet.
     expect(await after.sessionState(other)).toEqual({
       currentStep: null,
       layout: 'C',
+      mode: 'focus',
       scroll: {},
       checklist: {},
+      planOpened: false,
+      reviewedFiles: {},
     });
   });
 
@@ -104,5 +111,42 @@ describe('mock session state (F-04.3)', () => {
     const unread = await start(storage).sessionResume(session);
     expect(unread?.step.step.id).toBe('s2');
     expect(unread?.findings).toBeNull();
+  });
+});
+
+describe('mock session mode (F-08.1)', () => {
+  it('F-08.1 the mode toggle is kept per session across a restart', async () => {
+    const storage = memoryStorage();
+    const before = start(storage);
+    await before.appSettingsSet({ ui: { startIn: 'focus' } });
+    const session = await openMr(before);
+    const other = await openMr(before);
+    expect((await before.sessionState(session)).mode).toBe('focus');
+    await before.sessionSetMode(session, 'detailed');
+    await before.sessionSetMode(other, 'detailed');
+    // The last choice wins.
+    await before.sessionSetMode(other, 'focus');
+
+    const after = start(storage);
+    expect((await after.sessionState(session)).mode).toBe('detailed');
+    expect((await after.sessionState(other)).mode).toBe('focus');
+  });
+
+  it('F-08.1 the toggle leaves Start in; Start in is the mode of new sessions only', async () => {
+    const storage = memoryStorage();
+    const ipc = start(storage);
+    await ipc.appSettingsSet({ ui: { startIn: 'focus' } });
+    const session = await openMr(ipc);
+    await ipc.sessionSetMode(session, 'detailed');
+    expect((await ipc.appSettingsGet()).ui.startIn).toBe('focus');
+
+    await ipc.appSettingsSet({ ui: { startIn: 'detailed' } });
+    const later = await openMr(ipc);
+    const focusOne = await openMr(ipc);
+    await ipc.sessionSetMode(focusOne, 'focus');
+    expect((await ipc.sessionState(later)).mode).toBe('detailed');
+    expect((await ipc.sessionState(focusOne)).mode).toBe('focus');
+    expect((await ipc.sessionState(session)).mode).toBe('detailed');
+    expect((await ipc.appSettingsGet()).ui.startIn).toBe('detailed');
   });
 });

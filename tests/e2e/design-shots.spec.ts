@@ -17,6 +17,10 @@ interface Shot {
   review?: Record<string, unknown>;
   /** Steps marked reviewed per session id, as the mock draws them (S-03's done checks). */
   reviewed?: Record<string, string[]>;
+  /** Drafts the mock keeps (the S-04 rail's per-step counts, F-08.3). */
+  drafts?: Record<string, unknown>[];
+  /** Steps in Claude's cache as `session\0step` (the S-04 footer's ready steps, F-08.8). */
+  analyzed?: string[];
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -71,6 +75,23 @@ async function step4(page: Page, layout: 'A' | 'B' | 'C') {
 
 /** Review.dc.html is on step 4 with steps 1 to 3 done; !482 is the first MR session of an empty mock. */
 const MR_482_REVIEWED = { 'mock-mr-session-1': ['s1', 's2', 's3'] };
+
+/** Main.dc.html's rail: one draft on step 2 and one on step 3 (F-08.3). */
+const MR_482_DRAFTS = [
+  ['s2', 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs', 3],
+  ['s3', 'src/Mobile.Infrastructure/Uploads/UploadWorker.cs', 2],
+].map(([stepId, file, line], i) => ({
+  id: `mock-draft-${String(i + 1)}`,
+  sessionId: 'mock-mr-session-1',
+  findingId: null,
+  body: 'A comment on this line.',
+  position: { file, side: 'new', line },
+  severity: null,
+  include: true,
+  publishedNoteId: null,
+  error: null,
+  stepId,
+}));
 
 /** The first local session of an empty mock, with all 8 steps marked reviewed (SummaryDesk.dc.html). */
 const LOCAL_ALL_REVIEWED = { 'mock-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'] };
@@ -198,7 +219,17 @@ const SHOTS: Shot[] = [
       await page.getByText('2 unresolved threads from reviewers').waitFor();
     },
   },
-  { screen: 'S07', state: 'settings-general', lastRoute: { screen: 'S-07', section: 'general' } },
+  {
+    screen: 'S07',
+    state: 'settings-general',
+    lastRoute: { screen: 'S-07', section: 'general' },
+    // Settings.dc.html shows Start with Windows on (its default is off: F-19.1).
+    prepare: async (page) => {
+      const startWithWindows = page.getByRole('switch', { name: 'Start with Windows' });
+      await startWithWindows.click();
+      await page.locator('[role=switch][aria-checked=true]').waitFor();
+    },
+  },
   {
     screen: 'S07',
     state: 'settings-claude',
@@ -224,6 +255,14 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    screen: 'S07',
+    state: 'settings-shortcuts',
+    lastRoute: { screen: 'S-07', section: 'shortcuts' },
+    prepare: async (page) => {
+      await page.getByText('All shortcuts', { exact: true }).waitFor();
+    },
+  },
+  {
     screen: 'S03',
     state: 'focus-layout-A',
     lastRoute: { screen: 'S-01' },
@@ -243,6 +282,31 @@ const SHOTS: Shot[] = [
     lastRoute: { screen: 'S-01' },
     reviewed: MR_482_REVIEWED,
     prepare: (page) => step4(page, 'C'),
+  },
+  {
+    screen: 'S04',
+    state: 'detailed',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_REVIEWED,
+    drafts: MR_482_DRAFTS,
+    // Main.dc.html's footer: "Claude: steps 5–6 ready" (the mock runs no step for "analyzing 7").
+    analyzed: ['mock-mr-session-1\0s5', 'mock-mr-session-1\0s6'],
+    prepare: async (page) => {
+      await step4(page, 'A');
+      await page.keyboard.press('Control+d');
+      await page.getByText('Claude · step 4').waitFor();
+      await page.getByText('Claude: steps 5–6 ready', { exact: true }).waitFor();
+      // Main.dc.html ends the main column with the end-of-step card (F-08.9).
+      await page.getByText('End of step 4', { exact: true }).waitFor();
+      // Main.dc.html opens with the first "For you to judge" check ticked (1/3).
+      await page
+        .getByRole('checkbox', {
+          name: 'Matches the MR description: the photo is saved even without network',
+        })
+        .check();
+      // The Mode toggle's fill slides over; shoot it where it ends.
+      await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+    },
   },
   {
     screen: 'S05',
@@ -285,10 +349,18 @@ const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
 
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
-    await page.addInitScript(({ lastRoute, sessions, review, reviewed }) => {
+    await page.addInitScript(({ lastRoute, sessions, review, reviewed, drafts, analyzed }) => {
       if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
-      if (reviewed) {
-        localStorage.setItem('guided-review.mock.sessionData', JSON.stringify({ marks: reviewed }));
+      if (reviewed || drafts || analyzed) {
+        localStorage.setItem(
+          'guided-review.mock.sessionData',
+          JSON.stringify({
+            marks: reviewed ?? {},
+            drafts: drafts ?? [],
+            nextDraft: (drafts?.length ?? 0) + 1,
+            analyzed: analyzed ?? [],
+          }),
+        );
       }
       if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
       localStorage.setItem(

@@ -20,7 +20,7 @@ import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildRow, judge, roleUsage, summary } from './autopilot/items-lib.mjs';
+import { buildRow, judge, judgeRun, pace, roleUsage, summary } from './autopilot/items-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -222,6 +222,74 @@ test('autopilot metrics: judge waits for k rows, keeps or reverts by direction',
   assert.throws(() => judge(before, { since: 'x', metric: 'nope' }), /metric/);
   assert.equal(summary([...before, ...cheaper]).tokens, 90);
   assert.equal(summary([...before, row('2026-10-09', { run: 'ap-2' })], 'ap-2').items, 1);
+});
+
+test('autopilot metrics E22: pace = run time per finished criterion; accepted test disputes', () => {
+  const rows = [
+    row('2026-10-15T10:30:00.000Z', { item: 'F-08.1', wallMin: 30, testDispute: 'accept' }),
+    row('2026-10-15T11:00:00.000Z', { item: 'F-08.2', wallMin: 20, result: 'blocked' }),
+    row('2026-10-15T11:20:00.000Z', { item: 'F-08.3', wallMin: 15, result: 'live' }),
+    row('2026-10-15T11:00:00.000Z', { item: 'F-09.1', wallMin: 5, run: 'ap-2' }),
+  ];
+  const run = summary(rows, 'ap-1');
+  assert.equal(run.pace, 40, '10:00 to 11:20 over F-08.1 and F-08.3');
+  assert.equal(run.disputes, 1 / 3);
+  assert.equal(summary(rows).pace, undefined, 'only per run');
+  assert.equal(pace([row('2026-10-15T10:00:00.000Z', { result: 'blocked', wallMin: 5 })]), null);
+});
+
+test('autopilot metrics E22: a test author working ahead counts for its item', () => {
+  const since = '2026-10-14T10:00:00.000Z';
+  const at = (min) => Date.parse(since) + min * 60_000;
+  const subagents = [
+    { description: 'ap tests F-07.3', start: at(-20), totals: usageOf(1, 100, 10, 2) },
+    { description: 'ap implement F-07.3', start: at(-25), totals: usageOf(9, 900, 90, 9) },
+    { description: 'ap implement F-07.3', start: at(5), totals: usageOf(2, 300, 20, 5) },
+  ];
+  const testsSince = new Date(at(-60)).toISOString();
+  const u = roleUsage(subagents, { item: 'F-07.3', since, testsSince });
+  assert.deepEqual(u.tokens, { total: 440, tests: 113, impl: 327 });
+  assert.deepEqual(roleUsage(subagents, { item: 'F-07.3', since }).tokens, {
+    total: 327,
+    impl: 327,
+  });
+});
+
+test('autopilot metrics E22: the run verdict needs nobody: keep, revert or wait', () => {
+  const withTests = { tokens: { total: 1, tests: 1 } };
+  const before = [
+    row('2026-10-15T10:45:00.000Z', { run: 'ap-0', item: 'F-1', wallMin: 45, ...withTests }),
+    row('2026-10-15T11:30:00.000Z', {
+      run: 'ap-0',
+      item: 'F-2',
+      wallMin: 45,
+      testDispute: 'accept',
+    }),
+    row('2026-10-15T12:15:00.000Z', { run: 'ap-0', item: 'F-3', wallMin: 45, ...withTests }),
+  ];
+  const trial = (last = {}) => [
+    row('2026-10-16T10:30:00.000Z', { item: 'F-4', wallMin: 30, ...withTests }),
+    row('2026-10-16T11:00:00.000Z', { item: 'F-5', wallMin: 25, ...withTests }),
+    row('2026-10-16T11:30:00.000Z', { item: 'F-6', wallMin: 25, ...withTests, ...last }),
+  ];
+  const verdict = (rows) =>
+    judgeRun([...before, ...rows], { run: 'ap-1', against: 'ap-0', paceBelow: 40 });
+  const keep = verdict(trial());
+  assert.equal(keep.verdict, 'keep', keep.reasons.join('; '));
+  assert.deepEqual([keep.pace, keep.before.pace, keep.finished], [30, 45, 3]);
+  assert.match(verdict(trial({ gateFirstPass: false })).reasons.join(), /gate first pass/);
+  assert.equal(
+    verdict(trial({ testDispute: 'accept', ts: '2026-10-16T11:30:00.000Z' })).verdict,
+    'keep',
+  );
+  const disputed = trial({ testDispute: 'accept' }).map((r) => ({ ...r, testDispute: 'accept' }));
+  assert.match(verdict(disputed).reasons.join(), /accepted test disputes 1 > /);
+  const slow = verdict(trial({ ts: '2026-10-16T12:00:00.000Z' }));
+  assert.equal(slow.verdict, 'revert');
+  assert.match(slow.reasons.join(), /pace 40 min is not below 40/);
+  assert.match(verdict(trial({ tokens: { total: 1 } })).reasons.join(), /earlier run: F-6/);
+  assert.equal(verdict(trial().slice(0, 2)).verdict, 'wait');
+  assert.throws(() => judgeRun(trial(), { run: 'ap-1', against: 'ap-9', paceBelow: 40 }), /ap-9/);
 });
 
 test('autopilot metrics: the first gate call decides first pass; record.mjs takes the live result', () => {

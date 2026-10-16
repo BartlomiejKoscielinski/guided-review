@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from 'react-router';
 import type { StartState } from '../../app/router';
-import { pathFor } from '../../app/routes';
+import { pathFor, stepScreen } from '../../app/routes';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon } from '../../components/icons';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
-import { useResume } from '../../ipc/hooks/useSessionState';
+import { useResume, useSessionState } from '../../ipc/hooks/useSessionState';
 import { useStepProgress } from '../step/useStepProgress';
 import { checklistText, progressLine } from './checklist';
 import { CopyChecklist } from './CopyChecklist';
@@ -23,6 +23,8 @@ export interface SelfReviewSummaryProps {
 export function SelfReviewSummary({ sessionId }: SelfReviewSummaryProps) {
   const navigate = useNavigate();
   const drafts = useDrafts(sessionId);
+  // Back to step review in the session's mode (F-08.1).
+  const mode = useSessionState(sessionId).data?.mode;
   // Restored on start the plan isn't cached yet: the stored one, reviewed marks included, is put
   // where the progress reads it, from stored data only, as S-03 does (F-30.4).
   const restored = (useLocation().state as StartState | null)?.restored === true;
@@ -46,7 +48,7 @@ export function SelfReviewSummary({ sessionId }: SelfReviewSummaryProps) {
             size={38}
             className={styles.back}
             onClick={() => {
-              void navigate(pathFor({ screen: 'S-03', sessionId }));
+              void navigate(pathFor({ screen: stepScreen(mode), sessionId }));
             }}
           >
             <ChevronLeftIcon size={14} strokeWidth={2.4} />

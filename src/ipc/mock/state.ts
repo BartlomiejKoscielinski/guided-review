@@ -1,9 +1,11 @@
 import type { IpcClient } from '../client';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { ResumedSession } from '../types/ResumedSession';
 import type { SessionState } from '../types/SessionState';
 import { mockPlan } from './fixtures/plan';
 import { mockStepView } from './fixtures/step';
+import { reviewedFilesOf } from './fileMarks';
 import { plannedView } from './plan';
 import { cachedFindings } from './review';
 import { stateOf, type MockSessionData } from './session-data';
@@ -13,6 +15,8 @@ type StateClient = Pick<
   | 'sessionState'
   | 'sessionSetStep'
   | 'sessionSetLayout'
+  | 'sessionSetMode'
+  | 'sessionMarkPlanOpened'
   | 'sessionSetScroll'
   | 'sessionSetChecklist'
   | 'sessionResume'
@@ -20,15 +24,17 @@ type StateClient = Pick<
 
 /**
  * What S-03 keeps of a session in the mock backend (F-04.3): the current step, the layout, the
- * scroll position per step and the checklist ticks, kept in `store` like the core keeps them in
- * SQLite. Any session ID has a state (every session of the mock has !482's plan); one that was
- * never opened reads in the layout `ui.focusLayout` names. `sessionResume` is S-03 restored on
- * start: stored data only, the step without threads, the notes only when analyzed (F-30.4).
+ * mode (F-08.1), whether S-02 showed the plan (F-08.3), the scroll position per step and the
+ * checklist ticks, kept in `store` like the core keeps them in SQLite. Any session ID has a state
+ * (every session of the mock has !482's plan); one that was never opened reads in the layout
+ * `ui.focusLayout` and the mode `ui.startIn` name. `sessionResume` is S-03 restored on start:
+ * stored data only, the step without threads, the notes only when analyzed (F-30.4).
  */
 export function createStateBackend(
   respond: <T>(value: T) => Promise<T>,
   store: MockSessionData,
   focusLayout: () => Layout,
+  startIn: () => Mode,
 ): StateClient {
   const { data } = store;
   const write = (apply: () => void): Promise<void> => {
@@ -43,10 +49,13 @@ export function createStateBackend(
       const state: SessionState = {
         currentStep: stored?.currentStep ?? null,
         layout: stored?.layout ?? focusLayout(),
+        mode: stored?.mode ?? startIn(),
         scroll: { ...stored?.scroll },
         checklist: Object.fromEntries(
           Object.entries(stored?.checklist ?? {}).filter(([, ticked]) => ticked.length > 0),
         ),
+        planOpened: stored?.planOpened === true,
+        reviewedFiles: reviewedFilesOf(data, sessionId),
       };
       return respond(state);
     },
@@ -57,6 +66,14 @@ export function createStateBackend(
     sessionSetLayout: (sessionId, layout) =>
       write(() => {
         stateOf(data, sessionId).layout = layout;
+      }),
+    sessionSetMode: (sessionId, mode) =>
+      write(() => {
+        stateOf(data, sessionId).mode = mode;
+      }),
+    sessionMarkPlanOpened: (sessionId) =>
+      write(() => {
+        stateOf(data, sessionId).planOpened = true;
       }),
     sessionSetScroll: (sessionId, stepId, top) =>
       write(() => {

@@ -1,12 +1,12 @@
-import { useCallback, useEffect } from 'react';
-import { isMarkReviewedShortcut, isTypingOrControl } from '../../app/keyboard';
-import { useMarkStep } from '../../ipc/hooks/usePlan';
+import { useCallback } from 'react';
+import { useMarkStep } from '../../ipc/hooks/useMarks';
 
 /**
- * Mark reviewed and its undo on the step S-03 shows (F-07.2): what the button does in each layout
- * (A's header, B's toolbar, C's guide panel) and Space. In a field or on a control Space keeps its
- * own meaning (typing, pressing what has the focus); elsewhere it toggles the mark and doesn't
- * scroll the page. Until the step is there (`reviewed` undefined) there is nothing to mark.
+ * Mark reviewed and its undo on the step S-03 or S-04 shows (F-07.2): what the button does in
+ * each layout (A's header, B's toolbar, C's guide panel, S-04's step header). On a step that is
+ * not reviewed it marks all its files, on a reviewed one it takes them all back (F-07.10); Space
+ * is the current file's (`useFileMarks`). Until the step is there (`reviewed` undefined) there is
+ * nothing to mark.
  */
 export function useMarkReviewed(
   sessionId: string,
@@ -14,22 +14,7 @@ export function useMarkReviewed(
   reviewed: boolean | undefined,
 ): () => void {
   const { mutate } = useMarkStep(sessionId);
-  const toggle = useCallback(() => {
+  return useCallback(() => {
     if (reviewed !== undefined) mutate({ stepId, reviewed: !reviewed });
   }, [mutate, stepId, reviewed]);
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (!isMarkReviewedShortcut(event) || event.defaultPrevented) return;
-      if (isTypingOrControl(event.target)) return;
-      event.preventDefault();
-      if (!event.repeat) toggle();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [toggle]);
-
-  return toggle;
 }

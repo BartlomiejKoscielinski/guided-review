@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { isTypingOrControl } from '../../app/keyboard';
-import { pathFor } from '../../app/routes';
+import { pathFor, stepScreen } from '../../app/routes';
+import { isShortcutKey } from '../../app/shortcuts';
 import { Button } from '../../components/Button';
 import { usePlan, useReorderSteps, useSetStrategy } from '../../ipc/hooks/usePlan';
-import { useCommitInfo } from '../../ipc/hooks/useChanges';
+import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
 import { useStepFindings } from '../../ipc/hooks/useReview';
-import { useSessionMr, useSessionSource } from '../../ipc/hooks/useSources';
 import { browseFilter } from '../changes/browseFilter';
 import { FallbackBanner } from './FallbackBanner';
 import { MrMetaLine } from './MrMetaLine';
@@ -16,6 +16,7 @@ import { PlanIntent } from './PlanIntent';
 import { PlanList } from './PlanList';
 import { SourceMetaLine } from './SourceMetaLine';
 import { claimsHeading, sourceTitle } from './sourceText';
+import { useSessionHeader } from './useSessionHeader';
 import styles from './Plan.module.css';
 
 export interface PlanPreparedProps {
@@ -30,13 +31,7 @@ export interface PlanPreparedProps {
  */
 export function PlanPrepared({ sessionId }: PlanPreparedProps) {
   const navigate = useNavigate();
-  const session = useSessionMr(sessionId);
-  const source = useSessionSource(sessionId, session.data === null);
-  const single = source.data?.kind === 'commits' && source.data.from === undefined;
-  const commit = useCommitInfo(
-    source.data?.kind === 'commits' ? source.data.to : undefined,
-    single,
-  );
+  const { session, source, single, commit } = useSessionHeader(sessionId);
   const { query: plan } = usePlan(sessionId);
   const setStrategy = useSetStrategy(sessionId);
   const reorder = useReorderSteps(sessionId);
@@ -45,19 +40,28 @@ export function PlanPrepared({ sessionId }: PlanPreparedProps) {
   const firstStep = view && !fallback ? (view.order.order[0] ?? '') : '';
   useStepFindings(sessionId, firstStep);
   const canStart = Boolean(view);
-  // Step 1 even when the session was on another step before (S-03 opens there otherwise).
+  // Step 1 even when the session was on another step before (S-03 opens there otherwise), in
+  // the session's mode (F-08.1, M4 decision 4).
   const stepOne = view?.order.order[0];
-  const startPath = `${pathFor({ screen: 'S-03', sessionId })}${
+  const state = useSessionState(sessionId);
+  const mode = state.data?.mode;
+  const startPath = `${pathFor({ screen: stepScreen(mode), sessionId })}${
     stepOne === undefined ? '' : `?step=${encodeURIComponent(stepOne)}`
   }`;
 
-  // Enter outside controls and fields starts step 1 (F-06.11).
+  // The plan is on screen: the S-04 rail's "Change overview" is done from now on (F-08.3).
+  const { markPlanOpened } = useSessionStateWriter(sessionId);
+  const unmarked = state.data ? !state.data.planOpened : state.isError;
+  useEffect(() => {
+    if (view !== undefined && unmarked) markPlanOpened();
+  }, [view, unmarked, markPlanOpened]);
+
+  // Enter (the table's Primary action) outside controls and fields starts step 1 (F-06.11, F-30.6).
   useEffect(() => {
     if (!canStart) return undefined;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Enter' || event.defaultPrevented || isTypingOrControl(event.target))
-        return;
-      if (event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return;
+      if (!isShortcutKey(event, 'primary') || event.defaultPrevented) return;
+      if (isTypingOrControl(event.target)) return;
       event.preventDefault();
       void navigate(startPath);
     };

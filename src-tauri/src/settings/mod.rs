@@ -3,6 +3,8 @@
 //! The UI reads the whole struct and writes partial patches; `store::settings` keeps one row
 //! per key (`ui.startIn`, `claude.tasks.plan`, …) with a JSON value.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use ts_rs::TS;
@@ -43,6 +45,10 @@ pub struct UiSettings {
     pub diff_colors: DiffColors,
     /// F-30.4: the screen to restore on start.
     pub last_route: Route,
+    /// F-19.7: the shortcuts the user changed, action id (`nextNote`) → keys (`["Ctrl", "J"]`);
+    /// only the changed ones, so later default keys still reach the user. The UI owns the action
+    /// ids and ignores ones it doesn't have.
+    pub shortcuts: BTreeMap<String, Vec<String>>,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -188,7 +194,7 @@ impl Default for QuietSettings {
 const POLL_MINUTES: [u8; 5] = [1, 3, 5, 10, 15];
 
 /// Keys whose value is a JSON object stored in one row; the patch replaces them whole.
-pub(crate) const REPLACED_WHOLE: [&str; 1] = ["ui.lastRoute"];
+pub(crate) const REPLACED_WHOLE: [&str; 2] = ["ui.lastRoute", "ui.shortcuts"];
 
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum SettingsError {
@@ -240,6 +246,14 @@ impl Settings {
             .is_some_and(|id| id.trim().is_empty())
         {
             return invalid("The last screen has no session.");
+        }
+        if self
+            .ui
+            .shortcuts
+            .values()
+            .any(|keys| keys.is_empty() || keys.iter().any(|key| key.trim().is_empty()))
+        {
+            return invalid("A shortcut needs at least one key.");
         }
         Ok(())
     }

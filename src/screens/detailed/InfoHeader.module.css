@@ -1,0 +1,97 @@
+/* S-04 info header (F-08.2, Main.dc.html's header; docs/03). Colors only from tokens. */
+.info {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  min-height: 38px;
+  padding: 9px 20px;
+  background: var(--panel);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.branch {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--green);
+  padding: 2px 8px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* The diff palette of Settings › General › Diff colors, as in the mock. */
+.add {
+  color: var(--diff-add-text);
+}
+
+.del {
+  color: var(--diff-del-text);
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.segments {
+  display: flex;
+  gap: 3px;
+}
+
+.value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pipeline {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.pipeline:hover {
+  color: var(--text);
+}
+
+.pipeSquare {
+  width: 9px;
+  height: 9px;
+  background: var(--ring-2);
+}
+
+.square-passed {
+  background: var(--green);
+}
+.square-failed {
+  background: var(--orange);
+}
+.square-running {
+  background: var(--blue);
+}
+
+.pipeState {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.state-passed {
+  color: var(--green);
+}
+.state-failed {
+  color: var(--orange-text);
+}
+.state-running {
+  color: var(--blue-text);
+}

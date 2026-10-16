@@ -1,37 +1,6 @@
 {
-  "items": 19,
+  "items": 36,
   "entries": [
-    {
-      "id": "P-001",
-      "tags": [
-        "mixed",
-        "implement",
-        "src/ipc/mock/**"
-      ],
-      "text": "Keep per-head flags such as planReady equal across mock rows that share a headSha, even where the design mock omits the note on one tab, because the core derives them per head; the review flagged one headSha with planReady true on one tab and false on the other.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T08:53:29.473Z",
-      "lastUsedItem": 0,
-      "source": "F-02.5"
-    },
-    {
-      "id": "P-002",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**",
-        "src/ipc/mock/**"
-      ],
-      "text": "Before moving a suffix or other text out of a mock note into a UI helper, grep existing tests for the full old row string, since the F-02.2 mock assertion had to change when the suffix moved.",
-      "helpful": 1,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T08:53:29.521Z",
-      "lastUsedItem": 0,
-      "source": "F-02.5"
-    },
     {
       "id": "P-003",
       "tags": [
@@ -41,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 8,
+      "helpful": 20,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -51,51 +20,21 @@
       "promotedTo": "tests"
     },
     {
-      "id": "P-004",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/store/**"
-      ],
-      "text": "Derive every count a card shows from the validated plan the screen uses (after coverage enforcement adds the Other step and drops duplicates), never from the raw cached model output.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T10:02:39.282Z",
-      "lastUsedItem": 1,
-      "source": "F-04.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
       "id": "P-005",
       "tags": [
         "core",
         "tests",
-        "src-tauri/src/store/**"
+        "src-tauri/src/store/**",
+        "src-tauri/src/review/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
       "helpful": 6,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T10:02:39.330Z",
       "lastUsedItem": 1,
       "source": "F-04.1",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-006",
-      "tags": [
-        "ui",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "Before locking an e2e order or position assertion, check the mock's CSS layout (grid auto-fit puts cards side by side, not stacked), since a stacked-order assumption cost a test dispute and a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T10:02:39.379Z",
-      "lastUsedItem": 1,
-      "source": "F-04.1"
     },
     {
       "id": "P-007",
@@ -103,15 +42,19 @@
         "mixed",
         "tests",
         "src/app/**",
-        "src/ipc/**"
+        "src/ipc/**",
+        "ui",
+        "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 0,
+      "helpful": 6,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
       "lastUsedItem": 2,
-      "source": "F-04.3"
+      "source": "F-04.3",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-008",
@@ -121,28 +64,14 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 1,
+      "helpful": 5,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
       "lastUsedItem": 2,
-      "source": "F-04.3"
-    },
-    {
-      "id": "P-009",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/review/**",
-        "src-tauri/src/store/**"
-      ],
-      "text": "Before showing restored per-step state keyed by step id (dismissed notes, cached findings), check it still belongs to the current plan's step, because with_dismissed restores every dismissed note for a session and step id and a re-plan that reuses step ids could surface old notes.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T14:05:35.142Z",
-      "lastUsedItem": 2,
-      "source": "F-04.3"
+      "source": "F-04.3",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-010",
@@ -153,7 +82,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -187,12 +116,14 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 1,
+      "helpful": 4,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
       "lastUsedItem": 5,
-      "source": "F-05.5"
+      "source": "F-05.5",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-013",
@@ -202,7 +133,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 5,
+      "helpful": 8,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -234,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 6,
+      "helpful": 22,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -248,14 +179,17 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed",
+        "src/screens/detailed/**",
+        "src/screens/step/**"
       ],
-      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 4,
+      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
+      "helpful": 20,
       "harmful": 0,
-      "seen": 2,
+      "seen": 5,
       "created": "2026-10-14T15:13:07.675Z",
-      "lastUsedItem": 7,
+      "lastUsedItem": 31,
       "source": "F-06.6",
       "promoted": true,
       "promotedTo": "tests"
@@ -268,7 +202,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 3,
+      "helpful": 16,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -317,7 +251,7 @@
         "src/screens/plan/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 3,
+      "helpful": 6,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:34:55.903Z",
@@ -331,30 +265,36 @@
       "tags": [
         "ui",
         "tests",
-        "tests/e2e/**"
+        "tests/e2e/**",
+        "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 2,
+      "helpful": 9,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
       "lastUsedItem": 7,
-      "source": "F-07.1"
+      "source": "F-07.1",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-023",
       "tags": [
         "ui",
         "implement",
-        "tests/e2e/**"
+        "tests/e2e/**",
+        "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 1,
+      "helpful": 13,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
       "lastUsedItem": 7,
-      "source": "F-07.1"
+      "source": "F-07.1",
+      "promoted": true,
+      "promotedTo": "implement"
     },
     {
       "id": "P-025",
@@ -406,15 +346,20 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed",
+        "src/screens/step/**",
+        "src/screens/detailed/**"
       ],
-      "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry.",
-      "helpful": 1,
+      "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry. For shared state that other keys or features read (the J/K current hunk), also grep the milestone plan decisions for its name and lock every existing consumer (C composer start line, Ctrl+Shift+O target) as its own red test, because unlocked M4 decision 13 became the only severe review finding of F-30.6.",
+      "helpful": 6,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T06:36:00.066Z",
-      "lastUsedItem": 9,
-      "source": "F-09.2"
+      "lastUsedItem": 32,
+      "source": "F-09.2",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-030",
@@ -422,14 +367,16 @@
         "core",
         "tests",
         "src-tauri/src/review/**",
-        "src-tauri/tests/**"
+        "src-tauri/tests/**",
+        "ui",
+        "src/screens/**"
       ],
-      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught.",
+      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught. Pin the restored-after-restart state of a screen the same way, as a red test in the tests stage, because F-17.4 left it to the implementer and review raised the missing progress line after a restart.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T07:10:35.512Z",
-      "lastUsedItem": 10,
+      "lastUsedItem": 15,
       "source": "F-09.4",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
@@ -458,7 +405,7 @@
         "src-tauri/tests/**"
       ],
       "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
-      "helpful": 3,
+      "helpful": 6,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T07:10:35.609Z",
@@ -500,22 +447,6 @@
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
-      "id": "P-035",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/tests/**"
-      ],
-      "text": "Before ticking a locked test of a rule that reads a context list (threads, cached notes), empty that list in a mutation check and confirm the tests fail, because F-09.5's empty thread list failed 4 of 6 Rust tests, which shows they go through the production loader rather than a stub.",
-      "helpful": 1,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T07:32:02.922Z",
-      "lastUsedItem": 11,
-      "source": "F-09.5",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
       "id": "P-036",
       "tags": [
         "ui",
@@ -547,52 +478,6 @@
       "source": "F-10.1"
     },
     {
-      "id": "P-038",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/ipc/mock/**"
-      ],
-      "text": "Before adding a precondition to a mock command (such as requiring reviewPlan first), grep the existing mock tests for calls that skip it, because the F-10.2 mock test asks without a plan and the tests stage kept the new refusal check independent of that precondition.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:10:35.971Z",
-      "lastUsedItem": 12,
-      "source": "F-10.1"
-    },
-    {
-      "id": "P-039",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/**"
-      ],
-      "text": "When a criterion covers a source or state that a screen still renders as a stub, decide its content in the tests stage and lock a content assertion for it, because F-17.1 left the non-MR plan screen as a StubScreen 'outside this item', review rated it severe, and the fix round had to build the header and plan for those sessions.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:58:46.260Z",
-      "lastUsedItem": 13,
-      "source": "F-17.1"
-    },
-    {
-      "id": "P-040",
-      "tags": [
-        "ui",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "In e2e checks, assert the screen content the criterion names (the Start step 1 button) instead of the route: createMemoryRouter keeps the browser URL at the origin so toHaveURL can never pass, and the main landmark carries only the screen name, so an empty stub passed every check.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:58:46.309Z",
-      "lastUsedItem": 13,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
       "id": "P-041",
       "tags": [
         "ui",
@@ -613,12 +498,13 @@
       "tags": [
         "ui",
         "implement",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "mixed"
       ],
-      "text": "Derive a mock flag from the same source field the core reads (session source kind), not from an id prefix or a second rule, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix).",
+      "text": "Derive a mock flag from the same source field the core reads (session source kind, headSha), not from an id prefix, a second rule or a design-mock note, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix); keep per-head flags such as planReady equal across mock rows that share a headSha, as the F-02.5 review flagged one headSha with planReady true on one tab and false on the other.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-15T09:26:23.718Z",
       "lastUsedItem": 14,
       "source": "F-17.2",
@@ -644,31 +530,21 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/step/**"
+        "src/screens/step/**",
+        "mixed",
+        "src/screens/plan/**",
+        "src/screens/detailed/**",
+        "implement",
+        "src/screens/**",
+        "src/screens/settings/**"
       ],
-      "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it.",
-      "helpful": 0,
+      "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
+      "helpful": 9,
       "harmful": 0,
-      "seen": 1,
+      "seen": 7,
       "created": "2026-10-15T09:26:23.811Z",
-      "lastUsedItem": 14,
-      "source": "F-17.2",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-045",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**"
-      ],
-      "text": "Pin the restored-after-restart state of a screen as a red test in the tests stage, because the tests notes left 'restored start on S-05 untested' to the implementer and review raised the missing progress line after a restart as the only normal finding (fix round 1).",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T09:59:03.927Z",
       "lastUsedItem": 15,
-      "source": "F-17.4",
+      "source": "F-17.2",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
@@ -683,22 +559,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T09:59:03.977Z",
-      "lastUsedItem": 15,
-      "source": "F-17.4",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-047",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/**"
-      ],
-      "text": "Give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded and review raised it as a nit.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T09:59:04.024Z",
       "lastUsedItem": 15,
       "source": "F-17.4",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
@@ -724,12 +584,14 @@
         "core",
         "tests",
         "src-tauri/tests/**",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "mixed",
+        "tests/e2e/**"
       ],
-      "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false).",
-      "helpful": 0,
+      "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
+      "helpful": 11,
       "harmful": 0,
-      "seen": 1,
+      "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
       "source": "F-09.5",
@@ -741,12 +603,13 @@
         "mixed",
         "tests",
         "tests/e2e/**",
-        "src/screens/**"
+        "src/screens/**",
+        "ui"
       ],
-      "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe.",
-      "helpful": 0,
+      "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe. When the screen still renders a stub for that source or state, decide its content in the tests stage and lock it, because F-17.1 left it 'outside this item' and the fix round had to build the non-MR plan screen.",
+      "helpful": 1,
       "harmful": 0,
-      "seen": 1,
+      "seen": 4,
       "created": "2026-10-15T11:47:51.456Z",
       "lastUsedItem": 17,
       "source": "F-17.1",
@@ -798,6 +661,391 @@
       "created": "2026-10-15T15:03:45.339Z",
       "lastUsedItem": 18,
       "source": "F-09.5"
+    },
+    {
+      "id": "P-054",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "When a locked e2e assertion compares a region's text with toHaveText, check whether the region holds CSS text-transform uppercase buttons (Barlow Condensed) and lock it with { useInnerText: true }, because tests/e2e/detailed.spec.ts:78 compared textContent with a captured innerText, could never pass, and cost a test dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T17:03:45.175Z",
+      "lastUsedItem": 19,
+      "source": "F-08.1"
+    },
+    {
+      "id": "P-055",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/step/**",
+        "src/state/**"
+      ],
+      "text": "When step state is kept across a Ctrl+D or layout switch, write it from mutateAsync().then or a hook-level onSuccess (not a per-call mutate onSuccess, which does not run after the card unmounts) and keep unsent input text in the store too, because review found the 'added' flag and the follow-up question lost on a mode switch.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T17:03:45.250Z",
+      "lastUsedItem": 19,
+      "source": "F-08.1"
+    },
+    {
+      "id": "P-056",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/detailed/**"
+      ],
+      "text": "Build an in-screen info header as a div with data-testid, not a <header> element, because a second banner landmark breaks the existing role=banner tests of the screen header (F-08.1); list that test id in the tests notes.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T17:36:56.620Z",
+      "lastUsedItem": 20,
+      "source": "F-08.2"
+    },
+    {
+      "id": "P-057",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/**/*.module.css"
+      ],
+      "text": "Do not override :focus-visible in a component CSS module (keep the global docs/03 outside ring), and check any var(--yellow) element (ring, badge, mark) on the yellow current-row fill, because --focus equals --yellow and the inset yellow ring on Rail's current row was invisible (review severity normal, WCAG 2.4.7, fix round 1) while the structure-only design-check came back clean.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T18:37:59.862Z",
+      "lastUsedItem": 21,
+      "source": "F-08.3"
+    },
+    {
+      "id": "P-058",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/src/**/*_tests.rs"
+      ],
+      "text": "Check the line count of an existing Rust test file before appending new AC tests and open a sibling *_tests.rs when it would pass ~400 lines, because decisions_tests.rs grew to 476 lines and review raised it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T18:37:59.935Z",
+      "lastUsedItem": 21,
+      "source": "F-08.3"
+    },
+    {
+      "id": "P-059",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/**/*.test.tsx"
+      ],
+      "text": "Run npm run typecheck (not only vitest) on the new test files before the tests commit, because vitest strips types and a helper like screen.getAllByRole(...)[0] is HTMLElement | undefined under noUncheckedIndexedAccess, which cost a test dispute and a test-only fix round (F-08.4 helper next()); destructure the first match and throw when it is missing.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T19:08:46.107Z",
+      "lastUsedItem": 22,
+      "source": "F-08.4"
+    },
+    {
+      "id": "P-060",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "When an e2e guard counts or targets getByRole by name (for example radiogroup 'Layout' with toHaveCount(0)), pass exact: true, because Playwright matches names as case-insensitive substrings and the same screen's other required control ('Diff layout') was counted, so all 6 detailed e2e tests failed at the guard and cost a test dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T19:52:39.906Z",
+      "lastUsedItem": 23,
+      "source": "F-08.5"
+    },
+    {
+      "id": "P-061",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/detailed/**"
+      ],
+      "text": "When a Vitest test needs a diff line past the first screenful (about L41) to render a note, mock offsetHeight per element in jsdom (it has no layout) and put that in the tests notes, so the implementer does not chase an empty line list.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-15T20:40:04.671Z",
+      "lastUsedItem": 24,
+      "source": "F-08.6"
+    },
+    {
+      "id": "P-062",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/keyboard.ts",
+        "src/screens/detailed/**"
+      ],
+      "text": "When an item adds single-letter shortcuts (N, A, ]) to a screen that has checkboxes, lock a red test that clicks a checkbox and then presses the key, because the shared isTyping treated every input element as typing, so N, A and ] died after the first tick and only review found it (F-08.7 fix round 1).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T07:25:08.741Z",
+      "lastUsedItem": 25,
+      "source": "F-08.7"
+    },
+    {
+      "id": "P-063",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**/*.test.tsx"
+      ],
+      "text": "Keep locked userEvent tests that type long text well under the 5000 ms vitest timeout (use paste, fireEvent or an explicit per-test timeout), because two locked AskBox cases timed out once when the test step took 94 s instead of 39-55 s, and the implementer could not change them.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T07:25:08.791Z",
+      "lastUsedItem": 25,
+      "source": "F-08.7"
+    },
+    {
+      "id": "P-064",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/detailed/**"
+      ],
+      "text": "Never key React lists by strings that come from Claude's output (read.file, checklist text) without the index, because the core does not dedupe files_read or checklist and duplicates give React key warnings and rows that tick together.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T07:25:08.837Z",
+      "lastUsedItem": 25,
+      "source": "F-08.7"
+    },
+    {
+      "id": "P-065",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/ipc/hooks/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a UI re-reads a status on a timer because a background run sends no events, define the poll condition as 'any run of the session is in flight, queued or starting included' (not 'the status shows a step running') and pin it with a test where the first read lands before the run reaches Running, because F-08.8's useAnalysisStatus only polled after a read that already had a running step, and review found that a read arriving before the prefetch leaves the queue ends polling and leaves the footer stale.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T08:00:09.903Z",
+      "lastUsedItem": 26,
+      "source": "F-08.8"
+    },
+    {
+      "id": "P-066",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/commands/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "A core command the UI calls on a timer must run its store reads and per-step cache validation loop inside with_store/spawn_blocking like the commands around it, because review flagged review_analysis_status calling step::cached_analysis (SQLite plus worktree file checks) for every step on the async command thread once a second.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T08:00:09.954Z",
+      "lastUsedItem": 26,
+      "source": "F-08.8"
+    },
+    {
+      "id": "P-067",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**",
+        "mixed",
+        "src/screens/settings/**"
+      ],
+      "text": "A red e2e never runs the lines after its first failing assertion, so before the tests commit prove the rest can pass: run a scratch copy without the red assertions, run its setup and return path at baseline or in a throwaway variant without the new control, and run a new row or layout locator helper against throwaway markup shaped like the mock (delete the scratch files afterwards). F-08.9's toHaveURL lines behind a red check cost a test dispute and a fix round, F-19.1's broken mock return path pushed out-of-item work onto the implementer (153k tokens), while F-19.3 did this and passed with no dispute and no fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 4,
+      "created": "2026-10-16T08:24:28.933Z",
+      "lastUsedItem": 30,
+      "source": "F-08.9",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-068",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/screens/detailed/**",
+        "src/diff/**",
+        "ui"
+      ],
+      "text": "For anything the user writes anchored to a diff line (line comment, note) or types into a composer whose open state is kept in a store, lock red tests in the tests stage that it survives a mode switch (Ctrl+D), reopening the step and a remount (scrolling out of the virtual window): a saved comment stays visible where it was written, also inside a collapsed fold or mechanical hunk, and opening another composer or clicking Undo on another draft never silently drops typed text. F-09.7's tests covered none of this and review raised a hidden L14 comment and lost text as normal findings that cost a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 2,
+      "created": "2026-10-16T09:37:32.711Z",
+      "lastUsedItem": 28,
+      "source": "F-09.7"
+    },
+    {
+      "id": "P-073",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/app/**",
+        "ui",
+        "src/screens/**",
+        "src/ipc/mock/**"
+      ],
+      "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
+      "helpful": 3,
+      "harmful": 0,
+      "seen": 3,
+      "created": "2026-10-16T10:39:05.255Z",
+      "lastUsedItem": 31,
+      "source": "F-30.3",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-075",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/step/**",
+        "src/app/**"
+      ],
+      "text": "Build a shortcut from the same predicate its matching button uses (FileBar's deleted-file disable, DiffPane canOpen) and make a key that opens a card or thread reuse an open one instead of resetting it, because Ctrl+Shift+O started Rider on a deleted file and A threw away a streamed Claude answer, both found only by review.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T11:28:31.565Z",
+      "lastUsedItem": 32,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-076",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/diff/**",
+        "src/screens/step/**"
+      ],
+      "text": "Make a nonce-based reveal or scroll request one-shot by having the consumer (DiffView) remember the last nonce it handled, because choosing the largest nonce among several request sources re-fired the old N reveal after Esc cleared a newer composer reveal and the view jumped back.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T11:28:31.616Z",
+      "lastUsedItem": 32,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-077",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/detailed/**",
+        "src/app/shortcuts.ts",
+        "src/app/keyboard.ts"
+      ],
+      "text": "When a plan row or milestone decision changes what a key does (Space now marks only the current file), grep every control, card, footer and Settings row that shows that key's hint in the tests stage and let the newer decision beat an older mock, because F-07.10's tests locked 'Mark reviewed keeps its Space hint' only because Main.dc.html draws it, review rated it a normal finding (the hint named a key that no longer triggers that button), and the fix round cost 65k tokens plus a disputed locked test; a hint on a control must name only a key that triggers that control.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T13:52:21.326Z",
+      "lastUsedItem": 33,
+      "source": "F-07.10"
+    },
+    {
+      "id": "P-078",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/step/**",
+        "src/screens/detailed/**"
+      ],
+      "text": "For a key handler with a one-shot pause flag (step-start or step-end pause), lock in the tests stage every key that leaves the flagged state without moving off it (paging a tall change, re-measuring), for example ↑ ↓ ↑ at a first change taller than the screen, because the unlocked sequence left pause 'start' set so the next ↑ skipped a whole step, the only severe review finding of the F-30.6 redo.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T15:14:36.232Z",
+      "lastUsedItem": 34,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-079",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/**",
+        "src/screens/detailed/**"
+      ],
+      "text": "When a plan row says every key is read from the one shortcuts table, grep the key literals (event.key, 'n', Ctrl+K, Ctrl+D, Ctrl+Shift+O) across src/app and src/screens in the tests stage and lock each consumer with a remap test that fails against a hard-coded matcher, because the first implementation converted only the new walk keys and review found S-04 N/A and the App and Code chords still hard-coded, which cost the fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T15:14:36.286Z",
+      "lastUsedItem": 34,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-080",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**"
+      ],
+      "text": "Write an e2e that pages through content whose height depends on seeded state (an open focused-note callout, viewport size) as 'press until the target change is current, at most N presses, and each extra press must have scrolled', never as an exact press count, because the F-30.6 walk test expected RetryAsync on the third ↓ while a 313 px callout needed a fourth, which cost a test dispute and a test commit in the fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T15:14:36.344Z",
+      "lastUsedItem": 34,
+      "source": "F-30.6"
+    },
+    {
+      "id": "P-081",
+      "tags": [
+        "ui",
+        "tests",
+        "tests/e2e/**",
+        "src/screens/settings/**"
+      ],
+      "text": "When the same UI state is asserted in both a Vitest file and an e2e spec (F-19.7: the keys button while a capture waits after a refused key), compare the two assertions before the tests commit, because the e2e expected kbd 'N' where ShortcutsChange.test.tsx expected no kbd, no implementation could pass both, and the implementer had to file a test dispute that cost a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T16:12:38.401Z",
+      "lastUsedItem": 35,
+      "source": "F-19.7"
+    },
+    {
+      "id": "P-082",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/**",
+        "src/state/**"
+      ],
+      "text": "When an item lets users assign any key (a bare letter, digit or symbol) to an action whose handler used to see only Ctrl chords or F-keys, lock in the tests stage that every consumer (global shortcuts, Rider key, layout keys) ignores that key while focus is in a text field and still acts for a Ctrl chord, because F-19.7 locked the consumers' matching but not typing, so the only review finding (severe) was that an assigned letter could no longer be typed in the S-01 input or a comment composer.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T16:12:38.452Z",
+      "lastUsedItem": 35,
+      "source": "F-19.7"
     }
   ]
 }

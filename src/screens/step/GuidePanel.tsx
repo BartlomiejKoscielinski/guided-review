@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import { CheckIcon } from '../../components/icons';
@@ -28,6 +28,8 @@ export interface GuidePanelProps {
   /** A question typed in the panel's input opens the answer card with it. */
   onAskQuestion: (question: string) => void;
   onAsk: (finding: Finding) => void;
+  /** Each new value focuses the ask input (A, F-30.6); 0 leaves it. */
+  focusAsk?: number;
 }
 
 const SUB_LABEL = { fix: 'should fix', q: 'question', nit: 'minor' } as const;
@@ -56,10 +58,15 @@ export function GuidePanel({
   ask,
   onAskQuestion,
   onAsk,
+  focusAsk = 0,
 }: GuidePanelProps) {
   const { order, reviewed } = useStepProgress(sessionId);
   const [showMinor, setShowMinor] = useState(false);
   const [question, setQuestion] = useState('');
+  const askRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (focusAsk > 0) askRef.current?.focus();
+  }, [focusAsk]);
   const findings = analysis?.findings ?? [];
   const numbered = findings.map((finding, i) => ({ finding, number: i + 1 }));
   const isMinor = ({ finding }: { finding: Finding }) =>
@@ -150,11 +157,13 @@ export function GuidePanel({
         {ask ? (
           <AnswerCard
             key={ask.nonce}
+            nonce={ask.nonce}
             sessionId={sessionId}
             stepId={stepId}
             selection={ask.selection}
             selfReview={selfReview}
             autoFocus={ask.focusInput}
+            focus={ask.focus}
             initialQuestion={ask.question}
           />
         ) : (
@@ -169,6 +178,7 @@ export function GuidePanel({
             }}
           >
             <input
+              ref={askRef}
               className={styles.askInput}
               aria-label="Ask Claude about this step"
               placeholder="Ask Claude about this step…"

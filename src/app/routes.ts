@@ -1,3 +1,4 @@
+import type { Mode } from '../ipc/types/Mode';
 import type { Route } from '../ipc/types/Route';
 import type { SettingsSection } from '../ipc/types/SettingsSection';
 
@@ -71,6 +72,10 @@ export function screenInfo(id: ScreenId): ScreenInfo {
   return info;
 }
 
+/** Step review in a mode (ADR-010): S-03 Focus, S-04 Detailed. */
+export const stepScreen = (mode: Mode | undefined): 'S-03' | 'S-04' =>
+  mode === 'detailed' ? 'S-04' : 'S-03';
+
 /** The router path of a route. */
 export function pathFor(route: Route): string {
   const enc = encodeURIComponent;
@@ -136,5 +141,7 @@ export function routeFor(screen: ScreenId, params: Params): Route | null {
 export const SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'general' };
 /** Settings › Claude: where the model chip goes (F-18.5). */
 export const CLAUDE_SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'claude' };
+/** Settings › Shortcuts: where `?` goes from any screen (F-30.6). */
+export const SHORTCUTS_SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'shortcuts' };
 /** Settings › GitLab: where "Add token" goes (F-01.6, F-02). */
 export const GITLAB_SETTINGS_ROUTE: Route = { screen: 'S-07', section: 'gitlab' };

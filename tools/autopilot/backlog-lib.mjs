@@ -8,6 +8,8 @@ import { isTest, parseDisputes, tickProgress } from './gate-lib.mjs';
 export const STATUSES = [
   'todo',
   'tests',
+  // Tests written ahead in ../gr-ap-2 while the item before was reviewed and gated (E22).
+  'tests-ready',
   'impl',
   'review',
   'done',
@@ -112,6 +114,7 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
       attempts: old?.attempts ?? 0,
       note: old?.note ?? note,
       ...(old?.lockSha ? { lockSha: old.lockSha, tests: old.tests ?? [] } : {}),
+      ...(old?.forkSha ? { forkSha: old.forkSha } : {}),
       ...(old?.disputes?.length ? { disputes: old.disputes } : {}),
     });
   }
@@ -136,27 +139,49 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
   return { milestone, updated: now, items };
 }
 
-/** The next item to work on, or `{ none: reason }`. Decisions never wait for the owner (§3.2). */
+/**
+ * The next item to work on, or `{ none: reason }`: a started item first, then one whose tests were
+ * written ahead, then a new one. Decisions never wait for the owner (§3.2).
+ */
 export function next(backlog) {
   const items = backlog?.items ?? [];
   const done = new Set(items.filter((i) => i.status === 'done').map((i) => i.id));
   const ready = (i) => i.deps.every((d) => done.has(d));
-  const resume = items.find((i) => RESUMABLE.includes(i.status) && ready(i));
-  if (resume) return resume;
-  const todo = items.find((i) => i.status === 'todo' && ready(i));
-  if (todo) return todo;
+  for (const statuses of [RESUMABLE, ['tests-ready'], ['todo']]) {
+    const found = items.find((i) => statuses.includes(i.status) && ready(i));
+    if (found) return found;
+  }
   return { none: `no ready item in ${backlog?.milestone ?? 'the backlog'}` };
+}
+
+/**
+ * The item whose tests are written ahead while `current` is reviewed and gated (E22): the one
+ * `next` returns once `current` is done, when it still needs a test author; else `{ none }`.
+ */
+export function ahead(backlog, current) {
+  const items = backlog?.items ?? [];
+  if (!items.some((i) => i.id === current)) throw new Error(`no item ${current}`);
+  const after = next({
+    ...backlog,
+    items: items.map((i) => (i.id === current ? { ...i, status: 'done' } : i)),
+  });
+  if (after.none) return { none: `nothing is ready after ${current}` };
+  if (after.status !== 'todo') return { none: `${after.id} comes next (${after.status})` };
+  if (after.lockSha) return { none: `${after.id} has locked tests already` };
+  return after;
 }
 
 /**
  * Changes one item; unknown ids or statuses, and locked "tests" that are not test files, throw.
  * `dispute` (`file@sha`, a locked test changed alone in a fix round after an accepted dispute) is
  * remembered in `disputes`, one per file; the gate applies it in every later call (§3.3).
+ * `tests-ready` (E22) needs the lock, the tests and `fork`, the tip of the item before that the tests
+ * branch started from (`forkSha`, kept only in that status); `discard` drops the lock and the tests.
  */
 export function setItem(
   backlog,
   id,
-  { status, note, attempt, lockSha, tests, kind, dispute },
+  { status, note, attempt, lockSha, tests, kind, dispute, fork, discard },
   now,
 ) {
   const item = backlog.items.find((i) => i.id === id);
@@ -164,15 +189,23 @@ export function setItem(
   // Production files a test author touched (module wiring) stay unlocked: the implementer changes them.
   const notTests = (tests ?? []).filter((t) => !isTest(t));
   if (notTests.length) throw new Error(`not test files, lock only tests: ${notTests.join(', ')}`);
+  if (status !== undefined && !STATUSES.includes(status))
+    throw new Error(`status ${status}: one of ${STATUSES.join(', ')}`);
+  if (status === 'tests-ready' && !(lockSha && tests?.length && fork))
+    throw new Error('tests-ready needs --lock, --tests and --fork');
+  if (discard) {
+    delete item.lockSha;
+    delete item.tests;
+  }
   if (status !== undefined) {
-    if (!STATUSES.includes(status))
-      throw new Error(`status ${status}: one of ${STATUSES.join(', ')}`);
     item.status = status;
+    if (status !== 'tests-ready') delete item.forkSha;
   }
   if (note !== undefined) item.note = note;
   if (attempt) item.attempts += 1;
   if (lockSha !== undefined) item.lockSha = lockSha;
   if (tests !== undefined) item.tests = tests;
+  if (status === 'tests-ready') item.forkSha = fork;
   if (kind !== undefined) item.kind = kind;
   if (dispute !== undefined) {
     const [[file]] = [...parseDisputes(dispute)];

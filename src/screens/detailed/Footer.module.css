@@ -1,0 +1,45 @@
+/* S-04 footer (F-08.8): Main.dc.html's <footer>. */
+.footer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 18px;
+  min-height: 32px;
+  padding: 7px 20px;
+  background: var(--bg-chrome);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+/* The hints on the left, the Claude status and the code version on the right. */
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+}
+
+.claude {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.square {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  background: var(--purple);
+}
+
+/* Claude Code can't run tasks (M4 decision 9). */
+.unusable {
+  background: var(--orange);
+}
+
+.code {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}

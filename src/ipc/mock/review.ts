@@ -4,9 +4,12 @@ import type { AskAnswer } from '../types/AskAnswer';
 import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
 import type { Decision } from '../types/Decision';
 import type { Draft } from '../types/Draft';
+import type { DiffPosition } from '../types/DiffPosition';
 import type { Finding } from '../types/Finding';
+import type { NewDraft } from '../types/NewDraft';
 import type { StepAnalysis } from '../types/StepAnalysis';
 import type { FileDiff } from '../types/FileDiff';
+import type { MockStepRuns } from './analysisStatus';
 import { mockPlan } from './fixtures/plan';
 import { mockFallbackView } from './fixtures/planFallback';
 import { ANSWER_PARTS, stepAnalysis } from './fixtures/review';
@@ -51,6 +54,13 @@ function filesOfStep(stepId: string): FileDiff[] {
   return step ? stepFiles(step) : [];
 }
 
+/** The step holding the hunk of a diff line (F-08.3, `drafts::step_at`); null outside every step. */
+function stepAtLine(position: DiffPosition): string | null {
+  const selection = { ...position, start: position.line, end: position.line };
+  const step = mockPlan().steps.find((s) => selectionInStep(filesOfStep(s.id), selection));
+  return step?.id ?? null;
+}
+
 /** A note's key in `SessionData.notes`: the core keeps notes per session (F-09.4). */
 const noteKey = (sessionId: string, findingId: string) => `${sessionId}\0${findingId}`;
 
@@ -90,6 +100,7 @@ export function createReviewBackend(
   respond: <T>(value: T) => Promise<T>,
   pause: (ms: number) => Promise<void>,
   store: MockSessionData,
+  runs: MockStepRuns,
 ): ReviewClient {
   const { data } = store;
   const asked = new Set<string>();
@@ -110,10 +121,19 @@ export function createReviewBackend(
     return draft;
   };
 
-  const createDraft = (draft: Omit<Draft, 'id' | 'include' | 'publishedNoteId' | 'error'>) => {
+  /** The step a new draft belongs to (F-08.3): its note's step, else the one holding its line. */
+  const stepOf = (draft: NewDraft): string | null => {
+    if (draft.findingId !== null) {
+      return data.notes[noteKey(draft.sessionId, draft.findingId)]?.finding.stepId ?? null;
+    }
+    return draft.position ? stepAtLine(draft.position) : null;
+  };
+
+  const createDraft = (draft: NewDraft) => {
     if (draft.body.trim() === '') throw error('INVALID_INPUT', 'Write a comment first.');
     const created: Draft = {
       ...draft,
+      stepId: stepOf(draft),
       id: `mock-draft-${String(data.nextDraft++)}`,
       include: true,
       publishedNoteId: null,
@@ -139,10 +159,14 @@ export function createReviewBackend(
       const key = analyzedKey(sessionId, stepId);
       onEvent({ kind: 'queued' });
       if (!data.analyzed.includes(key)) {
+        // Running before `started` and settled before the last event, as the core (F-08.8).
+        runs.running.add(key);
         onEvent({ kind: 'started' });
         await pause(MOCK_STEP_MS);
+        runs.running.delete(key);
         if (scenario.stepFails) {
           const failure = error('CLAUDE_FAILED', 'Claude Code failed.', true);
+          runs.failed.add(key);
           onEvent({
             kind: 'failed',
             error: { code: failure.code, message: failure.message, retryable: true },
@@ -151,6 +175,7 @@ export function createReviewBackend(
         }
         if (!data.analyzed.includes(key)) data.analyzed.push(key);
       }
+      runs.failed.delete(key);
       const result = decided(data, sessionId, stepId);
       store.save();
       onEvent({ kind: 'done', result: structuredClone(result) });

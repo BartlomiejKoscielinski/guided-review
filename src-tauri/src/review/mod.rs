@@ -1,9 +1,13 @@
 //! Review sessions: plan model, coverage invariant (`coverage.rs`), steps, decisions, drafts.
 
+pub mod analysis_status;
 pub mod config_risk;
 pub mod coverage;
 pub mod decisions;
 pub mod drafts;
+pub mod file_place;
+#[cfg(test)]
+mod file_place_tests;
 pub mod finding_model;
 pub mod findings;
 pub mod fingerprint;

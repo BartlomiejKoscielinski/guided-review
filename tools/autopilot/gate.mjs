@@ -96,7 +96,8 @@ const head = git(['rev-parse', '--abbrev-ref', 'HEAD']);
 if (!check('branch', head.ok && head.out === branch, head.out)) finish();
 const dirty = git(['status', '--porcelain', '--untracked-files=no']);
 if (!check('clean', dirty.ok && dirty.out === '', dirty.out.slice(0, 300))) finish();
-const log = git(['log', '--reverse', '--format=%h', `${base}..HEAD`]);
+// Tests ahead (E22): the merge of the base into the item branch is no commit of the item.
+const log = git(['log', '--reverse', '--no-merges', '--format=%h', `${base}..HEAD`]);
 verdict.commits = log.out ? log.out.split(/\r?\n/) : [];
 if (!check('commits', verdict.commits.length > 0, verdict.commits.length ? '' : 'nothing to merge'))
   finish();

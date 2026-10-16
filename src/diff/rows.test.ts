@@ -55,6 +55,23 @@ describe('diff rows', () => {
     ]);
   });
 
+  it('F-09.7 a fold holding a line comment opens on its own; other folds stay folded', () => {
+    const folds = [{ newStart: 23, newEnd: 25, label: 'Body' }];
+    const kinds = (unfold?: ReadonlySet<string>) =>
+      buildRows(diff, 'split', { headers: false, folds, unfold }).map((r) => r.kind);
+    expect(kinds()).toEqual(['pair', 'fold', 'pair']);
+    expect(kinds(new Set(['n26']))).toEqual(['pair', 'fold', 'pair']);
+    expect(kinds(new Set(['n24']))).toEqual(Array<string>(5).fill('pair'));
+    // A comment on a deleted line (old side) opens the fold the line is in.
+    expect(kinds(new Set(['o22']))).toEqual(Array<string>(5).fill('pair'));
+    const mechanical: FileDiff = {
+      ...diff,
+      hunks: diff.hunks.map((h) => ({ ...h, mechanical: 'whitespace' })),
+    };
+    const rows = buildRows(mechanical, 'split', { unfold: new Set(['n23']) });
+    expect(rows.map((r) => r.kind)).toEqual(['hunk', ...Array<string>(5).fill('pair')]);
+  });
+
   it('labels hunks by their new-side range', () => {
     const hunk = diff.hunks[0];
     if (!hunk) throw new Error('fixture');

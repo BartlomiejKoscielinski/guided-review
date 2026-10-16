@@ -1,0 +1,159 @@
+/* S-04 full note callout (F-08.6, Main.dc.html: the row under the focused note's line). */
+
+/* The diff row that holds the callout. */
+.row {
+  padding: 10px 16px 16px 54px;
+  background: var(--bg);
+  font-family: var(--font-ui);
+  line-height: 1.45;
+}
+
+.callout {
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--card);
+  box-shadow: var(--shadow-pop);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.badge {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.fix {
+  background: var(--orange);
+}
+.q {
+  background: var(--blue);
+}
+.nit {
+  background: var(--text-muted);
+}
+.draft {
+  background: var(--yellow);
+}
+.dismissed {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--ring);
+  color: var(--text-muted);
+}
+
+.title {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.body {
+  margin: 0;
+  max-width: 74ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-body);
+  white-space: pre-wrap;
+}
+
+.evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.chip {
+  padding: 1px 6px;
+  background: var(--raised-2);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+
+.suggestion {
+  padding: 12px 14px;
+  background: var(--bg);
+}
+
+.suggestionLabel {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.suggestionText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+  white-space: pre-wrap;
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.statusDismissed {
+  color: var(--text-secondary);
+}
+
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--orange-text);
+}

@@ -176,4 +176,25 @@ describe('S-02 PlanPrepared', () => {
     await userEvent.keyboard('{Enter}');
     expect(router.state.location.pathname).toBe(pathFor({ screen: 'S-02', sessionId: 's1' }));
   });
+
+  it('F-08.1 Start step 1 opens the session’s mode: Detailed when the session is in Detailed', async () => {
+    const { router } = open({
+      sessionState: () =>
+        Promise.resolve({
+          currentStep: null,
+          layout: 'A',
+          mode: 'detailed',
+          scroll: {},
+          checklist: {},
+          planOpened: false,
+          reviewedFiles: {},
+        }),
+    });
+    await screen.findByRole('heading', { name: 'Plan · 8 steps' });
+    await userEvent.click(screen.getByRole('button', { name: /Start step 1/ }));
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(pathFor({ screen: 'S-04', sessionId: 's1' }));
+    });
+    expect(router.state.location.search).toBe('?step=s1');
+  });
 });

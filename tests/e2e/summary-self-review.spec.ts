@@ -35,7 +35,7 @@ test('F-17.4 Finish review of a self-review opens SUMMARY: progress, the kept no
 }) => {
   await openSelfReviewStep4(page);
   await page.getByRole('button', { name: 'Mark reviewed' }).click();
-  await expect(page.getByRole('button', { name: 'Reviewed' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reviewed', exact: true })).toBeVisible();
   await note(page).getByRole('button', { name: 'Keep to fix' }).click();
   await expect(note(page).getByText("Kept to fix. It's on your list at the end.")).toBeVisible();
 

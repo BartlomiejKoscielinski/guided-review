@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decide, lastAssistantText, spentByRun } from './autopilot/hook-lib.mjs';
+import { decide, lastAssistantText, runEnding, spentByRun } from './autopilot/hook-lib.mjs';
 
 const run = { runId: 'ap-1', cap: 3, iterations: 0, budgetTokens: 1000, finalized: false };
 const item = { id: 'F-07.2', status: 'todo' };
@@ -76,4 +76,37 @@ test('autopilot hook: tokens spent by a run', () => {
     JSON.stringify({ run: 'ap-1', tokens: { total: 200 } }),
   ].join('\n');
   assert.equal(spentByRun(jsonl, 'ap-1'), 500);
+});
+
+test('autopilot hook E22: a turn that waits for a background test author is not continued', () => {
+  const lines = [
+    line('assistant', [{ type: 'text', text: 'F-07.2 done. AUTOPILOT ap-1 next' }]),
+    line('user', 'Autopilot ap-1: next item F-07.3 (todo)'),
+    line('assistant', [{ type: 'text', text: 'Waiting for the tests of F-07.3.' }]),
+  ];
+  const waiting = decide({
+    run,
+    text: lastAssistantText(lines),
+    stopFile: false,
+    spentTokens: 0,
+    nextItem: { id: 'F-07.3', status: 'todo' },
+  });
+  assert.deepEqual(waiting, { block: false, reason: 'not the conductor' }, 'no iteration counted');
+  // The agent's notification wakes the conductor; that turn ends with the marker as usual.
+  const woken = decide({
+    run,
+    text: 'F-07.3 done. AUTOPILOT ap-1 next',
+    stopFile: false,
+    spentTokens: 0,
+    nextItem: item,
+  });
+  assert.equal(woken.run.iterations, 1);
+});
+
+test('autopilot hook E22: the run ending after the current item gets no tests ahead', () => {
+  const at = (over) => runEnding({ run, stopFile: false, spentTokens: 0, ...over });
+  assert.equal(at({}), null);
+  assert.match(at({ run: { ...run, iterations: 2 } }), /iteration cap 3 reached/);
+  assert.match(at({ stopFile: true }), /\.autopilot\/STOP/);
+  assert.match(at({ spentTokens: 1000 }), /token budget 1000 spent/);
 });

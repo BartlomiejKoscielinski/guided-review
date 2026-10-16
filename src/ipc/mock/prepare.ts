@@ -3,13 +3,15 @@ import { IpcError } from '../errors';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { SessionMr } from '../types/SessionMr';
 import type { TreeFile } from '../types/TreeFile';
 import { groupFiles } from './changes';
 import { lineCounts, MR_BRANCHES, mrFiles } from './fixtures/mr';
 import { findMockMr } from './gitlab';
 import type { MockRepos } from './repos';
-import { stateOf, type MockSessionData } from './session-data';
+import type { MrRow } from '../types/MrRow';
+import { stateOf, type MockSessionData, type SessionData } from './session-data';
 
 type PrepareClient = Pick<IpcClient, 'sessionOpenMr' | 'sessionPrepareCancel' | 'sessionMr'>;
 
@@ -18,13 +20,23 @@ export const MOCK_STAGE_MS = 400;
 
 const MR_SESSION = 'mock-mr-session-';
 
+/**
+ * The MR a mock session reviews: the one it was opened for, else !482 for an MR session that was
+ * planned without being opened (every mock session has !482's plan; a test may plan one directly).
+ */
+export function sessionMrRow(data: SessionData, sessionId: string): MrRow | undefined {
+  const opened = data.mrs[sessionId];
+  if (opened) return opened;
+  return sessionId.startsWith(MR_SESSION) && data.plans[sessionId] ? findMockMr(482) : undefined;
+}
+
 const error = (code: IpcError['code'], message: string) =>
   new IpcError({ code, message, retryable: false });
 
 /**
  * MR preparation of the mock backend (F-05.1, F-05.6): the repository of the project (switched
  * to, decision 7), an MR of the mock lists (else the F-01.5 copy), the three stages with pauses,
- * and cancel by task ID. Opened sessions are kept in `store`, in the layout `ui.focusLayout` names
+ * and cancel by task ID. Opened sessions are kept in `store`, in the layout `ui.focusLayout` and the mode `ui.startIn` name
  * (the core's `sessions.layout`).
  */
 export function createPrepareBackend(
@@ -32,6 +44,7 @@ export function createPrepareBackend(
   pause: (ms: number) => Promise<void>,
   store: MockSessionData,
   focusLayout: () => Layout,
+  startIn: () => Mode,
 ): PrepareClient {
   const cancelled = new Set<string>();
   const { data } = store;
@@ -83,13 +96,17 @@ export function createPrepareBackend(
       data.mrCount += 1;
       const sessionId = `${MR_SESSION}${String(data.mrCount)}`;
       data.mrs[sessionId] = mr;
-      stateOf(data, sessionId).layout = focusLayout();
+      Object.assign(stateOf(data, sessionId), {
+        layout: focusLayout(),
+        mode: startIn(),
+        openedAt: new Date().toISOString(),
+      });
       store.save();
       const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
       return result;
     },
     sessionMr: async (sessionId) => {
-      const mr = data.mrs[sessionId];
+      const mr = sessionMrRow(data, sessionId);
       // Commit and local sessions of the sources mock have no MR.
       if (!mr && !sessionId.startsWith(MR_SESSION)) return null;
       if (!mr) throw error('INVALID_INPUT', 'Unknown session.');

@@ -74,7 +74,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 ### F-04 Resume sessions · S-01
 - **F-04.1** "Pick up where you left off" lists unfinished sessions with progress ("5 of 9 steps · 3 drafts", "Self-review · 2 of 6 steps · saved yesterday 18:40").
 - **F-04.2** If the MR head moved since the session started, the card shows an orange tag "N NEW COMMITS", a primary **Only new changes** (S-09) and a secondary **Continue**.
-- **F-04.3** Session state (reviewed steps, note decisions, drafts, layout, scroll position per step, "For you to judge" ticks) survives app restarts.
+- **F-04.3** Session state (reviewed steps and files, note decisions, drafts, layout, scroll position per step, "For you to judge" ticks) survives app restarts.
 
 ### F-05 Preparation (deterministic, no AI)
 - **F-05.1** For an MR, the app fetches `refs/merge-requests/<iid>/head` and creates (or reuses) a worktree at the head SHA in the review worktree folder. The user's own checkout is never modified.
@@ -102,7 +102,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 
 ### F-07 Step review: Focus mode and layouts · S-03
 - **F-07.1** Three layouts switchable in the title bar and with `Ctrl+1/2/3`, sharing all state: **A Sidebar** (steps list left, with each step's short title), **B Minimal** (progress segments in title bar, floating toolbar at the bottom), **C Guide** (guide panel on the right).
-- **F-07.2** Step header: "STEP 4 OF 8", title, a one- or two-sentence description; **Mark reviewed** (Space) and next.
+- **F-07.2** Step header: "STEP 4 OF 8", title, a one- or two-sentence description; **Mark reviewed** (marks every file of the step, F-07.10) and next.
 - **F-07.3** File header: path, `+add −del`, number of notes in this file ("3 notes").
 - **F-07.4** Split diff with old/new line numbers, intraline emphasis and syntax highlighting. Mechanical regions inside a step are collapsed to a fold row ("Fields and constructor: 3 new dependencies" · **Show**).
 - **F-07.5** Gutter markers: in A and B a 12px square colored by severity; in C a numbered square. A thread icon marks lines with existing threads.
@@ -110,16 +110,17 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-07.7** Layout C shows "Worth a look": numbered notes in line order, the focused one expanded; "+N minor" collapses minor notes; **Mark reviewed** (large) and "Ask Claude about this step…" input at the bottom.
 - **F-07.8** Layout B's toolbar: previous, "Step 4 of 8", next, **Mark reviewed**, **Ask Claude**.
 - **F-07.9** The chosen layout is remembered globally and per session.
+- **F-07.10** Each file of a step can be marked reviewed on its own (S-03 and S-04): `Space` toggles the current file (the file of the current change; before any move, the step's first file) and `↓` marks a file when it moves past its last change (F-30.6), and the file header (S-03) and sticky file bar (S-04) have a **Reviewed** toggle (pressed = green fill). A step counts as reviewed when all its files are; the step's **Mark reviewed** marks all its files at once (on a reviewed step it unmarks them). Marks are kept per step and file and survive restarts (F-04.3).
 
 ### F-08 Step review: Detailed mode · S-04
 - **F-08.1** Mode toggle Focus | Detailed in the title bar (`Ctrl+D`); both modes show the same session state.
 - **F-08.2** Info header: branch block, author · age, `N files +add −del`, step progress segments with `done/total`, drafts count, pipeline status (links to S-08).
 - **F-08.3** Rail: a first item "Change overview" (intent, risks, plan; links to S-02, done once the plan was opened), plan steps with state (done = green check, current = yellow, upcoming = number) and per-step draft count; Skim list; "Change coverage" with bar and the rule text.
-- **F-08.4** Step header: "Step 4 / 8", "builds on" chips (click jumps to that step), previous, **Mark reviewed** (Space), **Next step** (`]`).
+- **F-08.4** Step header: "Step 4 / 8", "builds on" chips (click jumps to that step), previous, **Mark reviewed**, **Next step**.
 - **F-08.5** Sticky file bar: path, `+/−`, Split | Unified, Ignore whitespace, Open in Rider.
 - **F-08.6** Full note callout: tag, title, Claude label, body, "Checked in" evidence chips, Suggested comment, **Add to drafts** (D), **Edit and add**, **Ask Claude**, **Dismiss** (X).
 - **F-08.7** Guide aside: Code notes in line order (`N` cycles), "For you to judge" checklist with progress (`1/3`), Analysis context (files Claude read, each with its place: "step N", "outside MR" or "skim"; Claude's reason as a tooltip), Ask box with the current context ("step 4 · L46–L57") and `Ctrl+↵`.
-- **F-08.8** Footer: shortcut hints (J K hunk, [ ] step, N note, C comment, A ask, Space reviewed, ? all) and Claude status ("Claude: steps 5–6 ready, analyzing 7", "worktree @ a3f9c12").
+- **F-08.8** Footer: shortcut hints (↑ ↓ change, ← → file, Space file reviewed, N note, C comment, A ask, ? all; the user's keys when changed, F-19.7) and Claude status ("Claude: steps 5–6 ready, analyzing 7", "worktree @ a3f9c12").
 - **F-08.9** End-of-step card: "End of step 4", next step title with stats, **Next step**.
 
 ### F-09 Claude notes (findings)
@@ -197,6 +198,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-19.5** Token setup: without a token, Server URL and a masked token input with **Check and save** (the app checks the user, scope and expiry, then stores it); with a token, **Replace token** and **Remove**. The UI only ever sees the token masked as prefix + last 4 characters (`glpat-…3f9a`), computed in the core.
 - **F-19.6** Repositories: **Add repository** (folder dialog; the GitLab project is detected from the `origin` remote), **Set as default**, **Remove**, and the review worktree folder per repository (default `<repo parent>\.review`).
 - **F-19.4** Settings opens with `Ctrl+,` and from the always-visible purple Settings tile in the dock.
+- **F-19.7** Shortcuts can be changed in Settings › Shortcuts: a row's keys are a button ("Change shortcut for <action>"); clicking it shows "Press the new keys…" and the next key or chord becomes the shortcut (`Esc` cancels). A key already in use shows "Already used by <action>." and nothing changes. A changed row shows **Reset**; **Reset all** (shown once anything is changed) restores the defaults. Changes are saved at once and apply everywhere: the shortcuts, the footer hints and the button hints. `Esc` and the text-editing chords (`Ctrl+C`, `Ctrl+V`, `Ctrl+X`, `Ctrl+A`, `Ctrl+Z`) can't be assigned, and `Esc` itself can't be changed.
 
 ### F-20 Pipelines · S-08
 - **F-20.1** Shows the MR's pipelines as tabs (newest first, "version N · latest"), the selected pipeline's status block (Passed / Failed / Running / Canceled), "N allowed failure" tag, number, type ("Merge request pipeline"), SHA, version, author · age · duration.
@@ -282,7 +284,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-30.3** **Finish review** (review screens) opens S-05.
 - **F-30.4** Window size, position, maximized state and last screen are restored on start. The last screen is restored only if its session still exists (otherwise S-01), and restoring never starts Claude or GitLab work. First start: 1600×1000 fitted to the work area; minimum 1280×800, or the work area when it is smaller (e.g. 1920×1080 at 150%); off-screen positions are pulled back onto a monitor (the title bar must be reachable).
 - **F-30.5** All UI text is English. Claude output language follows F-18.2.
-- **F-30.6** Shortcuts: `]` next step, `[` previous step, `Space` mark reviewed, `J`/`K` next/previous hunk, `N` next note, `D` add to drafts, `X` dismiss, `C` comment on line, `A` ask, `F12` definition, `Shift+F12` usages, `Ctrl+Shift+O` open in Rider, `Ctrl+K` open anything, `Ctrl+,` settings, `Ctrl+D` Focus/Detailed, `Ctrl+1/2/3` layouts, `Enter` primary action on S-02/S-09, `Esc` close popovers, `?` all shortcuts (opens Settings › Shortcuts).
+- **F-30.6** Shortcuts: `↓`/`↑` next/previous change (a change taller than the screen scrolls a screen at a time first; past a file's last change `↓` marks the file reviewed (F-07.10) and goes on to the next file, pausing once at the end of the step before the next one), `→`/`←` next/previous file of the step without marking it, `Space` mark the current file reviewed, `N` next note, `D` add to drafts, `X` dismiss, `C` comment on line, `A` ask, `F12` definition, `Shift+F12` usages, `Ctrl+Shift+O` open in Rider, `Ctrl+K` open anything, `Ctrl+,` settings, `Ctrl+D` Focus/Detailed, `Ctrl+1/2/3` layouts, `Enter` primary action on S-02/S-09, `Esc` close popovers, `?` all shortcuts (opens Settings › Shortcuts).
 - **F-30.7** The repository switcher in the title bar lists the configured repositories and "Add repository…" (folder dialog); switching changes the active repository of S-01 and S-06. On review screens it shows the session's repository as plain text.
 
 ---

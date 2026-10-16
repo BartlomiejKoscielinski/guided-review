@@ -211,6 +211,7 @@ Stored in `settings` as JSON values; read through one typed struct in the core w
 | `ui.focusLayout` | `A` | F-19.1, F-07.9 |
 | `ui.diffColors` | `blue-orange` | F-19.1 |
 | `ui.lastRoute` | `{"screen":"S-01"}` | F-30.4: the last screen as a `Route` (`route.rs`): `{"screen":"S-03","sessionId":"…"}`, `{"screen":"S-07","section":"claude"}`, `{"screen":"S-10","iid":480}`, `{"screen":"S-06","commit":"<40-hex sha>"}` (commit mode; without `commit` local changes). `app_start_route` restores it: session screens only while their session exists, S-08/S-10 → S-01 (live GitLab data), S-11 → S-06 (Claude prefill), S-06 in commit mode as is (S-06 shows local changes if the commit no longer exists); the first screen carries `restored: true`. Window geometry itself is kept by the window-state plugin. |
+| `ui.shortcuts` | `{}` | F-19.7: the shortcuts the user changed in Settings › Shortcuts, action id → keys (`{"nextNote":["M"],"openAnything":["Ctrl","J"]}`), only the changed ones, so new default keys still reach the user. Stored whole in one row; a patch replaces the map (Reset sends what is still changed, Reset all `{}`). An entry without keys is refused; the UI ignores action ids it doesn't have. |
 | `os.startWithWindows` | `false` | F-19.1 |
 | `os.closeToTray` | `true` | F-28.1 |
 | `claude.path` | auto (ADR-021) | F-18.6 |

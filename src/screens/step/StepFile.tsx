@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode, type RefObject } from 'react';
-import { DiffView } from '../../diff/DiffView';
+import { DiffView, type DiffCurrent } from '../../diff/DiffView';
 import { lineKey, type DiffFold } from '../../diff/rows';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
@@ -7,7 +7,9 @@ import type { Fold } from '../../ipc/types/Fold';
 import type { LineSelection } from '../../ipc/types/LineSelection';
 import type { Thread } from '../../ipc/types/Thread';
 import { pathOf } from './diffPath';
+import { FileReviewed } from './FileReviewed';
 import { NoteMark, ThreadMark } from './GutterMarks';
+import type { LineCard } from './useLineComments';
 import { NoteCard } from './NoteCard';
 import { ThreadCard } from './ThreadCard';
 import styles from './Step.module.css';
@@ -26,12 +28,25 @@ export interface StepFileProps {
   onAsk?: (finding: Finding) => void;
   /** Layout C: numbered gutter squares, and the focused note opens in the guide panel. */
   guide?: boolean;
-  /** The answer card (F-10) under the selected lines, in layouts A and B. */
-  answer?: { side: 'old' | 'new'; line: number; node: ReactNode; file: string };
+  /**
+   * The answer card (F-10) under the selected lines, in layouts A and B; a new `reveal` (A while it
+   * is open, F-30.6) brings it into view.
+   */
+  answer?: { side: 'old' | 'new'; line: number; node: ReactNode; file: string; reveal?: number };
   /** The step's selected lines (F-10.1) with their "Selected lines" group, in any file. */
   selected?: { selection: LineSelection; bar: ReactNode } | null;
   /** A click on a line number of this file (F-10.1). */
   onPickLine?: (at: { file: string; side: 'old' | 'new'; no: number }, extend: boolean) => void;
+  /** The step's line comments and the open composer (F-09.7), in any file. */
+  comments?: readonly LineCard[];
+  /** The change the arrow keys made current, when it is in this file (F-30.6). */
+  current?: DiffCurrent;
+  /** Brings the focused note's card into view once per value, a `nextNonce` (N, F-30.6). */
+  revealFocus?: number;
+  /** The file is marked reviewed in the step (F-07.10). */
+  reviewed?: boolean;
+  /** The header's Reviewed toggle (F-07.10); without it the header has none. */
+  onReviewed?: () => void;
 }
 
 /** Where a thread sits in the diff: its new-side line, else its old-side line. */
@@ -43,8 +58,9 @@ function threadAt(thread: Thread): { key: string; line: number } | null {
 }
 
 /**
- * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes", then the split diff with fold
- * rows, gutter squares and thread icons, the focused note and open threads under their lines.
+ * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes" and the Reviewed toggle
+ * (F-07.10), then the split diff with fold rows, gutter squares and thread icons, the focused note
+ * and open threads under their lines.
  */
 export function StepFile({
   sessionId,
@@ -61,6 +77,11 @@ export function StepFile({
   answer,
   selected,
   onPickLine,
+  comments = [],
+  current,
+  revealFocus,
+  reviewed = false,
+  onReviewed,
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
@@ -126,6 +147,39 @@ export function StepFile({
       </div>,
     );
   }
+  // A line comment opens the fold it is in, so the reader finds it where they wrote it (F-09.7).
+  const unfold = new Set<string>();
+  let reveal: { at: string; nonce: number } | undefined;
+  const focusedHere = guide ? undefined : findings.find(({ finding }) => finding.id === focus);
+  if (focusedHere && revealFocus !== undefined) {
+    reveal = {
+      at: lineKey(focusedHere.finding.side, focusedHere.finding.line),
+      nonce: revealFocus,
+    };
+  }
+  if (
+    answer?.file === path &&
+    answer.reveal !== undefined &&
+    answer.reveal > (reveal?.nonce ?? 0)
+  ) {
+    reveal = { at: lineKey(answer.side, answer.line), nonce: answer.reveal };
+  }
+  for (const card of comments) {
+    if (card.file !== path) continue;
+    const at = lineKey(card.side, card.line);
+    unfold.add(at);
+    push(
+      inserts,
+      at,
+      <div key={card.id} className={styles.inlineCard}>
+        {card.node}
+      </div>,
+    );
+    // The latest request wins: a comment opened after N, or N after the comment.
+    if (card.reveal !== undefined && card.reveal > (reveal?.nonce ?? 0)) {
+      reveal = { at, nonce: card.reveal };
+    }
+  }
   for (const thread of threads) {
     const at = threadAt(thread);
     if (!at) continue;
@@ -162,12 +216,15 @@ export function StepFile({
             <span className={styles.del}>−{file.deletions}</span>
           </span>
         </span>
-        {findings.length > 0 && (
-          <span className={styles.noteCount}>
-            <span className={styles.noteSquare} aria-hidden="true" />
-            {open === 1 ? '1 note' : `${String(open)} notes`}
-          </span>
-        )}
+        <span className={styles.fileTools}>
+          {findings.length > 0 && (
+            <span className={styles.noteCount}>
+              <span className={styles.noteSquare} aria-hidden="true" />
+              {open === 1 ? '1 note' : `${String(open)} notes`}
+            </span>
+          )}
+          {onReviewed && <FileReviewed path={path} reviewed={reviewed} onToggle={onReviewed} />}
+        </span>
       </div>
       <DiffView
         path={path}
@@ -178,6 +235,7 @@ export function StepFile({
         folds={diffFolds}
         markers={markers}
         inserts={inserts}
+        unfold={unfold}
         selection={selection}
         onPickLine={
           onPickLine
@@ -187,6 +245,8 @@ export function StepFile({
             : undefined
         }
         scrollRoot={scrollRoot}
+        reveal={reveal}
+        current={current}
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />
     </section>

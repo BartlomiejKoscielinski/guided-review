@@ -36,11 +36,15 @@ owner ──(optional, async: reads results, may veto a logged decision, answers
 Conductor session (main checkout, milestone branch, Opus)            docs/process/DECISIONS-PENDING.md
   loop: backlog next → pipeline(item) → gate → reflect → record → (curate/retro every N)
   Stop hook: continue while ready items ∧ budget ∧ iterations < cap ∧ no .autopilot/STOP
-        │ foreground Agent calls, one role at a time (reading roles may run in parallel)
+        │ foreground Agent calls, one role at a time (reading roles may run in parallel;
+        │ the test author of the next item runs in the background, §3.4)
         v
-  Worktree ../gr-ap, branch ap/<item> from the milestone branch
-    1 Test author (Opus)    → failing tests 'F-xx.n …' from spec/screen/mock only → commit, tests locked
+  Worktree ../gr-ap (port 1510), branch ap/<item> from the milestone branch
+    1 Test author (Sonnet)  → failing tests 'F-xx.n …' from spec/screen/mock only → commit, tests locked
+                              (skipped when the item comes with tests written ahead: §3.4)
     2 Implementer (Opus core / Sonnet UI) → code until tests pass, /verify → commit
+       ┆ background: test author of the next ready item in ../gr-ap-2 (port 1511),
+       ┆ branch ap/<next> from the tip of ap/<item> → status tests-ready (§3.4)
     3 Reviewer (Opus, fresh)  → findings JSON (+ /design-check structure for UI)
        ↺ implementer fix round (max 2)
     4 Gate (script, no LLM)    → verify (+e2e for UI), audit, locked tests unchanged, owns, rule greps
@@ -52,12 +56,12 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 | File | Committed | Content |
 | - | - | - |
-| `docs/process/backlog.json` | yes | Items synced from `PROGRESS.md` + `plans/<Mx>.md`: `{id, milestone, title, kind: core\|ui\|docs\|mixed, deps[], status: todo\|tests\|impl\|review\|done\|partial\|live\|blocked\|needs-owner, attempts, lockSha?, branch?, note}`. JSON, not Markdown (agents mangle it less). Only the conductor and `backlog.mjs` write it. |
+| `docs/process/backlog.json` | yes | Items synced from `PROGRESS.md` + `plans/<Mx>.md`: `{id, milestone, title, kind: core\|ui\|docs\|mixed, deps[], status: todo\|tests\|tests-ready\|impl\|review\|done\|partial\|live\|blocked\|needs-owner, attempts, lockSha?, tests?, forkSha? (only while tests-ready, §3.4), disputes?, note}`. JSON, not Markdown (agents mangle it less). Only the conductor and `backlog.mjs` write it. |
 | `docs/process/playbook.json` | yes | `[{id, tags[], text, helpful, harmful, created, lastUsed, source}]`; tags = path globs, item kinds, roles. |
 | `docs/process/DECISIONS-PENDING.md` | yes | Decision log: `ID · date · item · question · chosen — why · alternatives · reversible · status (decided/accepted/vetoed)`. |
 | `.metrics/items.jsonl` | yes | One row per item attempt: tokens per role, wall time, gate first pass, rounds, findings by severity, result, escaped defects (filled later). |
 | `.autopilot/run.json` | no | `{runId, startedAt, iterations, cap, budgetTokens, milestone}`; `.autopilot/STOP` = kill switch. |
-| `.autopilot/items/<id>/` | no | Role verdicts (`tests.json`, `impl.json`, `review.json`, `gate.json`), the context pack. |
+| `.autopilot/items/<id>/` | no | Role verdicts (`tests.json`, `impl.json`, `review.json`, `gate.json`), the context pack; `tests-discarded.json` = tests ahead that were thrown away (§3.4). |
 
 ### 3.2 Decision policy (replaces "stop and ask" for the autopilot)
 
@@ -69,9 +73,22 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 - Iteration cap per run (default 12 items), daily token budget from the metrics ledger, kill switch `.autopilot/STOP`.
 - Max 2 fix rounds and 2 attempts per item → `blocked` with a report, next item.
-- No destructive git outside `../gr-ap` and the `ap/*` branches; nothing is pushed; the owner opens PRs.
+- No destructive git outside `../gr-ap`, `../gr-ap-2` and the `ap/*` branches; nothing is pushed; the owner opens PRs.
 - Self-modification allowlist: retro/curator may change `docs/process/playbook.json`, `.claude/skills/**` (except non-negotiable text), `tools/autopilot/**`; the curator adds learned rules to `.claude/autopilot/roles/*.md` only through `playbook.mjs promote` (covered by the `node tools/autopilot/*` allow rule, so no approval is needed). Never `CLAUDE.md` non-negotiables, `docs/0*.md` decisions, security rules.
 - Explicit `allow` rules for the few operations the classifier blocks (auto mode falls back to manual prompts after 3 blocks in a row or 20 per session).
+
+### 3.4 Tests ahead (E22)
+
+Why: in run ap-20261015-1609 an item took 44 min, 12 of them the test author's. The test author of the next item needs neither the review nor the gate of the current one, so it works while they run. Application code stays single-threaded (principle 1): only tests are written in parallel, on their own branch, and no agent merges anything; the merge is a git step of `worktree.mjs` with a fixed rule (E4's integrator is what this avoids).
+
+- **Two fixed worktrees.** `../gr-ap` (port 1510) implements, reviews and gates one item at a time, as before. `../gr-ap-2` (port 1511) holds only the test author of the next item. It keeps only committed work: before every use `worktree.mjs` drops what a stopped author left uncommitted.
+- **When.** Right after the implementer of item X commits, `backlog.mjs ahead X` names the item Y that `next` returns once X is done, if Y still needs a test author (`todo`, no lock) and the run does not end after X (cap, budget, `.autopilot/STOP`; the Stop hook's own rule, `runEnding`). Else nothing runs ahead.
+- **Where.** `worktree.mjs ahead Y --from X` puts `../gr-ap-2` on a fresh `ap/<Y>` from the tip of `ap/<X>`, so the author sees X's code (`fork` = that tip). The prompt (`prompt.mjs tests Y --ahead X`) says so: X may still change in a fix round; leave X's files alone where possible. Every criterion writes its browser tests in a spec of its own (`tests/e2e/<screen>-<slug>.spec.ts`, role `tests.md`), never in a spec or helper another criterion wrote, so the two branches rarely touch the same file.
+- **Background, no polling.** The conductor starts that author with the Agent tool and `run_in_background`, then goes on with X's review, fix rounds, gate and reflection. When its notification arrives: tests committed → `backlog.mjs set Y tests-ready --lock <sha> --tests … --fork <fork>`; failed or needs-owner → `worktree.mjs discard Y` (and needs-owner as usual).
+- **Waiting.** If the loop reaches Y while its author still works, the conductor ends the turn with one line without the marker (`Waiting for the tests of Y.`). The Stop hook continues only a turn with the marker (`decide`: "not the conductor"), so it lets this turn end and counts no iteration; the agent's end notification wakes the conductor, which records the tests and goes on with Y.
+- **Taking them over.** `worktree.mjs ready Y` (status `tests-ready`) frees the branch in `../gr-ap-2`, checks the fork is on the milestone branch (X passed its gate and was merged) and merges the milestone branch into `ap/<Y>` (X's fix rounds and PROGRESS tick). It prints `tests: "kept"` and `lock` = the merge commit: the gate compares the locked tests with it, so what the merge brought from the milestone branch is not a change of them, and its `commits` list skips the merge (`git log --no-merges`). Y's implementer starts from there.
+- **Thrown away.** X not merged (blocked, needs-owner) or a merge conflict → `tests: "discarded"` with the reason; `ap/<Y>` starts again from the milestone branch, `backlog.mjs set Y tests --attempt --discard` drops the lock, and Y's tests are written again in `../gr-ap` as before. Cost: what it costs today, plus the discarded author. A branch a stopped author left in `../gr-ap-2` is discarded the same way.
+- **Measure and verdict.** Run time per finished criterion (`pace`), because the times of single items now overlap. The conductor judges E22 itself at Closing (`judge.mjs --run <id> --against ap-20261015-1609 --pace-below 40`, no LLM) and the retro skill applies `keep` or `revert`; `wait` while fewer than 3 items finished or one came with tests from an earlier run. The tokens of a test author working ahead count for its item (`record.mjs` takes the tests role from the run's start). See E22 in `IMPROVEMENTS.md`.
 
 ## 4. Build list
 
@@ -121,7 +138,7 @@ Later (not in A-1…A-3): a golden set of 3 already-done ACs re-run from their p
 
 | Risk | Mitigation |
 | - | - |
-| Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Opus for tests (E16), Sonnet for reflect and UI |
+| Cost per AC higher than a session | accepted; measured per role in `items.jsonl`; Sonnet for tests, reflect and UI (Opus for tests in E16, reverted) |
 | Decisions drift in the wrong direction | spec, mocks and design system first, then named UI/UX principles with a "why"; the fresh reviewer judges open UI/UX choices; logged in `DECISIONS-PENDING.md`; an owner veto at any time → rework item |
 | Classifier blocks stall the loop | allow rules; blocked commands are reported, never worked around |
 | Agents game the tests | lock + gate diff check; reviewer sees the tests and the diff |

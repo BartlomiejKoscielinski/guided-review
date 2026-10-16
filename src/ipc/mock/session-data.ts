@@ -1,6 +1,7 @@
 import type { Draft } from '../types/Draft';
 import type { Finding } from '../types/Finding';
 import type { Layout } from '../types/Layout';
+import type { Mode } from '../types/Mode';
 import type { MrRow } from '../types/MrRow';
 import type { Source } from '../types/Source';
 import type { Strategy } from '../types/Strategy';
@@ -25,8 +26,16 @@ export interface StoredState {
   currentStep: string | null;
   /** The layout the session was opened in or the last one chosen; null: `ui.focusLayout`. */
   layout: Layout | null;
+  /** The mode the session was opened in or the last one toggled to; null: `ui.startIn`. */
+  mode?: Mode | null;
+  /** S-02 showed the session's plan (F-08.3); missing in data kept before it existed. */
+  planOpened?: boolean;
   scroll: Record<string, number>;
   checklist: Record<string, string[]>;
+  /** The files of each step marked reviewed on their own (F-07.10); missing in older data. */
+  files?: Record<string, string[]>;
+  /** When the session was opened (ISO 8601): the core's `updated_at` for its card (F-04.1). */
+  openedAt?: string;
 }
 
 /** Everything the mock knows about review sessions. */
@@ -101,6 +110,7 @@ export function stateOf(data: SessionData, sessionId: string): StoredState {
   const state = (data.states[sessionId] ??= {
     currentStep: null,
     layout: null,
+    mode: null,
     scroll: {},
     checklist: {},
   });

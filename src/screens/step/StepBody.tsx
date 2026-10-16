@@ -1,33 +1,30 @@
-import { useCallback, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useState, type RefObject } from 'react';
 import { cx } from '../../components/cx';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
-import type { Finding } from '../../ipc/types/Finding';
-import type { Severity } from '../../ipc/types/Severity';
+import type { FileDiff } from '../../ipc/types/FileDiff';
 import { useFocusStore } from '../../state/focus';
+import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
+import { useWalkStore } from '../../state/walk';
 import { selectionOf, type AskState } from './askState';
 import { GuidePanel } from './GuidePanel';
 import { NotesRequest } from './notesRequest';
 import { SelectionBar } from './SelectionBar';
 import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
+import { lastLine, nextNonce } from './lineComment';
+import { useArrowWalk, useCurrentChange } from './useArrowWalk';
+import { useLineComments } from './useLineComments';
+import { useFileMarks } from './useFileMarks';
 import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
+import { useReviewKeys } from './useReviewKeys';
 import { useSelfReview } from './useSelfReview';
+import { useStepFocus } from './useStepFocus';
 import { useStepScroll } from './useStepScroll';
 import styles from './Step.module.css';
 
-const SEVERITY_RANK: Record<Severity, number> = { fix: 0, q: 1, nit: 2 };
-
-/**
- * The note focused when a step opens: the first open note of the highest severity (Review.dc.html
- * opens on its first Should fix, f2), else the first note.
- */
-function firstFocus(findings: Finding[]): string | null {
-  const open = findings.filter((f) => f.decision === 'open');
-  const pick = [...open].sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity])[0];
-  return pick?.id ?? findings[0]?.id ?? null;
-}
+const NO_FILES: readonly FileDiff[] = [];
 
 export interface StepBodyProps {
   sessionId: string;
@@ -39,10 +36,11 @@ export interface StepBodyProps {
 }
 
 /**
- * The step of S-03 in the shared layout (F-07.1). It owns the step's state - the focused note and
- * the open answer card - and stays mounted when the layout changes, so A, B and C show the same
- * step, note, scroll position and answer: A the main column, B the same with a floating toolbar,
- * C a guide panel on the right. The step opens where it was scrolled last (F-04.3).
+ * The step of S-03 in the shared layout (F-07.1). It stays mounted when the layout changes, so A,
+ * B and C show the same step, note, scroll position and answer: A the main column, B the same with
+ * a floating toolbar, C a guide panel on the right. The step's state - the focused note, the
+ * selected lines and the open answer card - is kept in `state/review.ts`, so S-04 and S-03 show
+ * the same state after a mode switch (F-08.1). The step opens where it was scrolled last (F-04.3).
  */
 export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }: StepBodyProps) {
   const layout = useFocusStore((s) => s.layout);
@@ -52,24 +50,92 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   const findings = notes.data?.findings ?? [];
   const kept = useSessionState(sessionId).data?.scroll[stepId] ?? 0;
   const writer = useSessionStateWriter(sessionId);
-  useStepScroll(mainRef, step.data !== undefined && !notes.isFetching, kept, (top) => {
+  // A step the arrow keys opened shows the change they made current, not where it was left.
+  const [walked] = useState(() => {
+    const entry = useWalkStore.getState().entry;
+    return entry?.sessionId === sessionId && entry.stepId === stepId;
+  });
+  useStepScroll(mainRef, !walked && step.data !== undefined && !notes.isFetching, kept, (top) => {
     writer.setScroll(stepId, top);
   });
   const toggleReviewed = useMarkReviewed(sessionId, stepId, step.data?.reviewed);
-  const [focus, setFocus] = useState<string | null>(null);
-  const [ask, setAsk] = useState<AskState | null>(null);
-  // Picked once per set of notes, so deciding the focused note doesn't move the focus away.
-  const [initial, setInitial] = useState<{ ids: string; id: string | null } | null>(null);
-  const ids = findings.map((f) => f.id).join(' ');
-  if (initial?.ids !== ids) setInitial({ ids, id: firstFocus(findings) });
-  const focused = focus ?? (initial?.ids === ids ? initial.id : firstFocus(findings));
+  const key = reviewKey(sessionId, stepId);
+  const claim = useReviewStore((s) => s.claim);
+  const change = useReviewStore((s) => s.change);
+  useEffect(() => {
+    claim(key);
+  }, [claim, key]);
+  const ask = useStepReview(key, 'ask');
+  const { focused, setFocus } = useStepFocus(key, findings);
 
   const openAsk = (selection: AskState['selection'], question?: string) => {
-    setAsk((old) => ({ selection, question, focusInput: true, nonce: (old?.nonce ?? 0) + 1 }));
+    change(key, (s) => ({
+      ask: { selection, question, focusInput: true, nonce: (s.ask?.nonce ?? 0) + 1 },
+    }));
   };
   // Questions from the toolbar, the guide and the "Selected lines" group are about the selected
   // lines, if any; otherwise about the whole step (F-10.1).
-  const lines = useLineSelection();
+  const lines = useLineSelection(key);
+  // The review keys (F-30.6, M4 decisions 14 and 15): ↓/↑ walk the changes and mark each file
+  // past its end, →/← the files, Space the current file's mark, N notes (the picked note's card
+  // comes into view), D/X decide, A asks (an open answer card keeps its answer and takes the
+  // focus), C comments at the current change, Ctrl+Shift+O Rider. At the end of the last step ↓
+  // moves the focus to the title bar's Finish review (F-30.3).
+  const [current, setCurrent] = useCurrentChange(stepId);
+  const [noteReveal, setNoteReveal] = useState<{ id: string; nonce: number } | null>(null);
+  // Layout C's ask field in the guide panel, focused by A while no answer card is open there.
+  const [guideAsk, setGuideAsk] = useState(0);
+  const keys = useReviewKeys({
+    sessionId,
+    files: step.data?.files ?? [],
+    findings,
+    focused,
+    selection: lines.selection,
+    current,
+    onNote: (id) => {
+      setFocus(id);
+      setNoteReveal({ id, nonce: nextNonce() });
+    },
+    onAsk: () => {
+      if (ask) change(key, (s) => (s.ask ? { ask: { ...s.ask, focus: nextNonce() } } : {}));
+      else if (layout === 'C') setGuideAsk((n) => n + 1);
+      else openAsk(lines.selection);
+    },
+  });
+  // File marks (F-07.10): each file header's Reviewed toggle; Space toggles the file of the
+  // current change, else the step's first file.
+  const marks = useFileMarks({
+    sessionId,
+    stepId,
+    files: step.data?.files ?? NO_FILES,
+    stepReviewed: step.data?.reviewed,
+    current: current?.file,
+  });
+  useArrowWalk({
+    sessionId,
+    stepId,
+    files: step.data?.files,
+    current,
+    setCurrent,
+    mark: marks.mark,
+    prev: step.data?.prev,
+    next: step.data?.next,
+    go: onGo,
+    scrollRoot: mainRef,
+    onFinish: () => {
+      document.querySelector<HTMLElement>('[data-finish-review]')?.focus();
+    },
+  });
+  // Line comments (F-09.7): C or Comment opens the composer under the last selected line, else in
+  // the current change (M4 decision 13).
+  const comments = useLineComments({
+    sessionId,
+    stepId,
+    files: step.data?.files ?? [],
+    folds: notes.data?.folds ?? [],
+    selfReview,
+    current,
+  });
   const selected = lines.selection && {
     selection: lines.selection,
     bar: (
@@ -77,6 +143,9 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
         selection={lines.selection}
         onAsk={() => {
           openAsk(lines.selection);
+        }}
+        onComment={() => {
+          if (lines.selection) comments.open(lastLine(lines.selection));
         }}
         onClear={lines.clear}
       />
@@ -107,6 +176,11 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             {step.error.message}
           </p>
         )}
+        {keys.error && (
+          <p role="alert" className={styles.error}>
+            {keys.error.message}
+          </p>
+        )}
         {view && inPage && (
           <StepMain
             sessionId={sessionId}
@@ -126,6 +200,10 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             }}
             selected={selected}
             onPickLine={lines.pick}
+            comments={comments.cards}
+            current={current}
+            noteReveal={noteReveal}
+            marks={marks}
           />
         )}
       </main>
@@ -140,6 +218,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
           onFocus={setFocus}
           ask={ask}
           onToggleReviewed={toggleReviewed}
+          focusAsk={guideAsk}
           onAskQuestion={(question) => {
             openAsk(lines.selection, question);
           }}

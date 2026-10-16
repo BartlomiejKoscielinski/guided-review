@@ -18,4 +18,9 @@ include: boolean, publishedNoteId: number | null,
 /**
  * Why the last Publish of this draft failed.
  */
-error: string | null, };
+error: string | null, 
+/**
+ * The plan step it belongs to (F-08.3): the note's step, else the step holding the hunk of
+ * its line; `None` for a comment on the merge request or a line in no step.
+ */
+stepId: string | null, };

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { isShortcutChord, type ShortcutId } from '../app/shortcuts';
 
 /** S-03 layouts (F-07.1): A Sidebar, B Minimal, C Guide. */
 export type FocusLayout = 'A' | 'B' | 'C';
@@ -20,11 +21,21 @@ export const useFocusStore = create<FocusState>()((set) => ({
   },
 }));
 
-/** `Ctrl+1/2/3` without Alt or Shift (so AltGr chords on Polish keyboards don't trigger it). */
-export function layoutShortcut(event: KeyboardEvent): FocusLayout | null {
-  if (!event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) return null;
-  if (event.key === '1') return 'A';
-  if (event.key === '2') return 'B';
-  if (event.key === '3') return 'C';
-  return null;
+/** The layout shortcuts of the table (`Ctrl+1/2/3`, F-30.6; F-19.7 edits it). */
+const LAYOUT_SHORTCUTS: readonly [ShortcutId, FocusLayout][] = [
+  ['sidebarLayout', 'A'],
+  ['minimalLayout', 'B'],
+  ['guideLayout', 'C'],
+];
+
+/**
+ * The layout of a pressed layout shortcut (`Ctrl+1/2/3` in the shortcuts table), with exactly its
+ * modifiers (so AltGr chords on Polish keyboards don't trigger it). `matches` narrows where a key
+ * acts: the app's keys leave a key without Ctrl, Alt or Win to a text field (F-19.7).
+ */
+export function layoutShortcut(
+  event: KeyboardEvent,
+  matches: (event: KeyboardEvent, id: ShortcutId) => boolean = isShortcutChord,
+): FocusLayout | null {
+  return LAYOUT_SHORTCUTS.find(([id]) => matches(event, id))?.[1] ?? null;
 }

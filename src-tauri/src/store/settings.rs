@@ -10,7 +10,8 @@ use serde_json::{Map, Value};
 use super::StoreError;
 use crate::settings::{REPLACED_WHOLE, Settings};
 
-/// Object-valued keys that are stored whole in one row (`claude.tasks.<group>`, `ui.lastRoute`).
+/// Object-valued keys that are stored whole in one row (`claude.tasks.<group>`, `ui.lastRoute`,
+/// `ui.shortcuts`).
 fn is_object_key(key: &str) -> bool {
     REPLACED_WHOLE.contains(&key) || key.starts_with("claude.tasks.")
 }
@@ -136,6 +137,7 @@ mod tests {
             "ui.focusLayout",
             "ui.diffColors",
             "ui.lastRoute",
+            "ui.shortcuts",
             "os.startWithWindows",
             "os.closeToTray",
             "claude.path",
@@ -258,5 +260,63 @@ mod tests {
             stored.get("ui.lastRoute").map(String::as_str),
             Some(r#"{"screen":"S-07","section":"claude"}"#)
         );
+    }
+
+    /// F-19.1 Settings › General: each control saves its own key at once (the patches the S-07
+    /// rows send), and the values are read back after the app starts again.
+    #[test]
+    fn f19_1_general_settings_are_saved_one_by_one_and_survive_a_restart() {
+        use crate::review::model::Layout;
+        use crate::settings::DiffColors;
+
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir
+            .path()
+            .join("Zażółć gęślą jaźń")
+            .join("GuidedReview")
+            .join("guided-review.db");
+        let store = Store::open(&path).unwrap();
+        let fresh = store.with_conn(|c| load(c)).unwrap();
+        // Defaults: Focus, layout A, Blue · orange, Start with Windows off.
+        assert_eq!(fresh.ui.start_in, Mode::Focus);
+        assert_eq!(fresh.ui.focus_layout, Layout::A);
+        assert_eq!(fresh.ui.diff_colors, DiffColors::BlueOrange);
+        assert!(!fresh.os.start_with_windows);
+
+        for patch in [
+            json!({ "ui": { "startIn": "detailed" } }),
+            json!({ "ui": { "focusLayout": "C" } }),
+            json!({ "ui": { "diffColors": "green-red" } }),
+            json!({ "os": { "startWithWindows": true } }),
+        ] {
+            store.with_conn(|c| update(c, &patch)).unwrap();
+        }
+        drop(store);
+
+        let store = Store::open(&path).unwrap();
+        let s = store.with_conn(|c| load(c)).unwrap();
+        assert_eq!(s.ui.start_in, Mode::Detailed);
+        assert_eq!(s.ui.focus_layout, Layout::C);
+        assert_eq!(s.ui.diff_colors, DiffColors::GreenRed);
+        assert!(s.os.start_with_windows);
+        // Nothing else changed (the tray row is not part of General in M4, M4 decision 2).
+        assert_eq!(s.os.close_to_tray, fresh.os.close_to_tray);
+        assert_eq!(s.claude, fresh.claude);
+        let stored = store.with_conn(|c| Ok(rows(c))).unwrap();
+        assert_eq!(
+            stored.keys().map(String::as_str).collect::<Vec<_>>(),
+            [
+                "os.startWithWindows",
+                "ui.diffColors",
+                "ui.focusLayout",
+                "ui.startIn"
+            ]
+        );
+
+        // Start with Windows switches back off.
+        store
+            .with_conn(|c| update(c, &json!({ "os": { "startWithWindows": false } })))
+            .unwrap();
+        assert!(!store.with_conn(|c| load(c)).unwrap().os.start_with_windows);
     }
 }

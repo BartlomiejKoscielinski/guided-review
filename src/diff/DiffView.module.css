@@ -18,6 +18,13 @@
   width: 100%;
 }
 
+/* The hunk J/K made current (F-30.6): the focus outline on its first row, inside the row. */
+.current {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
 /* Shiki css-variables theme → syntax tokens (ADR-023). */
 .code {
   --shiki-foreground: var(--syn-plain);

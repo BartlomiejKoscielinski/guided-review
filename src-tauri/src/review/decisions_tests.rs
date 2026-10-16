@@ -420,3 +420,57 @@ fn f09_4_dismissals_keep_kind_review_file_and_time_for_the_rule_suggestions() {
         Ok(())
     });
 }
+
+// F-08.3: the rail counts drafts per step (`Draft.stepId`); a draft made from a note belongs to
+// the note's step, through every path that makes one and through the read path.
+#[test]
+fn f08_3_a_draft_from_a_note_belongs_to_the_notes_step() {
+    with(|c| {
+        record(
+            c,
+            "r1",
+            &StepAnalysis {
+                step_id: "s2".into(),
+                ..analysis(vec![Finding {
+                    step_id: "s2".into(),
+                    line: 9,
+                    ..finding("f3", "cccc")
+                }])
+            },
+        )?;
+        let added = decide(c, "f1", &FindingDecision::AddToDrafts, SUBJECT)?
+            .draft
+            .unwrap();
+        assert_eq!(added.step_id.as_deref(), Some("s1"));
+        // Edit and add, or a draft the UI makes with the note's ID.
+        let edited = drafts::create(
+            c,
+            &NewDraft {
+                session_id: "r1".into(),
+                finding_id: Some("f3".into()),
+                body: "Is the queue flushed here?".into(),
+                position: None,
+                severity: Some(Severity::Q),
+            },
+        )?;
+        assert_eq!(edited.step_id.as_deref(), Some("s2"));
+        // A comment on the merge request belongs to no step.
+        let general = drafts::create(
+            c,
+            &NewDraft {
+                session_id: "r1".into(),
+                finding_id: None,
+                body: "Looks good overall.".into(),
+                position: None,
+                severity: None,
+            },
+        )?;
+        assert_eq!(general.step_id, None);
+        let steps: Vec<Option<String>> = drafts::list(c, "r1")?
+            .into_iter()
+            .map(|d| d.step_id)
+            .collect();
+        assert_eq!(steps, [Some("s1".to_owned()), Some("s2".to_owned()), None]);
+        Ok(())
+    });
+}

@@ -15,9 +15,17 @@ pub mod steps_state;
 pub mod worktrees;
 
 #[cfg(test)]
+mod file_marks_tests;
+#[cfg(test)]
+mod session_mode_tests;
+#[cfg(test)]
+mod session_plan_opened_tests;
+#[cfg(test)]
 mod session_state_notes_tests;
 #[cfg(test)]
 mod session_state_tests;
+#[cfg(test)]
+mod shortcut_settings_tests;
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -206,7 +214,7 @@ mod tests {
         let version: i64 = again
             .with_conn(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(version, 5);
+        assert_eq!(version, 7);
     }
 
     #[test]
