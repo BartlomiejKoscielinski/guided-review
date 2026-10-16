@@ -223,4 +223,56 @@ mod tests {
         };
         assert_eq!(title(&range, None), "e07d3f1..9be0d47");
     }
+
+    /// F-19.1 A new session opens in Settings › General's Start in and Focus layout, as the
+    /// open commands pass them: the saved settings are read, the row is stored and the session's
+    /// state reads back the mode and layout.
+    fn opened_with_saved_settings(patch: serde_json::Value) -> (Mode, Layout) {
+        use crate::review::session_state;
+        use crate::store::{Store, repos, sessions, settings};
+
+        let store = Store::open_in_memory().unwrap();
+        store
+            .with_conn(|c| {
+                settings::update(c, &patch)?;
+                let saved = settings::load(c)?;
+                let repo = repos::add(c, "mobile ąę", r"C:\src\mobile ąę", None)?;
+                let resolved = Resolved {
+                    source: Source::Local {
+                        scope: crate::source::LocalScope::Staged,
+                    },
+                    base_sha: "a".into(),
+                    head_sha: "b".into(),
+                };
+                let (row, opened) =
+                    new_session(repo.id, resolved, saved.ui.start_in, saved.ui.focus_layout)
+                        .unwrap();
+                sessions::insert(c, &row)?;
+                let state = session_state::load(c, &opened.session_id)?.unwrap();
+                Ok((state.mode, state.layout))
+            })
+            .unwrap()
+    }
+
+    #[test]
+    fn f19_1_new_sessions_open_in_the_default_start_in_and_focus_layout() {
+        assert_eq!(
+            opened_with_saved_settings(serde_json::json!({})),
+            (Mode::Focus, Layout::A)
+        );
+    }
+
+    #[test]
+    fn f19_1_new_sessions_take_start_in_and_focus_layout_from_settings() {
+        assert_eq!(
+            opened_with_saved_settings(serde_json::json!({
+                "ui": { "startIn": "detailed", "focusLayout": "C" }
+            })),
+            (Mode::Detailed, Layout::C)
+        );
+        assert_eq!(
+            opened_with_saved_settings(serde_json::json!({ "ui": { "focusLayout": "B" } })),
+            (Mode::Focus, Layout::B)
+        );
+    }
 }
