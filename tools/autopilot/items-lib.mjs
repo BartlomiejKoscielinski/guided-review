@@ -30,18 +30,20 @@ const ROLE_ALIAS = { implement: 'impl' };
  * totals }] (`description` "ap <role> <item>", `start` ms, `totals` from metrics/transcript.mjs
  * tokenTotals). Every kind is summed (input, cache read and write, output), as the session ledger
  * counts cost; the cache read is kept apart for the comparison with the P-x sessions. Only
- * subagents of `item` started at or after `since` (ISO) count. Null when none matched.
+ * subagents of `item` started at or after `since` (ISO) count; the test author from `testsSince`
+ * (E22: tests written ahead start before their item, within the run). Null when none matched.
  */
-export function roleUsage(subagents, { item, since = null }) {
-  const from = since ? Date.parse(since) : null;
+export function roleUsage(subagents, { item, since = null, testsSince = null }) {
+  const at = (iso) => (iso ? Date.parse(iso) : null);
   const tokens = { total: 0 };
   let cacheRead = 0;
   let matched = 0;
   for (const s of subagents) {
     const m = /^ap (\S+) (\S+)$/.exec(s.description ?? '');
     if (!m || m[2] !== item) continue;
-    if (from !== null && s.start !== null && s.start < from) continue;
     const role = ROLE_OF(ROLE_ALIAS[m[1]] ?? m[1]);
+    const from = at(role === 'tests' && testsSince ? testsSince : since);
+    if (from !== null && s.start !== null && s.start < from) continue;
     const t = s.totals;
     const all = t.input + t.cacheRead + t.cacheWrite + t.output;
     tokens[role] = (tokens[role] ?? 0) + all;
@@ -173,4 +175,34 @@ export function summary(rows, run = null) {
   for (const [name, m] of Object.entries(METRICS)) out[name] = mean(pick.map(m.of));
   if (run) out.pace = pace(pick);
   return out;
+}
+
+/**
+ * The E22 verdict of one run against an earlier one, computed so that nobody has to judge it:
+ * `keep` when its `pace` is below `paceBelow` and neither the gate first pass nor the accepted test
+ * disputes got worse, else `revert` with the reasons. `wait` with fewer than `min` finished items,
+ * or when one of them came with tests written in an earlier run (its time would flatter the run).
+ */
+export function judgeRun(rows, { run, against, paceBelow, min = 3 }) {
+  const finished = rows.filter(
+    (r) => r.run === run && (r.result === 'done' || r.result === 'live'),
+  );
+  const now = summary(rows, run);
+  const before = summary(rows, against);
+  if (!before.items) throw new Error(`no rows of run ${against}`);
+  const pick = (s) => ({ pace: s.pace, gateFirstPass: s.gateFirstPass, disputes: s.disputes });
+  const out = { run, against, finished: new Set(finished.map((r) => r.item)).size, ...pick(now) };
+  out.before = pick(before);
+  const old = finished.filter((r) => !(r.tokens?.tests > 0)).map((r) => r.item);
+  if (out.finished < min)
+    return { verdict: 'wait', reasons: [`${out.finished} finished items, ${min} needed`], ...out };
+  if (old.length)
+    return { verdict: 'wait', reasons: [`tests from an earlier run: ${old.join(', ')}`], ...out };
+  const reasons = [];
+  if (now.gateFirstPass < before.gateFirstPass)
+    reasons.push(`gate first pass ${now.gateFirstPass} < ${before.gateFirstPass}`);
+  if (now.disputes > before.disputes)
+    reasons.push(`accepted test disputes ${now.disputes} > ${before.disputes}`);
+  if (!(now.pace < paceBelow)) reasons.push(`pace ${now.pace} min is not below ${paceBelow}`);
+  return { verdict: reasons.length ? 'revert' : 'keep', reasons, ...out };
 }
