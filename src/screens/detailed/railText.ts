@@ -17,10 +17,15 @@ export function orderCaption(order: StepOrder): string {
   }
 }
 
+/** A step's size: `N files · +add −del`, without `−0` (the rail row, the end-of-step card). */
+export function stepSize(stats: ChangeStats): string {
+  const del = stats.deletions > 0 ? ` −${String(stats.deletions)}` : '';
+  return `${filesLabel(stats)} · +${String(stats.additions)}${del}`;
+}
+
 /** A step row's second line: `layer · N files · +add −del`, without `−0`. */
 export function stepMeta(layer: Layer, stats: ChangeStats): string {
-  const del = stats.deletions > 0 ? ` −${String(stats.deletions)}` : '';
-  return `${LAYER_LABEL[layer]} · ${filesLabel(stats)} · +${String(stats.additions)}${del}`;
+  return `${LAYER_LABEL[layer]} · ${stepSize(stats)}`;
 }
 
 /** What a step row shows at its end. */

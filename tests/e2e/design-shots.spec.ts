@@ -278,6 +278,8 @@ const SHOTS: Shot[] = [
       await page.keyboard.press('Control+d');
       await page.getByText('Claude · step 4').waitFor();
       await page.getByText('Claude: steps 5–6 ready', { exact: true }).waitFor();
+      // Main.dc.html ends the main column with the end-of-step card (F-08.9).
+      await page.getByText('End of step 4', { exact: true }).waitFor();
       // Main.dc.html opens with the first "For you to judge" check ticked (1/3).
       await page
         .getByRole('checkbox', {

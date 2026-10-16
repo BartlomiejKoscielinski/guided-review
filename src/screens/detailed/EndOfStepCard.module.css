@@ -1,0 +1,40 @@
+/* S-04 end-of-step card (F-08.9, Main.dc.html under the step's files; docs/03). Colors only from
+   tokens; Next step and Finish review are the yellow primary Button at 40px. */
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 28px 28px 40px;
+  padding: 18px 20px;
+  background: var(--panel);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kicker {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.line {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.title {
+  font-weight: 600;
+}
+
+.meta {
+  color: var(--text-secondary);
+}

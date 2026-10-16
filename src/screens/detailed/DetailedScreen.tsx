@@ -10,6 +10,7 @@ import { useStepFocus } from '../step/useStepFocus';
 import { useStepSession } from '../step/useStepSession';
 import { DetailedFile } from './DetailedFile';
 import { DetailedStepHeader } from './DetailedStepHeader';
+import { EndOfStepCard } from './EndOfStepCard';
 import { Footer } from './Footer';
 import { GuideAside } from './GuideAside';
 import { InfoHeader } from './InfoHeader';
@@ -93,6 +94,10 @@ export function DetailedScreen() {
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
               />
             ))}
+          {/* Under the files once they are read (or under their error), so it does not jump. */}
+          {step && view && index >= 0 && (files.data !== undefined || files.isError) && (
+            <EndOfStepCard view={view} step={step} />
+          )}
         </main>
         {step && index >= 0 ? (
           <GuideAside
