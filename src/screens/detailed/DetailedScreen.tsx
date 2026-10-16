@@ -5,6 +5,8 @@ import type { Finding } from '../../ipc/types/Finding';
 import { reviewKey, useReviewStore } from '../../state/review';
 import { selectionOf } from '../step/askState';
 import { pathOf } from '../step/diffPath';
+import { nextNonce } from '../step/lineComment';
+import { useLineComments } from '../step/useLineComments';
 import { useSelfReviewKnown } from '../step/useSelfReview';
 import { useStepFocus } from '../step/useStepFocus';
 import { useStepSession } from '../step/useStepSession';
@@ -54,10 +56,19 @@ export function DetailedScreen() {
   const onPick = useCallback(
     (id: string) => {
       setFocus(id);
-      setReveal((r) => ({ id, nonce: (r?.nonce ?? 0) + 1 }));
+      setReveal({ id, nonce: nextNonce() });
     },
     [setFocus],
   );
+  // Line comments (F-09.7): S-04 draws no line selection, so C opens the composer under the line
+  // S-03 left selected, else under the step's first changed line (no Claude folds here).
+  const comments = useLineComments({
+    sessionId,
+    stepId: step?.id ?? '',
+    files: files.data?.files ?? [],
+    folds: [],
+    selfReview: selfReview ?? false,
+  });
   const onAsk = (finding: Finding) => {
     if (key === null) return;
     change(key, (s) => ({
@@ -92,6 +103,7 @@ export function DetailedScreen() {
                 selfReview={selfReview}
                 onAsk={onAsk}
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
+                comments={comments.cards}
               />
             ))}
           {/* Under the files once they are read (or under their error), so it does not jump. */}

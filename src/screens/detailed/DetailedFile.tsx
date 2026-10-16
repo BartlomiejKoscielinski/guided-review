@@ -7,6 +7,7 @@ import type { Finding } from '../../ipc/types/Finding';
 import { useDetailedStore } from '../../state/detailed';
 import { pathOf } from '../step/diffPath';
 import { NoteMark } from '../step/GutterMarks';
+import type { LineCard } from '../step/useLineComments';
 import { FileBar } from './FileBar';
 import { NoteCallout } from './NoteCallout';
 import styles from './NoteCallout.module.css';
@@ -29,6 +30,8 @@ export interface DetailedFileProps {
    * brought into view (F-08.7).
    */
   reveal?: number;
+  /** The step's line comments and the open composer (F-09.7), in any file. */
+  comments?: readonly LineCard[];
 }
 
 /**
@@ -46,6 +49,7 @@ export function DetailedFile({
   selfReview,
   onAsk,
   reveal,
+  comments = [],
 }: DetailedFileProps) {
   const path = pathOf(file);
   const layout = useDetailedStore((s) => s.layout);
@@ -98,6 +102,24 @@ export function DetailedFile({
     }
   }
 
+  // The composer opened last, or the note picked last, is brought into view: both numbers grow
+  // with every request (`nextNonce`).
+  let latest =
+    reveal !== undefined && focusedAt !== undefined ? { at: focusedAt, nonce: reveal } : undefined;
+  for (const card of comments) {
+    if (card.file !== path) continue;
+    const at = lineKey(card.side, card.line);
+    inserts.set(at, [
+      ...(inserts.get(at) ?? []),
+      <div key={card.id} className={styles.row}>
+        {card.node}
+      </div>,
+    ]);
+    if (card.reveal !== undefined && card.reveal > (latest?.nonce ?? 0)) {
+      latest = { at, nonce: card.reveal };
+    }
+  }
+
   return (
     <section aria-label={path}>
       <FileBar
@@ -116,11 +138,7 @@ export function DetailedFile({
         scrollRoot={scrollRoot}
         markers={markers}
         inserts={inserts.size > 0 ? inserts : undefined}
-        reveal={
-          reveal !== undefined && focusedAt !== undefined
-            ? { at: focusedAt, nonce: reveal }
-            : undefined
-        }
+        reveal={latest}
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />
     </section>

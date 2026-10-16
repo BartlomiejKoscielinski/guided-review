@@ -32,6 +32,8 @@ export interface StepMainProps {
   /** The step's selected lines with their "Selected lines" group (F-10.1). */
   selected: StepFileProps['selected'];
   onPickLine: NonNullable<StepFileProps['onPickLine']>;
+  /** The step's line comments and the open composer (F-09.7). */
+  comments: StepFileProps['comments'];
 }
 
 /**
@@ -55,6 +57,7 @@ export function StepMain({
   onAsk,
   selected,
   onPickLine,
+  comments,
 }: StepMainProps) {
   const findings = analysis?.findings ?? [];
   const next = view.next;
@@ -143,6 +146,7 @@ export function StepMain({
             }
             selected={selected}
             onPickLine={onPickLine}
+            comments={comments}
           />
         );
       })}

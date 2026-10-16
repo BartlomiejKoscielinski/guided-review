@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { TaskPhase } from '../ipc/hooks/useReview';
 import type { AskState } from '../screens/step/askState';
+import type { LineComment } from '../screens/step/lineComment';
 import type { PickedLines } from '../screens/step/lineSelection';
 
 /** Claude's answer in an open answer card (F-10): kept here so it outlives the card. */
@@ -27,9 +28,17 @@ export interface StepReview {
   /** The open answer card. */
   ask: AskState | null;
   thread: AskThread | null;
+  /** The open line comment composer (F-09.7). */
+  comment: LineComment | null;
 }
 
-export const NO_REVIEW: StepReview = { focus: null, picked: null, ask: null, thread: null };
+export const NO_REVIEW: StepReview = {
+  focus: null,
+  picked: null,
+  ask: null,
+  thread: null,
+  comment: null,
+};
 
 type Patch = (state: StepReview) => Partial<StepReview>;
 

@@ -10,6 +10,8 @@ import { NotesRequest } from './notesRequest';
 import { SelectionBar } from './SelectionBar';
 import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
+import { lastLine } from './lineComment';
+import { useLineComments } from './useLineComments';
 import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
 import { useSelfReview } from './useSelfReview';
@@ -62,6 +64,14 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   // Questions from the toolbar, the guide and the "Selected lines" group are about the selected
   // lines, if any; otherwise about the whole step (F-10.1).
   const lines = useLineSelection(key);
+  // Line comments (F-09.7): C or Comment opens the composer under the last selected line.
+  const comments = useLineComments({
+    sessionId,
+    stepId,
+    files: step.data?.files ?? [],
+    folds: notes.data?.folds ?? [],
+    selfReview,
+  });
   const selected = lines.selection && {
     selection: lines.selection,
     bar: (
@@ -69,6 +79,9 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
         selection={lines.selection}
         onAsk={() => {
           openAsk(lines.selection);
+        }}
+        onComment={() => {
+          if (lines.selection) comments.open(lastLine(lines.selection));
         }}
         onClear={lines.clear}
       />
@@ -118,6 +131,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             }}
             selected={selected}
             onPickLine={lines.pick}
+            comments={comments.cards}
           />
         )}
       </main>
