@@ -11,6 +11,11 @@ export interface AskState {
   focusInput: boolean;
   /** Opening again remounts the card. */
   nonce: number;
+  /**
+   * A request to move the focus to the open card's question field (`A` while the card is open,
+   * F-30.6): a `nextNonce` number, so the card keeps its answer and also comes into view.
+   */
+  focus?: number;
 }
 
 /** The selection More › Ask Claude means: the note's line. */

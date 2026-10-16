@@ -22,12 +22,21 @@ export interface AnswerCardProps {
   autoFocus?: boolean;
   /** A question typed in the guide panel (layout C): asked once when the card opens. */
   initialQuestion?: string;
+  /** `AskState.focus`: a new request moves the focus to the question field (A, F-30.6). */
+  focus?: number;
   /**
    * The card's own input for follow-ups; S-04 asks them from the Guide aside's Ask box instead
    * (M4 decision 7).
    */
   followUp?: boolean;
 }
+
+/**
+ * The latest focus request a card handled (`AskState.focus`, a `nextNonce`): each moves the focus
+ * once, also when the card mounts after it (scrolled into the virtual window), but not again after
+ * a layout or mode switch.
+ */
+let focusHandled = 0;
 
 /** A draft from an answer sits on the selection's last line, or on the MR without one. */
 const positionOf = (selection: LineSelection | null): DiffPosition | null =>
@@ -47,6 +56,7 @@ export function AnswerCard({
   selfReview = false,
   autoFocus = false,
   initialQuestion,
+  focus = 0,
   followUp = true,
 }: AnswerCardProps) {
   const thread = useAsk(sessionId, stepId, nonce);
@@ -82,6 +92,11 @@ export function AnswerCard({
     // Once, when the card opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (focus <= focusHandled || field.current === null) return;
+    focusHandled = focus;
+    field.current.focus();
+  }, [focus]);
 
   return (
     <article className={styles.card} aria-label="Claude answer">

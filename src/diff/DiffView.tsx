@@ -51,9 +51,10 @@ export interface DiffViewProps {
   /** The +/− column; S-03 has none (Review.dc.html: 48px and 60px gutters, number then code). */
   signs?: boolean;
   /**
-   * Scrolls to the insert row under the line `at` each time `nonce` changes, so the row renders
-   * even when it is outside the virtual window (S-04's callout of a note picked in the Guide
-   * aside, F-08.7).
+   * Scrolls to the insert row under the line `at` once per request: each time `nonce` grows past
+   * the last one handled, so the row renders even when it is outside the virtual window (S-04's
+   * callout of a note picked in the Guide aside, F-08.7). An older request shown again (N's note
+   * once the composer opened after it is closed) does not scroll back to it (F-30.6).
    */
   reveal?: { at: string; nonce: number };
   /**
@@ -134,8 +135,11 @@ export function DiffView({
 
   const revealAt = reveal?.at;
   const revealNonce = reveal?.nonce;
+  const revealed = useRef(-Infinity);
   useEffect(() => {
-    if (revealAt === undefined) return;
+    if (revealAt === undefined || revealNonce === undefined || revealNonce <= revealed.current)
+      return;
+    revealed.current = revealNonce;
     const index = rows.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
     if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' });
     // Once per request: the rows and the virtualizer change with every scroll.

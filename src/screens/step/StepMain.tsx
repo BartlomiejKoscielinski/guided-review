@@ -82,6 +82,7 @@ export function StepMain({
         selection={ask.selection}
         selfReview={selfReview}
         autoFocus={ask.focusInput}
+        focus={ask.focus}
       />
     ) : null;
 
@@ -151,7 +152,13 @@ export function StepMain({
             guide={guide}
             answer={
               sel && answerNode
-                ? { file: sel.file, side: sel.side, line: sel.end, node: answerNode }
+                ? {
+                    file: sel.file,
+                    side: sel.side,
+                    line: sel.end,
+                    node: answerNode,
+                    reveal: ask.focus,
+                  }
                 : undefined
             }
             selected={selected}

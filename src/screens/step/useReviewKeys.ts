@@ -5,9 +5,11 @@ import type { IpcError } from '../../ipc/errors';
 import { useRiderOpen } from '../../ipc/hooks/useChanges';
 import { useDecide } from '../../ipc/hooks/useReview';
 import type { FileDiff } from '../../ipc/types/FileDiff';
+import type { FileStatus } from '../../ipc/types/FileStatus';
 import type { Finding } from '../../ipc/types/Finding';
 import type { Hunk } from '../../ipc/types/Hunk';
 import type { LineSelection } from '../../ipc/types/LineSelection';
+import type { Side } from '../../ipc/types/Side';
 import { pathOf } from './diffPath';
 import { nextNonce } from './lineComment';
 
@@ -20,30 +22,58 @@ export interface CurrentHunk {
 
 interface StepHunk {
   file: string;
+  status: FileStatus;
   hunk: Hunk;
 }
 
 /** The step's hunks over its files in diff order; a file-level hunk has no lines to show. */
 function stepHunks(files: readonly FileDiff[]): StepHunk[] {
   return files.flatMap((file) =>
-    file.hunks.filter((h) => !h.fileLevel).map((hunk) => ({ file: pathOf(file), hunk })),
+    file.hunks
+      .filter((h) => !h.fileLevel)
+      .map((hunk) => ({ file: pathOf(file), status: file.status, hunk })),
   );
 }
 
 /**
- * Where `Ctrl+Shift+O` opens Rider (M4 decision 14): the selected lines, else the focused note,
- * else the current hunk, else the step's first hunk, each at its first line.
+ * The working-copy line Rider opens for a line of the diff: a new-side line is itself; an old-side
+ * line (a removed one) is not in the working copy, so the first new line of its hunk.
  */
-function riderTarget(
+function workingLine(hunks: readonly StepHunk[], file: string, side: Side, line: number): number {
+  if (side === 'new') return line;
+  const inFile = hunks.filter((h) => h.file === file);
+  const hunk =
+    inFile.find((h) => line >= h.hunk.oldStart && line < h.hunk.oldStart + h.hunk.oldLines) ??
+    inFile[0];
+  return Math.max(1, hunk?.hunk.newStart ?? 1);
+}
+
+/**
+ * Where `Ctrl+Shift+O` opens Rider (M4 decision 14): the selected lines, else the focused note,
+ * else the current hunk, else the step's first hunk, each at its first line in the working copy.
+ * Nothing for a deleted file, as its Open in Rider button is disabled (FileBar, DiffPane).
+ */
+export function riderTarget(
+  files: readonly FileDiff[],
   selection: LineSelection | null,
   focused: Finding | undefined,
-  current: StepHunk | undefined,
-  hunks: readonly StepHunk[],
+  current: { file: string; hunk: string } | null,
 ): { file: string; line: number } | null {
-  if (selection) return { file: selection.file, line: Math.min(selection.start, selection.end) };
-  if (focused) return { file: focused.file, line: focused.line };
-  const hunk = current ?? hunks[0];
-  return hunk ? { file: hunk.file, line: Math.max(1, hunk.hunk.newStart) } : null;
+  const hunks = stepHunks(files);
+  const at = selection
+    ? { file: selection.file, side: selection.side, line: Math.min(selection.start, selection.end) }
+    : focused
+      ? { file: focused.file, side: focused.side, line: focused.line }
+      : null;
+  if (at) {
+    if (files.find((f) => pathOf(f) === at.file)?.status === 'deleted') return null;
+    return { file: at.file, line: workingLine(hunks, at.file, at.side, at.line) };
+  }
+  const hunk =
+    (current && hunks.find((h) => h.file === current.file && h.hunk.id === current.hunk)) ??
+    hunks[0];
+  if (!hunk || hunk.status === 'deleted') return null;
+  return { file: hunk.file, line: Math.max(1, hunk.hunk.newStart) };
 }
 
 export interface ReviewKeysOptions {
@@ -142,7 +172,7 @@ export function useReviewKeys({
     };
   }, []);
 
-  const target = riderTarget(selection, note, hunks[at], hunks);
+  const target = riderTarget(files, selection, note, current);
   useRiderKey(
     target
       ? () => {

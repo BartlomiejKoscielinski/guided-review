@@ -163,6 +163,7 @@ export function GuidePanel({
             selection={ask.selection}
             selfReview={selfReview}
             autoFocus={ask.focusInput}
+            focus={ask.focus}
             initialQuestion={ask.question}
           />
         ) : (

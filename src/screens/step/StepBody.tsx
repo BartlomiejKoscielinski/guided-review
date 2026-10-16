@@ -67,16 +67,9 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   // Questions from the toolbar, the guide and the "Selected lines" group are about the selected
   // lines, if any; otherwise about the whole step (F-10.1).
   const lines = useLineSelection(key);
-  // Line comments (F-09.7): C or Comment opens the composer under the last selected line.
-  const comments = useLineComments({
-    sessionId,
-    stepId,
-    files: step.data?.files ?? [],
-    folds: notes.data?.folds ?? [],
-    selfReview,
-  });
   // The review keys (F-30.6): [ ] steps (the last step's ] finishes, F-30.3), J/K hunks, N notes
-  // (the picked note's card comes into view), D/X decide, A asks, Ctrl+Shift+O Rider.
+  // (the picked note's card comes into view), D/X decide, A asks (an open answer card keeps its
+  // answer and takes the focus), Ctrl+Shift+O Rider.
   const finishReview = useFinishReview();
   useStepKeys(
     step.data?.prev,
@@ -99,9 +92,20 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
       setNoteReveal({ id, nonce: nextNonce() });
     },
     onAsk: () => {
-      if (layout === 'C' && !ask) setGuideAsk((n) => n + 1);
+      if (ask) change(key, (s) => (s.ask ? { ask: { ...s.ask, focus: nextNonce() } } : {}));
+      else if (layout === 'C') setGuideAsk((n) => n + 1);
       else openAsk(lines.selection);
     },
+  });
+  // Line comments (F-09.7): C or Comment opens the composer under the last selected line, else in
+  // the hunk J/K made current (M4 decision 13).
+  const comments = useLineComments({
+    sessionId,
+    stepId,
+    files: step.data?.files ?? [],
+    folds: notes.data?.folds ?? [],
+    selfReview,
+    current: keys.current,
   });
   const selected = lines.selection && {
     selection: lines.selection,

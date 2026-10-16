@@ -62,15 +62,6 @@ export function DetailedScreen() {
     },
     [setFocus],
   );
-  // Line comments (F-09.7): S-04 draws no line selection, so C opens the composer under the line
-  // S-03 left selected, else under the step's first changed line (no Claude folds here).
-  const comments = useLineComments({
-    sessionId,
-    stepId: step?.id ?? '',
-    files: files.data?.files ?? [],
-    folds: [],
-    selfReview: selfReview ?? false,
-  });
   // The review keys S-03 has (F-30.6): J/K hunks, D/X decide, Ctrl+Shift+O Rider at the lines S-03
   // left selected, the focused note or the current hunk; [ ] are the step header's, N and A the
   // Guide aside's.
@@ -82,6 +73,17 @@ export function DetailedScreen() {
     findings,
     focused,
     selection: picked ? pickedSelection(picked) : null,
+  });
+  // Line comments (F-09.7): S-04 draws no line selection, so C opens the composer under the line
+  // S-03 left selected, else in the hunk J/K made current, else under the step's first changed
+  // line (no Claude folds here).
+  const comments = useLineComments({
+    sessionId,
+    stepId: step?.id ?? '',
+    files: files.data?.files ?? [],
+    folds: [],
+    selfReview: selfReview ?? false,
+    current: keys.current,
   });
   const onAsk = (finding: Finding) => {
     if (key === null) return;

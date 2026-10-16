@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FileDiff } from '../ipc/types/FileDiff';
 import { DiffView } from './DiffView';
@@ -96,6 +96,51 @@ describe('DiffView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Show' }));
     expect(screen.queryByText('Whitespace only')).toBeNull();
     expect(container.querySelector('[data-kind="add"]')).not.toBeNull();
+  });
+
+  it('F-30.6 a reveal scrolls once: an older request shown again does not scroll back', async () => {
+    const scrollTo = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollTo', {
+      configurable: true,
+      writable: true,
+      value: scrollTo,
+    });
+    const settle = () =>
+      act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      });
+    const inserts = new Map([
+      ['n23', <p key="note">note under 23</p>],
+      ['n25', <p key="comment">composer under 25</p>],
+    ]);
+    const view = (reveal: { at: string; nonce: number }) => (
+      <DiffView
+        path="a.xaml"
+        diff={diff}
+        layout="split"
+        headers={false}
+        inserts={inserts}
+        reveal={reveal}
+      />
+    );
+    try {
+      // N picked the note (an older request), then C opened the composer (a newer one).
+      const { rerender } = render(view({ at: 'n23', nonce: 3 }));
+      rerender(view({ at: 'n25', nonce: 5 }));
+      await settle();
+      expect(scrollTo).toHaveBeenCalled();
+      scrollTo.mockClear();
+      // Esc closed the composer: the note's request is the latest shown again, already handled.
+      rerender(view({ at: 'n23', nonce: 3 }));
+      await settle();
+      expect(scrollTo).not.toHaveBeenCalled();
+      // A new request for the note (N again) scrolls.
+      rerender(view({ at: 'n23', nonce: 8 }));
+      await settle();
+      expect(scrollTo).toHaveBeenCalled();
+    } finally {
+      Reflect.deleteProperty(HTMLElement.prototype, 'scrollTo');
+    }
   });
 
   it('F-07.5 gutter markers sit on their line, inserts follow it', () => {

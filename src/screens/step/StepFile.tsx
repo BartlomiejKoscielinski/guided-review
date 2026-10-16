@@ -27,8 +27,11 @@ export interface StepFileProps {
   onAsk?: (finding: Finding) => void;
   /** Layout C: numbered gutter squares, and the focused note opens in the guide panel. */
   guide?: boolean;
-  /** The answer card (F-10) under the selected lines, in layouts A and B. */
-  answer?: { side: 'old' | 'new'; line: number; node: ReactNode; file: string };
+  /**
+   * The answer card (F-10) under the selected lines, in layouts A and B; a new `reveal` (A while it
+   * is open, F-30.6) brings it into view.
+   */
+  answer?: { side: 'old' | 'new'; line: number; node: ReactNode; file: string; reveal?: number };
   /** The step's selected lines (F-10.1) with their "Selected lines" group, in any file. */
   selected?: { selection: LineSelection; bar: ReactNode } | null;
   /** A click on a line number of this file (F-10.1). */
@@ -145,6 +148,13 @@ export function StepFile({
       at: lineKey(focusedHere.finding.side, focusedHere.finding.line),
       nonce: revealFocus,
     };
+  }
+  if (
+    answer?.file === path &&
+    answer.reveal !== undefined &&
+    answer.reveal > (reveal?.nonce ?? 0)
+  ) {
+    reveal = { at: lineKey(answer.side, answer.line), nonce: answer.reveal };
   }
   for (const card of comments) {
     if (card.file !== path) continue;

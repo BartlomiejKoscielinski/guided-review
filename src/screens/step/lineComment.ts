@@ -1,6 +1,7 @@
 import type { Draft } from '../../ipc/types/Draft';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Fold } from '../../ipc/types/Fold';
+import type { Hunk } from '../../ipc/types/Hunk';
 import type { Line } from '../../ipc/types/Line';
 import { pathOf } from './diffPath';
 import type { LineSelection } from '../../ipc/types/LineSelection';
@@ -79,21 +80,47 @@ export function firstChangedLine(
 ): LineAnchor | null {
   for (const file of files) {
     const path = pathOf(file);
-    const folded = (no: number) =>
-      folds.some((f) => f.file === path && no >= f.newStart && no <= f.newEnd);
     for (const hunk of file.hunks) {
       if (hunk.fileLevel || hunk.mechanical) continue;
-      const lines = hunk.lines;
-      const end = hunk.newStart + Math.max(hunk.newLines - 1, 0);
-      const position = (i: number): number =>
-        lines.slice(i).find((l) => l.newNo !== undefined)?.newNo ?? end;
-      for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i];
-        if (!line || line.kind === 'ctx' || folded(position(i))) continue;
-        const anchor = anchorOfRun(lines, i);
-        if (anchor) return { file: path, ...anchor };
-      }
+      const anchor = firstInHunk(path, hunk, foldedIn(folds, path));
+      if (anchor) return anchor;
     }
+  }
+  return null;
+}
+
+/**
+ * The first changed line of the hunk J/K made current (M4 decision 13): the first one the reader
+ * sees, else its first one at all, which the comment unfolds. Null when the hunk is not in `files`.
+ */
+export function hunkFirstChangedLine(
+  files: readonly FileDiff[],
+  folds: readonly Fold[],
+  at: { file: string; hunk: string },
+): LineAnchor | null {
+  const hunk = files.find((f) => pathOf(f) === at.file)?.hunks.find((h) => h.id === at.hunk);
+  if (!hunk || hunk.fileLevel) return null;
+  return (
+    firstInHunk(at.file, hunk, foldedIn(folds, at.file)) ?? firstInHunk(at.file, hunk, () => false)
+  );
+}
+
+/** Whether a new-side line of `path` is in one of Claude's folds. */
+const foldedIn =
+  (folds: readonly Fold[], path: string) =>
+  (no: number): boolean =>
+    folds.some((f) => f.file === path && no >= f.newStart && no <= f.newEnd);
+
+function firstInHunk(path: string, hunk: Hunk, folded: (no: number) => boolean): LineAnchor | null {
+  const lines = hunk.lines;
+  const end = hunk.newStart + Math.max(hunk.newLines - 1, 0);
+  const position = (i: number): number =>
+    lines.slice(i).find((l) => l.newNo !== undefined)?.newNo ?? end;
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line || line.kind === 'ctx' || folded(position(i))) continue;
+    const anchor = anchorOfRun(lines, i);
+    if (anchor) return { file: path, ...anchor };
   }
   return null;
 }
