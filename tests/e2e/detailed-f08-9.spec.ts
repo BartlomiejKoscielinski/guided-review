@@ -37,7 +37,9 @@ test('F-08.9 the end-of-step card: End of step 1, the next step with its numbers
   const nexts = main.getByRole('button', { name: /^Next step/ });
   await expect(nexts).toHaveCount(2);
   const cardNext = nexts.last();
-  await expect(cardNext.getByText(']', { exact: true })).toBeVisible();
+  // No `]` hint on the card's Next step: the key is gone (F-30.6, M4 decision 15).
+  await expect(cardNext.getByText(']', { exact: true })).toHaveCount(0);
+  await expect(cardNext).toHaveAccessibleName('Next step');
   await expect.poll(() => backgroundOf(cardNext)).toBe(YELLOW);
 
   await cardNext.click();

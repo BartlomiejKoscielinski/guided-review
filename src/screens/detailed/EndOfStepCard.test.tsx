@@ -75,13 +75,14 @@ describe('S-04 end-of-step card (F-08.9)', () => {
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(800);
   });
 
-  it('F-08.9 a middle step ends with "End of step 4", the next step’s title with its files and lines, and Next step with ]', async () => {
+  it('F-08.9 a middle step ends with "End of step 4", the next step’s title with its files and lines, and Next step without a ] hint', async () => {
     await openDetailed(await backend());
     expect(await screen.findByText(wholeText('End of step 4'))).toBeInTheDocument();
     expect(
       screen.getByText(wholeText('Next: Offline banner in the view · 2 files · +24 −2')),
     ).toBeInTheDocument();
-    expect(within(cardNext()).getByText(']')).toBeInTheDocument();
+    expect(within(cardNext()).queryByText(']')).not.toBeInTheDocument();
+    expect(cardNext()).toHaveAccessibleName('Next step');
     expect(screen.queryByText(wholeText('That was the last step.'))).toBeNull();
     expect(within(mainColumn()).queryByRole('button', { name: /^Finish review/ })).toBeNull();
   });

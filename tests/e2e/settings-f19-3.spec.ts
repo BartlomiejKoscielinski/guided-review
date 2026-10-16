@@ -27,14 +27,14 @@ test('F-19.3 Settings › Shortcuts lists every shortcut grouped Review, Code, A
 
   const review = group(page, 'Review');
   await expect(review.getByRole('heading', { name: 'Review', level: 2 })).toBeVisible();
-  await expect(review.getByText('Next step', { exact: true })).toBeVisible();
+  await expect(review.getByText('Next change', { exact: true })).toBeVisible();
   await expect(review.getByText('Primary action (plan, re-review)', { exact: true })).toBeVisible();
   await expect(review.locator('kbd')).toHaveText([
-    ']',
-    '[',
+    '↓',
+    '↑',
+    '→',
+    '←',
     'Space',
-    'J',
-    'K',
     'N',
     'D',
     'X',

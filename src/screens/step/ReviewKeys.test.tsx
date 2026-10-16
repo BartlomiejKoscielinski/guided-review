@@ -8,15 +8,16 @@ import { useFocusStore, type FocusLayout } from '../../state/focus';
 import { NO_REVIEW, useReviewStore } from '../../state/review';
 import { renderApp } from '../../test/renderApp';
 
-// F-30.6 on S-03 (M4 plan, decision 14): `]` `[` steps, Space, J/K the current hunk over the
-// step's files in diff order (no wrap), N the next note in line order (wraps), D/X on the focused
-// note, A ask, Ctrl+Shift+O Rider at the current line. Single-letter keys don't fire in text
+// F-30.6 on S-03 (M4 plan, decisions 14 and 15): ↓/↑ the current change over the step's files in
+// diff order (the walk is in ArrowWalk.test.tsx), Space the current file, N the next note in line
+// order (wraps), D/X on the focused note, A ask, Ctrl+Shift+O Rider at the current line. Single-letter keys don't fire in text
 // fields or with Ctrl/Alt held, but do fire while a button has focus.
 
 const MR_SESSION = 'mock-mr-session-1';
 const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
 const CONVERTER = 'src/Mobile.App/Converters/PendingCountConverter.cs';
 const BANNER = 'src/Mobile.App/Views/OfflineBanner.xaml';
+const SQLITE = 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs';
 const PHOTO = 'The whole photo goes into SQLite as byte[]';
 const PENDING = 'PendingCount won’t refresh after upload';
 const STATUS = 'Status texts are hardcoded';
@@ -76,7 +77,7 @@ async function expectFocusedNote(title: string) {
 }
 
 /**
- * The hunk J/K made current: the one element of the page marked `aria-current="true"` (the focus
+ * The change ↓/↑ made current: the one element of the page marked `aria-current="true"` (the focus
  * outline), and the file of the step it is in.
  */
 function currentHunkFile(): string | null {
@@ -118,53 +119,64 @@ describe('S-03 review keys (F-30.6)', () => {
     else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
   });
 
-  it('F-30.6 ] opens the next step on S-03; with Ctrl held it does nothing', async () => {
-    const { router } = await openStep('s4');
-    await press('{Control>}]{/Control}');
-    expect(screen.getByText('Step 4 of 8')).toBeInTheDocument();
-    await press(']');
-    expect(await screen.findByText('Step 5 of 8')).toBeInTheDocument();
-    expect(router.state.location.search).toBe('?step=s5');
+  it('F-30.6 ↓ opens the next step after the end-of-step pause; with Ctrl held it does nothing', async () => {
+    const { router } = await openStep('s5');
+    await press('{Control>}{ArrowDown}{/Control}');
+    expect(currentHunkFile()).toBeNull();
+    // First change, past the first file (marks it), past the last file (marks it, pauses).
+    await press('{ArrowDown}{ArrowDown}');
+    await expectCurrentHunkIn(BANNER);
+    await press('{ArrowDown}');
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Reviewed' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+    });
+    expect(screen.getByText('Step 5 of 8')).toBeInTheDocument();
+    await press('{ArrowDown}');
+    expect(await screen.findByText('Step 6 of 8')).toBeInTheDocument();
+    expect(router.state.location.search).toBe('?step=s6');
   });
 
-  it('F-30.6 [ opens the previous step on S-03; on step 1 it stays', async () => {
+  it('F-30.6 ↑ opens the previous step after the start-of-step pause; on step 1 it stays', async () => {
     await openStep('s2');
-    await press('[[');
+    await press('{ArrowDown}');
+    await expectCurrentHunkIn(SQLITE);
+    await press('{ArrowUp}');
+    expect(screen.getByText('Step 2 of 8')).toBeInTheDocument();
+    await press('{ArrowUp}');
     expect(await screen.findByText('Step 1 of 8')).toBeInTheDocument();
-    await press('[[');
+    for (let n = 0; n < 3; n++) await press('{ArrowUp}');
     expect(screen.getByText('Step 1 of 8')).toBeInTheDocument();
     expect(screen.queryByText('Step 8 of 8')).not.toBeInTheDocument();
   });
 
-  it('F-30.6 Space marks the step reviewed and Space again undoes it', async () => {
-    await openStep('s4');
-    const button = screen.getByRole('button', { name: /Mark reviewed|Reviewed/ });
+  it('F-30.6 Space marks the first file before any move, not the step, and Space again takes it back', async () => {
+    await openStep('s5');
+    const button = screen.getByRole('button', { name: /^(Mark reviewed|Reviewed)$/ });
+    const toggle = screen.getByRole('button', { name: `Mark ${CONVERTER} reviewed` });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await press(' ');
+    await waitFor(() => {
+      expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    });
+    // Step 5 has two files: marking one does not make the step reviewed.
     expect(button).toHaveAttribute('aria-pressed', 'false');
     await press(' ');
     await waitFor(() => {
-      expect(button).toHaveAttribute('aria-pressed', 'true');
-    });
-    expect(button).toHaveTextContent('Reviewed');
-    await press(' ');
-    await waitFor(() => {
-      expect(button).toHaveAttribute('aria-pressed', 'false');
+      expect(toggle).toHaveAttribute('aria-pressed', 'false');
     });
   });
 
-  it('F-30.6 J and K move the current hunk over the step’s files in diff order, stopping at the ends', async () => {
+  it('F-30.6 ↓ and ↑ move the current change over the step’s files in diff order', async () => {
     await openStep('s5');
     expect(currentHunkFile()).toBeNull();
-    await press('j');
+    await press('{ArrowDown}');
     await expectCurrentHunkIn(CONVERTER);
-    await press('j');
+    await press('{ArrowDown}');
     await expectCurrentHunkIn(BANNER);
-    // The last hunk: J stays, no wrap.
-    await press('j');
-    await expectCurrentHunkIn(BANNER);
-    await press('k');
-    await expectCurrentHunkIn(CONVERTER);
-    // The first hunk: K stays.
-    await press('k');
+    await press('{ArrowUp}');
     await expectCurrentHunkIn(CONVERTER);
   });
 
@@ -287,10 +299,10 @@ describe('S-03 review keys (F-30.6)', () => {
     });
   });
 
-  it('F-30.6 Ctrl+Shift+O on a step without notes opens the current hunk’s file at its first line', async () => {
+  it('F-30.6 Ctrl+Shift+O on a step without notes opens the current change’s file at its first line', async () => {
     const { calls } = await openStep('s5');
-    await press('j');
-    await press('j');
+    await press('{ArrowDown}');
+    await press('{ArrowDown}');
     await expectCurrentHunkIn(BANNER);
     await press('{Control>}{Shift>}O{/Shift}{/Control}');
     await waitFor(() => {

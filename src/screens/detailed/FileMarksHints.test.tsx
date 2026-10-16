@@ -68,11 +68,14 @@ describe('S-04 hints after file marks (F-07.10)', () => {
     expect(mark.querySelector('kbd')).toBeNull();
   });
 
-  it('F-07.10 the end-of-step card’s Next step keeps its ] hint until F-30.6', async () => {
+  it('F-30.6 the end-of-step card’s Next step has no ] hint: the key is removed', async () => {
     await openDetailed();
     expect(await screen.findByText('End of step 4')).toBeInTheDocument();
     const buttons = within(mainColumn()).getAllByRole('button', { name: /^Next step/ });
     expect(buttons).toHaveLength(2);
-    expect(within(buttons[1] as HTMLElement).getByText(']')).toBeInTheDocument();
+    const card = buttons[1] as HTMLElement;
+    expect(card).toHaveAccessibleName('Next step');
+    expect(within(card).queryByText(']')).not.toBeInTheDocument();
+    expect(card.querySelector('kbd')).toBeNull();
   });
 });

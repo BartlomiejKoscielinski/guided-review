@@ -90,7 +90,7 @@ test('F-07.10 Mark reviewed marks every file of the step; on a reviewed step it 
   await expect(stepsList(page)).toContainText('0/8');
 });
 
-test('F-07.10 Space toggles the first file before any move, and after J the file of the current change', async ({
+test('F-07.10 Space toggles the first file before any move, and after ↓ the file of the current change', async ({
   page,
 }) => {
   await openStep5(page);
@@ -100,9 +100,10 @@ test('F-07.10 Space toggles the first file before any move, and after J the file
   // The step has two files: marking the first does not mark the step.
   await expect(markReviewed(page)).toBeVisible();
 
-  // J, J: the hunk in the second file is current; Space marks that file, and does not move.
-  await page.keyboard.press('j');
-  await page.keyboard.press('j');
+  // ↓, ↓: the change in the second file is current (↓ passes the first file, already marked, and
+  // keeps its mark); Space marks that file, and does not move.
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
   await expect(region(page, BANNER).locator('[aria-current="true"]')).toHaveCount(1);
   await page.keyboard.press('Space');
   await expectMarks(page, true, true);

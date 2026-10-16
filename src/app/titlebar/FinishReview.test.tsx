@@ -8,7 +8,8 @@ import { renderApp } from '../../test/renderApp';
 import { pathFor } from '../routes';
 
 // F-30.3: Finish review on the review screens opens S-05. The title bars of S-03 and S-04 have it,
-// and the last step's Next does the same (M4 plan, decision 11): `]` on S-04, S-03's next arrow
+// and the last step's Next does the same (M4 plan, decision 11): `↓` at the end of the last step
+// moves the focus to Finish review (F-30.6, decision 15; Enter opens S-05), S-03's next arrow
 // (layout A) and layout B's toolbar next; the S-04 end card's Finish review is F-08.9's. A commit
 // session is a self-review, so S-05 is its summary with content to assert ("Nothing to fix.").
 
@@ -42,12 +43,41 @@ async function openFocus(ipc: IpcClient, sessionId: string, step: string, kicker
 }
 
 /** S-05 of a self-review with nothing kept and nothing marked: the summary's own copy. */
-async function expectSummary(router: ReturnType<typeof renderApp>['router'], sessionId: string) {
+async function expectSummary(
+  router: ReturnType<typeof renderApp>['router'],
+  sessionId: string,
+  reviewed = 0,
+) {
   await waitFor(() => {
     expect(router.state.location.pathname).toBe(pathFor({ screen: 'S-05', sessionId }));
   });
   expect(await screen.findByText('Nothing to fix.')).toBeInTheDocument();
-  expect(await screen.findByText('0 of 8 steps reviewed.')).toBeInTheDocument();
+  expect(await screen.findByText(`${String(reviewed)} of 8 steps reviewed.`)).toBeInTheDocument();
+}
+
+/** S-04's main column: the end-of-step card with its Finish review sits in it. */
+const cardFinish = () => {
+  const main = document.querySelector<HTMLElement>('main main');
+  if (!main) throw new Error('no S-04 main column');
+  return within(main).getByRole('button', { name: 'Finish review' });
+};
+
+/**
+ * Walks the step with ↓ (first change, the files are marked, one pause at the end of the step)
+ * until the focus is on the end card's Finish review.
+ */
+async function walkToFinish() {
+  let presses = 0;
+  await screen.findByText('End of step 8');
+  while (presses < 12 && document.activeElement !== cardFinish()) {
+    await userEvent.keyboard('{ArrowDown}');
+    presses += 1;
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60));
+    });
+  }
+  expect(cardFinish()).toHaveFocus();
+  return presses;
 }
 
 const titleBarFinish = () =>
@@ -59,6 +89,8 @@ describe('Finish review opens S-05 (F-30.3)', () => {
     // jsdom lays nothing out; give elements a size so the virtualizer renders rows.
     vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(600);
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(800);
+    // The screen is taller than any change, so a ↓ never scrolls a tall change first.
+    vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(4000);
   });
 
   it('F-30.3 Finish review in the S-04 title bar opens S-05 from a middle step', async () => {
@@ -75,33 +107,46 @@ describe('Finish review opens S-05 (F-30.3)', () => {
     await expectSummary(router, sessionId);
   });
 
-  it('F-30.3 ] on the last step of S-04 opens S-05', async () => {
+  it('F-30.3 ↓ at the end of the last step of S-04 moves the focus to Finish review, and Enter opens S-05', async () => {
     const { ipc, sessionId } = await selfReview();
     const { router } = await openDetailed(ipc, sessionId, 's8', 'Step 8 / 8');
-    await userEvent.keyboard(']');
-    await expectSummary(router, sessionId);
+    const presses = await walkToFinish();
+    // First change, the file marks and the pause at the step's end come before the focus moves.
+    expect(presses).toBeGreaterThanOrEqual(3);
+    expect(router.state.location.pathname).toBe(pathFor({ screen: 'S-04', sessionId }));
+    await userEvent.keyboard('{Enter}');
+    await expectSummary(router, sessionId, 1);
   });
 
-  it('F-30.3 ] opens S-05 on the last step of the reader’s order, and the next step on the others', async () => {
+  it('F-30.3 ↓ opens S-05’s Finish review on the last step of the reader’s order, and the next step on the others', async () => {
     const { ipc, sessionId } = await selfReview();
     await ipc.reviewSetStrategy(sessionId, 'testsFirst');
     // Tests first: s8 is step 1 and s7 (Android) the last step.
     const { router } = await openDetailed(ipc, sessionId, 's8', 'Step 1 / 8');
-    await userEvent.keyboard(']');
+    for (let n = 0; n < 8 && router.state.location.search !== '?step=s1'; n++) {
+      await userEvent.keyboard('{ArrowDown}');
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      });
+    }
     expect(await screen.findByText('Step 2 / 8')).toBeInTheDocument();
     expect(router.state.location.search).toBe('?step=s1');
 
     await act(() => router.navigate(`${pathFor({ screen: 'S-04', sessionId })}?step=s7`));
     expect(await screen.findByText('Step 8 / 8')).toBeInTheDocument();
-    await userEvent.keyboard(']');
-    await expectSummary(router, sessionId);
+    await walkToFinish();
+    await userEvent.keyboard('{Enter}');
+    await expectSummary(router, sessionId, 2);
   });
 
-  it('F-30.3 ] with Ctrl or Alt held on the last step stays on step 8', async () => {
+  it('F-30.3 ↓ with Ctrl or Alt held on the last step stays on step 8 and moves no focus', async () => {
     const { ipc, sessionId } = await selfReview();
     const { router } = await openDetailed(ipc, sessionId, 's8', 'Step 8 / 8');
-    await userEvent.keyboard('{Control>}]{/Control}');
-    await userEvent.keyboard('{Alt>}]{/Alt}');
+    await walkToFinish();
+    cardFinish().blur();
+    await userEvent.keyboard('{Control>}{ArrowDown}{/Control}');
+    await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
+    expect(cardFinish()).not.toHaveFocus();
     expect(router.state.location.pathname).toBe(pathFor({ screen: 'S-04', sessionId }));
     expect(screen.getByText('Step 8 / 8')).toBeInTheDocument();
   });

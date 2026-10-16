@@ -9,9 +9,9 @@ import { useFocusStore } from '../../state/focus';
 import { NO_REVIEW, useReviewStore } from '../../state/review';
 import { renderApp } from '../../test/renderApp';
 
-// F-30.6 on S-04 (M4 plan, decision 14): the review keys S-03 has, on Detailed mode: `[` the
-// previous step, J/K the current hunk with the focus outline on its hunk header, D/X on the
-// focused note, Ctrl+Shift+O Rider at the current line.
+// F-30.6 on S-04 (M4 plan, decisions 14 and 15): the review keys S-03 has, on Detailed mode: ↑/↓
+// the current change with the focus outline on its hunk header (the whole walk is in
+// ArrowWalk.test.tsx), D/X on the focused note, Ctrl+Shift+O Rider at the current line.
 
 const SESSION = 'mock-mr-session-1';
 const VM = 'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs';
@@ -51,7 +51,7 @@ async function openDetailed(step: string) {
 
 const press = (keys: string) => userEvent.keyboard(keys);
 
-/** The hunk J/K made current: the one element marked `aria-current="true"` (its focus outline). */
+/** The change ↓/↑ made current: the one element marked `aria-current="true"` (its focus outline). */
 function currentHunk(): Element | null {
   const marked = document.querySelectorAll('[aria-current="true"]');
   expect(marked.length).toBeLessThanOrEqual(1);
@@ -100,46 +100,45 @@ describe('S-04 review keys (F-30.6)', () => {
     else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
   });
 
-  it('F-30.6 [ opens the previous step on S-04; on step 1 it stays', async () => {
+  it('F-30.6 ↑ opens the previous step on S-04 after the start-of-step pause; on step 1 it stays', async () => {
     const { router } = await openDetailed('s2');
-    await press('{Control>}[[{/Control}');
+    await press('{ArrowDown}');
+    await waitFor(() => {
+      expect(currentHunk()).not.toBeNull();
+    });
+    await press('{Control>}{ArrowUp}{/Control}');
+    await press('{ArrowUp}');
     expect(screen.getByText('Step 2 / 8')).toBeInTheDocument();
-    await press('[[');
+    await press('{ArrowUp}');
     expect(await screen.findByText('Step 1 / 8')).toBeInTheDocument();
     expect(router.state.location.search).toBe('?step=s1');
-    await press('[[');
+    for (let n = 0; n < 3; n++) await press('{ArrowUp}');
     expect(screen.getByText('Step 1 / 8')).toBeInTheDocument();
   });
 
-  it('F-30.6 J and K move the current hunk with its header outlined, stopping at the ends', async () => {
+  it('F-30.6 ↓ and ↑ move the current change with its header outlined', async () => {
     await openDetailed('s4');
     expect(await screen.findByText(HUNK_1)).toBeInTheDocument();
     expect(currentHunk()).toBeNull();
-    await press('j');
+    await press('{ArrowDown}');
     await expectCurrentHunk(HUNK_1);
-    await press('j');
+    await press('{ArrowDown}');
     await expectCurrentHunk(HUNK_2);
-    await press('j');
+    await press('{ArrowDown}');
     await expectCurrentHunk(HUNK_3);
-    // The last hunk: J stays, no wrap.
-    await press('j');
-    await expectCurrentHunk(HUNK_3);
-    await press('k');
+    await press('{ArrowUp}');
     await expectCurrentHunk(HUNK_2);
-    await press('k');
-    await expectCurrentHunk(HUNK_1);
-    // The first hunk: K stays.
-    await press('k');
+    await press('{ArrowUp}');
     await expectCurrentHunk(HUNK_1);
   });
 
-  it('F-30.6 J and K do nothing with Ctrl or Alt held', async () => {
+  it('F-30.6 ↓ does nothing with Ctrl or Alt held', async () => {
     await openDetailed('s4');
     expect(await screen.findByText(HUNK_1)).toBeInTheDocument();
-    await press('{Alt>}j{/Alt}');
-    await press('{Control>}j{/Control}');
+    await press('{Alt>}{ArrowDown}{/Alt}');
+    await press('{Control>}{ArrowDown}{/Control}');
     expect(currentHunk()).toBeNull();
-    await press('j');
+    await press('{ArrowDown}');
     await expectCurrentHunk(HUNK_1);
   });
 

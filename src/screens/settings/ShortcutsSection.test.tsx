@@ -11,11 +11,11 @@ interface Row {
 }
 
 const REVIEW: readonly Row[] = [
-  { label: 'Next step', keys: [']'] },
-  { label: 'Previous step', keys: ['['] },
+  { label: 'Next change', keys: ['↓'] },
+  { label: 'Previous change', keys: ['↑'] },
+  { label: 'Next file', keys: ['→'] },
+  { label: 'Previous file', keys: ['←'] },
   { label: 'Mark file reviewed', keys: ['Space'] },
-  { label: 'Next hunk', keys: ['J'] },
-  { label: 'Previous hunk', keys: ['K'] },
   { label: 'Next note', keys: ['N'] },
   { label: 'Add to drafts', keys: ['D'] },
   { label: 'Dismiss note', keys: ['X'] },
@@ -43,11 +43,11 @@ const APP: readonly Row[] = [
 
 /** The shortcuts of F-30.6 as key chords (`Ctrl+1/2/3` are three shortcuts). */
 const F30_6_CHORDS = [
-  ']',
-  '[',
+  '↓',
+  '↑',
+  '→',
+  '←',
   'Space',
-  'J',
-  'K',
   'N',
   'D',
   'X',
@@ -116,7 +116,7 @@ describe('Settings › Shortcuts', () => {
     expect(code.compareDocumentPosition(app) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('F-19.3 Review lists the step, hunk, note, draft, comment, ask and primary-action keys', async () => {
+  it('F-19.3 Review lists the change, file, note, draft, comment, ask and primary-action keys', async () => {
     await openShortcuts();
     expect(rowsOf(group('Review'))).toEqual(REVIEW);
   });

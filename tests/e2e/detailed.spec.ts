@@ -240,9 +240,9 @@ test('F-08.4 a builds-on chip opens that step', async ({ page }) => {
 
   await next.click();
   await expect(kicker(2)).toBeVisible();
-  await page.keyboard.press(']');
+  await next.click();
   await expect(kicker(3)).toBeVisible();
-  await page.keyboard.press(']');
+  await next.click();
   await expect(kicker(4)).toBeVisible();
   await expect(title).toHaveText('ViewModel: queue instead of upload');
   await expect(buildsOn).toBeVisible();

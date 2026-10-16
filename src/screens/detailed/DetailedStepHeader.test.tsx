@@ -130,15 +130,15 @@ describe('S-04 step header (F-08.4)', () => {
     await expectStep(router, 's5', 'Step 5 / 8', 'Offline banner in the view');
   });
 
-  it('F-08.4 ] opens the next step; with Ctrl held it does nothing', async () => {
+  it('F-08.4 ] no longer opens the next step: the key is removed (F-30.6), the button stays', async () => {
     const { router } = await openDetailed(await backend());
     await screen.findByText('Step 4 / 8');
     await userEvent.keyboard(']');
-    await expectStep(router, 's5', 'Step 5 / 8', 'Offline banner in the view');
     await userEvent.keyboard('{Control>}]{/Control}');
-    await userEvent.keyboard('{Alt>}]{/Alt}');
-    expect(router.state.location.search).toBe('?step=s5');
-    expect(screen.getByText('Step 5 / 8')).toBeInTheDocument();
+    expect(router.state.location.search).toBe('?step=s4');
+    expect(screen.getByText('Step 4 / 8')).toBeInTheDocument();
+    await userEvent.click(next());
+    await expectStep(router, 's5', 'Step 5 / 8', 'Offline banner in the view');
   });
 
   it('F-08.4 Previous step is disabled on the first step of the reader’s order', async () => {

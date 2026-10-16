@@ -12,7 +12,7 @@ import { NO_REVIEW, useReviewStore } from '../../state/review';
 import { renderApp } from '../../test/renderApp';
 import { riderTarget } from './useReviewKeys';
 
-// Where the review keys act (F-30.6, M4 decisions 13 and 14): C after J/K opens the composer in
+// Where the review keys act (F-30.6, M4 decisions 13 and 14): C after ↓/↑ opens the composer in
 // the current hunk, Ctrl+Shift+O follows the Open in Rider buttons (nothing for a deleted file, a
 // removed line opens its hunk's first new line), and A with an answer card open keeps its answer.
 
@@ -44,7 +44,7 @@ async function openDetailed(step: string) {
   return app;
 }
 
-/** The hunk J/K made current: the one element marked `aria-current="true"`. */
+/** The change ↓/↑ made current: the one element marked `aria-current="true"`. */
 async function expectCurrent(check: (marked: Element) => void) {
   await waitFor(() => {
     const marked = document.querySelectorAll('[aria-current="true"]');
@@ -89,10 +89,10 @@ describe('review key targets (F-30.6)', () => {
     else Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
   });
 
-  it('F-30.6 C after J opens the composer at the current hunk', async () => {
+  it('F-30.6 C after ↓ opens the composer at the current change', async () => {
     await openFocus('s5');
-    await press('j');
-    await press('j');
+    await press('{ArrowDown}');
+    await press('{ArrowDown}');
     await expectCurrent((marked) => {
       expect(marked.closest('section')).toHaveAttribute('aria-label', BANNER);
     });
@@ -101,17 +101,17 @@ describe('review key targets (F-30.6)', () => {
     expect((await composerAt()).file).toBe(BANNER);
   });
 
-  it('F-30.6 C without J still opens the composer at the step’s first changed line', async () => {
+  it('F-30.6 C without ↓ still opens the composer at the step’s first changed line', async () => {
     await openFocus('s5');
     await press('c');
     expect((await composerAt()).file).toBe(CONVERTER);
   });
 
-  it('F-30.6 C after J on S-04 opens the composer in the current hunk', async () => {
+  it('F-30.6 C after ↓ on S-04 opens the composer in the current change', async () => {
     await openDetailed('s4');
-    await press('j');
-    await press('j');
-    await press('j');
+    await press('{ArrowDown}');
+    await press('{ArrowDown}');
+    await press('{ArrowDown}');
     await expectCurrent((marked) => {
       expect(marked).toHaveTextContent(HUNK_3);
     });

@@ -72,7 +72,7 @@ async function expectStepReviewed(reviewed: boolean) {
   expect(stepButton()).toHaveTextContent(reviewed ? /^Reviewed/ : /^Mark reviewed/);
 }
 
-/** The file of the step the hunk J/K made current is in (the element marked `aria-current`). */
+/** The file of the step the change ↓/↑ (or →/←) made current is in (the element marked `aria-current`). */
 function currentHunkFile(): string | null {
   const marked = document.querySelectorAll('[aria-current="true"]');
   expect(marked.length).toBeLessThanOrEqual(1);
@@ -166,11 +166,7 @@ describe('S-04 file marks (F-07.10)', () => {
 
   it('F-07.10 Space toggles the file of the current change and does not move it', async () => {
     await openDetailed('s5');
-    await press('j');
-    await waitFor(() => {
-      expect(currentHunkFile()).toBe(CONVERTER);
-    });
-    await press('j');
+    await press('{ArrowRight}');
     await waitFor(() => {
       expect(currentHunkFile()).toBe(BANNER);
     });
