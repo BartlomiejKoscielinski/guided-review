@@ -5,6 +5,8 @@ import type { Mode } from '../types/Mode';
 import type { MrRow } from '../types/MrRow';
 import type { Source } from '../types/Source';
 import type { Strategy } from '../types/Strategy';
+import type { Thread } from '../types/Thread';
+import { MOCK_THREADS } from './fixtures/step';
 
 /**
  * Key under which the mock keeps its review sessions between page loads, as the core keeps them
@@ -61,6 +63,11 @@ export interface SessionData {
   drafts: Draft[];
   nextDraft: number;
   states: Record<string, StoredState>;
+  /**
+   * !482's threads as the mock GitLab has them now (F-11.2): Resolve, Reopen and Reply change
+   * them, and every MR session of the mock shows them.
+   */
+  threads: Thread[];
 }
 
 export interface MockSessionData {
@@ -82,6 +89,7 @@ const empty = (): SessionData => ({
   drafts: [],
   nextDraft: 1,
   states: {},
+  threads: structuredClone(MOCK_THREADS),
 });
 
 function load(storage: MockStorage): SessionData {

@@ -4,6 +4,8 @@ import type { GitlabStatus } from '../types/GitlabStatus';
 import type { MrList } from '../types/MrList';
 import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
+import type { MockSessionData } from './session-data';
+import { createThreadActions } from './threads';
 
 /** Variations of the GitLab part of the mock (`MOCK_GITLAB_KEY`). */
 export interface GitlabScenario {
@@ -13,7 +15,12 @@ export interface GitlabScenario {
 
 type GitlabClient = Pick<
   IpcClient,
-  'gitlabStatus' | 'gitlabAccountSave' | 'gitlabAccountRemove' | 'gitlabListMrs'
+  | 'gitlabStatus'
+  | 'gitlabAccountSave'
+  | 'gitlabAccountRemove'
+  | 'gitlabListMrs'
+  | 'gitlabResolve'
+  | 'gitlabReply'
 >;
 
 const HOUR = 3_600_000;
@@ -165,6 +172,7 @@ function mask(token: string): string {
 export function createGitlabBackend(
   scenario: GitlabScenario,
   respond: <T>(value: T) => Promise<T>,
+  store: MockSessionData,
 ): GitlabClient {
   let status: GitlabStatus =
     scenario.state === 'noToken'
@@ -230,5 +238,11 @@ export function createGitlabBackend(
       const list: MrList = { tab, rows: lists()[tab], counts: COUNTS, truncated: false };
       return respond(list);
     },
+    ...createThreadActions(
+      store,
+      () => (status.state === 'connected' ? status.user : null),
+      addToken,
+      respond,
+    ),
   };
 }

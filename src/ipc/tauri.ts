@@ -166,6 +166,10 @@ export function createTauriClient(): IpcClient {
       call<GitlabStatus>('gitlab_account_save', { server, token }),
     gitlabAccountRemove: () => call<GitlabStatus>('gitlab_account_remove'),
     gitlabListMrs: (tab) => call<MrList>('gitlab_list_mrs', { tab }),
+    gitlabResolve: (session, discussion, resolved) =>
+      call<undefined>('gitlab_resolve', { session, discussion, resolved }),
+    gitlabReply: (session, discussion, body) =>
+      call<undefined>('gitlab_reply', { session, discussion, body }),
     ...createTauriWindowControls(),
   };
 }

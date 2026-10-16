@@ -163,7 +163,7 @@ export function createMockClient({
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
     ...createPrepareBackend(repos, pause, data, focusLayout, startIn),
     ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
-    ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
+    ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond, data),
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),

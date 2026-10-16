@@ -254,7 +254,7 @@ export interface IpcClient {
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;
 
-  // GitLab (F-01.6, F-02.1, F-02.2, F-19.2, F-19.5).
+  // GitLab (F-01.6, F-02.1, F-02.2, F-11.2, F-19.2, F-19.5).
   /** Connected / no token / failing; `refresh` checks GitLab again (F-01.6). */
   gitlabStatus(refresh: boolean): Promise<GitlabStatus>;
   /** Check and save / Replace token: stored only if GitLab accepts it with scope api (F-19.5). */
@@ -263,6 +263,14 @@ export interface IpcClient {
   gitlabAccountRemove(): Promise<GitlabStatus>;
   /** One S-01 tab of the active repository's project with the counts of all three tabs. */
   gitlabListMrs(tab: MrTab): Promise<MrList>;
+  /**
+   * Resolve (`resolved` true) or Reopen (false) a thread of the session's MR, sent at once and
+   * independent of drafts and approval (F-11.2); the core takes the project and the MR from the
+   * session.
+   */
+  gitlabResolve(sessionId: string, discussionId: string, resolved: boolean): Promise<void>;
+  /** Reply: `body` becomes a note of the thread at once, as written; not a draft (F-11.2). */
+  gitlabReply(sessionId: string, discussionId: string, body: string): Promise<void>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

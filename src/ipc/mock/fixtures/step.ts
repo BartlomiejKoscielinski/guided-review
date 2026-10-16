@@ -92,7 +92,8 @@ function holds(file: FileDiff, thread: Thread): boolean {
 
 /**
  * A step of !482 as `review_step` builds it (F-07.2, F-07.3): its place in `order`, the mock
- * diff's files with only the step's hunks in GitLab file order, the threads inside them.
+ * diff's files with only the step's hunks in GitLab file order, the threads inside them (the
+ * mock GitLab's current `threads`, F-11.2).
  * `undefined` when the step isn't in `order` or the plan.
  */
 export function mockStepView(
@@ -101,6 +102,7 @@ export function mockStepView(
   stepId: string,
   reviewed: boolean,
   fallback: boolean,
+  threads: readonly Thread[] = MOCK_THREADS,
 ): StepView | undefined {
   const index = order.indexOf(stepId);
   const step = plan.steps.find((s) => s.id === stepId);
@@ -116,7 +118,7 @@ export function mockStepView(
     ...(prev === undefined ? {} : { prev }),
     ...(next === undefined ? {} : { next }),
     files,
-    threads: structuredClone(MOCK_THREADS.filter((t) => files.some((f) => holds(f, t)))),
+    threads: structuredClone(threads.filter((t) => files.some((f) => holds(f, t)))),
     reviewed,
     fallback,
     places: mockPlaces(plan, order, stepId),

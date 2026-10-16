@@ -94,7 +94,14 @@ export function createStateBackend(
       const step =
         stepId === undefined
           ? undefined
-          : mockStepView(mockPlan(), order, stepId, plan.reviewed.includes(stepId), false);
+          : mockStepView(
+              mockPlan(),
+              order,
+              stepId,
+              plan.reviewed.includes(stepId),
+              false,
+              data.threads,
+            );
       if (stepId === undefined || !step) return respond(null);
       const findings = cachedFindings(data, sessionId, stepId);
       store.save();
