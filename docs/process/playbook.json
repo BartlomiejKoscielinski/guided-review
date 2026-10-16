@@ -1,5 +1,5 @@
 {
-  "items": 26,
+  "items": 27,
   "entries": [
     {
       "id": "P-002",
@@ -27,7 +27,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -92,7 +92,7 @@
         "src/ipc/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 3,
+      "helpful": 4,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.020Z",
@@ -107,7 +107,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -188,7 +188,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 5,
+      "helpful": 6,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -220,7 +220,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 12,
+      "helpful": 13,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -239,9 +239,9 @@
         "src/screens/detailed/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-14T15:13:07.675Z",
       "lastUsedItem": 7,
       "source": "F-06.6",
@@ -256,7 +256,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -338,7 +338,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -599,7 +599,7 @@
         "src/screens/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-15T09:26:23.811Z",
@@ -649,7 +649,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 2,
+      "helpful": 3,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -888,6 +888,38 @@
       "created": "2026-10-16T07:25:08.837Z",
       "lastUsedItem": 25,
       "source": "F-08.7"
+    },
+    {
+      "id": "P-065",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/ipc/hooks/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a UI re-reads a status on a timer because a background run sends no events, define the poll condition as 'any run of the session is in flight, queued or starting included' (not 'the status shows a step running') and pin it with a test where the first read lands before the run reaches Running, because F-08.8's useAnalysisStatus only polled after a read that already had a running step, and review found that a read arriving before the prefetch leaves the queue ends polling and leaves the footer stale.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T08:00:09.903Z",
+      "lastUsedItem": 26,
+      "source": "F-08.8"
+    },
+    {
+      "id": "P-066",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/commands/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "A core command the UI calls on a timer must run its store reads and per-step cache validation loop inside with_store/spawn_blocking like the commands around it, because review flagged review_analysis_status calling step::cached_analysis (SQLite plus worktree file checks) for every step on the async command thread once a second.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-16T08:00:09.954Z",
+      "lastUsedItem": 26,
+      "source": "F-08.8"
     }
   ]
 }

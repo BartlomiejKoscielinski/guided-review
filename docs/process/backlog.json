@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T07:25:40.866Z",
+  "updated": "2026-10-16T08:00:10.749Z",
   "items": [
     {
       "id": "F-08.1",
@@ -132,17 +132,16 @@
       "title": "Footer: shortcut hints (J K hunk, [ ] step, N note, C comment, A ask, Space reviewed, ? all) and Claude…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "4f6d63a",
+      "lockSha": "e93c14c",
       "tests": [
         "src-tauri/tests/analysis_status.rs",
         "src/screens/detailed/Footer.test.tsx",
         "src/ipc/mock/analysisStatus.test.ts",
         "tests/e2e/detailed-f08-8.spec.ts"
-      ],
-      "forkSha": "5be0a7b"
+      ]
     },
     {
       "id": "F-08.9",
@@ -150,9 +149,15 @@
       "title": "End-of-step card: \"End of step 4\", next step title with stats, Next step.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "157eac8",
+      "tests": [
+        "src/screens/detailed/EndOfStepCard.test.tsx",
+        "tests/e2e/detailed-f08-9.spec.ts"
+      ],
+      "forkSha": "9326c81"
     },
     {
       "id": "F-09.7",
