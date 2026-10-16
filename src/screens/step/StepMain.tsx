@@ -12,6 +12,7 @@ import type { AskState } from './askState';
 import { pathOf } from './diffPath';
 import { StepFile, type StepFileProps } from './StepFile';
 import { StepNotes } from './StepNotes';
+import type { CurrentHunk } from './useReviewKeys';
 import styles from './Step.module.css';
 
 export interface StepMainProps {
@@ -35,6 +36,10 @@ export interface StepMainProps {
   onPickLine: NonNullable<StepFileProps['onPickLine']>;
   /** The step's line comments and the open composer (F-09.7). */
   comments: StepFileProps['comments'];
+  /** The hunk J/K made current (F-30.6). */
+  current?: CurrentHunk | null;
+  /** A note N picked: its card comes into view once per `nonce` (F-30.6). */
+  noteReveal?: { id: string; nonce: number } | null;
 }
 
 /**
@@ -60,6 +65,8 @@ export function StepMain({
   selected,
   onPickLine,
   comments,
+  current,
+  noteReveal,
 }: StepMainProps) {
   const findings = analysis?.findings ?? [];
   const next = view.next;
@@ -150,6 +157,8 @@ export function StepMain({
             selected={selected}
             onPickLine={onPickLine}
             comments={comments}
+            current={current?.file === path ? current : undefined}
+            revealFocus={noteReveal?.id === focused ? noteReveal.nonce : undefined}
           />
         );
       })}

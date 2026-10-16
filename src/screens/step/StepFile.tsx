@@ -35,6 +35,10 @@ export interface StepFileProps {
   onPickLine?: (at: { file: string; side: 'old' | 'new'; no: number }, extend: boolean) => void;
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
+  /** The hunk J/K made current, when it is in this file (F-30.6). */
+  current?: { hunk: string; nonce: number };
+  /** Brings the focused note's card into view once per value, a `nextNonce` (N, F-30.6). */
+  revealFocus?: number;
 }
 
 /** Where a thread sits in the diff: its new-side line, else its old-side line. */
@@ -65,6 +69,8 @@ export function StepFile({
   selected,
   onPickLine,
   comments = [],
+  current,
+  revealFocus,
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
@@ -133,6 +139,13 @@ export function StepFile({
   // A line comment opens the fold it is in, so the reader finds it where they wrote it (F-09.7).
   const unfold = new Set<string>();
   let reveal: { at: string; nonce: number } | undefined;
+  const focusedHere = guide ? undefined : findings.find(({ finding }) => finding.id === focus);
+  if (focusedHere && revealFocus !== undefined) {
+    reveal = {
+      at: lineKey(focusedHere.finding.side, focusedHere.finding.line),
+      nonce: revealFocus,
+    };
+  }
   for (const card of comments) {
     if (card.file !== path) continue;
     const at = lineKey(card.side, card.line);
@@ -144,7 +157,10 @@ export function StepFile({
         {card.node}
       </div>,
     );
-    if (card.reveal !== undefined) reveal = { at, nonce: card.reveal };
+    // The latest request wins: a comment opened after N, or N after the comment.
+    if (card.reveal !== undefined && card.reveal > (reveal?.nonce ?? 0)) {
+      reveal = { at, nonce: card.reveal };
+    }
   }
   for (const thread of threads) {
     const at = threadAt(thread);
@@ -209,6 +225,7 @@ export function StepFile({
         }
         scrollRoot={scrollRoot}
         reveal={reveal}
+        current={current}
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />
     </section>

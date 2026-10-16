@@ -2,11 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import type { Finding } from '../../ipc/types/Finding';
-import { reviewKey, useReviewStore } from '../../state/review';
+import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf } from '../step/askState';
 import { pathOf } from '../step/diffPath';
 import { nextNonce } from '../step/lineComment';
+import { pickedSelection } from '../step/lineSelection';
 import { useLineComments } from '../step/useLineComments';
+import { useReviewKeys } from '../step/useReviewKeys';
 import { useSelfReviewKnown } from '../step/useSelfReview';
 import { useStepFocus } from '../step/useStepFocus';
 import { useStepSession } from '../step/useStepSession';
@@ -69,6 +71,18 @@ export function DetailedScreen() {
     folds: [],
     selfReview: selfReview ?? false,
   });
+  // The review keys S-03 has (F-30.6): J/K hunks, D/X decide, Ctrl+Shift+O Rider at the lines S-03
+  // left selected, the focused note or the current hunk; [ ] are the step header's, N and A the
+  // Guide aside's.
+  const picked = useStepReview(key ?? '', 'picked');
+  const keys = useReviewKeys({
+    sessionId,
+    stepId: step?.id ?? '',
+    files: files.data?.files ?? [],
+    findings,
+    focused,
+    selection: picked ? pickedSelection(picked) : null,
+  });
   const onAsk = (finding: Finding) => {
     if (key === null) return;
     change(key, (s) => ({
@@ -88,6 +102,11 @@ export function DetailedScreen() {
               {files.error.message}
             </p>
           )}
+          {step && keys.error && (
+            <p role="alert" className={styles.error}>
+              {keys.error.message}
+            </p>
+          )}
           {step &&
             files.data?.files.map((file) => (
               <DetailedFile
@@ -104,6 +123,7 @@ export function DetailedScreen() {
                 onAsk={onAsk}
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
                 comments={comments.cards}
+                current={keys.current?.file === pathOf(file) ? keys.current : undefined}
               />
             ))}
           {/* Under the files once they are read (or under their error), so it does not jump. */}

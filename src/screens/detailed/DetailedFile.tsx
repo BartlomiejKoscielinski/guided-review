@@ -1,4 +1,4 @@
-import { useMemo, useRef, type ReactNode, type RefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { DiffView } from '../../diff/DiffView';
 import { lineKey } from '../../diff/rows';
 import { ignoreWhitespace } from '../../diff/whitespace';
@@ -30,6 +30,8 @@ export interface DetailedFileProps {
    * brought into view (F-08.7).
    */
   reveal?: number;
+  /** The hunk J/K made current, when it is in this file (F-30.6). */
+  current?: { hunk: string; nonce: number };
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
 }
@@ -49,6 +51,7 @@ export function DetailedFile({
   selfReview,
   onAsk,
   reveal,
+  current,
   comments = [],
 }: DetailedFileProps) {
   const path = pathOf(file);
@@ -57,6 +60,9 @@ export function DetailedFile({
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
   const setIgnore = useDetailedStore((s) => s.setIgnoreWhitespace);
   const diff = useMemo(() => (ignore ? ignoreWhitespace(file) : file), [file, ignore]);
+  // A hunk J/K scrolls to the top sits under the sticky file bar, its header in view (F-30.6).
+  const sectionRef = useRef<HTMLElement>(null);
+  const barHeight = useFirstChildHeight(sectionRef);
 
   // The callout scrolls into view once per request, not again when the virtual list remounts it.
   const revealed = useRef<number | undefined>(undefined);
@@ -124,7 +130,7 @@ export function DetailedFile({
   }
 
   return (
-    <section aria-label={path}>
+    <section ref={sectionRef} aria-label={path}>
       <FileBar
         sessionId={sessionId}
         file={file}
@@ -143,8 +149,29 @@ export function DetailedFile({
         inserts={inserts.size > 0 ? inserts : undefined}
         unfold={unfold}
         reveal={latest}
+        current={current}
+        stickyTop={barHeight}
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />
     </section>
   );
+}
+
+/** The height of the element's first child (S-04's sticky file bar), kept as it changes. */
+function useFirstChildHeight(ref: RefObject<HTMLElement | null>): number {
+  const [height, setHeight] = useState(0);
+  useLayoutEffect(() => {
+    const bar = ref.current?.firstElementChild;
+    if (!(bar instanceof HTMLElement)) return;
+    const update = () => {
+      setHeight(bar.offsetHeight);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+    };
+  }, [ref]);
+  return height;
 }

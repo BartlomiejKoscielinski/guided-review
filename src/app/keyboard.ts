@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useMatches, useNavigate } from 'react-router';
 import { layoutShortcut, useFocusStore } from '../state/focus';
 import { useStartStore } from '../state/start';
-import { pathFor, SETTINGS_ROUTE } from './routes';
+import { pathFor, SETTINGS_ROUTE, SHORTCUTS_SETTINGS_ROUTE } from './routes';
 import { useModeSwitch } from './useModeSwitch';
 
 /** Ctrl+, without Alt (so AltGr chords on Polish keyboards don't trigger it). */
@@ -69,8 +69,34 @@ export function isTyping(target: EventTarget | null): boolean {
  * still counts, since some keyboard layouts type `]` with it.
  */
 export function isNextStepShortcut(event: KeyboardEvent): boolean {
+  return isPrintable(event, ']');
+}
+
+/** `[` as `]`: Previous step on S-03 and S-04 (F-30.6). */
+export function isPrevStepShortcut(event: KeyboardEvent): boolean {
+  return isPrintable(event, '[');
+}
+
+/** `?` as `]` (Shift types it on most layouts): every shortcut, Settings › Shortcuts (F-30.6). */
+export function isAllShortcutsShortcut(event: KeyboardEvent): boolean {
+  return isPrintable(event, '?');
+}
+
+/** A printable key without Ctrl, Alt or Meta; AltGr (Ctrl+Alt on Windows) still counts. */
+function isPrintable(event: KeyboardEvent, key: string): boolean {
   const altGr = event.getModifierState('AltGraph');
-  return event.key === ']' && !event.metaKey && (altGr || (!event.ctrlKey && !event.altKey));
+  return event.key === key && !event.metaKey && (altGr || (!event.ctrlKey && !event.altKey));
+}
+
+/** Ctrl+Shift+O without Alt: Open in Rider at the current line (F-24.1, F-30.6). */
+export function isRiderShortcut(event: KeyboardEvent): boolean {
+  return (
+    event.ctrlKey &&
+    event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    event.key.toLowerCase() === 'o'
+  );
 }
 
 /** Space without modifiers: Mark reviewed or its undo on S-03 (F-07.2, F-30.6). */
@@ -81,8 +107,9 @@ export function isMarkReviewedShortcut(event: KeyboardEvent): boolean {
 /**
  * App-wide shortcuts that work on every screen (F-30.6 › App group). `Ctrl+,` opens
  * Settings (F-19.4), `Ctrl+K` the S-01 input (F-01.4); `Ctrl+D` Focus | Detailed on S-03 and
- * S-04 (F-08.1), also from a text field; `Ctrl+1/2/3` the Focus layouts on S-03 (F-07.1); the other
- * review shortcuts join with M4.
+ * S-04 (F-08.1), also from a text field; `Ctrl+1/2/3` the Focus layouts on S-03 (F-07.1); `?`
+ * Settings › Shortcuts (F-19.3), except in a text field, where it types. The review keys live on
+ * their screens (`step/useReviewKeys.ts`, `step/useStepKeys.ts`, `useRiderKey.ts`).
  */
 export function useGlobalShortcuts(): void {
   const navigate = useNavigate();
@@ -104,6 +131,10 @@ export function useGlobalShortcuts(): void {
       } else if (toggleMode && isModeShortcut(event)) {
         event.preventDefault();
         toggleMode();
+      } else if (isAllShortcutsShortcut(event)) {
+        if (event.defaultPrevented || isTyping(event.target)) return;
+        event.preventDefault();
+        void navigate(pathFor(SHORTCUTS_SETTINGS_ROUTE));
       } else if (onStep) {
         // Ctrl+1/2/3 switch the Focus layout on S-03 (F-07.1).
         const layout = layoutShortcut(event);

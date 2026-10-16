@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { cx } from '../../components/cx';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
@@ -10,13 +11,15 @@ import { NotesRequest } from './notesRequest';
 import { SelectionBar } from './SelectionBar';
 import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
-import { lastLine } from './lineComment';
+import { lastLine, nextNonce } from './lineComment';
 import { useLineComments } from './useLineComments';
 import { useLineSelection } from './useLineSelection';
 import { useMarkReviewed } from './useMarkReviewed';
+import { useReviewKeys } from './useReviewKeys';
 import { useSelfReview } from './useSelfReview';
 import { useStepFocus } from './useStepFocus';
 import { useStepScroll } from './useStepScroll';
+import { useStepKeys } from './useStepKeys';
 import styles from './Step.module.css';
 
 export interface StepBodyProps {
@@ -72,6 +75,34 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
     folds: notes.data?.folds ?? [],
     selfReview,
   });
+  // The review keys (F-30.6): [ ] steps (the last step's ] finishes, F-30.3), J/K hunks, N notes
+  // (the picked note's card comes into view), D/X decide, A asks, Ctrl+Shift+O Rider.
+  const finishReview = useFinishReview();
+  useStepKeys(
+    step.data?.prev,
+    step.data?.next,
+    onGo,
+    step.data && step.data.next === undefined ? finishReview : undefined,
+  );
+  const [noteReveal, setNoteReveal] = useState<{ id: string; nonce: number } | null>(null);
+  // Layout C's ask field in the guide panel, focused by A while no answer card is open there.
+  const [guideAsk, setGuideAsk] = useState(0);
+  const keys = useReviewKeys({
+    sessionId,
+    stepId,
+    files: step.data?.files ?? [],
+    findings,
+    focused,
+    selection: lines.selection,
+    onNote: (id) => {
+      setFocus(id);
+      setNoteReveal({ id, nonce: nextNonce() });
+    },
+    onAsk: () => {
+      if (layout === 'C' && !ask) setGuideAsk((n) => n + 1);
+      else openAsk(lines.selection);
+    },
+  });
   const selected = lines.selection && {
     selection: lines.selection,
     bar: (
@@ -112,6 +143,11 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             {step.error.message}
           </p>
         )}
+        {keys.error && (
+          <p role="alert" className={styles.error}>
+            {keys.error.message}
+          </p>
+        )}
         {view && inPage && (
           <StepMain
             sessionId={sessionId}
@@ -132,6 +168,8 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             selected={selected}
             onPickLine={lines.pick}
             comments={comments.cards}
+            current={keys.current}
+            noteReveal={noteReveal}
           />
         )}
       </main>
@@ -146,6 +184,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
           onFocus={setFocus}
           ask={ask}
           onToggleReviewed={toggleReviewed}
+          focusAsk={guideAsk}
           onAskQuestion={(question) => {
             openAsk(lines.selection, question);
           }}

@@ -56,6 +56,14 @@ export interface DiffViewProps {
    * aside, F-08.7).
    */
   reveal?: { at: string; nonce: number };
+  /**
+   * The hunk (its `id`) J/K made current (F-30.6, M4 decision 14): its first row - the hunk header
+   * where headers show - carries the focus outline and `aria-current`, and scrolls to the top
+   * each time `nonce` changes.
+   */
+  current?: { hunk: string; nonce: number };
+  /** Height of a sticky bar over the diff in `scrollRoot` (S-04's file bar): a hunk scrolled to the top sits under it. */
+  stickyTop?: number;
 }
 
 const LINE = 22;
@@ -90,6 +98,8 @@ export function DiffView({
   scrollRoot,
   signs = true,
   reveal,
+  current,
+  stickyTop = 0,
 }: DiffViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -119,6 +129,7 @@ export function DiffView({
     estimateSize: (i) => estimate(rows[i]),
     overscan: 24,
     getItemKey: (i) => rows[i]?.key ?? i,
+    scrollPaddingStart: stickyTop,
   });
 
   const revealAt = reveal?.at;
@@ -130,6 +141,16 @@ export function DiffView({
     // Once per request: the rows and the virtualizer change with every scroll.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealAt, revealNonce]);
+
+  const currentHunk = current?.hunk;
+  const currentNonce = current?.nonce;
+  const currentIndex =
+    currentHunk === undefined ? -1 : rows.findIndex((row) => row.key.startsWith(`${currentHunk}#`));
+  useEffect(() => {
+    if (currentIndex >= 0) virtualizer.scrollToIndex(currentIndex, { align: 'start' });
+    // Once per J or K, as `reveal`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentHunk, currentNonce]);
 
   const hunkDim = useMemo(() => {
     const map = new Map<Hunk, boolean>();
@@ -225,7 +246,8 @@ export function DiffView({
               key={item.key}
               data-index={item.index}
               ref={virtualizer.measureElement}
-              className={styles.row}
+              className={cx(styles.row, item.index === currentIndex && styles.current)}
+              aria-current={item.index === currentIndex ? 'true' : undefined}
               style={{ transform: `translateY(${String(item.start - margin)}px)` }}
             >
               {render(row)}

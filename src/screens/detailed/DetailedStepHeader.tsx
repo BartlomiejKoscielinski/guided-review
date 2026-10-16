@@ -7,7 +7,7 @@ import { Kbd } from '../../components/Kbd';
 import type { PlanView } from '../../ipc/types/PlanView';
 import type { Step } from '../../ipc/types/Step';
 import { useMarkReviewed } from '../step/useMarkReviewed';
-import { useNextStepKey } from './useNextStepKey';
+import { useStepKeys } from '../step/useStepKeys';
 import styles from './DetailedStepHeader.module.css';
 
 export interface DetailedStepHeaderProps {
@@ -21,7 +21,8 @@ export interface DetailedStepHeaderProps {
 /**
  * The S-04 step header (F-08.4, Main.dc.html's main `<section>`): "Step 4 / 8" in the reader's
  * order, "builds on" chips `<number> · <short title>` from `Step.buildsOn` that open that step,
- * Previous step, Mark reviewed (Space) and Next step (`]`); the H1 title and the description below.
+ * Previous step (`[`), Mark reviewed (Space) and Next step (`]`); the H1 title and the description
+ * below.
  * On the last step `]` finishes the review (F-30.3) and the button stays disabled, since the end
  * card's Finish review takes its place (F-08.9).
  */
@@ -42,7 +43,7 @@ export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeader
     [setParams],
   );
   const finishReview = useFinishReview();
-  useNextStepKey(next, go, last ? finishReview : undefined);
+  useStepKeys(prev, next, go, last ? finishReview : undefined);
 
   const chips = step.buildsOn
     .flatMap((id) => {

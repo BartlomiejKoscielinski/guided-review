@@ -1,3 +1,4 @@
+import { useRiderKey } from '../../app/useRiderKey';
 import { Button } from '../../components/Button';
 import { Segmented } from '../../components/Segmented';
 import { DiffView } from '../../diff/DiffView';
@@ -37,6 +38,15 @@ export function DiffPane({
   const slash = file.path.lastIndexOf('/');
   const dir = slash < 0 ? '' : file.path.slice(0, slash + 1);
   const firstLine = diff?.hunks.find((h) => !h.fileLevel)?.newStart ?? 1;
+  const canOpen = file.status !== 'deleted';
+  // Ctrl+Shift+O does what Open in Rider does (F-30.6).
+  useRiderKey(
+    canOpen
+      ? () => {
+          onOpenInRider(firstLine);
+        }
+      : undefined,
+  );
   const empty = diff?.binary
     ? 'Binary file. Not shown.'
     : diff?.modeChange
@@ -62,7 +72,7 @@ export function DiffPane({
           />
           <Button
             size={30}
-            disabled={file.status === 'deleted'}
+            disabled={!canOpen}
             onClick={() => {
               onOpenInRider(firstLine);
             }}
