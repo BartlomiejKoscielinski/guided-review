@@ -15,6 +15,8 @@ pub mod steps_state;
 pub mod worktrees;
 
 #[cfg(test)]
+mod file_marks_tests;
+#[cfg(test)]
 mod session_mode_tests;
 #[cfg(test)]
 mod session_plan_opened_tests;
