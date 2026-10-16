@@ -7,6 +7,7 @@ import { GeneralSection } from './GeneralSection';
 import { GitlabSection } from './GitlabSection';
 import { IntegrationsSection } from './IntegrationsSection';
 import { SectionNav } from './SectionNav';
+import { ShortcutsSection } from './ShortcutsSection';
 import styles from './Settings.module.css';
 
 const SECTIONS: Partial<Record<SettingsSection, ComponentType>> = {
@@ -14,9 +15,10 @@ const SECTIONS: Partial<Record<SettingsSection, ComponentType>> = {
   claude: ClaudeSection,
   gitlab: GitlabSection,
   integrations: IntegrationsSection,
+  shortcuts: ShortcutsSection,
 };
 
-/** S-07 Settings: section nav and the section (Claude in M1, GitLab and Integrations in M2, General in M4). */
+/** S-07 Settings: section nav and the section (Claude in M1, GitLab and Integrations in M2, General and Shortcuts in M4). */
 export function SettingsScreen() {
   const { section } = useParams();
   const current: SettingsSection = SETTINGS_SECTIONS.includes(section as SettingsSection)

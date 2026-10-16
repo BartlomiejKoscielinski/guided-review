@@ -255,6 +255,14 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    screen: 'S07',
+    state: 'settings-shortcuts',
+    lastRoute: { screen: 'S-07', section: 'shortcuts' },
+    prepare: async (page) => {
+      await page.getByText('All shortcuts', { exact: true }).waitFor();
+    },
+  },
+  {
     screen: 'S03',
     state: 'focus-layout-A',
     lastRoute: { screen: 'S-01' },
