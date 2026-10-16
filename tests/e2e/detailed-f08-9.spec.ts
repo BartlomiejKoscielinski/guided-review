@@ -41,7 +41,6 @@ test('F-08.9 the end-of-step card: End of step 1, the next step with its numbers
   await expect.poll(() => backgroundOf(cardNext)).toBe(YELLOW);
 
   await cardNext.click();
-  await expect(page).toHaveURL(/\?step=s2$/);
   await expect(page.getByText('Step 2 / 8', { exact: true })).toBeVisible();
   await expect(main.getByText('End of step 2', { exact: true })).toBeVisible();
   await expect(
@@ -67,6 +66,10 @@ test('F-08.9 the last step: End of step 8, That was the last step., a yellow Fin
   await expect.poll(() => backgroundOf(finish)).toBe(YELLOW);
 
   await finish.click();
-  await expect(page).toHaveURL(/\/session\/[^/]+\/summary$/);
+  // The router is a memory router (docs/04), so S-05 shows by its screen, not the URL: an MR
+  // session's Summary is the stub screen until its milestone.
+  await expect(
+    page.getByRole('heading', { name: 'Summary', level: 1, exact: true }),
+  ).toBeAttached();
   await expect(page.getByText('Step 8 / 8', { exact: true })).toBeHidden();
 });
