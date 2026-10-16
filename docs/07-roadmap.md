@@ -49,7 +49,7 @@ Dependencies: M0 → M1 → M2 → M3 → (M4, M5) → M6 → M7 → M8 → M9 �
 
 ## M4 · Detailed mode and keyboard
 **Goal:** Detailed mode with rail, callouts, guide aside, footer; complete shortcut set.
-- Features: F-08 (all), F-09.7, F-30.3, F-30.6, F-19.1, F-19.3.
+- Features: F-08 (all), F-07.10, F-09.7, F-30.3, F-30.6, F-19.1, F-19.3.
 - Screens: S-04, S-07 (General, Shortcuts).
 - Demo: do a whole review with the keyboard only.
 

@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T11:52:35.704Z",
+  "updated": "2026-10-16T11:59:31.470Z",
   "items": [
     {
       "id": "F-08.1",
@@ -224,14 +224,24 @@
       ]
     },
     {
+      "id": "F-07.10",
+      "milestone": "M4",
+      "title": "Each file of a step can be marked reviewed on its own (S-03 and S-04): Space toggles the current file…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
       "id": "F-30.6",
       "milestone": "M4",
-      "title": "Shortcuts: ] next step, [ previous step, Space mark reviewed, J/K next/previous hunk, N next note, D add…",
+      "title": "Shortcuts: ↓ (or ]) next step, ↑ (or [) previous step, →/← next/previous file of the step, Space mark…",
       "kind": "mixed",
       "deps": [],
       "status": "todo",
       "attempts": 1,
-      "note": "live check failed: live check failed: J/K do not scroll S-04 when it is freshly mounted by Ctrl+D (Focus to Detailed): open MR !4, Start step 1, ] to step 2, Ctrl+D, J x3 -> outline moves but main.scrollTop stays 0. Suspected src/diff/DiffView.tsx useScrollMargin returns early while root.current is null on first layout and never re-measures. Everything else passed in WebView2 (see .autopilot/live/ap-20261016-0847.json).",
+      "note": "live check failed: J/K do not scroll S-04 when it is freshly mounted by Ctrl+D (open MR !4, Start step 1, ] to step 2, Ctrl+D, J x3: outline moves but main.scrollTop stays 0; suspected src/diff/DiffView.tsx useScrollMargin returns early while root.current is null on first layout). Spec changed 2026-10-16 by the owner (M4 decision 15, F-07.10): arrows left/right move between files of the step, up/down change steps (] and [ stay), Space marks the current file reviewed. Update the first attempt's tests that lock Space = step reviewed, the F-19.3 Settings list test (decision 3) and the F-08.8 footer hints test; do not delete them.",
       "lockSha": "468ddc2",
       "tests": [
         "src/screens/step/ReviewKeys.test.tsx",
