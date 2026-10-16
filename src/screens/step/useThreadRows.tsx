@@ -14,12 +14,16 @@ export interface ThreadRow {
   card: ReactNode;
 }
 
-/** Where a thread sits in the diff: its new-side line, else its old-side line. */
+/**
+ * Where a thread sits in the diff, on its position's side (new, else old): its line, or for a
+ * thread written on another version the line the core placed it on (F-11.3); none without one.
+ */
 function threadAt(thread: Thread): { key: string; line: number } | null {
   const pos = thread.position;
-  if (pos?.newLine !== undefined) return { key: lineKey('new', pos.newLine), line: pos.newLine };
-  if (pos?.oldLine !== undefined) return { key: lineKey('old', pos.oldLine), line: pos.oldLine };
-  return null;
+  if (!pos) return null;
+  const side = pos.newLine !== undefined ? 'new' : 'old';
+  const line = thread.outdated ? thread.placedLine : (pos.newLine ?? pos.oldLine);
+  return line === undefined ? null : { key: lineKey(side, line), line };
 }
 
 /**

@@ -38,6 +38,13 @@
   text-transform: uppercase;
 }
 
+/* Written on another version of the MR (F-11.3): a neutral word tag after the first byline. */
+.outdated {
+  display: inline-flex;
+  margin-left: 10px;
+  vertical-align: 1px;
+}
+
 /* The reply composer, in the note-card style (Notes.module.css editor). */
 .composer {
   display: flex;

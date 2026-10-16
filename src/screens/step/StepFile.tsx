@@ -8,6 +8,7 @@ import type { LineSelection } from '../../ipc/types/LineSelection';
 import type { Thread } from '../../ipc/types/Thread';
 import { pathOf } from './diffPath';
 import { FileReviewed } from './FileReviewed';
+import { FileThreads } from './FileThreads';
 import { NoteMark } from './GutterMarks';
 import type { LineCard } from './useLineComments';
 import { useThreadRows } from './useThreadRows';
@@ -23,6 +24,8 @@ export interface StepFileProps {
   findings: { finding: Finding; number: number }[];
   folds: Fold[];
   threads: Thread[];
+  /** The step's threads on this file's header (F-11.3). */
+  fileThreads?: readonly Thread[];
   focus: string | null;
   onFocus: (findingId: string) => void;
   scrollRoot: RefObject<HTMLElement | null>;
@@ -53,8 +56,8 @@ export interface StepFileProps {
 
 /**
  * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes" and the Reviewed toggle
- * (F-07.10), then the split diff with fold rows, gutter squares and thread icons, the focused note
- * and open threads under their lines.
+ * (F-07.10), the threads on the file header (F-11.3), then the split diff with fold rows, gutter
+ * squares and thread icons, the focused note and open threads under their lines.
  */
 export function StepFile({
   sessionId,
@@ -63,6 +66,7 @@ export function StepFile({
   findings,
   folds,
   threads,
+  fileThreads = [],
   focus,
   onFocus,
   scrollRoot,
@@ -80,7 +84,8 @@ export function StepFile({
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
-  const threadRows = useThreadRows(threads, { sessionId, stepId });
+  const scope = { sessionId, stepId };
+  const threadRows = useThreadRows(threads, scope);
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
   const diffFolds = useMemo<DiffFold[]>(
@@ -175,9 +180,13 @@ export function StepFile({
       reveal = { at, nonce: card.reveal };
     }
   }
+  // A thread's line is never folded: the fold is cut around it, so the thread shows on its line
+  // with the rest of the fold still closed (F-11.3, an outdated thread placed inside a fold).
+  const keep = new Set<string>();
   for (const row of threadRows) {
     push(markers, row.key, row.mark);
     if (row.card) push(inserts, row.key, row.card);
+    keep.add(row.key);
   }
 
   return (
@@ -200,6 +209,7 @@ export function StepFile({
           {onReviewed && <FileReviewed path={path} reviewed={reviewed} onToggle={onReviewed} />}
         </span>
       </div>
+      <FileThreads threads={fileThreads} path={path} scope={scope} />
       <DiffView
         path={path}
         diff={file}
@@ -210,6 +220,7 @@ export function StepFile({
         markers={markers}
         inserts={inserts}
         unfold={unfold}
+        keep={keep}
         selection={selection}
         onPickLine={
           onPickLine

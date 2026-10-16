@@ -149,6 +149,9 @@ export function StepMain({
             threads={view.threads.filter(
               (t) => t.position?.newPath === path || t.position?.oldPath === path,
             )}
+            fileThreads={view.fileThreads.filter(
+              (t) => t.position?.newPath === path || t.position?.oldPath === path,
+            )}
             focus={focused}
             onFocus={onFocus}
             scrollRoot={mainRef}

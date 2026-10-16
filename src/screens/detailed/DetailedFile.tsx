@@ -9,6 +9,7 @@ import { useDetailedStore } from '../../state/detailed';
 import { pathOf } from '../step/diffPath';
 import { NoteMark } from '../step/GutterMarks';
 import type { LineCard } from '../step/useLineComments';
+import { FileThreads } from '../step/FileThreads';
 import { useThreadRows } from '../step/useThreadRows';
 import { FileBar } from './FileBar';
 import { NoteCallout } from './NoteCallout';
@@ -42,6 +43,8 @@ export interface DetailedFileProps {
   comments?: readonly LineCard[];
   /** The existing GitLab threads on this file's lines in the step (F-11.1). */
   threads?: readonly Thread[];
+  /** The step's threads on this file's header, between the file bar and the diff (F-11.3). */
+  fileThreads?: readonly Thread[];
   /** The file is marked reviewed in the step (F-07.10). */
   reviewed?: boolean;
   /** The file bar's Reviewed toggle (F-07.10). */
@@ -68,11 +71,13 @@ export function DetailedFile({
   current,
   comments = [],
   threads = NO_THREADS,
+  fileThreads = NO_THREADS,
   reviewed,
   onReviewed,
 }: DetailedFileProps) {
   const path = pathOf(file);
-  const threadRows = useThreadRows(threads, { sessionId, stepId });
+  const scope = { sessionId, stepId };
+  const threadRows = useThreadRows(threads, scope);
   const layout = useDetailedStore((s) => s.layout);
   const setLayout = useDetailedStore((s) => s.setLayout);
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
@@ -165,6 +170,7 @@ export function DetailedFile({
         reviewed={reviewed}
         onReviewed={onReviewed}
       />
+      <FileThreads threads={fileThreads} path={path} scope={scope} />
       <DiffView
         path={path}
         diff={diff}

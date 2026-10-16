@@ -72,6 +72,20 @@ describe('diff rows', () => {
     expect(rows.map((r) => r.kind)).toEqual(['hunk', ...Array<string>(5).fill('pair')]);
   });
 
+  it('F-11.3 a thread line is cut out of its fold; the rest of the fold stays folded', () => {
+    const folds = [{ newStart: 23, newEnd: 25, label: 'Body' }];
+    const kinds = (keep?: ReadonlySet<string>) =>
+      buildRows(diff, 'split', { headers: false, folds, keep }).map((r) => r.kind);
+    expect(kinds(new Set(['n24']))).toEqual(['pair', 'fold', 'pair', 'fold', 'pair']);
+    expect(kinds(new Set(['n26']))).toEqual(['pair', 'fold', 'pair']);
+    const mechanical: FileDiff = {
+      ...diff,
+      hunks: diff.hunks.map((h) => ({ ...h, mechanical: 'whitespace' })),
+    };
+    const rows = buildRows(mechanical, 'split', { keep: new Set(['n23']) });
+    expect(rows.map((r) => r.kind)).toEqual(['hunk', 'fold', 'pair', 'fold']);
+  });
+
   it('labels hunks by their new-side range', () => {
     const hunk = diff.hunks[0];
     if (!hunk) throw new Error('fixture');
