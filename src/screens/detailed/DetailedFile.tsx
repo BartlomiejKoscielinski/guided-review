@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode, type RefObject } from 'react';
+import { useMemo, useRef, type ReactNode, type RefObject } from 'react';
 import { DiffView } from '../../diff/DiffView';
 import { lineKey } from '../../diff/rows';
 import { ignoreWhitespace } from '../../diff/whitespace';
@@ -24,6 +24,11 @@ export interface DetailedFileProps {
   /** Self-review copy on the callout; undefined while the session is looked up. */
   selfReview?: boolean;
   onAsk?: (finding: Finding) => void;
+  /**
+   * Set (a new number each time) when the Guide aside picked the focused note: its callout is
+   * brought into view (F-08.7).
+   */
+  reveal?: number;
 }
 
 /**
@@ -40,6 +45,7 @@ export function DetailedFile({
   onFocus,
   selfReview,
   onAsk,
+  reveal,
 }: DetailedFileProps) {
   const path = pathOf(file);
   const layout = useDetailedStore((s) => s.layout);
@@ -47,6 +53,15 @@ export function DetailedFile({
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
   const setIgnore = useDetailedStore((s) => s.setIgnoreWhitespace);
   const diff = useMemo(() => (ignore ? ignoreWhitespace(file) : file), [file, ignore]);
+
+  // The callout scrolls into view once per request, not again when the virtual list remounts it.
+  const revealed = useRef<number | undefined>(undefined);
+  const showCallout = (el: HTMLDivElement | null) => {
+    if (el === null || reveal === undefined || revealed.current === reveal) return;
+    revealed.current = reveal;
+    el.scrollIntoView({ block: 'nearest' });
+  };
+  let focusedAt: string | undefined;
 
   const markers = new Map<string, ReactNode[]>();
   const inserts = new Map<string, ReactNode[]>();
@@ -67,9 +82,10 @@ export function DetailedFile({
       />,
     ]);
     if (focused) {
+      focusedAt = key;
       inserts.set(key, [
         ...(inserts.get(key) ?? []),
-        <div key={finding.id} className={styles.row}>
+        <div key={finding.id} ref={showCallout} className={styles.row}>
           <NoteCallout
             finding={finding}
             sessionId={sessionId}
@@ -100,6 +116,11 @@ export function DetailedFile({
         scrollRoot={scrollRoot}
         markers={markers}
         inserts={inserts.size > 0 ? inserts : undefined}
+        reveal={
+          reveal !== undefined && focusedAt !== undefined
+            ? { at: focusedAt, nonce: reveal }
+            : undefined
+        }
         empty={file.binary ? 'Binary file. Not shown.' : undefined}
       />
     </section>

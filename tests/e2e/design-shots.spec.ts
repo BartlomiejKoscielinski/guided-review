@@ -273,6 +273,12 @@ const SHOTS: Shot[] = [
       await step4(page, 'A');
       await page.keyboard.press('Control+d');
       await page.getByText('Claude · step 4').waitFor();
+      // Main.dc.html opens with the first "For you to judge" check ticked (1/3).
+      await page
+        .getByRole('checkbox', {
+          name: 'Matches the MR description: the photo is saved even without network',
+        })
+        .check();
       // The Mode toggle's fill slides over; shoot it where it ends.
       await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
     },

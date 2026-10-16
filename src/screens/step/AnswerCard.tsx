@@ -22,6 +22,11 @@ export interface AnswerCardProps {
   autoFocus?: boolean;
   /** A question typed in the guide panel (layout C): asked once when the card opens. */
   initialQuestion?: string;
+  /**
+   * The card's own input for follow-ups; S-04 asks them from the Guide aside's Ask box instead
+   * (M4 decision 7).
+   */
+  followUp?: boolean;
 }
 
 /** A draft from an answer sits on the selection's last line, or on the MR without one. */
@@ -42,6 +47,7 @@ export function AnswerCard({
   selfReview = false,
   autoFocus = false,
   initialQuestion,
+  followUp = true,
 }: AnswerCardProps) {
   const thread = useAsk(sessionId, stepId, nonce);
   const createDraft = useCreateDraft();
@@ -144,32 +150,34 @@ export function AnswerCard({
         </p>
       )}
 
-      <form
-        className={styles.ask}
-        onSubmit={(event) => {
-          event.preventDefault();
-          ask();
-        }}
-      >
-        <input
-          ref={field}
-          className={styles.input}
-          aria-label="Ask Claude about this step"
-          placeholder="Ask Claude about this step…"
-          value={input}
-          onChange={(event) => {
-            setInput(event.target.value);
+      {followUp && (
+        <form
+          className={styles.ask}
+          onSubmit={(event) => {
+            event.preventDefault();
+            ask();
           }}
-        />
-        <Button
-          type="submit"
-          variant="claude"
-          size={36}
-          disabled={input.trim() === '' || answering}
         >
-          Ask Claude
-        </Button>
-      </form>
+          <input
+            ref={field}
+            className={styles.input}
+            aria-label="Ask Claude about this step"
+            placeholder="Ask Claude about this step…"
+            value={input}
+            onChange={(event) => {
+              setInput(event.target.value);
+            }}
+          />
+          <Button
+            type="submit"
+            variant="claude"
+            size={36}
+            disabled={input.trim() === '' || answering}
+          >
+            Ask Claude
+          </Button>
+        </form>
+      )}
     </article>
   );
 }

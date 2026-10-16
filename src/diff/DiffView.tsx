@@ -1,5 +1,13 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { cx } from '../components/cx';
 import type { FileDiff } from '../ipc/types/FileDiff';
 import type { Hunk } from '../ipc/types/Hunk';
@@ -40,6 +48,12 @@ export interface DiffViewProps {
   scrollRoot?: RefObject<HTMLElement | null>;
   /** The +/− column; S-03 has none (Review.dc.html: 48px and 60px gutters, number then code). */
   signs?: boolean;
+  /**
+   * Scrolls to the insert row under the line `at` each time `nonce` changes, so the row renders
+   * even when it is outside the virtual window (S-04's callout of a note picked in the Guide
+   * aside, F-08.7).
+   */
+  reveal?: { at: string; nonce: number };
 }
 
 const LINE = 22;
@@ -72,6 +86,7 @@ export function DiffView({
   onPickLine,
   scrollRoot,
   signs = true,
+  reveal,
 }: DiffViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -100,6 +115,16 @@ export function DiffView({
     overscan: 24,
     getItemKey: (i) => rows[i]?.key ?? i,
   });
+
+  const revealAt = reveal?.at;
+  const revealNonce = reveal?.nonce;
+  useEffect(() => {
+    if (revealAt === undefined) return;
+    const index = rows.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' });
+    // Once per request: the rows and the virtualizer change with every scroll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealAt, revealNonce]);
 
   const hunkDim = useMemo(() => {
     const map = new Map<Hunk, boolean>();

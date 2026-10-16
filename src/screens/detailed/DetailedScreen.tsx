@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import type { Finding } from '../../ipc/types/Finding';
@@ -10,6 +10,7 @@ import { useStepFocus } from '../step/useStepFocus';
 import { useStepSession } from '../step/useStepSession';
 import { DetailedFile } from './DetailedFile';
 import { DetailedStepHeader } from './DetailedStepHeader';
+import { GuideAside } from './GuideAside';
 import { InfoHeader } from './InfoHeader';
 import { Rail } from './Rail';
 import styles from './Detailed.module.css';
@@ -46,6 +47,15 @@ export function DetailedScreen() {
   // The focused note as in S-03 (its callout opens under its line, F-08.6); Ask Claude on it asks
   // about the note's line, the same ask S-03 opens, so a mode switch keeps it (F-08.1).
   const { focused, setFocus } = useStepFocus(key ?? '', findings);
+  // A note picked in the Guide aside (a click or `N`) also brings its callout into view (F-08.7).
+  const [reveal, setReveal] = useState<{ id: string; nonce: number } | null>(null);
+  const onPick = useCallback(
+    (id: string) => {
+      setFocus(id);
+      setReveal((r) => ({ id, nonce: (r?.nonce ?? 0) + 1 }));
+    },
+    [setFocus],
+  );
   const onAsk = (finding: Finding) => {
     if (key === null) return;
     change(key, (s) => ({
@@ -79,20 +89,25 @@ export function DetailedScreen() {
                 onFocus={setFocus}
                 selfReview={selfReview}
                 onAsk={onAsk}
+                reveal={reveal?.id === focused ? reveal.nonce : undefined}
               />
             ))}
         </main>
-        <aside aria-label="Guide" className={styles.guide}>
-          <div className={styles.guideHead}>
-            <div className={styles.guideName}>
-              <span className={styles.guideMark} aria-hidden="true" />
-              <span>Guide</span>
-            </div>
-            {index >= 0 && (
-              <span className={styles.guideStep}>{`Claude · step ${String(index + 1)}`}</span>
-            )}
-          </div>
-        </aside>
+        {step && index >= 0 ? (
+          <GuideAside
+            sessionId={sessionId}
+            stepId={step.id}
+            stepNumber={index + 1}
+            analysis={notes}
+            focused={focused}
+            onPick={onPick}
+            selfReview={selfReview}
+            places={files.data?.places}
+            request={!restored}
+          />
+        ) : (
+          <aside aria-label="Guide" className={styles.guide} />
+        )}
       </div>
       <footer className={styles.footer} />
     </div>
