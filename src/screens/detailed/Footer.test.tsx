@@ -242,4 +242,35 @@ describe('S-04 footer (F-08.8)', () => {
     });
     expect(await piece('Claude: step 5 ready')).toBeInTheDocument();
   });
+
+  it('F-08.8 a step running ahead (prefetch) is read again until it ends, with no step event', async () => {
+    const inner = createMockClient({ latencyMs: 0 });
+    await inner.reviewPlan(SESSION, () => undefined);
+    let settled = false;
+    const reviewFindings: IpcClient['reviewFindings'] = async (sessionId, stepId, onEvent) => {
+      const analysis = await inner.reviewFindings(sessionId, stepId, () => undefined);
+      onEvent({ kind: 'queued' });
+      onEvent({ kind: 'done', result: analysis });
+      settled = true;
+      return analysis;
+    };
+    // The prefetch of s5 runs in the core; its channel goes nowhere, so no event tells the UI.
+    let ended = false;
+    const reviewAnalysisStatus = vi.fn(() =>
+      Promise.resolve(ended ? status({ ready: ['s5'] }) : status({ running: ['s5'] })),
+    );
+    await openDetailed({ reviewFindings, reviewAnalysisStatus });
+    expect(await piece('Claude: analyzing 5')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(settled).toBe(true);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    ended = true;
+    await waitFor(
+      () => {
+        expect(claudeLine()).toEqual(['Claude: step 5 ready']);
+      },
+      { timeout: 6000 },
+    );
+  }, 10_000);
 });
