@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router';
+import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon, CheckIcon } from '../../components/icons';
 import { Kbd } from '../../components/Kbd';
@@ -21,6 +22,8 @@ export interface DetailedStepHeaderProps {
  * The S-04 step header (F-08.4, Main.dc.html's main `<section>`): "Step 4 / 8" in the reader's
  * order, "builds on" chips `<number> · <short title>` from `Step.buildsOn` that open that step,
  * Previous step, Mark reviewed (Space) and Next step (`]`); the H1 title and the description below.
+ * On the last step `]` finishes the review (F-30.3) and the button stays disabled, since the end
+ * card's Finish review takes its place (F-08.9).
  */
 export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeaderProps) {
   const [, setParams] = useSearchParams();
@@ -28,6 +31,7 @@ export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeader
   const index = order.indexOf(step.id);
   const prev = index > 0 ? order[index - 1] : undefined;
   const next = index >= 0 ? order[index + 1] : undefined;
+  const last = index >= 0 && index === order.length - 1;
   const position = `Step ${String(index + 1)} / ${String(order.length)}`;
   const reviewed = view.reviewed.includes(step.id);
   const toggleReviewed = useMarkReviewed(sessionId, step.id, reviewed);
@@ -37,7 +41,8 @@ export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeader
     },
     [setParams],
   );
-  useNextStepKey(next, go);
+  const finishReview = useFinishReview();
+  useNextStepKey(next, go, last ? finishReview : undefined);
 
   const chips = step.buildsOn
     .flatMap((id) => {

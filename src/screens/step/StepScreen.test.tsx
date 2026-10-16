@@ -85,10 +85,11 @@ describe('S-03 layout A', () => {
     expect(await screen.findByText('Step 5 of 8')).toBeInTheDocument();
   });
 
-  it('F-07.2 the last step has no next', async () => {
+  it('F-07.2 the last step’s next stays enabled: it finishes the review (F-30.3)', async () => {
     renderStep('s8');
     expect(await screen.findByText('Step 8 of 8')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next step' })).toBeDisabled();
+    // Disabled in M3; M4 decision 11 makes the last step's next open S-05 (FinishReview.test.tsx).
+    expect(screen.getByRole('button', { name: 'Next step' })).toBeEnabled();
   });
 
   it('F-07.2 Mark reviewed marks the step and the steps list counts it; a second click takes it back', async () => {

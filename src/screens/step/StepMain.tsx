@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import { CheckIcon, ChevronRightIcon } from '../../components/icons';
@@ -38,8 +39,9 @@ export interface StepMainProps {
 
 /**
  * The step in the main column (F-07.2): "STEP n OF m", title, description, Mark reviewed and
- * next (layout A; B has its toolbar, C its guide panel); the notes state while there are no cards;
- * the step's files. The diff is there before Claude's notes.
+ * next (layout A; B has its toolbar, C its guide panel); on the last step next opens S-05 (F-30.3,
+ * M4 decision 11). The notes state while there are no cards; the step's files. The diff is there
+ * before Claude's notes.
  */
 export function StepMain({
   sessionId,
@@ -61,6 +63,7 @@ export function StepMain({
 }: StepMainProps) {
   const findings = analysis?.findings ?? [];
   const next = view.next;
+  const finishReview = useFinishReview();
   const guide = layout === 'C';
   const answerNode =
     ask && !guide ? (
@@ -101,9 +104,9 @@ export function StepMain({
                 type="button"
                 className={styles.next}
                 aria-label="Next step"
-                disabled={next === undefined}
                 onClick={() => {
                   if (next !== undefined) onGo(next);
+                  else finishReview();
                 }}
               >
                 <ChevronRightIcon size={16} strokeWidth={2.2} />

@@ -141,7 +141,7 @@ describe('S-04 end-of-step card (F-08.9)', () => {
     const nexts = within(mainColumn()).getAllByRole('button', { name: /^Next step/ });
     expect(nexts).toHaveLength(1);
     expect(nexts[0]).toBeDisabled();
-    // No `]` on it yet: `]` does nothing on the last step until F-30.3 (tests decision).
+    // `]` finishes the review on the last step (F-30.3, FinishReview.test.tsx).
     expect(within(mainColumn()).getByRole('button', { name: 'Finish review' })).toBeEnabled();
   });
 
