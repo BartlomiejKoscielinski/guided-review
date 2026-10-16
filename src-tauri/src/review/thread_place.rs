@@ -10,21 +10,22 @@ use std::collections::HashSet;
 
 use super::line_map::LineMap;
 use super::plan_model::Plan;
-use crate::git::Git;
 use crate::git::model::{FileDiff, Hunk};
+use crate::git::{Git, refs};
 use crate::gitlab::discussions::Thread;
 use crate::os::process::Cancel;
 
 /// Sets `outdated` and `placed_line` of the diff threads for the reviewed version
-/// `base → head`: a thread written on another head is outdated, and its line is looked for in
-/// `head` (new side) or `base` (old side: a removed line).
+/// `base → head`: a thread written on another head (a commit SHA) is outdated, and its line is
+/// looked for in `head` (new side) or `base` (old side: a removed line).
 pub async fn place(git: &Git, threads: &mut [Thread], base: &str, head: &str, cancel: &Cancel) {
     let mut map = LineMap::new(git, cancel);
     for thread in threads.iter_mut() {
         let Some(pos) = thread.position.clone() else {
             continue;
         };
-        if pos.head_sha.is_empty() || pos.head_sha == head {
+        // Without a commit SHA the version is unknown: the thread keeps GitLab's position.
+        if !refs::is_sha_like(&pos.head_sha) || pos.head_sha.eq_ignore_ascii_case(head) {
             continue;
         }
         thread.outdated = true;
