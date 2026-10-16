@@ -7,6 +7,7 @@ import { toFileDiff } from '../diff';
 import { mockPlaces } from './filePlace';
 import { mrFiles } from './mr';
 import { gitlabPathCmp } from './planFallback';
+import { onHeaders, onLine } from './threadPlace';
 
 const QUEUE = 'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs';
 const PAWEL = { username: 'pawel.s', name: 'Paweł S.' };
@@ -23,7 +24,14 @@ export const MOCK_THREADS: Thread[] = [
     id: 'd-482-1',
     resolvable: true,
     resolved: false,
-    position: { oldPath: QUEUE, newPath: QUEUE, newLine: 24, headSha: '9c41e07' },
+    outdated: false,
+    position: {
+      oldPath: QUEUE,
+      newPath: QUEUE,
+      newLine: 24,
+      headSha: '9c41e07',
+      baseSha: '5e2a9c4',
+    },
     notes: [
       {
         id: 48201,
@@ -43,7 +51,14 @@ export const MOCK_THREADS: Thread[] = [
     id: 'd-482-2',
     resolvable: true,
     resolved: false,
-    position: { oldPath: QUEUE, newPath: QUEUE, newLine: 61, headSha: '9c41e07' },
+    outdated: false,
+    position: {
+      oldPath: QUEUE,
+      newPath: QUEUE,
+      newLine: 61,
+      headSha: '9c41e07',
+      baseSha: '5e2a9c4',
+    },
     notes: [
       {
         id: 48203,
@@ -57,7 +72,8 @@ export const MOCK_THREADS: Thread[] = [
     id: 'd-482-3',
     resolvable: true,
     resolved: false,
-    position: { oldPath: VM, newPath: VM, newLine: 48, headSha: '9c41e07' },
+    outdated: false,
+    position: { oldPath: VM, newPath: VM, newLine: 48, headSha: '9c41e07', baseSha: '5e2a9c4' },
     notes: [
       {
         id: 48204,
@@ -77,23 +93,10 @@ export const MOCK_THREADS: Thread[] = [
 
 const path = (f: FileDiff) => f.newPath ?? f.oldPath ?? '';
 
-/** The thread sits on a line inside one of the file's hunks (as `review/step_view.rs`). */
-function holds(file: FileDiff, thread: Thread): boolean {
-  const pos = thread.position;
-  if (!pos || (file.newPath !== pos.newPath && file.oldPath !== pos.oldPath)) return false;
-  const within = (line: number, start: number, count: number) =>
-    line >= start && line < start + count;
-  return file.hunks.some((h) =>
-    pos.newLine !== undefined
-      ? within(pos.newLine, h.newStart, h.newLines)
-      : pos.oldLine !== undefined && within(pos.oldLine, h.oldStart, h.oldLines),
-  );
-}
-
 /**
  * A step of !482 as `review_step` builds it (F-07.2, F-07.3): its place in `order`, the mock
- * diff's files with only the step's hunks in GitLab file order, the threads inside them (the
- * mock GitLab's current `threads`, F-11.2).
+ * diff's files with only the step's hunks in GitLab file order, the threads on their lines and
+ * on their file headers (the mock GitLab's current `threads`, F-11.2, F-11.3).
  * `undefined` when the step isn't in `order` or the plan.
  */
 export function mockStepView(
@@ -118,7 +121,8 @@ export function mockStepView(
     ...(prev === undefined ? {} : { prev }),
     ...(next === undefined ? {} : { next }),
     files,
-    threads: structuredClone(threads.filter((t) => files.some((f) => holds(f, t)))),
+    threads: structuredClone(threads.filter((t) => files.some((f) => onLine(f, t)))),
+    fileThreads: structuredClone(onHeaders(plan, order, stepId, threads)),
     reviewed,
     fallback,
     places: mockPlaces(plan, order, stepId),

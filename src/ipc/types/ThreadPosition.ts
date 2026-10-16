@@ -5,6 +5,10 @@
  */
 export type ThreadPosition = { oldPath: string, newPath: string, oldLine?: number, newLine?: number, 
 /**
- * The head the thread was written against.
+ * The head the thread was written against (its new-side lines).
  */
-headSha: string, };
+headSha: string, 
+/**
+ * The base the thread was written against (its old-side lines, F-11.3).
+ */
+baseSha: string, };

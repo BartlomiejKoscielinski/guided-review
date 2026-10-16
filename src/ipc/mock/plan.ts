@@ -169,7 +169,10 @@ export function createPlanBackend(
               data.threads,
             );
         if (!view) throw notInPlan();
-        if (isSelfReview(data, sessionId)) view.threads = [];
+        if (isSelfReview(data, sessionId)) {
+          view.threads = [];
+          view.fileThreads = [];
+        }
         return respond(view);
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));

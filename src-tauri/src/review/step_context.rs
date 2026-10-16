@@ -17,6 +17,7 @@ use super::plan_model::Plan;
 use super::source_files;
 use super::step_order::{self, StepOrder, StepOrderError};
 use super::strategy;
+use super::thread_place;
 use crate::claude::ClaudeError;
 use crate::claude::tasks::ask::AskRequest;
 use crate::claude::tasks::plan::{self, Context, PlanRequest};
@@ -236,7 +237,12 @@ where
     let rules = plan::team_rules(&git, &row.base_sha, cancel).await?;
     let files = source_files::files(&git, &stored, &row.base_sha, &row.head_sha, cancel).await?;
     let threads = match &mr {
-        Some(mr) => threads(mr.clone()).await,
+        Some(mr) => {
+            let mut threads = threads(mr.clone()).await;
+            // Threads written on an older version find their line in this one (F-11.3).
+            thread_place::place(&git, &mut threads, &row.base_sha, &row.head_sha, cancel).await;
+            threads
+        }
         None => Vec::new(),
     };
     Ok(SessionInputs {

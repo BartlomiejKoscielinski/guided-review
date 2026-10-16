@@ -17,4 +17,15 @@ resolved: boolean,
 /**
  * Where a diff thread sits; `None` for comments on the MR itself.
  */
-position?: ThreadPosition, notes: Array<ThreadNote>, };
+position?: ThreadPosition, notes: Array<ThreadNote>, 
+/**
+ * Written on another version of the MR than the one reviewed (F-11.3); set by
+ * `review/thread_place.rs`, false as GitLab sends it.
+ */
+outdated: boolean, 
+/**
+ * The line of the reviewed version an outdated thread shows on (the side of its position):
+ * the nearest line with its text; `None` without a match (the file header) and for a
+ * current thread, which sits on its position's line (F-11.3, M5 decision 4).
+ */
+placedLine?: number, };

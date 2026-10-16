@@ -116,6 +116,8 @@ mod tests {
             resolved: false,
             position: None,
             notes: Vec::new(),
+            outdated: false,
+            placed_line: None,
         }
     }
 

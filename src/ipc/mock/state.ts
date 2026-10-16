@@ -105,7 +105,11 @@ export function createStateBackend(
       if (stepId === undefined || !step) return respond(null);
       const findings = cachedFindings(data, sessionId, stepId);
       store.save();
-      const resumed: ResumedSession = { plan, step: { ...step, threads: [] }, findings };
+      const resumed: ResumedSession = {
+        plan,
+        step: { ...step, threads: [], fileThreads: [] },
+        findings,
+      };
       return respond(resumed);
     },
   };

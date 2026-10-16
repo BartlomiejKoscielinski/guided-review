@@ -32,6 +32,16 @@ pub struct Thread {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub position: Option<ThreadPosition>,
     pub notes: Vec<ThreadNote>,
+    /// Written on another version of the MR than the one reviewed (F-11.3); set by
+    /// `review/thread_place.rs`, false as GitLab sends it.
+    #[serde(default)]
+    pub outdated: bool,
+    /// The line of the reviewed version an outdated thread shows on (the side of its position):
+    /// the nearest line with its text; `None` without a match (the file header) and for a
+    /// current thread, which sits on its position's line (F-11.3, M5 decision 4).
+    #[ts(optional)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub placed_line: Option<u32>,
 }
 
 impl Thread {
@@ -54,8 +64,11 @@ pub struct ThreadPosition {
     #[ts(optional)]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub new_line: Option<u32>,
-    /// The head the thread was written against.
+    /// The head the thread was written against (its new-side lines).
     pub head_sha: String,
+    /// The base the thread was written against (its old-side lines, F-11.3).
+    #[serde(default)]
+    pub base_sha: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -115,6 +128,8 @@ struct RawPosition {
     new_line: Option<u32>,
     #[serde(default)]
     head_sha: Option<String>,
+    #[serde(default)]
+    base_sha: Option<String>,
 }
 
 /// The MR's threads in GitLab's order (oldest first).
@@ -151,6 +166,8 @@ pub fn parse(items: Vec<Value>) -> Result<Vec<Thread>, GitlabError> {
                 && resolvable_notes.iter().all(|n| n.resolved == Some(true)),
             position,
             notes: notes.into_iter().map(note).collect(),
+            outdated: false,
+            placed_line: None,
         });
     }
     Ok(threads)
@@ -171,6 +188,7 @@ fn position(raw: &RawPosition) -> Option<ThreadPosition> {
         old_line: raw.old_line,
         new_line: raw.new_line,
         head_sha: raw.head_sha.clone().unwrap_or_default(),
+        base_sha: raw.base_sha.clone().unwrap_or_default(),
     })
 }
 

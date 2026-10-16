@@ -16,11 +16,13 @@ const THREAD: Thread = {
   id: 'd-1',
   resolvable: true,
   resolved: false,
+  outdated: false,
   position: {
     oldPath: 'src/a.cs',
     newPath: 'src/a.cs',
     newLine: 48,
     headSha: '9c41e07',
+    baseSha: '5e2a9c4',
   },
   notes: [
     {

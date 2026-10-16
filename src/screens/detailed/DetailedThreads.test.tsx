@@ -189,7 +189,13 @@ describe('S-04 threads (F-11.1)', () => {
         ...view,
         threads: view.threads.map((thread): Thread => ({
           ...thread,
-          position: { oldPath: VM, newPath: VM, oldLine: 37, headSha: '9c41e07' },
+          position: {
+            oldPath: VM,
+            newPath: VM,
+            oldLine: 37,
+            headSha: '9c41e07',
+            baseSha: '5e2a9c4',
+          },
         })),
       };
     };
