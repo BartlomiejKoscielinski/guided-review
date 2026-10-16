@@ -18,7 +18,10 @@ export interface LineAnchor {
  * the step's state, so a layout or mode switch keeps it where it was.
  */
 export interface LineComment extends LineAnchor {
-  /** The text it opens with: empty, or the text Undo brought back. */
+  /**
+   * The text in the composer as the reader types it (or the text Undo brought back), so a remount
+   * after a mode switch or a scroll keeps it.
+   */
   text: string;
   /** The draft it made: the card shows it with the confirmation and Undo. */
   draft: { id: string; body: string } | null;
@@ -26,9 +29,16 @@ export interface LineComment extends LineAnchor {
   covers: string | null;
   /** Opening again remounts the card; S-04 also scrolls it into view by it. */
   nonce: number;
-  /** C on the open composer's line moves the focus back to its text area. */
+  /**
+   * A request to move the focus back to its text area (C on its line, or another comment asked
+   * for while it holds text): a `nextNonce` number, so it also brings the card into view.
+   */
   focus: number;
 }
+
+/** The composer holds text not yet added: opening another one would lose it. */
+export const holdsText = (comment: LineComment | null): boolean =>
+  comment !== null && comment.draft === null && comment.text.trim() !== '';
 
 let opened = 0;
 

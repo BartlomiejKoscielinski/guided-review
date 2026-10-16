@@ -5,6 +5,7 @@ import type { Fold } from '../../ipc/types/Fold';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import {
   firstChangedLine,
+  holdsText,
   lastPicked,
   lineDraftsOf,
   nextNonce,
@@ -52,19 +53,30 @@ export function useLineComments({
   const change = useReviewStore((s) => s.change);
   const drafts = useDrafts(sessionId).data;
 
-  /** Opens the composer at `at`; on the line of the composer already open, focuses its text. */
+  /**
+   * Opens the composer at `at`. A composer holding text not yet added stays (error prevention):
+   * it takes the focus back instead, as does the open composer on the same line.
+   */
   const open = useCallback(
     (at: LineAnchor, text = '', covers: string | null = null) => {
       change(key, (s) => {
         const old = s.comment;
-        if (old?.draft === null && text === '' && sameAnchor(old, at)) {
-          return { comment: { ...old, focus: old.focus + 1 } };
+        if (old && (holdsText(old) || (old.draft === null && text === '' && sameAnchor(old, at)))) {
+          return { comment: { ...old, focus: nextNonce() } };
         }
         return { comment: { ...at, text, draft: null, covers, nonce: nextNonce(), focus: 0 } };
       });
     },
     [change, key],
   );
+
+  /** Undo on a listed comment while the composer holds text: the composer takes the focus. */
+  const canUndo = useCallback((): boolean => {
+    const s = useReviewStore.getState();
+    if (s.key !== key || !holdsText(s.comment)) return true;
+    change(key, (st) => (st.comment ? { comment: { ...st.comment, focus: nextNonce() } } : {}));
+    return false;
+  }, [change, key]);
 
   useCommentKey(() => {
     if (stepId === '') return;
@@ -89,6 +101,7 @@ export function useLineComments({
           onUndone={(body) => {
             open(at, body, draft.id);
           }}
+          canUndo={canUndo}
         />
       ),
     });
@@ -100,7 +113,8 @@ export function useLineComments({
     cards.push({
       ...at,
       id,
-      reveal: nonce,
+      // Opening it, or a later request for its focus (a greater `nextNonce`), brings it into view.
+      reveal: Math.max(nonce, comment.focus),
       node: (
         <LineComposer
           key={id}
@@ -110,6 +124,11 @@ export function useLineComments({
           draft={comment.draft}
           text={comment.text}
           focus={comment.focus}
+          onText={(text) => {
+            change(key, (s) =>
+              s.comment?.nonce === nonce ? { comment: { ...s.comment, text } } : {},
+            );
+          }}
           onAdded={(draft) => {
             change(key, (s) =>
               s.comment?.nonce === nonce
