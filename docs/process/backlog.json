@@ -1,6 +1,6 @@
 {
   "milestone": "M4",
-  "updated": "2026-10-16T10:10:46.537Z",
+  "updated": "2026-10-16T10:22:50.728Z",
   "items": [
     {
       "id": "F-08.1",
@@ -199,15 +199,14 @@
       "title": "Shortcuts: list of all shortcuts in F-30.6, grouped (Review, Code, App).",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "22b9148",
+      "lockSha": "2d6ea48",
       "tests": [
         "src/screens/settings/ShortcutsSection.test.tsx",
         "tests/e2e/settings-f19-3.spec.ts"
-      ],
-      "forkSha": "9efd76e"
+      ]
     },
     {
       "id": "F-30.3",
@@ -215,9 +214,15 @@
       "title": "Finish review (review screens) opens S-05.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "ee41de3",
+      "tests": [
+        "src/app/titlebar/FinishReview.test.tsx",
+        "tests/e2e/detailed-f30-3.spec.ts"
+      ],
+      "forkSha": "169a20d"
     },
     {
       "id": "F-30.6",
