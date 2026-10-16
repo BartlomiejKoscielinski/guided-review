@@ -133,7 +133,8 @@ test('F-07.10 the footer hints follow the arrow keys and the header’s Next ste
   ]) {
     await expect(bar.getByText(hint, { exact: true })).toBeVisible();
   }
-  // The header's Next step is named just that; the end-of-step card's keeps its ] until F-30.6.
-  await expect(column(page).getByRole('button', { name: 'Next step', exact: true })).toHaveCount(1);
-  await expect(column(page).getByRole('button', { name: /^Next step\s*\]$/ })).toHaveCount(1);
+  // Both Next step buttons, the header's and the end-of-step card's, are named just that: the `]`
+  // key is gone (F-30.6, M4 decision 15).
+  await expect(column(page).getByRole('button', { name: 'Next step', exact: true })).toHaveCount(2);
+  await expect(column(page).getByRole('button', { name: /\]/ })).toHaveCount(0);
 });

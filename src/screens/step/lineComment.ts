@@ -90,7 +90,7 @@ export function firstChangedLine(
 }
 
 /**
- * The first changed line of the hunk J/K made current (M4 decision 13): the first one the reader
+ * The first changed line of the change the arrow keys made current (M4 decision 13): the first one the reader
  * sees, else its first one at all, which the comment unfolds. Null when the hunk is not in `files`.
  */
 export function hunkFirstChangedLine(

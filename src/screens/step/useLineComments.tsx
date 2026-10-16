@@ -33,13 +33,13 @@ export interface LineCommentsOptions {
   /** Claude's folds the screen draws (S-03); S-04 has none. */
   folds: readonly Fold[];
   selfReview: boolean;
-  /** The hunk J/K made current (F-30.6): `C` without a selection opens there. */
+  /** The change the arrow keys made current (F-30.6): `C` without a selection opens there. */
   current?: { file: string; hunk: string } | null;
 }
 
 /**
  * Line comments on the open step (F-09.7, M4 decision 13), shared by S-03 and S-04. `C` opens the
- * composer under the last selected line, else under the first changed line of the hunk J/K made
+ * composer under the last selected line, else under the first changed line of the change the arrow keys made
  * current, else under the step's first changed line the reader sees; Comment in the "Selected
  * lines" group calls `open`. The step's drafts on a line with no note show as cards under their
  * lines, so the reader finds their comments where they wrote them.

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { isMarkReviewedShortcut, isTypingOrControl } from '../../app/keyboard';
+import { isTypingOrControl } from '../../app/keyboard';
+import { isShortcutKey } from '../../app/shortcuts';
 import { useMarkFile } from '../../ipc/hooks/useMarks';
 import { useSessionState } from '../../ipc/hooks/useSessionState';
 import type { FileDiff } from '../../ipc/types/FileDiff';
@@ -10,6 +11,8 @@ export interface FileMarks {
   isReviewed: (path: string) => boolean;
   /** Marks the file of the step, or takes its mark back. */
   toggle: (path: string) => void;
+  /** Marks the file of the step; a marked file stays as it is (`↓` past its end, F-30.6). */
+  mark: (path: string) => void;
 }
 
 export interface FileMarksOptions {
@@ -19,13 +22,13 @@ export interface FileMarksOptions {
   files: readonly FileDiff[];
   /** The step is reviewed; undefined while it loads (nothing to mark yet). */
   stepReviewed: boolean | undefined;
-  /** The file of the current change (the hunk J/K made current), if any. */
+  /** The file of the current change (the one the arrow keys made current), if any. */
   current: string | undefined;
 }
 
 /**
  * The step's file marks on S-03 and S-04 (F-07.10): each file's Reviewed toggle reads and writes
- * them, and `Space` toggles the current file - the file of the current change, else the step's
+ * them, the walk's `↓` marks a file past its end (F-30.6), and `Space` toggles the current file - the file of the current change, else the step's
  * first file - without moving. In a field or on a control Space keeps its own meaning (typing,
  * pressing what has the focus); elsewhere it doesn't scroll the page.
  */
@@ -50,6 +53,12 @@ export function useFileMarks({
     },
     [mutate, stepId, stepReviewed, paths, isReviewed],
   );
+  const mark = useCallback(
+    (path: string) => {
+      if (!isReviewed(path)) toggle(path);
+    },
+    [isReviewed, toggle],
+  );
 
   const target = current !== undefined && paths.includes(current) ? current : paths[0];
   const latest = useRef({ toggle, target });
@@ -58,7 +67,7 @@ export function useFileMarks({
   });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (!isMarkReviewedShortcut(event) || event.defaultPrevented) return;
+      if (!isShortcutKey(event, 'markFile') || event.defaultPrevented) return;
       if (isTypingOrControl(event.target)) return;
       event.preventDefault();
       const { toggle: run, target: file } = latest.current;
@@ -70,5 +79,5 @@ export function useFileMarks({
     };
   }, []);
 
-  return useMemo(() => ({ isReviewed, toggle }), [isReviewed, toggle]);
+  return useMemo(() => ({ isReviewed, toggle, mark }), [isReviewed, toggle, mark]);
 }

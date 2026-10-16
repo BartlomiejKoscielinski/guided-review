@@ -54,7 +54,7 @@ const NON_TEXT_INPUTS = new Set([
 ]);
 
 /**
- * Focus in a field, where a printable key types: `]`, `N` and `A` leave the key to it. Buttons,
+ * Focus in a field, where a printable key types: `N`, `C` and `A` leave the key to it. Buttons,
  * checkboxes, radios and other inputs that type nothing don't (a ticked check keeps the focus).
  */
 export function isTyping(target: EventTarget | null): boolean {
@@ -64,15 +64,43 @@ export function isTyping(target: EventTarget | null): boolean {
   return target.closest('textarea, select') !== null;
 }
 
+/** Widgets whose own arrow keys move inside them (WAI-ARIA), and inputs that take the arrows. */
+const ARROW_WIDGETS = [
+  '[role="menu"]',
+  '[role="menubar"]',
+  '[role="listbox"]',
+  '[role="radiogroup"]',
+  '[role="tablist"]',
+  '[role="tree"]',
+  '[role="grid"]',
+  '[role="slider"]',
+  '[role="spinbutton"]',
+  '[role="combobox"]',
+  'select',
+  'input[type="radio"]',
+  'input[type="range"]',
+].join(', ');
+
 /**
- * `]` without Ctrl, Alt or Meta: Next step on S-04 (F-08.4, F-30.6). AltGr (Ctrl+Alt on Windows)
- * still counts, since some keyboard layouts type `]` with it.
+ * Focus where the arrow keys already mean something: a text field, a menu, a list box, a radio
+ * group or segmented control, a select (M4 decision 15). The review walk leaves them the keys;
+ * on a plain button or checkbox the arrows still walk.
+ */
+export function isArrowWidget(target: EventTarget | null): boolean {
+  if (isTyping(target)) return true;
+  return target instanceof Element && target.closest(ARROW_WIDGETS) !== null;
+}
+
+/**
+ * `]` without Ctrl, Alt or Meta (AltGr, Ctrl+Alt on Windows, still counts, since some layouts
+ * type `]` with it). The key no longer moves between steps (F-30.6, M4 decision 15: `↓`/`↑` walk
+ * the review); kept for a layout check of printable keys.
  */
 export function isNextStepShortcut(event: KeyboardEvent): boolean {
   return isPrintable(event, ']');
 }
 
-/** `[` as `]`: Previous step on S-03 and S-04 (F-30.6). */
+/** `[` as `]`; no longer a shortcut (M4 decision 15). */
 export function isPrevStepShortcut(event: KeyboardEvent): boolean {
   return isPrintable(event, '[');
 }
@@ -109,7 +137,8 @@ export function isMarkReviewedShortcut(event: KeyboardEvent): boolean {
  * Settings (F-19.4), `Ctrl+K` the S-01 input (F-01.4); `Ctrl+D` Focus | Detailed on S-03 and
  * S-04 (F-08.1), also from a text field; `Ctrl+1/2/3` the Focus layouts on S-03 (F-07.1); `?`
  * Settings › Shortcuts (F-19.3), except in a text field, where it types. The review keys live on
- * their screens (`step/useReviewKeys.ts`, `step/useStepKeys.ts`, `useRiderKey.ts`).
+ * their screens (`step/useArrowWalk.ts`, `step/useReviewKeys.ts`, `step/useFileMarks.ts`,
+ * `useRiderKey.ts`).
  */
 export function useGlobalShortcuts(): void {
   const navigate = useNavigate();

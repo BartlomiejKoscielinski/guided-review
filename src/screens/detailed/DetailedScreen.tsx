@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
+import { bringIntoView } from '../../diff/currentChange';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
@@ -8,6 +9,7 @@ import { selectionOf } from '../step/askState';
 import { pathOf } from '../step/diffPath';
 import { nextNonce } from '../step/lineComment';
 import { pickedSelection } from '../step/lineSelection';
+import { useArrowWalk, useCurrentChange } from '../step/useArrowWalk';
 import { useFileMarks } from '../step/useFileMarks';
 import { useLineComments } from '../step/useLineComments';
 import { useReviewKeys } from '../step/useReviewKeys';
@@ -66,37 +68,64 @@ export function DetailedScreen() {
     },
     [setFocus],
   );
-  // The review keys S-03 has (F-30.6): J/K hunks, D/X decide, Ctrl+Shift+O Rider at the lines S-03
-  // left selected, the focused note or the current hunk; [ ] are the step header's, N and A the
-  // Guide aside's.
+  // The review keys S-03 has (F-30.6, M4 decisions 14 and 15): ↓/↑ walk the changes with the
+  // outline on each hunk header and mark each file past its end, →/← the files, Space the current
+  // file's mark, D/X decide, Ctrl+Shift+O Rider at the lines S-03 left selected, the focused note
+  // or the current change; N and A are the Guide aside's. The walk pauses at the end-of-step card,
+  // and at the end of the last step ↓ moves the focus to the card's Finish review.
+  const shown = step?.id ?? '';
+  const [current, setCurrent] = useCurrentChange(shown);
   const picked = useStepReview(key ?? '', 'picked');
   const keys = useReviewKeys({
     sessionId,
-    stepId: step?.id ?? '',
     files: files.data?.files ?? [],
     findings,
     focused,
     selection: picked ? pickedSelection(picked) : null,
+    current,
   });
   // File marks (F-07.10): each sticky file bar's Reviewed toggle; Space toggles the file of the
   // current change, else the step's first file (the step header's Mark reviewed marks them all).
   const marks = useFileMarks({
     sessionId,
-    stepId: step?.id ?? '',
+    stepId: shown,
     files: files.data?.files ?? NO_FILES,
     stepReviewed: step && view ? view.reviewed.includes(step.id) : undefined,
-    current: keys.current?.file,
+    current: current?.file,
+  });
+  const [, setParams] = useSearchParams();
+  useArrowWalk({
+    sessionId,
+    stepId: shown,
+    files: step ? files.data?.files : undefined,
+    current,
+    setCurrent,
+    mark: marks.mark,
+    prev: index > 0 ? order[index - 1] : undefined,
+    next: index >= 0 ? order[index + 1] : undefined,
+    go: (id) => {
+      setParams({ step: id });
+    },
+    scrollRoot: mainRef,
+    onEnd: () => {
+      const root = mainRef.current;
+      const card = root?.querySelector('[data-end-of-step]');
+      if (root && card) bringIntoView(root, card);
+    },
+    onFinish: () => {
+      mainRef.current?.querySelector<HTMLElement>('[data-finish-review]')?.focus();
+    },
   });
   // Line comments (F-09.7): S-04 draws no line selection, so C opens the composer under the line
-  // S-03 left selected, else in the hunk J/K made current, else under the step's first changed
-  // line (no Claude folds here).
+  // S-03 left selected, else in the current change, else under the step's first changed line (no
+  // Claude folds here).
   const comments = useLineComments({
     sessionId,
-    stepId: step?.id ?? '',
+    stepId: shown,
     files: files.data?.files ?? [],
     folds: [],
     selfReview: selfReview ?? false,
-    current: keys.current,
+    current,
   });
   const onAsk = (finding: Finding) => {
     if (key === null) return;
@@ -138,7 +167,7 @@ export function DetailedScreen() {
                 onAsk={onAsk}
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
                 comments={comments.cards}
-                current={keys.current?.file === pathOf(file) ? keys.current : undefined}
+                current={current?.file === pathOf(file) ? current : undefined}
                 reviewed={marks.isReviewed(pathOf(file))}
                 onReviewed={() => {
                   marks.toggle(pathOf(file));

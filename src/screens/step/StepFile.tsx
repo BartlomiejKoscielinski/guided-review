@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode, type RefObject } from 'react';
-import { DiffView } from '../../diff/DiffView';
+import { DiffView, type DiffCurrent } from '../../diff/DiffView';
 import { lineKey, type DiffFold } from '../../diff/rows';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
@@ -39,8 +39,8 @@ export interface StepFileProps {
   onPickLine?: (at: { file: string; side: 'old' | 'new'; no: number }, extend: boolean) => void;
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
-  /** The hunk J/K made current, when it is in this file (F-30.6). */
-  current?: { hunk: string; nonce: number };
+  /** The change the arrow keys made current, when it is in this file (F-30.6). */
+  current?: DiffCurrent;
   /** Brings the focused note's card into view once per value, a `nextNonce` (N, F-30.6). */
   revealFocus?: number;
   /** The file is marked reviewed in the step (F-07.10). */

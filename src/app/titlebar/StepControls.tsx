@@ -85,7 +85,7 @@ export function StepControls({
         />
       )}
       {model}
-      <Button variant="primary" size={28} onClick={finishReview}>
+      <Button variant="primary" size={28} onClick={finishReview} data-finish-review>
         Finish review
       </Button>
     </>

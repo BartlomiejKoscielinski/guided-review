@@ -13,7 +13,7 @@ import { pathOf } from './diffPath';
 import { StepFile, type StepFileProps } from './StepFile';
 import { StepNotes } from './StepNotes';
 import type { FileMarks } from './useFileMarks';
-import type { CurrentHunk } from './useReviewKeys';
+import type { CurrentChange } from './useArrowWalk';
 import styles from './Step.module.css';
 
 export interface StepMainProps {
@@ -37,8 +37,8 @@ export interface StepMainProps {
   onPickLine: NonNullable<StepFileProps['onPickLine']>;
   /** The step's line comments and the open composer (F-09.7). */
   comments: StepFileProps['comments'];
-  /** The hunk J/K made current (F-30.6). */
-  current?: CurrentHunk | null;
+  /** The change the arrow keys made current (F-30.6). */
+  current?: CurrentChange | null;
   /** A note N picked: its card comes into view once per `nonce` (F-30.6). */
   noteReveal?: { id: string; nonce: number } | null;
   /** The step's file marks: each file header's Reviewed toggle (F-07.10). */

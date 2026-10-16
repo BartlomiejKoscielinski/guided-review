@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { DiffView } from '../../diff/DiffView';
+import { DiffView, type DiffCurrent } from '../../diff/DiffView';
 import { lineKey } from '../../diff/rows';
 import { ignoreWhitespace } from '../../diff/whitespace';
 import type { FileDiff } from '../../ipc/types/FileDiff';
@@ -30,8 +30,8 @@ export interface DetailedFileProps {
    * brought into view (F-08.7).
    */
   reveal?: number;
-  /** The hunk J/K made current, when it is in this file (F-30.6). */
-  current?: { hunk: string; nonce: number };
+  /** The change the arrow keys made current, when it is in this file (F-30.6). */
+  current?: DiffCurrent;
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
   /** The file is marked reviewed in the step (F-07.10). */
@@ -66,7 +66,7 @@ export function DetailedFile({
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
   const setIgnore = useDetailedStore((s) => s.setIgnoreWhitespace);
   const diff = useMemo(() => (ignore ? ignoreWhitespace(file) : file), [file, ignore]);
-  // A hunk J/K scrolls to the top sits under the sticky file bar, its header in view (F-30.6).
+  // A change the arrow keys scroll to the top sits under the sticky file bar (F-30.6).
   const sectionRef = useRef<HTMLElement>(null);
   const barHeight = useFirstChildHeight(sectionRef);
 

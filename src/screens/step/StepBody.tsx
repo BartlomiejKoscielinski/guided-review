@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState, type RefObject } from 'react';
-import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { cx } from '../../components/cx';
 import { useStep, useStepFindings } from '../../ipc/hooks/useReview';
 import { useSessionState, useSessionStateWriter } from '../../ipc/hooks/useSessionState';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import { useFocusStore } from '../../state/focus';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
+import { useWalkStore } from '../../state/walk';
 import { selectionOf, type AskState } from './askState';
 import { GuidePanel } from './GuidePanel';
 import { NotesRequest } from './notesRequest';
@@ -13,6 +13,7 @@ import { SelectionBar } from './SelectionBar';
 import { StepMain } from './StepMain';
 import { StepToolbar } from './StepToolbar';
 import { lastLine, nextNonce } from './lineComment';
+import { useArrowWalk, useCurrentChange } from './useArrowWalk';
 import { useLineComments } from './useLineComments';
 import { useFileMarks } from './useFileMarks';
 import { useLineSelection } from './useLineSelection';
@@ -21,7 +22,6 @@ import { useReviewKeys } from './useReviewKeys';
 import { useSelfReview } from './useSelfReview';
 import { useStepFocus } from './useStepFocus';
 import { useStepScroll } from './useStepScroll';
-import { useStepKeys } from './useStepKeys';
 import styles from './Step.module.css';
 
 const NO_FILES: readonly FileDiff[] = [];
@@ -50,7 +50,12 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   const findings = notes.data?.findings ?? [];
   const kept = useSessionState(sessionId).data?.scroll[stepId] ?? 0;
   const writer = useSessionStateWriter(sessionId);
-  useStepScroll(mainRef, step.data !== undefined && !notes.isFetching, kept, (top) => {
+  // A step the arrow keys opened shows the change they made current, not where it was left.
+  const [walked] = useState(() => {
+    const entry = useWalkStore.getState().entry;
+    return entry?.sessionId === sessionId && entry.stepId === stepId;
+  });
+  useStepScroll(mainRef, !walked && step.data !== undefined && !notes.isFetching, kept, (top) => {
     writer.setScroll(stepId, top);
   });
   const toggleReviewed = useMarkReviewed(sessionId, stepId, step.data?.reviewed);
@@ -71,26 +76,22 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
   // Questions from the toolbar, the guide and the "Selected lines" group are about the selected
   // lines, if any; otherwise about the whole step (F-10.1).
   const lines = useLineSelection(key);
-  // The review keys (F-30.6): [ ] steps (the last step's ] finishes, F-30.3), J/K hunks, N notes
-  // (the picked note's card comes into view), D/X decide, A asks (an open answer card keeps its
-  // answer and takes the focus), Ctrl+Shift+O Rider.
-  const finishReview = useFinishReview();
-  useStepKeys(
-    step.data?.prev,
-    step.data?.next,
-    onGo,
-    step.data && step.data.next === undefined ? finishReview : undefined,
-  );
+  // The review keys (F-30.6, M4 decisions 14 and 15): ↓/↑ walk the changes and mark each file
+  // past its end, →/← the files, Space the current file's mark, N notes (the picked note's card
+  // comes into view), D/X decide, A asks (an open answer card keeps its answer and takes the
+  // focus), C comments at the current change, Ctrl+Shift+O Rider. At the end of the last step ↓
+  // moves the focus to the title bar's Finish review (F-30.3).
+  const [current, setCurrent] = useCurrentChange(stepId);
   const [noteReveal, setNoteReveal] = useState<{ id: string; nonce: number } | null>(null);
   // Layout C's ask field in the guide panel, focused by A while no answer card is open there.
   const [guideAsk, setGuideAsk] = useState(0);
   const keys = useReviewKeys({
     sessionId,
-    stepId,
     files: step.data?.files ?? [],
     findings,
     focused,
     selection: lines.selection,
+    current,
     onNote: (id) => {
       setFocus(id);
       setNoteReveal({ id, nonce: nextNonce() });
@@ -108,17 +109,32 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
     stepId,
     files: step.data?.files ?? NO_FILES,
     stepReviewed: step.data?.reviewed,
-    current: keys.current?.file,
+    current: current?.file,
+  });
+  useArrowWalk({
+    sessionId,
+    stepId,
+    files: step.data?.files,
+    current,
+    setCurrent,
+    mark: marks.mark,
+    prev: step.data?.prev,
+    next: step.data?.next,
+    go: onGo,
+    scrollRoot: mainRef,
+    onFinish: () => {
+      document.querySelector<HTMLElement>('[data-finish-review]')?.focus();
+    },
   });
   // Line comments (F-09.7): C or Comment opens the composer under the last selected line, else in
-  // the hunk J/K made current (M4 decision 13).
+  // the current change (M4 decision 13).
   const comments = useLineComments({
     sessionId,
     stepId,
     files: step.data?.files ?? [],
     folds: notes.data?.folds ?? [],
     selfReview,
-    current: keys.current,
+    current,
   });
   const selected = lines.selection && {
     selection: lines.selection,
@@ -185,7 +201,7 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
             selected={selected}
             onPickLine={lines.pick}
             comments={comments.cards}
-            current={keys.current}
+            current={current}
             noteReveal={noteReveal}
             marks={marks}
           />

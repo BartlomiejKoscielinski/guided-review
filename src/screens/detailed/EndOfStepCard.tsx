@@ -1,7 +1,6 @@
 import { useSearchParams } from 'react-router';
 import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
-import { Kbd } from '../../components/Kbd';
 import type { PlanView } from '../../ipc/types/PlanView';
 import type { Step } from '../../ipc/types/Step';
 import { stepSize } from './railText';
@@ -17,8 +16,10 @@ export interface EndOfStepCardProps {
 /**
  * The end-of-step card under the step's files (F-08.9, Main.dc.html): "End of step 4" in the
  * reader's order, "Next: <title> · N files · +add −del" with the rail's numbers and a yellow Next
- * step (`]`, F-08.4). On the last step "That was the last step." and Finish review in its place,
- * which opens the summary, S-05 (M4 decision 11).
+ * step (F-08.4; no key hint, `↓` walks on through the changes, F-30.6). On the last step "That
+ * was the last step." and Finish review in its place, which opens the summary, S-05 (M4 decision
+ * 11); `↓` at the end of the last step moves the focus to it (M4 decision 15). The card is where
+ * the walk pauses at the end of a step (`data-end-of-step`).
  */
 export function EndOfStepCard({ view, step }: EndOfStepCardProps) {
   const [, setParams] = useSearchParams();
@@ -31,7 +32,7 @@ export function EndOfStepCard({ view, step }: EndOfStepCardProps) {
   const stats = view.stepStats[at];
 
   return (
-    <div className={styles.card}>
+    <div className={styles.card} data-end-of-step>
       <div className={styles.text}>
         <span className={styles.kicker}>{`End of step ${String(index + 1)}`}</span>
         {next ? (
@@ -56,10 +57,10 @@ export function EndOfStepCard({ view, step }: EndOfStepCardProps) {
             setParams({ step: next.id });
           }}
         >
-          Next step <Kbd>]</Kbd>
+          Next step
         </Button>
       ) : (
-        <Button variant="primary" size={40} onClick={finishReview}>
+        <Button variant="primary" size={40} onClick={finishReview} data-finish-review>
           Finish review
         </Button>
       )}

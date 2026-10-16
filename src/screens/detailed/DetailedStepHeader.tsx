@@ -1,12 +1,10 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router';
-import { useFinishReview } from '../../app/titlebar/useFinishReview';
 import { Button } from '../../components/Button';
 import { ChevronLeftIcon, CheckIcon } from '../../components/icons';
 import type { PlanView } from '../../ipc/types/PlanView';
 import type { Step } from '../../ipc/types/Step';
 import { useMarkReviewed } from '../step/useMarkReviewed';
-import { useStepKeys } from '../step/useStepKeys';
 import styles from './DetailedStepHeader.module.css';
 
 export interface DetailedStepHeaderProps {
@@ -20,11 +18,10 @@ export interface DetailedStepHeaderProps {
 /**
  * The S-04 step header (F-08.4, Main.dc.html's main `<section>`): "Step 4 / 8" in the reader's
  * order, "builds on" chips `<number> · <short title>` from `Step.buildsOn` that open that step,
- * Previous step (`[`), Mark reviewed (all the step's files, F-07.10; no Space hint, since Space
- * toggles only the current file: M4 decision 15) and Next step (`]`, no longer drawn on the button:
- * M4 plan row F-07.10); the H1 title and the description below.
- * On the last step `]` finishes the review (F-30.3) and the button stays disabled, since the end
- * card's Finish review takes its place (F-08.9).
+ * Previous step, Mark reviewed (all the step's files, F-07.10; no Space hint, since Space toggles
+ * only the current file: M4 decision 15) and Next step (no key hint: `↓` walks into the next step
+ * through its changes, F-30.6); the H1 title and the description below. On the last step Next
+ * stays disabled, since the end card's Finish review takes its place (F-08.9).
  */
 export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeaderProps) {
   const [, setParams] = useSearchParams();
@@ -32,7 +29,6 @@ export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeader
   const index = order.indexOf(step.id);
   const prev = index > 0 ? order[index - 1] : undefined;
   const next = index >= 0 ? order[index + 1] : undefined;
-  const last = index >= 0 && index === order.length - 1;
   const position = `Step ${String(index + 1)} / ${String(order.length)}`;
   const reviewed = view.reviewed.includes(step.id);
   const toggleReviewed = useMarkReviewed(sessionId, step.id, reviewed);
@@ -42,8 +38,6 @@ export function DetailedStepHeader({ sessionId, view, step }: DetailedStepHeader
     },
     [setParams],
   );
-  const finishReview = useFinishReview();
-  useStepKeys(prev, next, go, last ? finishReview : undefined);
 
   const chips = step.buildsOn
     .flatMap((id) => {
