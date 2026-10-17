@@ -381,7 +381,8 @@ const SHOTS: Shot[] = [
     prepare: mrSummary,
   },
   {
-    // The mock's five drafts, none published: S-05 opens on "Drafts 5" (F-12.2, M5 decision 5).
+    // The mock's five drafts, none published: S-05 opens on "Drafts 5" (F-12.2, M5 decision 5)
+    // with the note and the five rows of the drafts list (F-12.3).
     screen: 'S05',
     state: 'summary-drafts',
     lastRoute: { screen: 'S-01' },
@@ -391,6 +392,7 @@ const SHOTS: Shot[] = [
       await mrSummary(page);
       await page.getByRole('tab', { name: 'Drafts 5', selected: true }).waitFor();
       await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
+      await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
     },
   },
   {

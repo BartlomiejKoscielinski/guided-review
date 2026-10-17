@@ -243,6 +243,15 @@ export function LockIcon(props: IconProps) {
   );
 }
 
+/** Edit a draft in place (S-05 drafts list, SummaryDesk.dc.html). */
+export function PencilIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 16 16" defaultSize={15} defaultStroke={1.8} {...props}>
+      <path d="M10.5 2.5l3 3-8 8H2.5v-3z" />
+    </Svg>
+  );
+}
+
 export function CommentIcon(props: IconProps) {
   return (
     <Svg viewBox="0 0 16 16" defaultSize={13} defaultStroke={1.8} {...props}>

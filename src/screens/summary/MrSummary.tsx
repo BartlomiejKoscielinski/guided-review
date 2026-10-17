@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import type { StartState } from '../../app/router';
 import { useDiscussions } from '../../ipc/hooks/useDiscussions';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
+import { DraftsTab } from './DraftsTab';
 import { openingTab, openThreadCount, type SummaryTab } from './openingTab';
 import { SummaryHeader } from './SummaryHeader';
 import { SummaryTabs } from './SummaryTabs';
@@ -14,9 +15,9 @@ export interface MrSummaryProps {
 
 /**
  * S-05 of an MR session (F-12.1, SummaryDesk.dc.html): "SUMMARY", how many steps are reviewed and
- * Back to steps; below, the Comments column with the tabs Drafts N and Threads N open (F-12.2).
- * The lists under the tabs with Publish (F-12.3, F-13.1) and the Approval tile (F-14) fill the
- * page as their criteria land.
+ * Back to steps; below, the Comments column with the tabs Drafts N and Threads N open (F-12.2)
+ * and the drafts list (F-12.3). Publish (F-12.5), the threads list (F-13.1) and the Approval tile
+ * (F-14) fill the page as their criteria land.
  */
 export function MrSummary({ sessionId }: MrSummaryProps) {
   const id = useId();
@@ -54,7 +55,16 @@ export function MrSummary({ sessionId }: MrSummaryProps) {
                 />
               )}
             </div>
-            {tab && <div role="tabpanel" id={panelId} aria-labelledby={`${id}-tab-${tab}`} />}
+            {tab && (
+              <div
+                role="tabpanel"
+                id={panelId}
+                aria-labelledby={`${id}-tab-${tab}`}
+                className={styles.panel}
+              >
+                {tab === 'drafts' && <DraftsTab sessionId={sessionId} />}
+              </div>
+            )}
           </section>
         </div>
       </div>
