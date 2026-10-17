@@ -157,3 +157,36 @@ describe('mock thread actions (F-11.2)', () => {
     expect((await threadOf(mock, 's4', KICK))?.resolved).toBe(false);
   });
 });
+
+// F-12.2: `gitlab_discussions(session)`, the MR's threads for S-05's "Threads N open", read only.
+describe('mock MR threads (F-12.2)', () => {
+  it('F-12.2 gitlabDiscussions answers the three open threads of !482, oldest first', async () => {
+    const mock = await backend();
+    const threads = await mock.gitlabDiscussions(SESSION);
+    expect(threads.map((t) => [t.id, t.resolvable, t.resolved])).toEqual([
+      ['d-482-1', true, false],
+      ['d-482-2', true, false],
+      ['d-482-3', true, false],
+    ]);
+  });
+
+  it('F-12.2 a resolved thread comes back resolved, a reopened one open again', async () => {
+    const mock = await backend();
+    await mock.gitlabResolve(SESSION, KICK, true);
+    expect((await mock.gitlabDiscussions(SESSION)).find((t) => t.id === KICK)?.resolved).toBe(true);
+    await mock.gitlabResolve(SESSION, KICK, false);
+    expect((await mock.gitlabDiscussions(SESSION)).find((t) => t.id === KICK)?.resolved).toBe(
+      false,
+    );
+  });
+
+  it('F-12.2 a session without a merge request answers INVALID_INPUT, without a token GITLAB_UNAUTHORIZED', async () => {
+    const mock = createMockClient({ latencyMs: 0 });
+    await mock.repoPick();
+    const { sessionId } = await mock.sessionOpenCommit({ to: 'a3f9c12' });
+    expect((await rejection(mock.gitlabDiscussions(sessionId))).code).toBe('INVALID_INPUT');
+
+    const noToken = await backend({ gitlab: { state: 'noToken' } });
+    expect((await rejection(noToken.gitlabDiscussions(SESSION))).code).toBe('GITLAB_UNAUTHORIZED');
+  });
+});

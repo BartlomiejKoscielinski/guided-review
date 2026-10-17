@@ -37,4 +37,13 @@ describe('Tauri IPC client: thread actions (F-11.2)', () => {
       ['gitlab_reply', { session: 'mock-mr-session-1', discussion: 'd-482-3', body }],
     ]);
   });
+
+  it('F-12.2 gitlab_discussions sends only the session; the core takes the MR from it', async () => {
+    invokeMock.mockResolvedValue([]);
+    const client = createTauriClient();
+    await expect(client.gitlabDiscussions('mock-mr-session-1')).resolves.toEqual([]);
+    expect(invokeMock.mock.calls).toEqual([
+      ['gitlab_discussions', { session: 'mock-mr-session-1' }],
+    ]);
+  });
 });

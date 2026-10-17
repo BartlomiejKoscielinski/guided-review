@@ -4,13 +4,14 @@ import type { GitlabUser } from '../types/GitlabUser';
 import type { Thread } from '../types/Thread';
 import type { MockSessionData } from './session-data';
 
-type ThreadActions = Pick<IpcClient, 'gitlabResolve' | 'gitlabReply'>;
+type ThreadActions = Pick<IpcClient, 'gitlabDiscussions' | 'gitlabResolve' | 'gitlabReply'>;
 
 const invalid = (message: string) =>
   new IpcError({ code: 'INVALID_INPUT', message, retryable: false });
 
 /**
- * Resolve, Reopen and Reply on !482's threads (F-11.2) as `commands/gitlab_threads.rs` answers:
+ * !482's threads (F-12.2), and Resolve, Reopen and Reply on them (F-11.2), as
+ * `commands/gitlab_threads.rs` answers:
  * the same guards in the same order (a session without an MR, a blank reply, no GitLab account,
  * an unknown discussion), and a failed call changes nothing. Every MR session of the mock reviews
  * !482, so they share its threads (`SessionData.threads`, the mock GitLab's state). A reply is a
@@ -47,6 +48,13 @@ export function createThreadActions(
     }
   };
   return {
+    gitlabDiscussions: (sessionId) => {
+      if (data.local.includes(sessionId)) {
+        return Promise.reject(invalid('The session has no merge request.'));
+      }
+      if (!user()) return Promise.reject(unauthorized());
+      return respond(data.threads);
+    },
     gitlabResolve: (sessionId, discussion, resolved) =>
       settle(() => {
         target(sessionId, discussion).resolved = resolved;

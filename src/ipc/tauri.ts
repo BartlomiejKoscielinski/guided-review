@@ -17,6 +17,7 @@ import type { SessionState } from './types/SessionState';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
+import type { Thread } from './types/Thread';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
@@ -166,6 +167,7 @@ export function createTauriClient(): IpcClient {
       call<GitlabStatus>('gitlab_account_save', { server, token }),
     gitlabAccountRemove: () => call<GitlabStatus>('gitlab_account_remove'),
     gitlabListMrs: (tab) => call<MrList>('gitlab_list_mrs', { tab }),
+    gitlabDiscussions: (session) => call<Thread[]>('gitlab_discussions', { session }),
     gitlabResolve: (session, discussion, resolved) =>
       call<undefined>('gitlab_resolve', { session, discussion, resolved }),
     gitlabReply: (session, discussion, body) =>

@@ -1,6 +1,12 @@
-import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  type QueryClient,
+  type UseMutationResult,
+} from '@tanstack/react-query';
 import type { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
+import { discussionsKey } from './useDiscussions';
 import { stepsKey } from './useReview';
 
 export interface ResolveInput {
@@ -24,6 +30,17 @@ export interface ThreadActionReport<V> {
 }
 
 /**
+ * After a thread action: the step shows the thread as it is now, and S-05's thread count (F-12.2)
+ * is read again when the summary is next shown (it isn't on screen, so nothing is fetched now).
+ */
+function invalidateThreads(queryClient: QueryClient, sessionId: string) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: stepsKey(sessionId) }),
+    queryClient.invalidateQueries({ queryKey: discussionsKey(sessionId) }),
+  ]);
+}
+
+/**
  * Resolve or Reopen one thread (F-11.2): sent to GitLab at once, independent of drafts and
  * approval. It settles only once the step shows the new state, so nothing claims Resolved before
  * GitLab has it; the step queries are the only ones refetched (no Claude work, no drafts).
@@ -40,7 +57,7 @@ export function useResolveThread(
       return undefined;
     },
     onSuccess: async (_, input) => {
-      await queryClient.invalidateQueries({ queryKey: stepsKey(sessionId) });
+      await invalidateThreads(queryClient, sessionId);
       report.onSuccess?.(input);
     },
     onError: (error, input) => {
@@ -62,7 +79,7 @@ export function useReplyThread(
       return undefined;
     },
     onSuccess: async (_, input) => {
-      await queryClient.invalidateQueries({ queryKey: stepsKey(sessionId) });
+      await invalidateThreads(queryClient, sessionId);
       report.onSuccess?.(input);
     },
     onError: (error, input) => {

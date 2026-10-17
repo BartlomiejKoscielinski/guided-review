@@ -19,6 +19,7 @@ type GitlabClient = Pick<
   | 'gitlabAccountSave'
   | 'gitlabAccountRemove'
   | 'gitlabListMrs'
+  | 'gitlabDiscussions'
   | 'gitlabResolve'
   | 'gitlabReply'
 >;

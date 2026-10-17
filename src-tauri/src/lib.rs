@@ -209,6 +209,7 @@ pub fn run() {
             commands::gitlab::gitlab_account_save,
             commands::gitlab::gitlab_account_remove,
             commands::gitlab::gitlab_list_mrs,
+            commands::gitlab_threads::gitlab_discussions,
             commands::gitlab_threads::gitlab_resolve,
             commands::gitlab_threads::gitlab_reply,
             commands::review_plan::review_plan,

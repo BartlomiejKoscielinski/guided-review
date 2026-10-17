@@ -18,6 +18,7 @@ import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
+import type { Thread } from './types/Thread';
 import type { Strategy } from './types/Strategy';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { CommitInfo } from './types/CommitInfo';
@@ -263,6 +264,11 @@ export interface IpcClient {
   gitlabAccountRemove(): Promise<GitlabStatus>;
   /** One S-01 tab of the active repository's project with the counts of all three tabs. */
   gitlabListMrs(tab: MrTab): Promise<MrList>;
+  /**
+   * The threads of the session's MR as GitLab has them now, oldest first (S-05 "Threads N open",
+   * F-12.2); read only. Never called on a restored start (F-30.4).
+   */
+  gitlabDiscussions(sessionId: string): Promise<Thread[]>;
   /**
    * Resolve (`resolved` true) or Reopen (false) a thread of the session's MR, sent at once and
    * independent of drafts and approval (F-11.2); the core takes the project and the MR from the

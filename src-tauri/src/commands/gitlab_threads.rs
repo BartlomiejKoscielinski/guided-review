@@ -2,6 +2,7 @@
 //! thread, sent to GitLab at once and independent of drafts and approval. The project and the MR
 //! come from the session in the store, never from the UI; the UI names only the discussion.
 //! An action GitLab accepted updates the session's remembered threads, so the step shows it.
+//! `gitlab_discussions` reads the MR's threads for S-05 ("Threads N open", F-12.2).
 
 use tauri::State;
 
@@ -9,7 +10,8 @@ use super::gitlab::{GitlabApp, connected_client};
 use super::review::ReviewApp;
 use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
-use crate::gitlab::{discussions, thread_actions};
+use crate::gitlab::discussions::{self, Thread};
+use crate::gitlab::thread_actions;
 use crate::review::step_context::MrRef;
 use crate::review::thread_place;
 use crate::source::model::Source;
@@ -28,6 +30,20 @@ async fn session_mr(store: &Store, session: &str) -> AppResult<MrRef> {
             "The session has no merge request.",
         )),
     }
+}
+
+/// The MR's threads as GitLab has them now, oldest first (S-05: "Threads N open", F-12.2). Read
+/// only; the remembered threads of the steps are left as they are. Called when the summary opens,
+/// never on a restored start (F-30.4).
+#[tauri::command]
+pub async fn gitlab_discussions(
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+) -> AppResult<Vec<Thread>> {
+    let mr = session_mr(&store, &session).await?;
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    Ok(discussions::list(&client, &mr.project, mr.iid).await?)
 }
 
 /// Resolve (`resolved = true`) or Reopen (`false`) a thread of the session's MR.
