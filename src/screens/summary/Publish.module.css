@@ -1,6 +1,6 @@
 /* F-12.5 Publish on S-05 (SummaryDesk.dc.html): the button, the banners, the row additions. */
 
-/* Publish (N): blue with ink text; "Published" on the grey fill (the mock's #262626 / #7E7E79). */
+/* Publish (N): blue with ink text; "Published" on the grey fill (the mock's --raised-2 / --text-lineno). */
 .publish {
   display: inline-flex;
   align-items: center;
