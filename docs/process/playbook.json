@@ -1,5 +1,5 @@
 {
-  "items": 42,
+  "items": 43,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -133,7 +133,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -165,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 28,
+      "helpful": 29,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -185,7 +185,7 @@
         "src/screens/step/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
-      "helpful": 24,
+      "helpful": 25,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-14T15:13:07.675Z",
@@ -202,7 +202,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 20,
+      "helpful": 21,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -289,7 +289,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 19,
+      "helpful": 20,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -542,7 +542,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 12,
+      "helpful": 13,
       "harmful": 0,
       "seen": 8,
       "created": "2026-10-15T09:26:23.811Z",
@@ -592,7 +592,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 15,
+      "helpful": 16,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -913,7 +913,7 @@
         "src/ipc/mock/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
@@ -1158,6 +1158,53 @@
       "created": "2026-10-17T07:43:40.498Z",
       "lastUsedItem": 41,
       "source": "F-12.3"
+    },
+    {
+      "id": "P-090",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/summary/**",
+        "src/screens/step/**"
+      ],
+      "text": "For a label or message that appears after a click (running, suggested, failed), grep how the sibling screen announces the same kind of state (StepNotes puts 'Claude is reading this step…' in role=status) and lock the same live-region role in a red test, because F-12.4 shipped its running and suggested labels as bare <label>s and review rated that the one normal finding (WCAG 4.1.3), which cost a 66k-token fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T08:51:28.762Z",
+      "lastUsedItem": 42,
+      "source": "F-12.4"
+    },
+    {
+      "id": "P-091",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**",
+        "src/components/**"
+      ],
+      "text": "Before locking a computed style that the mock gets from a native control (accent-color on a checkbox), check how the shared component renders it and assert what it actually paints (box background or tone class), because the F-12.4 e2e asserted accentColor on the button-role Checkbox, which forced a dead accent-color line and an extra class into the shared component and review flagged it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T08:51:28.816Z",
+      "lastUsedItem": 42,
+      "source": "F-12.4"
+    },
+    {
+      "id": "P-092",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/step/**"
+      ],
+      "text": "When verify fails only in Vitest files the item did not touch (here S-03 LineComposer and LineCommentKeep, 5000 ms timeouts and a missing role=article), rerun those files alone and then verify once more before editing any code, because F-12.4 failed gate 1 and gate 2 on such tests and passed gate 3 with the same six commits and no fix.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T08:51:28.864Z",
+      "lastUsedItem": 42,
+      "source": "F-12.4"
     }
   ]
 }

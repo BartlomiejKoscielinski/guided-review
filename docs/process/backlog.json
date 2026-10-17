@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-17T07:43:41.220Z",
+  "updated": "2026-10-17T08:51:29.734Z",
   "items": [
     {
       "id": "F-11.1",
@@ -111,9 +111,18 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (8df6ace: 479b0a3 6ebb047 e585cc3 61059a8 ae7ef8c). Live check left: on S-05 of the stand-in MR tick 'Add a summary comment' with a real claude run (running label, suggestion, edit, restart keeps tick and text) and once with Claude signed out (empty area, no label). Gates 1-2 failed only on F-09.7 Vitest timeouts under load from the parallel test author; gate 3 green.",
+      "lockSha": "cd48032",
+      "tests": [
+        "src-tauri/tests/summary_task.rs",
+        "src-tauri/tests/session_summary.rs",
+        "src/ipc/tauriSummary.test.ts",
+        "src/ipc/mock/summary.test.ts",
+        "src/screens/summary/SummaryCommentField.test.tsx",
+        "tests/e2e/summary-f12-4.spec.ts"
+      ]
     },
     {
       "id": "F-12.5",
@@ -122,9 +131,18 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "67dd6ff",
+      "tests": [
+        "src-tauri/tests/publish_drafts.rs",
+        "src/ipc/tauriPublish.test.ts",
+        "src/ipc/mock/publish.test.ts",
+        "src/screens/summary/MrSummaryPublish.test.tsx",
+        "tests/e2e/summary-f12-5.spec.ts"
+      ],
+      "forkSha": "61059a8"
     },
     {
       "id": "F-12.6",
