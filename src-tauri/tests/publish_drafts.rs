@@ -17,6 +17,7 @@
 //! - `publish::foreign_drafts(client, store, session, mr) -> u32` (decision 8): the pending draft
 //!   notes of the user on the MR that this app did not create.
 //! - Columns of migration 008 on `drafts`: `gitlab_draft_id`, `published_at`, `error`, `include`.
+//!
 //! Not pinned here: the re-map of positions to a newer MR version (decision 10b).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
 
@@ -739,10 +740,12 @@ async fn f12_5_a_refused_token_and_an_unreachable_server_fail_the_drafts_in_plai
     assert_eq!(count(&seen(&server).await, "draft_notes/bulk_publish"), 0);
     assert_eq!(row(&store, &ids[0]).error.as_deref(), Some(REFUSED));
 
-    // Nothing listens on the port: GitLab is unreachable.
-    let closed = MockServer::start().await;
-    let uri = closed.uri();
-    drop(closed);
+    // Nothing listens on the port: GitLab is unreachable. (A dropped MockServer goes back to
+    // wiremock's pool and keeps answering, so the port comes from a listener that is closed.)
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = listener.local_addr().unwrap().port();
+    drop(listener);
+    let uri = format!("http://127.0.0.1:{port}");
     let outcome = publish::run(&request!(&uri, &store, &files, &ids, None))
         .await
         .unwrap();
