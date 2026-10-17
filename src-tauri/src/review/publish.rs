@@ -5,19 +5,30 @@
 //!
 //! A draft whose note can't be made keeps its tick and gets a reason in plain words (decision 9);
 //! the notes that were made still go out in the batch. A note GitLab made is remembered at once
-//! (`drafts.gitlab_draft_id`, the summary's in `sessions.summary_json`), so a Retry makes only
-//! what is missing and nothing is published twice. A failed batch fails every draft it carried.
-//! A refused token or an unreachable GitLab stops the run: the drafts left get the same reason
-//! without a request each. A failure of GitLab is a `failed` entry, never an `Err`.
+//! with the text it carries (`drafts.gitlab_draft_id` and `gitlab_draft_note`, the summary's in
+//! `sessions.summary_json`), so a Retry makes only what is missing and nothing is published twice.
+//! Before anything is made, the notes this app made that no longer say what goes out (a draft not
+//! asked now, an edited draft, a summary edited or no longer ticked) are deleted, because
+//! `bulk_publish` sends every pending note: if one can't be deleted, nothing goes out. A failed
+//! batch fails every draft it carried, and the summary. A refused token or an unreachable GitLab
+//! stops the run: the drafts left get the same reason without a request each. A failure of GitLab
+//! is a `failed` entry (or `summary_failed`), never an `Err`. A published summary is never sent
+//! again.
+//!
+//! Not built yet (follow-up of F-12.5): the re-map of positions to a newer version of the MR
+//! (decision 10b). Positions are anchored to the reviewed version's `diff_refs`, and nothing sets
+//! `drafts.outdated` yet.
 
 use std::collections::HashSet;
 
-use rusqlite::{Connection, params};
 use serde::Serialize;
 use ts_rs::TS;
 
-use super::drafts::{self, Draft, DraftError};
+use super::drafts::{Draft, DraftError};
 use super::note_position::note_position;
+use super::publish_store::{
+    Pending, forget_note, mark_published, pending, remember_failure, remember_note,
+};
 use super::step_context::MrRef;
 use crate::error::AppError;
 use crate::git::model::FileDiff;
@@ -27,9 +38,9 @@ use crate::gitlab::error::GitlabError;
 use crate::store::sessions as sessions_summary;
 use crate::store::{Store, StoreError};
 
-pub const LINE_GONE: &str = "the line is no longer in the MR";
-pub const REFUSED: &str = "GitLab refused the token";
-pub const UNREACHABLE: &str = "GitLab is unreachable";
+pub use super::publish_reason::{
+    LINE_GONE, REFUSED, UNREACHABLE, VERSION_GONE, reason, stops_the_run,
+};
 
 /// One Publish (or Retry) of a session's drafts.
 pub struct PublishRequest<'a> {
@@ -48,7 +59,7 @@ pub struct PublishRequest<'a> {
 }
 
 /// What a Publish sent: the drafts published (in the order asked), whether the summary comment
-/// went out, and the drafts that failed with their reason.
+/// went out, the drafts that failed with their reason, and why the summary didn't go out.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export)]
@@ -56,6 +67,10 @@ pub struct PublishOutcome {
     pub published: Vec<String>,
     pub summary: bool,
     pub failed: Vec<PublishFailure>,
+    /// The summary comment was asked and didn't go out: why, in plain words (decision 9).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub summary_failed: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -92,117 +107,72 @@ impl From<PublishError> for AppError {
     }
 }
 
-/// Why a request for a draft failed, in the words of decision 9.
-pub fn reason(error: &GitlabError) -> String {
-    match error {
-        GitlabError::Unauthorized | GitlabError::TokenExpired | GitlabError::TokenRevoked => {
-            REFUSED.to_owned()
+/// The asked drafts, each once, in the order asked; a published one isn't sent again.
+fn asked<'a>(all: &'a [Pending], ids: &[String]) -> Result<Vec<&'a Draft>, PublishError> {
+    let mut seen = HashSet::new();
+    let mut out = Vec::new();
+    for id in ids {
+        let pending = all
+            .iter()
+            .find(|p| &p.draft.id == id)
+            .ok_or_else(|| DraftError::NotFound(id.clone()))?;
+        if !pending.published && seen.insert(id.as_str()) {
+            out.push(&pending.draft);
         }
-        GitlabError::Unreachable(_) => UNREACHABLE.to_owned(),
-        GitlabError::Status {
-            status: 400,
-            message: Some(message),
-        } if is_about_the_line(message) => LINE_GONE.to_owned(),
-        GitlabError::Status {
-            message: Some(message),
-            ..
-        }
-        | GitlabError::Forbidden {
-            message: Some(message),
-        } => message.clone(),
-        GitlabError::Status {
-            status,
-            message: None,
-        } => format!("GitLab answered {status}"),
-        GitlabError::Forbidden { message: None } => {
-            "GitLab doesn't allow this for your account".to_owned()
-        }
-        GitlabError::NotFound => "GitLab didn't find the merge request".to_owned(),
-        GitlabError::RateLimited { .. } => "GitLab asks to slow down".to_owned(),
-        GitlabError::Decode(_) => "GitLab's answer could not be read".to_owned(),
-        other => other.to_string(),
-    }
-}
-
-/// GitLab's 400 for a position on a line that isn't in the diff names the line code or position.
-fn is_about_the_line(message: &str) -> bool {
-    let message = message.to_lowercase();
-    message.contains("line_code") || message.contains("position")
-}
-
-/// The failures after which no further request can succeed.
-fn stops_the_run(error: &GitlabError) -> bool {
-    matches!(
-        error,
-        GitlabError::Unauthorized
-            | GitlabError::TokenExpired
-            | GitlabError::TokenRevoked
-            | GitlabError::Unreachable(_)
-    )
-}
-
-/// A draft of the session as Publish sees it.
-struct Pending {
-    draft: Draft,
-    gitlab_draft_id: Option<i64>,
-    published: bool,
-}
-
-fn pending(conn: &Connection, session: &str) -> Result<Vec<Pending>, PublishError> {
-    let drafts = drafts::list(conn, session)?;
-    let mut stmt =
-        conn.prepare("SELECT gitlab_draft_id, published_at IS NOT NULL FROM drafts WHERE id = ?1")?;
-    let mut out = Vec::with_capacity(drafts.len());
-    for draft in drafts {
-        let (gitlab_draft_id, published) = stmt.query_row([&draft.id], |r| {
-            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, bool>(1)?))
-        })?;
-        out.push(Pending {
-            draft,
-            gitlab_draft_id,
-            published,
-        });
     }
     Ok(out)
 }
 
-fn remember_note(conn: &Connection, id: &str, gitlab_draft_id: i64) -> Result<(), StoreError> {
-    conn.execute(
-        "UPDATE drafts SET gitlab_draft_id = ?2, error = NULL,
-                updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
-        params![id, gitlab_draft_id],
-    )?;
-    Ok(())
+/// The summary text that goes out: ticked with text and not published yet.
+fn summary_text<'a>(req: &PublishRequest<'a>) -> Result<Option<&'a str>, PublishError> {
+    let published = req
+        .store
+        .with_conn(|c| sessions_summary::summary_published(c, req.session))?;
+    Ok(req.summary.filter(|t| !t.trim().is_empty() && !published))
 }
 
-fn remember_failure(conn: &Connection, id: &str, reason: &str) -> Result<(), StoreError> {
-    conn.execute(
-        "UPDATE drafts SET error = ?2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-         WHERE id = ?1",
-        params![id, reason],
-    )?;
-    Ok(())
-}
-
-/// Marks every draft of the session whose note GitLab holds as published (a batch publishes all
-/// of the user's pending notes); returns their ids.
-fn mark_published(conn: &Connection, session: &str) -> Result<Vec<String>, StoreError> {
-    let ids = {
-        let mut stmt = conn.prepare(
-            "SELECT id FROM drafts WHERE session_id = ?1 AND gitlab_draft_id IS NOT NULL
-             AND published_at IS NULL ORDER BY created_at, rowid",
-        )?;
-        stmt.query_map([session], |r| r.get::<_, String>(0))?
-            .collect::<Result<Vec<_>, _>>()?
-    };
-    conn.execute(
-        "UPDATE drafts SET published_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
-                published_note_id = gitlab_draft_id, error = NULL,
-                updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-         WHERE session_id = ?1 AND gitlab_draft_id IS NOT NULL AND published_at IS NULL",
-        [session],
-    )?;
-    Ok(ids)
+/// Deletes the GitLab draft notes this app made that no longer say what goes out, so the batch
+/// can't send them (see the module docs). `Some(reason)` when one could not be deleted.
+async fn delete_stale_notes(
+    req: &PublishRequest<'_>,
+    text: Option<&str>,
+) -> Result<Option<String>, PublishError> {
+    let all = req.store.with_conn(|c| Ok(pending(c, req.session)))??;
+    let wanted: HashSet<&str> = req.ids.iter().map(String::as_str).collect();
+    // (the draft, or None for the summary; the note)
+    let mut stale: Vec<(Option<&str>, i64)> = all
+        .iter()
+        .filter(|p| !p.published)
+        .filter(|p| !(wanted.contains(p.draft.id.as_str()) && p.note_is_current()))
+        .filter_map(|p| {
+            p.gitlab_draft_id
+                .map(|note| (Some(p.draft.id.as_str()), note))
+        })
+        .collect();
+    let summary = req
+        .store
+        .with_conn(|c| sessions_summary::summary_note(c, req.session))?;
+    // A summary no longer sent, or whose text changed.
+    if let Some((note, carries)) = summary
+        && (text.is_none() || carries.as_deref() != text)
+    {
+        stale.push((None, note));
+    }
+    let (mr, session) = (req.mr, req.session);
+    for (draft, note) in stale {
+        match draft_notes::delete(req.client, &mr.project, mr.iid, note).await {
+            // Gone already (deleted in GitLab's web UI): nothing left to send.
+            Ok(()) | Err(GitlabError::NotFound) => req.store.with_conn(|c| match draft {
+                Some(id) => forget_note(c, id),
+                None => sessions_summary::set_summary_draft(c, session, None),
+            })?,
+            Err(error) => {
+                tracing::warn!(%error, "an outdated draft note could not be deleted");
+                return Ok(Some(reason(&error)));
+            }
+        }
+    }
+    Ok(None)
 }
 
 /// The note of a draft: made now, or the one an earlier attempt made.
@@ -213,35 +183,35 @@ enum Note {
 
 /// Publishes the ticked drafts and the summary comment in one batch (see the module docs).
 pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishError> {
+    let text = summary_text(req)?;
+    // Unknown drafts are refused before GitLab is asked.
+    asked(
+        &req.store.with_conn(|c| Ok(pending(c, req.session)))??,
+        req.ids,
+    )?;
+    if let Some(why) = delete_stale_notes(req, text).await? {
+        return fail_all(req.store, req.session, req.ids, text, &why);
+    }
     let all = req.store.with_conn(|c| Ok(pending(c, req.session)))??;
-    let stored_summary = req
+    let selected = asked(&all, req.ids)?;
+    let mut summary_note = req
         .store
         .with_conn(|c| sessions_summary::summary_draft(c, req.session))?;
-
-    // The asked drafts, each once, in the order asked; a published one isn't sent again.
-    let mut seen = HashSet::new();
-    let mut selected = Vec::new();
-    for id in req.ids {
-        let draft = all
-            .iter()
-            .find(|p| &p.draft.id == id)
-            .ok_or_else(|| DraftError::NotFound(id.clone()))?;
-        if !draft.published && seen.insert(id.as_str()) {
-            selected.push(draft);
-        }
-    }
 
     let (mr, refs) = (req.mr, req.refs);
     let mut stopped: Option<String> = None;
     let mut notes: Vec<(&str, Note)> = Vec::with_capacity(selected.len());
-    for pending in selected {
-        let id = pending.draft.id.as_str();
-        let note = if pending.gitlab_draft_id.is_some() {
+    for draft in selected {
+        let id = draft.id.as_str();
+        let made_before = all
+            .iter()
+            .any(|p| p.draft.id == id && p.gitlab_draft_id.is_some());
+        let note = if made_before {
             Note::Made
         } else if let Some(reason) = &stopped {
             Note::Failed(reason.clone())
         } else {
-            let position = match &pending.draft.position {
+            let position = match &draft.position {
                 Some(at) => match note_position(req.files, at) {
                     Some(position) => Some(position),
                     None => {
@@ -255,13 +225,14 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
                 req.client,
                 &mr.project,
                 mr.iid,
-                &pending.draft.body,
+                &draft.body,
                 position.as_ref().map(|p| (refs, p)),
             )
             .await;
             match made.map(|n| i64::try_from(n.id)) {
                 Ok(Ok(made)) => {
-                    req.store.with_conn(|c| remember_note(c, id, made))?;
+                    req.store
+                        .with_conn(|c| remember_note(c, id, made, &draft.body))?;
                     Note::Made
                 }
                 Ok(Err(_)) => Note::Failed(reason(&GitlabError::Decode("note id".into()))),
@@ -277,19 +248,28 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
     }
 
     // The summary comment: a note without a position, after the drafts.
-    let mut summary_note = stored_summary;
-    let text = req.summary.filter(|t| !t.trim().is_empty());
-    if let (Some(text), None, None) = (text, summary_note, &stopped) {
-        match draft_notes::create(req.client, &mr.project, mr.iid, text, None).await {
-            Ok(note) => {
-                if let Ok(made) = i64::try_from(note.id) {
-                    req.store.with_conn(|c| {
-                        sessions_summary::set_summary_draft(c, req.session, Some(made))
-                    })?;
-                    summary_note = Some(made);
+    let mut summary_failed: Option<String> = None;
+    if let (Some(text), None) = (text, summary_note) {
+        if let Some(why) = &stopped {
+            summary_failed = Some(why.clone());
+        } else {
+            match draft_notes::create(req.client, &mr.project, mr.iid, text, None).await {
+                Ok(note) => match i64::try_from(note.id) {
+                    Ok(made) => {
+                        req.store.with_conn(|c| {
+                            sessions_summary::set_summary_draft(c, req.session, Some((made, text)))
+                        })?;
+                        summary_note = Some(made);
+                    }
+                    Err(_) => {
+                        summary_failed = Some(reason(&GitlabError::Decode("note id".into())));
+                    }
+                },
+                Err(error) => {
+                    tracing::warn!(%error, "summary comment not made");
+                    summary_failed = Some(reason(&error));
                 }
             }
-            Err(error) => tracing::warn!(%error, "summary comment not made"),
         }
     }
 
@@ -298,6 +278,7 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
         published: Vec::new(),
         summary: false,
         failed: Vec::new(),
+        summary_failed: None,
     };
     let batch = if carried || summary_note.is_some() {
         Some(draft_notes::bulk_publish(req.client, &mr.project, mr.iid).await)
@@ -320,7 +301,7 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
             }
             if summary_note.is_some() {
                 req.store
-                    .with_conn(|c| sessions_summary::set_summary_draft(c, req.session, None))?;
+                    .with_conn(|c| sessions_summary::set_summary_published(c, req.session))?;
                 outcome.summary = true;
             }
         }
@@ -330,6 +311,9 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
                 if matches!(note, Note::Made) {
                     *note = Note::Failed(why.clone());
                 }
+            }
+            if summary_note.is_some() {
+                summary_failed = Some(why);
             }
         }
         None => {}
@@ -343,44 +327,43 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
             });
         }
     }
+    outcome.summary_failed = summary_failed;
     tracing::info!(
         published = outcome.published.len(),
         failed = outcome.failed.len(),
         summary = outcome.summary,
+        summary_failed = outcome.summary_failed.is_some(),
         "drafts published"
     );
     Ok(outcome)
 }
 
-/// The outcome when Publish can't start because GitLab failed before any note (the reviewed
-/// version's `diff_refs` could not be read): every asked draft not published yet fails with the
-/// reason, kept like a failed note's.
+/// The outcome when nothing can go out (the reviewed version's `diff_refs` could not be read, or
+/// an outdated note could not be deleted): every asked draft not published yet fails with `why`,
+/// kept like a failed note's, and so does the summary when it was asked.
 pub fn fail_all(
     store: &Store,
     session: &str,
     ids: &[String],
-    error: &GitlabError,
+    summary: Option<&str>,
+    why: &str,
 ) -> Result<PublishOutcome, PublishError> {
-    let why = reason(error);
     let all = store.with_conn(|c| Ok(pending(c, session)))??;
     let mut failed: Vec<PublishFailure> = Vec::new();
-    for id in ids {
-        let draft = all
-            .iter()
-            .find(|p| &p.draft.id == id)
-            .ok_or_else(|| DraftError::NotFound(id.clone()))?;
-        if !draft.published && !failed.iter().any(|f| &f.id == id) {
-            store.with_conn(|c| remember_failure(c, id, &why))?;
-            failed.push(PublishFailure {
-                id: id.clone(),
-                reason: why.clone(),
-            });
-        }
+    for draft in asked(&all, ids)? {
+        store.with_conn(|c| remember_failure(c, &draft.id, why))?;
+        failed.push(PublishFailure {
+            id: draft.id.clone(),
+            reason: why.to_owned(),
+        });
     }
+    let published = store.with_conn(|c| sessions_summary::summary_published(c, session))?;
+    let summary_asked = summary.is_some_and(|t| !t.trim().is_empty()) && !published;
     Ok(PublishOutcome {
         published: Vec::new(),
         summary: false,
         failed,
+        summary_failed: summary_asked.then(|| why.to_owned()),
     })
 }
 

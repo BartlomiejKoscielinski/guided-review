@@ -1,6 +1,7 @@
 #![allow(clippy::unwrap_used, reason = "tests")]
 use super::*;
 use crate::gitlab::error::NetworkProblem;
+use crate::review::drafts;
 
 #[test]
 fn f12_5_reasons_are_in_plain_words() {
@@ -65,7 +66,7 @@ fn f12_5_mark_published_takes_only_drafts_with_a_note_not_yet_published() {
             };
             let made = drafts::create(c, &new("made")).unwrap().id;
             let local = drafts::create(c, &new("local")).unwrap().id;
-            remember_note(c, &made, 77)?;
+            remember_note(c, &made, 77, "made")?;
             remember_failure(c, &local, LINE_GONE)?;
             assert_eq!(mark_published(c, "s1")?, std::slice::from_ref(&made));
             assert_eq!(mark_published(c, "s1")?, Vec::<String>::new());

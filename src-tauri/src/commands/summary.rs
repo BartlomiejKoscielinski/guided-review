@@ -17,7 +17,7 @@ use crate::claude::tasks::summary_comment::{self, SummaryComment, SummaryRequest
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::os::process::Cancel;
 use crate::review::drafts;
-use crate::store::sessions::{self, SummaryField};
+use crate::store::sessions::{self, SummaryField, SummaryState};
 use crate::store::{self, Store};
 
 fn unknown() -> AppError {
@@ -73,10 +73,11 @@ pub async fn claude_summary_comment(
     result.map_err(AppError::from)
 }
 
-/// The session's "Add a summary comment" tick, text and suggested flag (database only).
+/// The session's "Add a summary comment" tick, text and suggested flag, and whether a Publish
+/// sent it (database only).
 #[tauri::command]
-pub async fn session_summary(store: State<'_, Store>, session: String) -> AppResult<SummaryField> {
-    with_store(&store, move |c| sessions::summary(c, &session))
+pub async fn session_summary(store: State<'_, Store>, session: String) -> AppResult<SummaryState> {
+    with_store(&store, move |c| sessions::summary_state(c, &session))
         .await?
         .ok_or_else(unknown)
 }

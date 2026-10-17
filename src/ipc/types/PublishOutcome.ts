@@ -3,6 +3,10 @@ import type { PublishFailure } from "./PublishFailure";
 
 /**
  * What a Publish sent: the drafts published (in the order asked), whether the summary comment
- * went out, and the drafts that failed with their reason.
+ * went out, the drafts that failed with their reason, and why the summary didn't go out.
  */
-export type PublishOutcome = { published: Array<string>, summary: boolean, failed: Array<PublishFailure>, };
+export type PublishOutcome = { published: Array<string>, summary: boolean, failed: Array<PublishFailure>, 
+/**
+ * The summary comment was asked and didn't go out: why, in plain words (decision 9).
+ */
+summaryFailed?: string, };

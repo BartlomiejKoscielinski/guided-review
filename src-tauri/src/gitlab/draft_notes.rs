@@ -2,8 +2,10 @@
 //! the user's pending draft notes (M5 decision 8), `create` one with or without a line position,
 //! and `bulk_publish`, which publishes every pending draft note of the user on the MR at once, so
 //! the author gets a single notification. `bulk_publish` is sent without GitLab's own `note`
-//! parameter: GitLab doesn't publish it (S5 on 17.11.7). `version_refs` reads the `diff_refs` of
-//! the reviewed version from `GET …/versions`, the SHAs a line position is anchored to.
+//! parameter: GitLab doesn't publish it (S5 on 17.11.7). `delete` removes a note the app made
+//! that no longer says what goes out (an edited or unticked draft), so `bulk_publish` can't send
+//! it. `version_refs` reads the `diff_refs` of the reviewed version from `GET …/versions`, the SHAs
+//! a line position is anchored to.
 
 use serde::Deserialize;
 use serde_json::{Map, Value, json};
@@ -102,6 +104,20 @@ pub async fn create(
     serde_json::from_value(response.body).map_err(|error| GitlabError::Decode(error.to_string()))
 }
 
+/// Deletes one pending draft note (`DELETE …/draft_notes/:id`, 204); nothing reaches the author.
+pub async fn delete(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+    note: i64,
+) -> Result<(), GitlabError> {
+    let path = format!("{}/{note}", draft_notes_path(project, iid));
+    client
+        .request(reqwest::Method::DELETE, &path, &[], None)
+        .await?;
+    Ok(())
+}
+
 /// Publishes every pending draft note of the user on the MR in one request (204).
 pub async fn bulk_publish(
     client: &GitlabClient,
@@ -113,8 +129,9 @@ pub async fn bulk_publish(
     Ok(())
 }
 
-/// The `diff_refs` of the version whose head is `head_sha`; the newest version when none is
-/// (GitLab lists them newest first).
+/// The `diff_refs` of the version whose head is `head_sha`; `None` when GitLab doesn't list it.
+/// Never another version: the line numbers come from the reviewed diff, and anchoring them to
+/// other SHAs could put a comment on the wrong line (the re-map of decision 10b isn't built).
 pub fn pick_version(versions: &[Value], head_sha: &str) -> Option<DiffRefs> {
     let refs = |v: &Value| -> Option<DiffRefs> {
         Some(DiffRefs {
@@ -127,23 +144,22 @@ pub fn pick_version(versions: &[Value], head_sha: &str) -> Option<DiffRefs> {
         .iter()
         .filter_map(refs)
         .find(|r| r.head_sha == head_sha)
-        .or_else(|| versions.iter().find_map(refs))
 }
 
-/// The `diff_refs` of the reviewed version of the MR (`GET …/versions`).
+/// The `diff_refs` of the reviewed version of the MR (`GET …/versions`); `None` when GitLab no
+/// longer lists it.
 pub async fn version_refs(
     client: &GitlabClient,
     project: &str,
     iid: u64,
     head_sha: &str,
-) -> Result<DiffRefs, GitlabError> {
+) -> Result<Option<DiffRefs>, GitlabError> {
     let path = format!(
         "/projects/{}/merge_requests/{iid}/versions",
         project_id(project)
     );
     let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
-    pick_version(&versions, head_sha)
-        .ok_or_else(|| GitlabError::Decode("the merge request has no version".into()))
+    Ok(pick_version(&versions, head_sha))
 }
 
 #[cfg(test)]
@@ -183,7 +199,7 @@ mod tests {
     }
 
     #[test]
-    fn f12_5_the_reviewed_version_is_picked_by_its_head_else_the_newest() {
+    fn f12_5_the_reviewed_version_is_picked_by_its_head_and_never_another() {
         let versions = vec![
             json!({ "id": 2, "head_commit_sha": "h2", "base_commit_sha": "b2", "start_commit_sha": "s2" }),
             json!({ "id": 1, "head_commit_sha": "h1", "base_commit_sha": "b1", "start_commit_sha": "s1" }),
@@ -193,7 +209,8 @@ mod tests {
             (reviewed.base_sha.as_str(), reviewed.start_sha.as_str()),
             ("b1", "s1")
         );
-        assert_eq!(pick_version(&versions, "gone").unwrap().head_sha, "h2");
+        assert_eq!(pick_version(&versions, "h2").unwrap().head_sha, "h2");
+        assert!(pick_version(&versions, "gone").is_none());
         assert!(pick_version(&[], "h1").is_none());
     }
 }

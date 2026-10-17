@@ -65,21 +65,33 @@ pub async fn drafts_publish(
     let head = head.ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
     let (client, _) = connected_client(&gitlab, &store).await?;
     let files = session_files(&review, &store, &session).await?;
-    let refs = match draft_notes::version_refs(&client, &mr.project, mr.iid, &head).await {
-        Ok(refs) => refs,
-        Err(error) => return Ok(publish::fail_all(&store, &session, &ids, &error)?),
+    // The reviewed version's SHAs, never another version's: the line numbers come from the
+    // reviewed diff. Not built yet (F-12.5 follow-up): decision 10b's re-map of the positions to a
+    // newer version of the MR and the outdated drafts it finds.
+    let why = match draft_notes::version_refs(&client, &mr.project, mr.iid, &head).await {
+        Ok(Some(refs)) => {
+            let request = PublishRequest {
+                client: &client,
+                store: &store,
+                session: &session,
+                mr: &mr,
+                refs: &refs,
+                files: &files,
+                ids: &ids,
+                summary: summary.as_deref(),
+            };
+            return Ok(publish::run(&request).await?);
+        }
+        Ok(None) => publish::VERSION_GONE.to_owned(),
+        Err(error) => publish::reason(&error),
     };
-    let request = PublishRequest {
-        client: &client,
-        store: &store,
-        session: &session,
-        mr: &mr,
-        refs: &refs,
-        files: &files,
-        ids: &ids,
-        summary: summary.as_deref(),
-    };
-    Ok(publish::run(&request).await?)
+    Ok(publish::fail_all(
+        &store,
+        &session,
+        &ids,
+        summary.as_deref(),
+        &why,
+    )?)
 }
 
 /// The draft comments already in GitLab's own review of the session's MR, which a Publish sends
