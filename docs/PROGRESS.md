@@ -131,7 +131,7 @@ Rules for Claude Code:
 - [x] F-12.2 Tabs Drafts N and Threads N open. (d007913, 47f94e7, 7c64225)
 - [x] F-12.3 Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note "Only you… (585dfc0, ee53bd6)
 - [ ] F-12.4 "Add a summary comment" checkbox reveals a text area prefilled by Claude with a short overall summary. — partial: autopilot (4a6c22a, 479b0a3, 6ebb047, e585cc3, 61059a8, ae7ef8c)
-- [ ] F-12.5 Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single…
+- [ ] F-12.5 Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single… — partial: autopilot (fdaf618, 0efc71b, 7b2aa75, 80f3e79, 84ca621, a020f7b, dd171af, 5923114, 2478396)
 - [ ] F-12.6 Publishing never approves the MR.
 - [ ] F-12.7 Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a…
 - [ ] F-13.1 Filters All / Open N / Resolved N.
