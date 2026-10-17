@@ -3,7 +3,7 @@ import { IpcError } from '../errors';
 import type { Draft } from '../types/Draft';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { PublishOutcome } from '../types/PublishOutcome';
-import type { MockSessionData } from './session-data';
+import { stateOf, type MockSessionData } from './session-data';
 
 type PublishActions = Pick<IpcClient, 'draftsPublish' | 'gitlabForeignDrafts'>;
 
@@ -28,7 +28,7 @@ const invalid = (message: string) =>
  * Publish (N) and Retry (F-12.5) as `commands/publish.rs` answers, with the same guards in the
  * same order (a session without an MR, an unknown draft, no GitLab account): the asked drafts not
  * published yet go out in one batch with the summary comment, a failing one keeps its tick and
- * gets its reason, and a published one is never sent again.
+ * gets its reason, and a published draft or summary is never sent again.
  */
 export function createPublishActions(
   store: MockSessionData,
@@ -65,7 +65,18 @@ export function createPublishActions(
         changed.set(id, { ...draft, publishedNoteId: nextNote++, error: null });
       }
     }
-    outcome.summary = summary !== null && summary.trim() !== '';
+    // A summary already published is never sent again (F-12.5), like the core.
+    const kept = data.states[sessionId]?.summary;
+    outcome.summary = summary !== null && summary.trim() !== '' && kept?.published !== true;
+    if (outcome.summary && summary !== null) {
+      stateOf(data, sessionId).summary = {
+        enabled: true,
+        text: summary,
+        suggested: false,
+        ...kept,
+        published: true,
+      };
+    }
     if (outcome.published.length > 0 || outcome.summary) foreign = 0;
     data.drafts = data.drafts.map((d) => changed.get(d.id) ?? d);
     return outcome;

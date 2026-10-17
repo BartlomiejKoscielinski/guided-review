@@ -19,7 +19,7 @@ import type { StepAnalysis } from './types/StepAnalysis';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
 import type { SummaryComment } from './types/SummaryComment';
-import type { SummaryField } from './types/SummaryField';
+import type { SummaryState } from './types/SummaryState';
 import type { Thread } from './types/Thread';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
@@ -144,7 +144,7 @@ export function createTauriClient(): IpcClient {
       ch.onmessage = onEvent;
       return call<SummaryComment>('claude_summary_comment', { session: sessionId, ch });
     },
-    sessionSummary: (sessionId) => call<SummaryField>('session_summary', { session: sessionId }),
+    sessionSummary: (sessionId) => call<SummaryState>('session_summary', { session: sessionId }),
     sessionSetSummary: (sessionId, summary) =>
       call<undefined>('session_set_summary', { session: sessionId, summary }),
     gitStatus: () => call<LocalChanges>('git_status'),

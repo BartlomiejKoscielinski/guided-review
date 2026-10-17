@@ -14,11 +14,12 @@ export interface PublishBannerProps {
 /**
  * What the last Publish did (F-12.5): the blue block "Published N comments[ and a summary]. The
  * author got a single notification." (SummaryDesk.dc.html), or with a failure the orange block
- * "Published 3 of 5. 2 failed: <reason>." with Retry (M5 decision 9). Both are status regions.
+ * "Published 3 of 5. 2 failed: <reason>." with Retry (M5 decision 9), also when only the summary
+ * comment failed. Both are status regions.
  */
 export function PublishBanner({ outcome, canRetry, onRetry }: PublishBannerProps) {
   const text = publishedText(outcome);
-  if (outcome.failed.length === 0) {
+  if (outcome.failed.length === 0 && outcome.summaryFailed === undefined) {
     return (
       <div role="status" className={styles.sent}>
         <CheckIcon size={16} strokeWidth={2.8} />

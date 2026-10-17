@@ -91,9 +91,13 @@ export function createStateBackend(
       const unticked: SummaryField = { enabled: false, text: '', suggested: false };
       return respond({ ...(data.states[sessionId]?.summary ?? unticked) });
     },
+    // Only Publish marks the summary published (F-12.5); the field the UI writes keeps it.
     sessionSetSummary: (sessionId, summary) =>
       write(() => {
-        stateOf(data, sessionId).summary = { ...summary };
+        const state = stateOf(data, sessionId);
+        const { enabled, text, suggested } = summary;
+        const published = state.summary?.published === true;
+        state.summary = { enabled, text, suggested, ...(published ? { published } : {}) };
       }),
     sessionResume: (sessionId) => {
       const planned = data.plans[sessionId];

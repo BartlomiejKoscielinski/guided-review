@@ -67,6 +67,7 @@ export function MrSummary({ sessionId }: MrSummaryProps) {
               {tab === 'drafts' && drafts.data && (
                 <PublishBar
                   count={publish.count}
+                  summaryOnly={publish.summaryOnly}
                   done={publish.done}
                   pending={publish.pending}
                   onPublish={publish.publish}

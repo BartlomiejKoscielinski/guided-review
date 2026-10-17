@@ -24,6 +24,7 @@ import type { Strategy } from './types/Strategy';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { SummaryComment } from './types/SummaryComment';
 import type { SummaryField } from './types/SummaryField';
+import type { SummaryState } from './types/SummaryState';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { CommitRange } from './types/CommitRange';
@@ -233,8 +234,11 @@ export interface IpcClient {
     sessionId: string,
     onEvent: (event: ClaudeTaskEvent<SummaryComment>) => void,
   ): Promise<SummaryComment>;
-  /** The session's "Add a summary comment" tick, text and suggested flag (database only). */
-  sessionSummary(sessionId: string): Promise<SummaryField>;
+  /**
+   * The session's "Add a summary comment" tick, text and suggested flag, and `published` once a
+   * Publish sent it (F-12.5: never sent again) (database only).
+   */
+  sessionSummary(sessionId: string): Promise<SummaryState>;
   /** Keeps the tick, the text and the suggested flag as the reviewer left them. */
   sessionSetSummary(sessionId: string, summary: SummaryField): Promise<void>;
 
