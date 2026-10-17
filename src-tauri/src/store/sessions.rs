@@ -4,11 +4,14 @@
 
 #[path = "sessions_state.rs"]
 mod state;
+#[path = "sessions_summary.rs"]
+mod summary;
 
 pub use state::{
     current_step, layout, mark_plan_opened, mode, plan_opened, set_current_step, set_layout,
     set_mode,
 };
+pub use summary::{SummaryField, set_summary, summary};
 
 use std::collections::HashMap;
 use std::path::PathBuf;

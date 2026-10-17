@@ -12,6 +12,7 @@ pub fn migrations() -> Migrations<'static> {
         M::up(include_str!("migrations/005_findings_per_session.sql")),
         M::up(include_str!("migrations/006_plan_opened_draft_step.sql")),
         M::up(include_str!("migrations/007_file_marks.sql")),
+        M::up(include_str!("migrations/008_publish.sql")),
     ])
 }
 

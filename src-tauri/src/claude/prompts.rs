@@ -16,6 +16,9 @@ pub const PLAN_SCHEMA: &str = include_str!("../../resources/schemas/plan.schema.
 pub const ASK: &str = include_str!("../../resources/prompts/ask.md");
 pub const STEP: &str = include_str!("../../resources/prompts/step.md");
 pub const STEP_SCHEMA: &str = include_str!("../../resources/schemas/step-findings.schema.json");
+pub const SUMMARY_COMMENT: &str = include_str!("../../resources/prompts/summary-comment.md");
+pub const SUMMARY_COMMENT_SCHEMA: &str =
+    include_str!("../../resources/schemas/summary-comment.schema.json");
 
 /// Fills `{{name}}` placeholders; unknown placeholders stay as they are.
 pub fn render(template: &str, values: &[(&str, &str)]) -> String {

@@ -65,7 +65,9 @@ impl TaskSettings {
         Self::for_group(settings, TaskGroup::Step)
     }
 
-    fn for_group(settings: &ClaudeSettings, group: TaskGroup) -> Self {
+    /// The settings of any task group's override (the summary comment: "MR description and
+    /// pipeline").
+    pub fn for_group(settings: &ClaudeSettings, group: TaskGroup) -> Self {
         let resolved = models::resolve(settings, group);
         Self {
             model: resolved.model.unwrap_or_default(),

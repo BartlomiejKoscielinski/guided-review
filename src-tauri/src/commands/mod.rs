@@ -15,6 +15,7 @@ pub mod review_status;
 pub mod session_state;
 pub mod sessions;
 pub mod source;
+pub mod summary;
 
 use crate::error::{AppError, AppResult};
 use crate::store::{Store, StoreError};

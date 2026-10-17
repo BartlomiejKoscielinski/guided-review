@@ -7,3 +7,4 @@ pub mod plan;
 pub mod plan_inputs;
 pub mod step;
 pub mod step_inputs;
+pub mod summary_comment;
