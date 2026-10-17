@@ -8,6 +8,8 @@ import styles from './Summary.module.css';
 
 export interface SummaryCommentFieldProps {
   comment: SummaryComment;
+  /** A Publish runs: the tick, the text and Retry wait (F-12.5). */
+  locked?: boolean;
 }
 
 /**
@@ -17,7 +19,7 @@ export interface SummaryCommentFieldProps {
  * in it, or "Couldn't suggest a summary." with Retry; no label when the words are the reviewer's
  * own or Claude can't be used.
  */
-export function SummaryCommentField({ comment }: SummaryCommentFieldProps) {
+export function SummaryCommentField({ comment, locked = false }: SummaryCommentFieldProps) {
   const id = useId();
   const { field, phase } = comment;
   const nameId = `${id}-name`;
@@ -41,6 +43,7 @@ export function SummaryCommentField({ comment }: SummaryCommentFieldProps) {
         state={field.enabled ? 'on' : 'off'}
         label="Add a summary comment"
         tone="blue"
+        disabled={locked}
         className={styles.summaryTick}
         onToggle={comment.toggle}
       >
@@ -67,7 +70,7 @@ export function SummaryCommentField({ comment }: SummaryCommentFieldProps) {
           {phase === 'failed' && (
             <div role="alert" className={styles.summaryFailed}>
               <span id={failId}>Couldn't suggest a summary.</span>
-              <Button size={30} onClick={comment.retry}>
+              <Button size={30} disabled={locked} onClick={comment.retry}>
                 Retry
               </Button>
             </div>
@@ -76,6 +79,7 @@ export function SummaryCommentField({ comment }: SummaryCommentFieldProps) {
             id={areaId}
             rows={4}
             value={field.text}
+            readOnly={locked}
             aria-labelledby={labelled ? undefined : nameId}
             aria-describedby={phase === 'failed' ? failId : undefined}
             className={styles.summaryArea}

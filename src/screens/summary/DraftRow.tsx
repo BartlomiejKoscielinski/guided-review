@@ -2,16 +2,21 @@ import { useEffect, useRef, useState } from 'react';
 import { Checkbox } from '../../components/Checkbox';
 import { cx } from '../../components/cx';
 import { PencilIcon } from '../../components/icons';
+import { Tag } from '../../components/Tag';
 import { useUpdateDraft } from '../../ipc/hooks/useDrafts';
 import type { Draft } from '../../ipc/types/Draft';
 import { SEVERITY_TAG } from '../step/noteCopy';
 import { DraftEditor } from './DraftEditor';
+import { LINE_CHANGED } from './publishCopy';
+import pub from './Publish.module.css';
 import styles from './Summary.module.css';
 
 export interface DraftRowProps {
   draft: Draft;
   /** 1-based place in the list, part of the controls' names ("Publish comment 2"). */
   n: number;
+  /** A Publish runs: the tick, the pencil and the editor's Save wait (F-12.5). */
+  locked?: boolean;
 }
 
 /** "DeliveryPhotoViewModel.cs:54": the file name only; the full path goes in the title. */
@@ -27,8 +32,10 @@ function fileLine(draft: Draft): { text: string; title?: string } {
  * Publish, the severity square (none without a severity), the text, `file:line` and the pencil
  * that edits the text in place (M5 decision 6). Both changes are saved on this PC only. A
  * published draft keeps its row with "· published", its checkbox ticked and locked, no pencil.
+ * F-12.5: a row whose last Publish failed shows its reason under `file:line` (M5 decision 9); a
+ * draft whose line is gone from a newer version has the OUTDATED tag (decision 10b).
  */
-export function DraftRow({ draft, n }: DraftRowProps) {
+export function DraftRow({ draft, n, locked = false }: DraftRowProps) {
   const include = useUpdateDraft();
   const save = useUpdateDraft();
   const [editing, setEditing] = useState(false);
@@ -56,13 +63,22 @@ export function DraftRow({ draft, n }: DraftRowProps) {
     setEditing(false);
   };
 
+  const outdated = draft.outdated && !published;
+  const where = (
+    <span className={styles.location} title={location.title}>
+      {location.text}
+      {published && ' · published'}
+      {outdated && ` · ${LINE_CHANGED}`}
+    </span>
+  );
+
   return (
     <li className={cx(styles.draftRow, !ticked && !published && styles.draftOff)}>
       <Checkbox
         state={ticked || published ? 'on' : 'off'}
         label={`Publish comment ${String(n)}`}
         tone="blue"
-        disabled={published}
+        disabled={published || locked}
         className={styles.draftCheck}
         onToggle={() => {
           include.mutate({ id: draft.id, patch: { body: null, include: !ticked } });
@@ -80,7 +96,7 @@ export function DraftRow({ draft, n }: DraftRowProps) {
           <DraftEditor
             body={draft.body}
             label={`Comment ${String(n)}`}
-            busy={save.isPending}
+            busy={save.isPending || locked}
             onSave={(body) => {
               save.mutate({ id: draft.id, patch: { body, include: null } }, { onSuccess: close });
             }}
@@ -89,10 +105,17 @@ export function DraftRow({ draft, n }: DraftRowProps) {
         ) : (
           <p className={cx(styles.note, published && styles.noteSent)}>{draft.body}</p>
         )}
-        <span className={styles.location} title={location.title}>
-          {location.text}
-          {published && ' · published'}
-        </span>
+        {outdated ? (
+          <span className={pub.outdated}>
+            <Tag color="orange" size="s">
+              Outdated
+            </Tag>
+            {where}
+          </span>
+        ) : (
+          where
+        )}
+        {!published && draft.error && <p className={pub.reason}>{draft.error}</p>}
         {error && (
           <p role="alert" className={styles.draftError}>
             {error.message}
@@ -108,6 +131,7 @@ export function DraftRow({ draft, n }: DraftRowProps) {
           className={styles.pencil}
           aria-label={`Edit comment ${String(n)}`}
           title="Edit"
+          disabled={locked}
           onClick={() => {
             if (!editing) include.reset();
             setEditing(true);
