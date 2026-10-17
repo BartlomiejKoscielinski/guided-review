@@ -1,5 +1,5 @@
 {
-  "items": 41,
+  "items": 42,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 25,
+      "helpful": 26,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -82,7 +82,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -165,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 27,
+      "helpful": 28,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -202,7 +202,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 19,
+      "helpful": 20,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -253,7 +253,7 @@
         "src/screens/summary/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T15:34:55.903Z",
@@ -289,7 +289,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -542,7 +542,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 8,
       "created": "2026-10-15T09:26:23.811Z",
@@ -913,7 +913,7 @@
         "src/ipc/mock/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
@@ -1143,6 +1143,21 @@
       "created": "2026-10-17T07:13:48.521Z",
       "lastUsedItem": 40,
       "source": "F-12.2"
+    },
+    {
+      "id": "P-089",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/summary/**"
+      ],
+      "text": "When a row gains an inline editor over an async save, write the editor-open and save-in-flight combinations as tests-stage decisions with red assertions (is the row's dimmed unticked style lifted while editing, are Cancel and Esc disabled while the save is in flight, is the pencil hidden or disabled while editing), because F-12.3's tests locked focus, blank text and failure but all three review nits (0.5 opacity over the open editor, Cancel not cancelling an in-flight save, a dead pencil left in the tab order) sat in those unlocked combinations.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T07:43:40.498Z",
+      "lastUsedItem": 41,
+      "source": "F-12.3"
     }
   ]
 }

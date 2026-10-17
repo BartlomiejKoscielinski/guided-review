@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-17T07:13:53.284Z",
+  "updated": "2026-10-17T07:43:41.220Z",
   "items": [
     {
       "id": "F-11.1",
@@ -95,9 +95,14 @@
       "title": "Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note \"Only you…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "dd93fbe",
+      "tests": [
+        "src/screens/summary/DraftsTab.test.tsx",
+        "tests/e2e/summary-f12-3.spec.ts"
+      ]
     },
     {
       "id": "F-12.4",
