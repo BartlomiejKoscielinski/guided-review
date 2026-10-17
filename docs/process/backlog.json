@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-17T08:51:29.734Z",
+  "updated": "2026-10-17T10:13:29.885Z",
   "items": [
     {
       "id": "F-11.1",
@@ -131,10 +131,10 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "67dd6ff",
+      "status": "review",
+      "attempts": 1,
+      "note": "fix-1 done (cc878a2 d7f18c7 e2e8b42), gate not run yet (usage limit). Next: gate with the dispute; 10b re-map open; restored foreign-drafts check rejected vs locked test",
+      "lockSha": "ece6a76",
       "tests": [
         "src-tauri/tests/publish_drafts.rs",
         "src/ipc/tauriPublish.test.ts",
@@ -142,7 +142,9 @@
         "src/screens/summary/MrSummaryPublish.test.tsx",
         "tests/e2e/summary-f12-5.spec.ts"
       ],
-      "forkSha": "61059a8"
+      "disputes": [
+        "src-tauri/tests/publish_drafts.rs@cc878a2"
+      ]
     },
     {
       "id": "F-12.6",
@@ -150,9 +152,16 @@
       "title": "Publishing never approves the MR.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "011c0ad",
+      "tests": [
+        "src-tauri/tests/publish_never_approves.rs",
+        "src/screens/summary/MrSummaryNoApproval.test.tsx",
+        "tests/e2e/summary-f12-6.spec.ts"
+      ],
+      "forkSha": "ec1939f"
     },
     {
       "id": "F-12.7",
