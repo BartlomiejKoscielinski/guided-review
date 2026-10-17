@@ -3,6 +3,7 @@ import type { Layout } from '../types/Layout';
 import type { Mode } from '../types/Mode';
 import type { ResumedSession } from '../types/ResumedSession';
 import type { SessionState } from '../types/SessionState';
+import type { SummaryField } from '../types/SummaryField';
 import { mockPlan } from './fixtures/plan';
 import { mockStepView } from './fixtures/step';
 import { reviewedFilesOf } from './fileMarks';
@@ -20,6 +21,8 @@ type StateClient = Pick<
   | 'sessionSetScroll'
   | 'sessionSetChecklist'
   | 'sessionResume'
+  | 'sessionSummary'
+  | 'sessionSetSummary'
 >;
 
 /**
@@ -82,6 +85,15 @@ export function createStateBackend(
     sessionSetChecklist: (sessionId, stepId, ticked) =>
       write(() => {
         stateOf(data, sessionId).checklist[stepId] = [...ticked];
+      }),
+    // F-12.4: S-05's summary field, kept per session like the core's `sessions.summary_json`.
+    sessionSummary: (sessionId) => {
+      const unticked: SummaryField = { enabled: false, text: '', suggested: false };
+      return respond({ ...(data.states[sessionId]?.summary ?? unticked) });
+    },
+    sessionSetSummary: (sessionId, summary) =>
+      write(() => {
+        stateOf(data, sessionId).summary = { ...summary };
       }),
     sessionResume: (sessionId) => {
       const planned = data.plans[sessionId];

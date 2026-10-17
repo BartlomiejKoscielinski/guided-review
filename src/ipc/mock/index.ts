@@ -162,7 +162,12 @@ export function createMockClient({
     ...createChangesBackend(changes, respond, repos),
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
     ...createPrepareBackend(repos, pause, data, focusLayout, startIn),
-    ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
+    ...createClaudeBackend(
+      loadJson(storage, MOCK_CLAUDE_KEY, claudeOption),
+      respond,
+      pause,
+      (sessionId) => data.data.plans[sessionId] !== undefined,
+    ),
     ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond, data),
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),

@@ -17,6 +17,8 @@ import type { SessionState } from './types/SessionState';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
+import type { SummaryComment } from './types/SummaryComment';
+import type { SummaryField } from './types/SummaryField';
 import type { Thread } from './types/Thread';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
@@ -134,6 +136,14 @@ export function createTauriClient(): IpcClient {
     draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
     draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),
     draftsDelete: (id) => call<undefined>('drafts_delete', { id }),
+    claudeSummaryComment: (sessionId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<SummaryComment>>();
+      ch.onmessage = onEvent;
+      return call<SummaryComment>('claude_summary_comment', { session: sessionId, ch });
+    },
+    sessionSummary: (sessionId) => call<SummaryField>('session_summary', { session: sessionId }),
+    sessionSetSummary: (sessionId, summary) =>
+      call<undefined>('session_set_summary', { session: sessionId, summary }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),

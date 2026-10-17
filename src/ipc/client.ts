@@ -21,6 +21,8 @@ import type { StepView } from './types/StepView';
 import type { Thread } from './types/Thread';
 import type { Strategy } from './types/Strategy';
 import type { StepAnalysis } from './types/StepAnalysis';
+import type { SummaryComment } from './types/SummaryComment';
+import type { SummaryField } from './types/SummaryField';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { CommitRange } from './types/CommitRange';
@@ -214,6 +216,19 @@ export interface IpcClient {
   /** Edits the text or the Publish tick; a published draft is refused. */
   draftsUpdate(id: string, patch: DraftPatch): Promise<Draft>;
   draftsDelete(id: string): Promise<void>;
+  /**
+   * The summary comment Claude suggests when "Add a summary comment" is ticked (F-12.4, M5
+   * decision 11): from the plan, the drafts going out and the open threads; clamped to 600
+   * characters. The tick is the explicit action; nothing runs it in the background.
+   */
+  claudeSummaryComment(
+    sessionId: string,
+    onEvent: (event: ClaudeTaskEvent<SummaryComment>) => void,
+  ): Promise<SummaryComment>;
+  /** The session's "Add a summary comment" tick, text and suggested flag (database only). */
+  sessionSummary(sessionId: string): Promise<SummaryField>;
+  /** Keeps the tick, the text and the suggested flag as the reviewer left them. */
+  sessionSetSummary(sessionId: string, summary: SummaryField): Promise<void>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */

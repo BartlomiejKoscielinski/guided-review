@@ -5,6 +5,7 @@ import type { Mode } from '../types/Mode';
 import type { MrRow } from '../types/MrRow';
 import type { Source } from '../types/Source';
 import type { Strategy } from '../types/Strategy';
+import type { SummaryField } from '../types/SummaryField';
 import type { Thread } from '../types/Thread';
 import { MOCK_THREADS } from './fixtures/step';
 
@@ -38,6 +39,8 @@ export interface StoredState {
   files?: Record<string, string[]>;
   /** When the session was opened (ISO 8601): the core's `updated_at` for its card (F-04.1). */
   openedAt?: string;
+  /** S-05's "Add a summary comment" tick, text and suggested flag (F-12.4); missing: unticked. */
+  summary?: SummaryField;
 }
 
 /** Everything the mock knows about review sessions. */
