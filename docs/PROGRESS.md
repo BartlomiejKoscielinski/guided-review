@@ -128,7 +128,7 @@ Rules for Claude Code:
 - [ ] F-11.2 Actions: Resolve (green), Reply, Reopen on resolved threads. Resolve/unresolve are sent immediately and… — partial: autopilot (398585a, f753db9, dbdf75d, 4141214, 862d1cb, c3bff09)
 - [ ] F-11.3 Threads on outdated lines (from an older version) are shown on the closest matching line (same line text… — partial: autopilot (e4d7d22, 9dacf17, 001ba1b, 5756c64, b476d4e, fdf25ae, a23c36b, ea1568c, 5eca792)
 - [x] F-12.1 "SUMMARY" with "All N steps reviewed." (or "N of M steps reviewed.") and Back to steps. (3615ea0, 61bcd54)
-- [ ] F-12.2 Tabs Drafts N and Threads N open.
+- [x] F-12.2 Tabs Drafts N and Threads N open. (d007913, 47f94e7, 7c64225)
 - [ ] F-12.3 Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note "Only you…
 - [ ] F-12.4 "Add a summary comment" checkbox reveals a text area prefilled by Claude with a short overall summary.
 - [ ] F-12.5 Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single…
