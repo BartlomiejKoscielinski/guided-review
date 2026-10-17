@@ -14,6 +14,7 @@ import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { PlanView } from './types/PlanView';
+import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
 import type { StepOrder } from './types/StepOrder';
@@ -217,6 +218,13 @@ export interface IpcClient {
   draftsUpdate(id: string, patch: DraftPatch): Promise<Draft>;
   draftsDelete(id: string): Promise<void>;
   /**
+   * Publish (N) and Retry (F-12.5): the ticked drafts `ids` in the list's order and the summary
+   * comment (`null`: none) go out in one batch, so the author gets a single notification. A
+   * GitLab failure comes back per draft in `failed`; an unknown draft is refused before anything
+   * is sent. The core takes the MR, its reviewed version and the diff from the session.
+   */
+  draftsPublish(sessionId: string, ids: string[], summary: string | null): Promise<PublishOutcome>;
+  /**
    * The summary comment Claude suggests when "Add a summary comment" is ticked (F-12.4, M5
    * decision 11): from the plan, the drafts going out and the open threads; clamped to 600
    * characters. The tick is the explicit action; nothing runs it in the background.
@@ -292,6 +300,11 @@ export interface IpcClient {
   gitlabResolve(sessionId: string, discussionId: string, resolved: boolean): Promise<void>;
   /** Reply: `body` becomes a note of the thread at once, as written; not a draft (F-11.2). */
   gitlabReply(sessionId: string, discussionId: string, body: string): Promise<void>;
+  /**
+   * The draft comments already in GitLab's own review of the session's MR, which a Publish sends
+   * too (F-12.5, M5 decision 8); read only. Never called on a restored start (F-30.4).
+   */
+  gitlabForeignDrafts(sessionId: string): Promise<number>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

@@ -5,10 +5,11 @@ import type { MrList } from '../types/MrList';
 import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
 import type { MockSessionData } from './session-data';
+import { createPublishActions, type PublishScenario } from './publish';
 import { createThreadActions } from './threads';
 
 /** Variations of the GitLab part of the mock (`MOCK_GITLAB_KEY`). */
-export interface GitlabScenario {
+export interface GitlabScenario extends PublishScenario {
   /** The status at start: connected (default), no token yet, or a failing token. */
   state?: GitlabStatus['state'];
 }
@@ -22,6 +23,8 @@ type GitlabClient = Pick<
   | 'gitlabDiscussions'
   | 'gitlabResolve'
   | 'gitlabReply'
+  | 'draftsPublish'
+  | 'gitlabForeignDrafts'
 >;
 
 const HOUR = 3_600_000;
@@ -200,6 +203,7 @@ export function createGitlabBackend(
             },
           }
         : CONNECTED;
+  const signedIn = () => (status.state === 'connected' ? status.user : null);
   return {
     gitlabStatus: () => respond(status),
     gitlabAccountSave: (server, token) => {
@@ -239,11 +243,7 @@ export function createGitlabBackend(
       const list: MrList = { tab, rows: lists()[tab], counts: COUNTS, truncated: false };
       return respond(list);
     },
-    ...createThreadActions(
-      store,
-      () => (status.state === 'connected' ? status.user : null),
-      addToken,
-      respond,
-    ),
+    ...createThreadActions(store, signedIn, addToken, respond),
+    ...createPublishActions(store, scenario, signedIn, addToken, respond),
   };
 }

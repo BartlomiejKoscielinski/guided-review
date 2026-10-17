@@ -11,6 +11,7 @@ import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
+import type { PublishOutcome } from './types/PublishOutcome';
 import type { PlanView } from './types/PlanView';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
@@ -136,6 +137,8 @@ export function createTauriClient(): IpcClient {
     draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
     draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),
     draftsDelete: (id) => call<undefined>('drafts_delete', { id }),
+    draftsPublish: (session, ids, summary) =>
+      call<PublishOutcome>('drafts_publish', { session, ids, summary }),
     claudeSummaryComment: (sessionId, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<SummaryComment>>();
       ch.onmessage = onEvent;
@@ -182,6 +185,7 @@ export function createTauriClient(): IpcClient {
       call<undefined>('gitlab_resolve', { session, discussion, resolved }),
     gitlabReply: (session, discussion, body) =>
       call<undefined>('gitlab_reply', { session, discussion, body }),
+    gitlabForeignDrafts: (session) => call<number>('gitlab_foreign_drafts', { session }),
     ...createTauriWindowControls(),
   };
 }

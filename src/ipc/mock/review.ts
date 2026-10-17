@@ -138,6 +138,7 @@ export function createReviewBackend(
       include: true,
       publishedNoteId: null,
       error: null,
+      outdated: false,
     };
     data.drafts = [...data.drafts, created];
     return created;

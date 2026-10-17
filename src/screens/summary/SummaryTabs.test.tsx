@@ -58,6 +58,7 @@ function sessionDrafts(count: number, over: (index: number) => Partial<Draft> = 
     publishedNoteId: null,
     error: null,
     stepId: null,
+    outdated: false,
     ...over(index),
   }));
 }
