@@ -161,3 +161,64 @@
   color: var(--text-muted);
   background: var(--panel);
 }
+
+/* S-05 of an MR session: the Comments column, next to the Approval tile (F-14) when it lands. */
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.comments {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.commentsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  /* The tab strip's height, kept while the opening tab is not known yet. */
+  min-height: 36px;
+}
+
+/* Drafts N / Threads N open (F-12.2): the selected tab is the white block on the dark strip. */
+.tabs {
+  display: flex;
+  background: var(--panel-2);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tabOn {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}

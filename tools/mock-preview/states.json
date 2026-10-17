@@ -8,6 +8,7 @@
   "S03-focus-layout-C": { "mock": "Review.dc.html", "state": { "layout": "C" } },
   "S04-detailed": { "mock": "Main.dc.html", "state": {}, "height": 1040 },
   "S05-summary-threads": { "mock": "SummaryDesk.dc.html", "state": {} },
+  "S05-summary-drafts": { "mock": "SummaryDesk.dc.html", "state": { "tab": "drafts" } },
   "S05-summary-self-review": { "mock": "SummaryDesk.dc.html", "state": { "tab": "drafts" } },
   "S06-changes-local": { "mock": "Changes.dc.html", "state": {} },
   "S06-changes-commit": { "mock": "Changes.dc.html", "state": { "source": "commit" } },

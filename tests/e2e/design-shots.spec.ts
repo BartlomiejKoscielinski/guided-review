@@ -101,6 +101,51 @@ const MR_482_ALL_REVIEWED = {
   'mock-mr-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'],
 };
 
+/** SummaryDesk.dc.html's five drafts of !482, none published yet: S-05 opens on Drafts (F-12.2). */
+const MR_482_SUMMARY_DRAFTS = [
+  [
+    'fix',
+    'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs',
+    54,
+    'Consider a separate catch (OperationCanceledException) without a message. Closing the camera isn’t a save error.',
+  ],
+  [
+    'fix',
+    'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs',
+    49,
+    'PendingCount doesn’t refresh after the worker uploads. Maybe a Changed event on IUploadQueue?',
+  ],
+  [
+    'fix',
+    'src/Mobile.Infrastructure/Uploads/UploadWorker.cs',
+    71,
+    'Retries have no upper limit. On a permanent 4xx the photo will be retried forever.',
+  ],
+  [
+    'q',
+    'src/Mobile.Core/Uploads/PendingUpload.cs',
+    5,
+    'Did we consider saving the photo to disk and keeping only the path in the queue?',
+  ],
+  [
+    'nit',
+    'src/Mobile.App/Views/DeliveryPhotoPage.xaml',
+    41,
+    'Nit: the banner has a fixed height. With a larger system font the text gets clipped.',
+  ],
+].map(([severity, file, line, body], i) => ({
+  id: `mock-draft-${String(i + 1)}`,
+  sessionId: 'mock-mr-session-1',
+  findingId: null,
+  body,
+  position: { file, side: 'new', line },
+  severity,
+  include: true,
+  publishedNoteId: null,
+  error: null,
+  stepId: null,
+}));
+
 /** S-05 of !482 (F-12.1): step 1 opened from S-01, then Finish review in the title bar. */
 async function mrSummary(page: Page) {
   await openMr482(page);
@@ -108,6 +153,9 @@ async function mrSummary(page: Page) {
   await page.getByText('Step 1 of 8').waitFor();
   await page.getByTestId('title-bar').getByRole('button', { name: 'Finish review' }).click();
   await page.getByText('All 8 steps reviewed.', { exact: true }).waitFor();
+  // The tabs (F-12.2) once the opening tab is picked and the open threads are counted.
+  await page.getByRole('tab', { selected: true }).waitFor();
+  await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
 }
 
 /**
@@ -323,13 +371,27 @@ const SHOTS: Shot[] = [
     },
   },
   {
-    // S-05 of !482 (F-12.1): SUMMARY, "All 8 steps reviewed." and Back to steps. The tabs with
-    // Publish (F-12, F-13) and the Approval tile (F-14) are not built yet.
+    // S-05 of !482 (F-12.1, F-12.2): SUMMARY, "All 8 steps reviewed.", Back to steps and the tabs;
+    // without drafts it opens on "Threads 3 open" (M5 decision 5). The lists with Publish (F-12.3,
+    // F-13.1) and the Approval tile (F-14) are not built yet.
     screen: 'S05',
     state: 'summary-threads',
     lastRoute: { screen: 'S-01' },
     reviewed: MR_482_ALL_REVIEWED,
     prepare: mrSummary,
+  },
+  {
+    // The mock's five drafts, none published: S-05 opens on "Drafts 5" (F-12.2, M5 decision 5).
+    screen: 'S05',
+    state: 'summary-drafts',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    drafts: MR_482_SUMMARY_DRAFTS,
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page.getByRole('tab', { name: 'Drafts 5', selected: true }).waitFor();
+      await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
+    },
   },
   {
     screen: 'S05',
