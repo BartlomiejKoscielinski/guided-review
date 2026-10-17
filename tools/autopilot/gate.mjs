@@ -135,11 +135,13 @@ check('rules', hits.length === 0, hits.map((h) => `${h.rule} ${h.file}: ${h.text
 if (!checks.every((c) => c.ok)) finish();
 
 // 2. verify (with e2e for UI items) in the worktree, on the autopilot port; only the steps the
-// diff affects (E15), every step with --full.
+// diff affects (E15), every step with --full. Serial, as the closing full verify: in parallel
+// lanes the Rust chain slowed S-03 Vitest tests past their 5 s timeout (ap-20261017-0624).
 const steps = verifySteps(files, { full: has('full') });
 verdict.verifySteps = steps ?? 'all';
 const verifyArgs = [
   'tools/verify.mjs',
+  '--serial',
   ...(steps ? ['--only', steps.join(',')] : []),
   ...(e2e ? ['--e2e', ...e2e.split(',')] : []),
 ];
