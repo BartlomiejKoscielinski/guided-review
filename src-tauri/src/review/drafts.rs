@@ -35,6 +35,8 @@ pub struct Draft {
     /// The plan step it belongs to (F-08.3): the note's step, else the step holding the hunk of
     /// its line; `None` for a comment on the merge request or a line in no step.
     pub step_id: Option<String>,
+    /// Its line is gone from a newer version of the MR (M5 decision 10b).
+    pub outdated: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, TS)]
@@ -98,7 +100,7 @@ impl From<DraftError> for AppError {
     }
 }
 
-const COLUMNS: &str = "id, session_id, finding_id, body, position_json, severity, include, published_note_id, error, step_id";
+const COLUMNS: &str = "id, session_id, finding_id, body, position_json, severity, include, published_note_id, error, step_id, outdated";
 
 fn severity_text(severity: Severity) -> &'static str {
     match severity {
@@ -132,6 +134,7 @@ fn from_row(row: &Row<'_>) -> rusqlite::Result<Draft> {
         published_note_id: note.and_then(|n| u64::try_from(n).ok()),
         error: row.get(8)?,
         step_id: row.get(9)?,
+        outdated: row.get::<_, Option<bool>>(10)?.unwrap_or(false),
     })
 }
 

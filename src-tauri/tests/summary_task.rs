@@ -73,6 +73,7 @@ fn draft(id: &str, body: &str, position: Option<(&str, u32)>, include: bool) -> 
         published_note_id: None,
         error: None,
         step_id: None,
+        outdated: false,
     }
 }
 

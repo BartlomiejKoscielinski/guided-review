@@ -18,7 +18,7 @@ use crate::source::model::Source;
 use crate::store::{self, Store};
 
 /// The merge request of `session`; a session of commits or local changes has none (F-17.2).
-async fn session_mr(store: &Store, session: &str) -> AppResult<MrRef> {
+pub(super) async fn session_mr(store: &Store, session: &str) -> AppResult<MrRef> {
     let id = session.to_owned();
     let row = with_store(store, move |c| store::sessions::source_of(c, &id))
         .await?

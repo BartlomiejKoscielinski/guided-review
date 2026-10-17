@@ -11,7 +11,7 @@ pub use state::{
     current_step, layout, mark_plan_opened, mode, plan_opened, set_current_step, set_layout,
     set_mode,
 };
-pub use summary::{SummaryField, set_summary, summary};
+pub use summary::{SummaryField, set_summary, set_summary_draft, summary, summary_draft};
 
 use std::collections::HashMap;
 use std::path::PathBuf;

@@ -23,6 +23,7 @@ fn draft(id: &str, body: &str, line: Option<u32>) -> Draft {
         published_note_id: None,
         error: None,
         step_id: None,
+        outdated: false,
     }
 }
 

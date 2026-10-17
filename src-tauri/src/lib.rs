@@ -229,6 +229,8 @@ pub fn run() {
             commands::drafts::drafts_create,
             commands::drafts::drafts_update,
             commands::drafts::drafts_delete,
+            commands::publish::drafts_publish,
+            commands::publish::gitlab_foreign_drafts,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Guided Review");

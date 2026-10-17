@@ -38,15 +38,54 @@ pub fn summary(conn: &Connection, id: &str) -> Result<Option<SummaryField>, Stor
     }))
 }
 
-/// Keeps the session's summary field; `false` when there is no such session.
+/// Keeps the session's summary field; `false` when there is no such session. The GitLab draft
+/// note of an earlier Publish attempt ([`summary_draft`]) stays.
 pub fn set_summary(conn: &Connection, id: &str, field: &SummaryField) -> Result<bool, StoreError> {
     let json = serde_json::to_string(field).unwrap_or_default();
     let changed = conn.execute(
-        "UPDATE sessions SET summary_json = ?2, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+        "UPDATE sessions SET summary_json = CASE
+             WHEN json_valid(summary_json) AND json_type(summary_json, '$.gitlabDraftId') = 'integer'
+             THEN json_set(?2, '$.gitlabDraftId', json_extract(summary_json, '$.gitlabDraftId'))
+             ELSE ?2 END,
+             updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          WHERE id = ?1",
         params![id, json],
     )?;
     Ok(changed > 0)
+}
+
+/// The GitLab draft note made for the session's summary comment by a Publish whose batch did not
+/// go out (F-12.5), so a Retry reuses it instead of making a second one.
+pub fn summary_draft(conn: &Connection, id: &str) -> Result<Option<i64>, StoreError> {
+    let row: Option<Option<i64>> = conn
+        .query_row(
+            "SELECT CASE WHEN json_valid(summary_json)
+                         THEN json_extract(summary_json, '$.gitlabDraftId') END
+             FROM sessions WHERE id = ?1",
+            params![id],
+            |row| row.get(0),
+        )
+        .optional()?;
+    Ok(row.flatten())
+}
+
+/// Remembers (`Some`) or forgets (`None`, once published) the summary's GitLab draft note.
+pub fn set_summary_draft(
+    conn: &Connection,
+    id: &str,
+    gitlab_draft_id: Option<i64>,
+) -> Result<(), StoreError> {
+    conn.execute(
+        "UPDATE sessions SET summary_json = CASE
+             WHEN ?2 IS NULL THEN CASE WHEN json_valid(summary_json)
+                                       THEN json_remove(summary_json, '$.gitlabDraftId')
+                                       ELSE summary_json END
+             ELSE json_set(CASE WHEN json_valid(summary_json) THEN summary_json ELSE '{}' END,
+                           '$.gitlabDraftId', ?2) END
+         WHERE id = ?1",
+        params![id, gitlab_draft_id],
+    )?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -66,6 +105,31 @@ mod tests {
                     [],
                 )?;
                 assert_eq!(summary(c, "s1")?, Some(SummaryField::default()));
+                Ok(())
+            })
+            .unwrap();
+    }
+
+    #[test]
+    fn f12_5_the_summary_draft_note_survives_an_edit_and_is_forgotten_once_published() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .with_conn(|c| {
+                insert_for_test(c, "s1", "reviewing", "focus", "2026-10-17T08:00:00Z");
+                assert_eq!(summary_draft(c, "s1")?, None);
+                set_summary_draft(c, "s1", Some(512))?;
+                assert_eq!(summary_draft(c, "s1")?, Some(512));
+                let field = SummaryField {
+                    enabled: true,
+                    text: "Looks good.".into(),
+                    suggested: false,
+                };
+                set_summary(c, "s1", &field)?;
+                assert_eq!(summary(c, "s1")?, Some(field.clone()));
+                assert_eq!(summary_draft(c, "s1")?, Some(512));
+                set_summary_draft(c, "s1", None)?;
+                assert_eq!(summary_draft(c, "s1")?, None);
+                assert_eq!(summary(c, "s1")?, Some(field));
                 Ok(())
             })
             .unwrap();
