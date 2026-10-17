@@ -1,7 +1,7 @@
 ---
 name: autopilot
 description: Build the open acceptance criteria of a Guided Review milestone unattended - the conductor loop of docs/process/AUTOPILOT.md (backlog → test author → implementer → fresh reviewer → deterministic gate → reflection → playbook, then live checks in the real app), kept going by the Stop hook, learning through the playbook and outcome metrics. Use when the user says /autopilot.
-argument-hint: start <Mx> [--cap 12] [--budget tokens] | status | stop
+argument-hint: start <Mx> [--cap 4] [--budget tokens] | status | stop
 disable-model-invocation: true
 ---
 

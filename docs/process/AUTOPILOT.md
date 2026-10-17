@@ -71,7 +71,7 @@ Conductor session (main checkout, milestone branch, Opus)            docs/proces
 
 ### 3.3 Safety rails
 
-- Iteration cap per run (default 12 items), daily token budget from the metrics ledger, kill switch `.autopilot/STOP`.
+- Iteration cap per run (default 4 items, owner 2026-10-17: one short run per session), daily token budget from the metrics ledger, kill switch `.autopilot/STOP`.
 - Max 2 fix rounds and 2 attempts per item → `blocked` with a report, next item.
 - No destructive git outside `../gr-ap`, `../gr-ap-2` and the `ap/*` branches; nothing is pushed; the owner opens PRs.
 - Self-modification allowlist: retro/curator may change `docs/process/playbook.json`, `.claude/skills/**` (except non-negotiable text), `tools/autopilot/**`; the curator adds learned rules to `.claude/autopilot/roles/*.md` only through `playbook.mjs promote` (covered by the `node tools/autopilot/*` allow rule, so no approval is needed). Never `CLAUDE.md` non-negotiables, `docs/0*.md` decisions, security rules.
