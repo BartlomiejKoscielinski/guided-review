@@ -1,5 +1,5 @@
 {
-  "items": 43,
+  "items": 44,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 27,
+      "helpful": 28,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -28,7 +28,7 @@
         "src-tauri/src/review/**"
       ],
       "text": "Seed test fixtures through the write path production uses and test the production read path, because a column production never writes (plans.plan_json here) lets green tests cover only dead data.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T10:02:39.330Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 6,
+      "helpful": 7,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -133,7 +133,7 @@
         "src/ipc/mock/**"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
-      "helpful": 12,
+      "helpful": 13,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.168Z",
@@ -165,7 +165,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 29,
+      "helpful": 30,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -202,7 +202,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 21,
+      "helpful": 22,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -289,7 +289,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 20,
+      "helpful": 21,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -542,7 +542,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 13,
+      "helpful": 14,
       "harmful": 0,
       "seen": 8,
       "created": "2026-10-15T09:26:23.811Z",
@@ -592,7 +592,7 @@
         "tests/e2e/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 16,
+      "helpful": 17,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-15T11:16:26.158Z",
@@ -913,7 +913,7 @@
         "src/ipc/mock/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 8,
+      "helpful": 9,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
@@ -1205,6 +1205,53 @@
       "created": "2026-10-17T08:51:28.864Z",
       "lastUsedItem": 42,
       "source": "F-12.4"
+    },
+    {
+      "id": "P-093",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/summary/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "Before the tests stage records a decision about a control's label or enabled state, grep the milestone plan decisions for that label (e.g. 'Publish summary') and lock nothing the plan contradicts, because F-12.5's 'a summary alone is not publishable' went against M5 decision 7 and became a severe review finding, and the unchecked restored-start test it locked (MrSummaryPublish.test.tsx:509) could not be changed without a test dispute.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T12:09:14.855Z",
+      "lastUsedItem": 43,
+      "source": "F-12.5"
+    },
+    {
+      "id": "P-094",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**",
+        "src-tauri/src/gitlab/**"
+      ],
+      "text": "Close, or lock as a red test, any gap that makes a GitLab write send stale, unticked or duplicate content (retry of an edited or unticked draft, a failed summary swallowed, a sent flag held only in a query cache) in the core pass instead of listing it under GAPS in notes, because impl-core listed them, review rated two as severe, and closing them cost fix-1 215k tokens plus a migration and a new DELETE endpoint.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T12:09:14.908Z",
+      "lastUsedItem": 43,
+      "source": "F-12.5"
+    },
+    {
+      "id": "P-095",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "In a Rust test file make a refused connection with a std::net::TcpListener bound on 127.0.0.1:0 and then dropped (as tests/gitlab_client.rs:170), never a dropped wiremock MockServer (it returns to the pool and keeps answering 404), and run cargo test plus cargo clippy --all-targets -D warnings on the file before locking it, because both defects in publish_drafts.rs kept verify red in both implement passes and forced a test dispute.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-17T12:09:14.959Z",
+      "lastUsedItem": 43,
+      "source": "F-12.5"
     }
   ]
 }
