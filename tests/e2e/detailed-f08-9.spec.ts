@@ -69,7 +69,7 @@ test('F-08.9 the last step: End of step 8, That was the last step., a yellow Fin
 
   await finish.click();
   // The router is a memory router (docs/04), so S-05 shows by its screen, not the URL: an MR
-  // session's Summary is the stub screen until its milestone.
+  // session's Summary has its "SUMMARY" heading (F-12.1).
   await expect(
     page.getByRole('heading', { name: 'Summary', level: 1, exact: true }),
   ).toBeAttached();

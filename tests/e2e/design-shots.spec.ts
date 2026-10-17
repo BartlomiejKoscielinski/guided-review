@@ -96,6 +96,20 @@ const MR_482_DRAFTS = [
 /** The first local session of an empty mock, with all 8 steps marked reviewed (SummaryDesk.dc.html). */
 const LOCAL_ALL_REVIEWED = { 'mock-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'] };
 
+/** SummaryDesk.dc.html: every step of !482 reviewed. */
+const MR_482_ALL_REVIEWED = {
+  'mock-mr-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'],
+};
+
+/** S-05 of !482 (F-12.1): step 1 opened from S-01, then Finish review in the title bar. */
+async function mrSummary(page: Page) {
+  await openMr482(page);
+  await page.getByRole('button', { name: /Start step 1/ }).click();
+  await page.getByText('Step 1 of 8').waitFor();
+  await page.getByTestId('title-bar').getByRole('button', { name: 'Finish review' }).click();
+  await page.getByText('All 8 steps reviewed.', { exact: true }).waitFor();
+}
+
 /**
  * S-05 of a self-review (F-17.4): Review before push on staged changes, the four notes of step 4
  * kept to fix, then Finish review. The mock's five drafts become four kept notes.
@@ -307,6 +321,15 @@ const SHOTS: Shot[] = [
       // The Mode toggle's fill slides over; shoot it where it ends.
       await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
     },
+  },
+  {
+    // S-05 of !482 (F-12.1): SUMMARY, "All 8 steps reviewed." and Back to steps. The tabs with
+    // Publish (F-12, F-13) and the Approval tile (F-14) are not built yet.
+    screen: 'S05',
+    state: 'summary-threads',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    prepare: mrSummary,
   },
   {
     screen: 'S05',
