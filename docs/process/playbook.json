@@ -130,30 +130,15 @@
       "tags": [
         "mixed",
         "implement",
-        "src/ipc/mock/**"
+        "src/ipc/mock/**",
+        "ui"
       ],
-      "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test.",
+      "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
       "helpful": 13,
       "harmful": 0,
-      "seen": 1,
+      "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
-      "lastUsedItem": 4,
-      "source": "F-06.5",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-014",
-      "tags": [
-        "ui",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "Parse computed CSS offsets in e2e helpers with a decimal-aware pattern (for example -?[0-9.]+px on translate3d), because the F-06.5 liftedOffset regex matched only whole pixels and silently returned 0 for a 36.5px row, which would time out a keyboard drag.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T14:47:55.231Z",
-      "lastUsedItem": 4,
+      "lastUsedItem": 14,
       "source": "F-06.5",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
@@ -182,14 +167,15 @@
         "src/screens/**",
         "mixed",
         "src/screens/detailed/**",
-        "src/screens/step/**"
+        "src/screens/step/**",
+        "src/screens/summary/**"
       ],
-      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked.",
+      "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
       "helpful": 25,
       "harmful": 0,
-      "seen": 6,
+      "seen": 7,
       "created": "2026-10-14T15:13:07.675Z",
-      "lastUsedItem": 31,
+      "lastUsedItem": 41,
       "source": "F-06.6",
       "promoted": true,
       "promotedTo": "tests"
@@ -210,21 +196,6 @@
       "source": "F-06.6",
       "promoted": true,
       "promotedTo": "implement"
-    },
-    {
-      "id": "P-019",
-      "tags": [
-        "ui",
-        "tests",
-        "tools/standin/**"
-      ],
-      "text": "Before a UI item relies on a data shape that only the live stand-in can show, check that the stand-in seed data contains it: MR !6 had no DiffNote, so the F-06.9 thread cards could only be covered by the e2e mock and the real-app check went to the manual field.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T15:34:55.778Z",
-      "lastUsedItem": 6,
-      "source": "F-06.9"
     },
     {
       "id": "P-020",
@@ -314,36 +285,6 @@
       "source": "F-09.1"
     },
     {
-      "id": "P-026",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/src/review/**"
-      ],
-      "text": "When a locked test pins a data shape that a later item will extend, name that later item in the tests verdict (here evidence is stored as file:line with no side, which F-08.6 must extend) so the reviewer classifies the gap instead of raising a nit.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-14T21:00:04.477Z",
-      "lastUsedItem": 8,
-      "source": "F-09.1"
-    },
-    {
-      "id": "P-027",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/step/**"
-      ],
-      "text": "Lock a keyboard focus change with one vitest assertion on document.activeElement after the state change: F-09.2's single red test led to a one-effect fix in NoteCard.tsx that passed gate-1 on the first run.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T06:35:59.945Z",
-      "lastUsedItem": 9,
-      "source": "F-09.2"
-    },
-    {
       "id": "P-029",
       "tags": [
         "ui",
@@ -383,22 +324,6 @@
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
-      "id": "P-031",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/review/**",
-        "src-tauri/tests/**"
-      ],
-      "text": "When a scoped core function replaces an ambiguous one (decide became decide_in), move every remaining caller, integration tests included, and narrow the old function's visibility in the same commit, because review found the old pub decide still used by tests/resume.rs and tests/step_runs.rs.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T07:10:35.562Z",
-      "lastUsedItem": 10,
-      "source": "F-09.4"
-    },
-    {
       "id": "P-032",
       "tags": [
         "core",
@@ -431,101 +356,6 @@
       "created": "2026-10-15T07:32:02.825Z",
       "lastUsedItem": 11,
       "source": "F-09.5"
-    },
-    {
-      "id": "P-034",
-      "tags": [
-        "core",
-        "tests",
-        "src/ipc/mock/**"
-      ],
-      "text": "In a mock test labelled with an AC ID, assert the behaviour the rule states and never generalize a rule that a plan decision rejected, because F-09.5's mock loop enforced no note on a thread's file and line (the line-only dedupe M3 decision 6 rejected), contradicted the Rust test, and was the item's only review finding.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T07:32:02.876Z",
-      "lastUsedItem": 11,
-      "source": "F-09.5",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-036",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**",
-        "src/diff/**"
-      ],
-      "text": "For modifier-click tests, press Shift through one shared userEvent.setup() instance (user.keyboard('{Shift>}') around the click) or pass shiftKey to fireEvent, because the direct userEvent.click API carries no shiftKey and forced the implementer into a window-wide Shift tracker that the review flagged as a nit.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:10:35.879Z",
-      "lastUsedItem": 12,
-      "source": "F-10.1"
-    },
-    {
-      "id": "P-037",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/step/**"
-      ],
-      "text": "In a test that needs layout C, call setLayout('C') after openStep, because loading the session applies its stored layout (or the default focus layout A) and overrides an earlier call; the locked ask test got this wrong and cost a dispute and a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:10:35.925Z",
-      "lastUsedItem": 12,
-      "source": "F-10.1"
-    },
-    {
-      "id": "P-041",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/plan/**"
-      ],
-      "text": "When a shared screen component first receives a non-MR source, turn its hard-coded MR copy into a prop, because Claims.tsx always read 'MR description vs code' for commit sessions and review rated that mislabel normal.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T08:58:46.352Z",
-      "lastUsedItem": 13,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-042",
-      "tags": [
-        "ui",
-        "implement",
-        "src/ipc/mock/**",
-        "mixed"
-      ],
-      "text": "Derive a mock flag from the same source field the core reads (session source kind, headSha), not from an id prefix, a second rule or a design-mock note, because review flagged the mock deciding self-review two ways in plan.ts (data.local vs sessionMr id prefix); keep per-head flags such as planReady equal across mock rows that share a headSha, as the F-02.5 review flagged one headSha with planReady true on one tab and false on the other.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 2,
-      "created": "2026-10-15T09:26:23.718Z",
-      "lastUsedItem": 14,
-      "source": "F-17.2",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-043",
-      "tags": [
-        "ui",
-        "implement",
-        "src/ipc/hooks/**"
-      ],
-      "text": "Before wiring a screen to an existing query hook, run the tests that prime the same cache key, because a second hook over the session-source cache broke PlanPrepared.test and forced a switch to useSessionMr.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T09:26:23.767Z",
-      "lastUsedItem": 14,
-      "source": "F-17.2"
     },
     {
       "id": "P-044",
@@ -681,22 +511,6 @@
       "source": "F-08.1"
     },
     {
-      "id": "P-055",
-      "tags": [
-        "mixed",
-        "implement",
-        "src/screens/step/**",
-        "src/state/**"
-      ],
-      "text": "When step state is kept across a Ctrl+D or layout switch, write it from mutateAsync().then or a hook-level onSuccess (not a per-call mutate onSuccess, which does not run after the card unmounts) and keep unsent input text in the store too, because review found the 'added' flag and the follow-up question lost on a mode switch.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T17:03:45.250Z",
-      "lastUsedItem": 19,
-      "source": "F-08.1"
-    },
-    {
       "id": "P-056",
       "tags": [
         "ui",
@@ -723,21 +537,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T18:37:59.862Z",
-      "lastUsedItem": 21,
-      "source": "F-08.3"
-    },
-    {
-      "id": "P-058",
-      "tags": [
-        "mixed",
-        "tests",
-        "src-tauri/src/**/*_tests.rs"
-      ],
-      "text": "Check the line count of an existing Rust test file before appending new AC tests and open a sibling *_tests.rs when it would pass ~400 lines, because decisions_tests.rs grew to 476 lines and review raised it as a nit.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T18:37:59.935Z",
       "lastUsedItem": 21,
       "source": "F-08.3"
     },
@@ -792,14 +591,16 @@
         "mixed",
         "tests",
         "src/app/keyboard.ts",
-        "src/screens/detailed/**"
+        "src/screens/detailed/**",
+        "src/app/**",
+        "src/state/**"
       ],
-      "text": "When an item adds single-letter shortcuts (N, A, ]) to a screen that has checkboxes, lock a red test that clicks a checkbox and then presses the key, because the shared isTyping treated every input element as typing, so N, A and ] died after the first tick and only review found it (F-08.7 fix round 1).",
+      "text": "When an item adds single-letter shortcuts (N, A, ]) to a screen that has checkboxes, lock a red test that clicks a checkbox and then presses the key, because the shared isTyping treated every input element as typing, so N, A and ] died after the first tick and only review found it (F-08.7 fix round 1). Lock the other side too when users can assign any bare key: every consumer (global shortcuts, Rider key, layout keys) ignores it while focus is in a text field and still acts for a Ctrl chord, because F-19.7's only severe finding was an assigned letter that could no longer be typed in the S-01 input or a comment composer.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-16T07:25:08.741Z",
-      "lastUsedItem": 25,
+      "lastUsedItem": 35,
       "source": "F-08.7"
     },
     {
@@ -884,24 +685,6 @@
       "promotedTo": "tests"
     },
     {
-      "id": "P-068",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/step/**",
-        "src/screens/detailed/**",
-        "src/diff/**",
-        "ui"
-      ],
-      "text": "For anything the user writes anchored to a diff line (line comment, note) or types into a composer whose open state is kept in a store, lock red tests in the tests stage that it survives a mode switch (Ctrl+D), reopening the step and a remount (scrolling out of the virtual window): a saved comment stays visible where it was written, also inside a collapsed fold or mechanical hunk, and opening another composer or clicking Undo on another draft never silently drops typed text. F-09.7's tests covered none of this and review raised a hidden L14 comment and lost text as normal findings that cost a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 2,
-      "created": "2026-10-16T09:37:32.711Z",
-      "lastUsedItem": 28,
-      "source": "F-09.7"
-    },
-    {
       "id": "P-073",
       "tags": [
         "mixed",
@@ -953,23 +736,6 @@
       "created": "2026-10-16T11:28:31.616Z",
       "lastUsedItem": 32,
       "source": "F-30.6"
-    },
-    {
-      "id": "P-077",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/detailed/**",
-        "src/app/shortcuts.ts",
-        "src/app/keyboard.ts"
-      ],
-      "text": "When a plan row or milestone decision changes what a key does (Space now marks only the current file), grep every control, card, footer and Settings row that shows that key's hint in the tests stage and let the newer decision beat an older mock, because F-07.10's tests locked 'Mark reviewed keeps its Space hint' only because Main.dc.html draws it, review rated it a normal finding (the hint named a key that no longer triggers that button), and the fix round cost 65k tokens plus a disputed locked test; a hint on a control must name only a key that triggers that control.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T13:52:21.326Z",
-      "lastUsedItem": 33,
-      "source": "F-07.10"
     },
     {
       "id": "P-078",
@@ -1035,22 +801,6 @@
       "source": "F-19.7"
     },
     {
-      "id": "P-082",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/app/**",
-        "src/state/**"
-      ],
-      "text": "When an item lets users assign any key (a bare letter, digit or symbol) to an action whose handler used to see only Ctrl chords or F-keys, lock in the tests stage that every consumer (global shortcuts, Rider key, layout keys) ignores that key while focus is in a text field and still acts for a Ctrl chord, because F-19.7 locked the consumers' matching but not typing, so the only review finding (severe) was that an assigned letter could no longer be typed in the S-01 input or a comment composer.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T16:12:38.452Z",
-      "lastUsedItem": 35,
-      "source": "F-19.7"
-    },
-    {
       "id": "P-083",
       "tags": [
         "ui",
@@ -1072,29 +822,37 @@
         "mixed",
         "tests",
         "src/screens/step/**",
-        "src/diff/**"
+        "src/diff/**",
+        "src/screens/detailed/**",
+        "ui",
+        "implement",
+        "src/state/**"
       ],
-      "text": "For any card or composer rendered as a virtualized DiffView row (thread cards, reply composers), have the tests stage lock that the typed text, open composer, busy flag and last error survive an unmount and remount, and have the implementer keep them in the review store keyed by id with mutation results reported through hook-level callbacks, because F-11.2's reply state in useState was lost on scroll-away, review rated it severe and fix-1 cost 110k tokens.",
+      "text": "For any card or composer rendered as a virtualized DiffView row (thread cards, reply composers), have the tests stage lock that the typed text, open composer, busy flag and last error survive an unmount and remount, and have the implementer keep them in the review store keyed by id with mutation results reported through hook-level callbacks, because F-11.2's reply state in useState was lost on scroll-away, review rated it severe and fix-1 cost 110k tokens. Lock the same for anything written anchored to a diff line (line comment, note) across a mode switch (Ctrl+D) and reopening the step: a saved comment stays visible where it was written, also inside a collapsed fold or mechanical hunk, and opening another composer or Undo on another draft never drops typed text (F-09.7). Hook-level callbacks means mutateAsync().then or a hook-level onSuccess, never a per-call mutate onSuccess, which does not run after the card unmounts (F-08.1 lost its 'added' flag and follow-up question).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 4,
       "created": "2026-10-16T19:09:32.038Z",
       "lastUsedItem": 37,
-      "source": "F-11.2"
+      "source": "F-11.2",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-085",
       "tags": [
         "mixed",
         "fix",
-        "src/**/*.test.tsx"
+        "src/**/*.test.tsx",
+        "implement",
+        "src/screens/step/**"
       ],
-      "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens).",
+      "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-16T19:09:32.193Z",
-      "lastUsedItem": 37,
+      "lastUsedItem": 42,
       "source": "F-11.2"
     },
     {
@@ -1134,30 +892,17 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**/*.test.tsx"
+        "src/screens/**/*.test.tsx",
+        "mixed",
+        "src-tauri/src/**/*_tests.rs"
       ],
-      "text": "Keep every new test file under the ~400-line convention by planning the split in the tests stage (one file per describe group, such as a restored-start block), because the F-12.2 SummaryTabs.test.tsx came out at 424 lines and the only review finding was a nit on its size, while the implementer's own SummaryTabsThreads.test.tsx was already split out.",
+      "text": "Keep every new test file under the ~400-line convention by planning the split in the tests stage (one file per describe group, such as a restored-start block), because the F-12.2 SummaryTabs.test.tsx came out at 424 lines and the only review finding was a nit on its size, while the implementer's own SummaryTabsThreads.test.tsx was already split out. Before appending AC tests to an existing file (Rust *_tests.rs included), check its line count and open a sibling file when it would pass ~400 lines (decisions_tests.rs reached 476, F-08.3 nit).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-17T07:13:48.521Z",
       "lastUsedItem": 40,
       "source": "F-12.2"
-    },
-    {
-      "id": "P-089",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/screens/summary/**"
-      ],
-      "text": "When a row gains an inline editor over an async save, write the editor-open and save-in-flight combinations as tests-stage decisions with red assertions (is the row's dimmed unticked style lifted while editing, are Cancel and Esc disabled while the save is in flight, is the pencil hidden or disabled while editing), because F-12.3's tests locked focus, blank text and failure but all three review nits (0.5 opacity over the open editor, Cancel not cancelling an in-flight save, a dead pencil left in the tab order) sat in those unlocked combinations.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-17T07:43:40.498Z",
-      "lastUsedItem": 41,
-      "source": "F-12.3"
     },
     {
       "id": "P-090",
@@ -1192,32 +937,20 @@
       "source": "F-12.4"
     },
     {
-      "id": "P-092",
-      "tags": [
-        "mixed",
-        "implement",
-        "src/screens/step/**"
-      ],
-      "text": "When verify fails only in Vitest files the item did not touch (here S-03 LineComposer and LineCommentKeep, 5000 ms timeouts and a missing role=article), rerun those files alone and then verify once more before editing any code, because F-12.4 failed gate 1 and gate 2 on such tests and passed gate 3 with the same six commits and no fix.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-17T08:51:28.864Z",
-      "lastUsedItem": 42,
-      "source": "F-12.4"
-    },
-    {
       "id": "P-093",
       "tags": [
         "mixed",
         "tests",
         "src/screens/summary/**",
-        "src-tauri/src/review/**"
+        "src-tauri/src/review/**",
+        "src/screens/detailed/**",
+        "src/app/shortcuts.ts",
+        "src/app/keyboard.ts"
       ],
-      "text": "Before the tests stage records a decision about a control's label or enabled state, grep the milestone plan decisions for that label (e.g. 'Publish summary') and lock nothing the plan contradicts, because F-12.5's 'a summary alone is not publishable' went against M5 decision 7 and became a severe review finding, and the unchecked restored-start test it locked (MrSummaryPublish.test.tsx:509) could not be changed without a test dispute.",
+      "text": "Before the tests stage records a decision about a control's label or enabled state, grep the milestone plan decisions for that label (e.g. 'Publish summary') and lock nothing the plan contradicts, because F-12.5's 'a summary alone is not publishable' went against M5 decision 7 and became a severe review finding, and the unchecked restored-start test it locked (MrSummaryPublish.test.tsx:509) could not be changed without a test dispute. When a decision changes what a key does, grep every control, card, footer and Settings row that shows that key's hint and let the newer decision beat an older mock: a hint on a control names only a key that triggers it (F-07.10 locked a stale Space hint because Main.dc.html drew it).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-17T12:09:14.855Z",
       "lastUsedItem": 43,
       "source": "F-12.5"
