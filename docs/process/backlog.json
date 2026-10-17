@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-17T06:41:06.474Z",
+  "updated": "2026-10-17T07:13:53.284Z",
   "items": [
     {
       "id": "F-11.1",
@@ -80,9 +80,14 @@
       "title": "Tabs Drafts N and Threads N open.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "ee1ce81",
+      "tests": [
+        "src/screens/summary/SummaryTabs.test.tsx",
+        "tests/e2e/summary-f12-2.spec.ts"
+      ]
     },
     {
       "id": "F-12.3",
