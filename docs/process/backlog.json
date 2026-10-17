@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-17T06:24:39.299Z",
+  "updated": "2026-10-17T06:41:06.474Z",
   "items": [
     {
       "id": "F-11.1",
@@ -65,7 +65,7 @@
       "title": "\"SUMMARY\" with \"All N steps reviewed.\" (or \"N of M steps reviewed.\") and Back to steps.",
       "kind": "mixed",
       "deps": [],
-      "status": "impl",
+      "status": "done",
       "attempts": 1,
       "note": "",
       "lockSha": "d2a77bf",
