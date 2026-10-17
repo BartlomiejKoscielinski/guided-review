@@ -333,7 +333,13 @@
 .summaryBody {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+}
+
+/* The status region stays in the DOM while ticked (it announces the labels); the 6px between
+   a label or the failure line and the area is a margin, so an empty region takes no space. */
+.summaryStatus:not(:empty),
+.summaryFailed {
+  margin-bottom: 6px;
 }
 
 .summaryLabel {
