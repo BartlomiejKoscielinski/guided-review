@@ -13,6 +13,7 @@ enabled: boolean,
  */
 text: string, 
 /**
- * The text is Claude's suggestion, untouched by the reviewer.
+ * The text began as Claude's suggestion: it stays set while the reviewer edits it and is
+ * cleared with the text (M5 decision 11).
  */
 suggested: boolean, };

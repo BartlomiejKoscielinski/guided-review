@@ -17,7 +17,8 @@ pub struct SummaryField {
     pub enabled: bool,
     /// The text of the area; an empty one isn't published.
     pub text: String,
-    /// The text is Claude's suggestion, untouched by the reviewer.
+    /// The text began as Claude's suggestion: it stays set while the reviewer edits it and is
+    /// cleared with the text (M5 decision 11).
     pub suggested: bool,
 }
 

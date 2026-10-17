@@ -5,8 +5,10 @@ import { useDiscussions } from '../../ipc/hooks/useDiscussions';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
 import { DraftsTab } from './DraftsTab';
 import { openingTab, openThreadCount, type SummaryTab } from './openingTab';
+import { SummaryCommentField } from './SummaryCommentField';
 import { SummaryHeader } from './SummaryHeader';
 import { SummaryTabs } from './SummaryTabs';
+import { useSummaryComment } from './useSummaryComment';
 import styles from './Summary.module.css';
 
 export interface MrSummaryProps {
@@ -16,8 +18,8 @@ export interface MrSummaryProps {
 /**
  * S-05 of an MR session (F-12.1, SummaryDesk.dc.html): "SUMMARY", how many steps are reviewed and
  * Back to steps; below, the Comments column with the tabs Drafts N and Threads N open (F-12.2)
- * and the drafts list (F-12.3). Publish (F-12.5), the threads list (F-13.1) and the Approval tile
- * (F-14) fill the page as their criteria land.
+ * and the drafts list (F-12.3) with "Add a summary comment" under it (F-12.4). Publish (F-12.5),
+ * the threads list (F-13.1) and the Approval tile (F-14) fill the page as their criteria land.
  */
 export function MrSummary({ sessionId }: MrSummaryProps) {
   const id = useId();
@@ -26,6 +28,8 @@ export function MrSummary({ sessionId }: MrSummaryProps) {
   const restored = (useLocation().state as StartState | null)?.restored === true;
   const drafts = useDrafts(sessionId);
   const threads = useDiscussions(sessionId, !restored);
+  // Held by the screen, not the tab: a summary run outlives a switch to Threads (F-12.4).
+  const comment = useSummaryComment(sessionId);
   // M5 decision 5: the opening tab is picked once and kept while the screen is open; leaving the
   // screen (it unmounts) ends the choice. The tabs wait for it, so no tab shows first and then
   // gives way to the other.
@@ -62,7 +66,12 @@ export function MrSummary({ sessionId }: MrSummaryProps) {
                 aria-labelledby={`${id}-tab-${tab}`}
                 className={styles.panel}
               >
-                {tab === 'drafts' && <DraftsTab sessionId={sessionId} />}
+                {tab === 'drafts' && (
+                  <>
+                    <DraftsTab sessionId={sessionId} />
+                    {drafts.data && <SummaryCommentField comment={comment} />}
+                  </>
+                )}
               </div>
             )}
           </section>

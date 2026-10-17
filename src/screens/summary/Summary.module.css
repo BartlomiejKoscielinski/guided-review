@@ -315,3 +315,64 @@
   align-items: center;
   gap: 6px;
 }
+
+/* "Add a summary comment" under the drafts (F-12.4, SummaryDesk.dc.html, M5 decision 11). */
+.summaryComment {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.summaryTick {
+  align-self: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.summaryBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summaryLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.summarySpinner {
+  color: var(--purple);
+  animation: summary-spin 0.9s linear infinite;
+}
+
+@keyframes summary-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.summaryFailed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.summaryArea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  line-height: 1.55;
+  resize: vertical;
+}
