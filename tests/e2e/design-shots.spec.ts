@@ -144,6 +144,7 @@ const MR_482_SUMMARY_DRAFTS = [
   publishedNoteId: null,
   error: null,
   stepId: null,
+  outdated: false,
 }));
 
 /** S-05 of !482 (F-12.1): step 1 opened from S-01, then Finish review in the title bar. */
@@ -393,6 +394,25 @@ const SHOTS: Shot[] = [
       await page.getByRole('tab', { name: 'Drafts 5', selected: true }).waitFor();
       await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
       await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+    },
+  },
+  {
+    // The mock's five drafts after Publish (5) (F-12.5): the blue banner, every row "· published",
+    // "Published to GitLab." and the grey Published button.
+    screen: 'S05',
+    state: 'summary-published',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    drafts: MR_482_SUMMARY_DRAFTS,
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+      await page.getByRole('button', { name: 'Publish (5)', exact: true }).click();
+      await page
+        .getByRole('status')
+        .filter({ hasText: 'Published 5 comments. The author got a single notification.' })
+        .waitFor();
+      await page.getByRole('button', { name: 'Published', exact: true }).waitFor();
     },
   },
   {

@@ -3,12 +3,13 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { IpcClient } from '../../ipc/client';
 import { createMockClient } from '../../ipc/mock';
-import { renderApp } from '../../test/renderApp';
+import { recordingClient, renderApp } from '../../test/renderApp';
 
 // F-12.5, M5 decision 8 ("checked when S-05 opens and right before publishing"): a Publish whose
 // check finds more drafts in GitLab's own review than the yellow banner showed sends nothing and
-// shows the new count; the next click publishes. And the summary comment goes out once per run of
-// the app, also after leaving S-05 and coming back.
+// shows the new count; the next click publishes. The summary comment goes out once per run of
+// the app, also after leaving S-05 and coming back. A restored S-05 whose drafts all went out
+// opens on Drafts (the threads aren't read on a restored start, F-30.4).
 
 const MR_SESSION = 'mock-mr-session-1';
 const SINGLE = 'The author got a single notification.';
@@ -104,5 +105,24 @@ describe('S-05 the summary comment goes out once (F-12.5)', () => {
 
     await screen.findByText(`Published 1 comment. ${SINGLE}`);
     expect(summaries).toEqual([SUMMARY, null]);
+  });
+});
+
+describe('S-05 restored after Publish (F-12.5, F-12.2, F-30.4)', () => {
+  it('F-12.5 a restored S-05 whose drafts are all published opens on Drafts with the rows and Published', async () => {
+    const base = await backend();
+    const ids = (await base.draftsList(MR_SESSION)).map((d) => d.id);
+    await base.draftsPublish(MR_SESSION, ids, null);
+    const { client, calls } = recordingClient(base);
+    renderApp({ screen: 'S-05', sessionId: MR_SESSION }, client);
+
+    const rows = await within(await screen.findByRole('tabpanel')).findAllByRole('listitem');
+    expect(screen.getByRole('tab', { name: 'Drafts 2' })).toHaveAttribute('aria-selected', 'true');
+    expect(rows).toHaveLength(2);
+    for (const row of rows) expect(row).toHaveTextContent('· published');
+    expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
+    expect(calls.filter((name) => /^(review|gitlab|claude(?!Status$|Models$))/.test(name))).toEqual(
+      [],
+    );
   });
 });

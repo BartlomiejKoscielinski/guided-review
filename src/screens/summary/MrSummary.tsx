@@ -40,7 +40,7 @@ export function MrSummary({ sessionId }: MrSummaryProps) {
   // screen (it unmounts) ends the choice. The tabs wait for it, so no tab shows first and then
   // gives way to the other.
   const [picked, setPicked] = useState<SummaryTab | null>(null);
-  const opening = openingTab(drafts);
+  const opening = openingTab(drafts, restored);
   if (picked === null && opening !== null) setPicked(opening);
   const tab = picked ?? opening;
   const panelId = `${id}-panel`;
