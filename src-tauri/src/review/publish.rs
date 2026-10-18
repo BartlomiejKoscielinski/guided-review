@@ -1,7 +1,9 @@
 //! Publish (F-12.5, M5 decisions 8 and 9): the drafts the user ticked, and the summary comment,
 //! become GitLab draft notes (one `POST …/draft_notes` each, positions from the session's diff of
 //! the reviewed version) and go out in exactly one `bulk_publish`, so the author gets a single
-//! notification. Nothing else is sent: no approval, no discussion note.
+//! notification. Nothing else is sent (no discussion note), and publishing never approves the MR
+//! (F-12.6): approving is its own click (F-14.2) with no shared code path; tests in
+//! `tests/publish_never_approves.rs` check every request a run sends.
 //!
 //! A draft whose note can't be made keeps its tick and gets a reason in plain words (decision 9);
 //! the notes that were made still go out in the batch. A note GitLab made is remembered at once
