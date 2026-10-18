@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-18T07:30:34.452Z",
+  "updated": "2026-10-18T08:08:02.621Z",
   "items": [
     {
       "id": "F-11.1",
@@ -152,16 +152,15 @@
       "title": "Publishing never approves the MR.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "011c0ad",
+      "lockSha": "1c0614f",
       "tests": [
         "src-tauri/tests/publish_never_approves.rs",
         "src/screens/summary/MrSummaryNoApproval.test.tsx",
         "tests/e2e/summary-f12-6.spec.ts"
-      ],
-      "forkSha": "ec1939f"
+      ]
     },
     {
       "id": "F-12.7",

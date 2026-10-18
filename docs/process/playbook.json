@@ -1,5 +1,5 @@
 {
-  "items": 44,
+  "items": 45,
   "entries": [
     {
       "id": "P-003",
@@ -82,7 +82,7 @@
         "src-tauri/tests/**"
       ],
       "text": "When the PROGRESS line lists commit SHAs for an item, check them first: if the criterion code is already on base, the test stage should add locked tests only and skip the implementer (F-05.5: implementer skipped, reviewer merged with no findings, gate passed on the first run).",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:19:12.003Z",
@@ -221,12 +221,13 @@
         "src-tauri/src/**",
         "src/screens/plan/**",
         "implement",
-        "src/screens/summary/**"
+        "src/screens/summary/**",
+        "docs/plans/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
       "helpful": 10,
       "harmful": 0,
-      "seen": 2,
+      "seen": 3,
       "created": "2026-10-14T15:34:55.903Z",
       "lastUsedItem": 6,
       "source": "F-06.9",
@@ -419,12 +420,13 @@
         "src-tauri/tests/**",
         "src/ipc/mock/**",
         "mixed",
-        "tests/e2e/**"
+        "tests/e2e/**",
+        "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
       "helpful": 17,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
       "source": "F-09.5",
@@ -696,7 +698,7 @@
         "src/ipc/mock/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
@@ -985,6 +987,21 @@
       "created": "2026-10-17T12:09:14.959Z",
       "lastUsedItem": 43,
       "source": "F-12.5"
+    },
+    {
+      "id": "P-096",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "To prove a negative-property test (nothing but draft notes is sent, never approve) can fail, send the forbidden request from a scratch copy of the test against the wiremock and delete it afterwards, because a temporary approve call inside production draft_notes.rs was blocked by the permission classifier in F-12.6.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-18T08:07:56.841Z",
+      "lastUsedItem": 44,
+      "source": "F-12.6"
     }
   ]
 }
