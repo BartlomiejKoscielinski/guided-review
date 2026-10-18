@@ -133,17 +133,28 @@ pub async fn bulk_publish(
 /// Never another version: the line numbers come from the reviewed diff, and anchoring them to
 /// other SHAs could put a comment on the wrong line (the re-map of decision 10b isn't built).
 pub fn pick_version(versions: &[Value], head_sha: &str) -> Option<DiffRefs> {
-    let refs = |v: &Value| -> Option<DiffRefs> {
-        Some(DiffRefs {
-            base_sha: v.get("base_commit_sha")?.as_str()?.to_owned(),
-            start_sha: v.get("start_commit_sha")?.as_str()?.to_owned(),
-            head_sha: v.get("head_commit_sha")?.as_str()?.to_owned(),
-        })
-    };
     versions
         .iter()
-        .filter_map(refs)
+        .filter_map(refs_of)
         .find(|r| r.head_sha == head_sha)
+}
+
+fn refs_of(version: &Value) -> Option<DiffRefs> {
+    Some(DiffRefs {
+        base_sha: version.get("base_commit_sha")?.as_str()?.to_owned(),
+        start_sha: version.get("start_commit_sha")?.as_str()?.to_owned(),
+        head_sha: version.get("head_commit_sha")?.as_str()?.to_owned(),
+    })
+}
+
+/// The `diff_refs` of the MR's latest version, the highest `id` (GitLab lists them newest first);
+/// `None` when it lists none. For a "drafts only" session (F-12.7), which has no reviewed version.
+pub fn pick_latest(versions: &[Value]) -> Option<DiffRefs> {
+    versions
+        .iter()
+        .filter_map(|v| Some((v.get("id")?.as_u64()?, refs_of(v)?)))
+        .max_by_key(|(id, _)| *id)
+        .map(|(_, refs)| refs)
 }
 
 /// The `diff_refs` of the reviewed version of the MR (`GET …/versions`); `None` when GitLab no
@@ -160,6 +171,20 @@ pub async fn version_refs(
     );
     let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
     Ok(pick_version(&versions, head_sha))
+}
+
+/// The `diff_refs` of the MR's latest version (`GET …/versions`, [`pick_latest`]).
+pub async fn latest_refs(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+) -> Result<Option<DiffRefs>, GitlabError> {
+    let path = format!(
+        "/projects/{}/merge_requests/{iid}/versions",
+        project_id(project)
+    );
+    let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
+    Ok(pick_latest(&versions))
 }
 
 #[cfg(test)]
@@ -212,5 +237,24 @@ mod tests {
         assert_eq!(pick_version(&versions, "h2").unwrap().head_sha, "h2");
         assert!(pick_version(&versions, "gone").is_none());
         assert!(pick_version(&[], "h1").is_none());
+    }
+
+    #[test]
+    fn f12_7_the_latest_version_is_the_highest_id_whatever_the_order() {
+        let versions = vec![
+            json!({ "id": 7, "head_commit_sha": "h7", "base_commit_sha": "b7", "start_commit_sha": "s7" }),
+            json!({ "id": 9, "head_commit_sha": "h9", "base_commit_sha": "b9", "start_commit_sha": "s9" }),
+            json!({ "id": 8, "head_commit_sha": "h8", "base_commit_sha": "b8", "start_commit_sha": "s8" }),
+        ];
+        let latest = pick_latest(&versions).unwrap();
+        assert_eq!(
+            (
+                latest.base_sha.as_str(),
+                latest.start_sha.as_str(),
+                latest.head_sha.as_str()
+            ),
+            ("b9", "s9", "h9")
+        );
+        assert!(pick_latest(&[]).is_none());
     }
 }
