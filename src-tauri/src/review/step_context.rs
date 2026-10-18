@@ -196,6 +196,7 @@ where
     let (Some(row), Some(folders)) = (row, folders) else {
         return Err(StepContextError::UnknownSession);
     };
+    let repo_id = row.repo_id.ok_or(StepContextError::UnknownSession)?;
     let stored: Source = serde_json::from_str(&row.source_json)?;
     let git = Git::new(git_program, &folders.checkout);
     let (source, mr, description, cwd) = match stored.clone() {
@@ -232,7 +233,7 @@ where
     };
     let project = match &mr {
         Some(mr) => mr.project.clone(),
-        None => repo_project(store, row.repo_id, &folders.checkout)?,
+        None => repo_project(store, repo_id, &folders.checkout)?,
     };
     let rules = plan::team_rules(&git, &row.base_sha, cancel).await?;
     let files = source_files::files(&git, &stored, &row.base_sha, &row.head_sha, cancel).await?;
@@ -247,7 +248,7 @@ where
     };
     Ok(SessionInputs {
         session_id: session_id.to_owned(),
-        repo_id: row.repo_id,
+        repo_id,
         source,
         project,
         mr,

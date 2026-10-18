@@ -479,7 +479,7 @@ async fn f01_3_session_for_a_commit_and_a_range() {
         .with_conn(|c| store::sessions::source_of(c, &id))
         .unwrap()
         .unwrap();
-    assert_eq!(stored.repo_id, repo_id);
+    assert_eq!(stored.repo_id, Some(repo_id));
     assert_eq!(stored.status, Some(SessionStatus::Planning));
     let source: Source = serde_json::from_str(&stored.source_json).unwrap();
     assert_eq!(

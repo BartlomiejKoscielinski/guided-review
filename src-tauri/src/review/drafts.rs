@@ -12,7 +12,8 @@ use super::plan_model::Plan;
 use super::position::DiffPosition;
 use crate::error::{AppError, ErrorCode};
 use crate::git::model::FileDiff;
-use crate::store::StoreError;
+use crate::source::Source;
+use crate::store::{StoreError, mr_sessions};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -45,6 +46,17 @@ pub struct Draft {
 pub struct NewDraft {
     pub session_id: String,
     pub finding_id: Option<String>,
+    pub body: String,
+    pub position: Option<DiffPosition>,
+    pub severity: Option<Severity>,
+}
+
+/// A draft made outside a review (Explain failure on S-08, Add as a question on S-12): it names
+/// the MR, not a session; [`attach_to_mr`] finds it one (F-12.7).
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct NewMrDraft {
     pub body: String,
     pub position: Option<DiffPosition>,
     pub severity: Option<Severity>,
@@ -264,6 +276,63 @@ pub fn delete(conn: &Connection, id: &str) -> Result<(), DraftError> {
     }
     conn.execute("DELETE FROM drafts WHERE id = ?1", [id])?;
     Ok(())
+}
+
+/// Saves a draft made outside a review of the MR `project` !`iid` (F-12.7, M5 decision 15) in the
+/// MR's session used last that isn't done, else in a new "drafts only" session of the MR, which
+/// S-05 opens. No step: the draft is not on a plan step. A blank draft creates nothing.
+pub fn attach_to_mr(
+    conn: &mut Connection,
+    project: &str,
+    iid: u64,
+    new: &NewMrDraft,
+) -> Result<Draft, DraftError> {
+    if new.body.trim().is_empty() {
+        return Err(DraftError::EmptyBody);
+    }
+    let tx = conn.transaction()?;
+    let session_id = match mr_sessions::latest_open(&tx, project, iid)? {
+        Some(id) => id,
+        None => {
+            let source = serde_json::to_string(&Source::Mr {
+                project: project.to_owned(),
+                iid,
+            })?;
+            mr_sessions::insert_drafts_only(&tx, project, &source)?
+        }
+    };
+    let draft = create(
+        &tx,
+        &NewDraft {
+            session_id,
+            finding_id: None,
+            body: new.body.clone(),
+            position: new.position.clone(),
+            severity: new.severity,
+        },
+    )?;
+    tx.commit()?;
+    Ok(draft)
+}
+
+/// Moves the unpublished drafts of the MR's other sessions, drafts-only ones included, into
+/// `session_id`, a review of the MR just opened (F-12.7, M5 decision 15): the same rows, so the
+/// ID, text, position, severity, tick, step and order stay. A published draft stays in the session
+/// it was published from. Returns how many moved.
+pub fn move_to_session(
+    conn: &Connection,
+    project: &str,
+    iid: u64,
+    session_id: &str,
+) -> Result<usize, StoreError> {
+    let mut moved = 0;
+    for from in mr_sessions::others(conn, project, iid, session_id)? {
+        moved += conn.execute(
+            "UPDATE drafts SET session_id = ?1 WHERE session_id = ?2 AND published_note_id IS NULL",
+            params![session_id, from],
+        )?;
+    }
+    Ok(moved)
 }
 
 #[cfg(test)]

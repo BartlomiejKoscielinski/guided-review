@@ -6,6 +6,7 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
+use super::drafts;
 use super::model::{Layout, Mode};
 use super::mr_summary::MrMeta;
 use super::prepare::{self, PrepareError, PrepareInput, PrepareProgress};
@@ -143,8 +144,19 @@ pub async fn open_mr(
     row.worktree = Some(prepared.worktree.to_string_lossy().into_owned());
     row.mr_json = Some(serde_json::to_string(&MrMeta::from_info(&info))?);
     let store = ctx.store.clone();
-    tokio::task::spawn_blocking(move || store.with_conn(|c| sessions::insert(c, &row)))
-        .await
-        .map_err(|_| StoreError::Poisoned)??;
+    let (project, iid, id) = (ctx.project.to_owned(), ctx.iid, opened.session_id.clone());
+    // Drafts belong to the MR (F-12.7): the new review takes the unpublished drafts of the MR's
+    // older sessions, in the same transaction as the session itself.
+    tokio::task::spawn_blocking(move || {
+        store.with_conn(|c| {
+            let tx = c.transaction()?;
+            sessions::insert(&tx, &row)?;
+            drafts::move_to_session(&tx, &project, iid, &id)?;
+            tx.commit()?;
+            Ok(())
+        })
+    })
+    .await
+    .map_err(|_| StoreError::Poisoned)??;
     Ok(opened)
 }

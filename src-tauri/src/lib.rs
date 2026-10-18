@@ -227,6 +227,7 @@ pub fn run() {
             commands::review_status::review_analysis_status,
             commands::drafts::drafts_list,
             commands::drafts::drafts_create,
+            commands::drafts::drafts_create_for_mr,
             commands::drafts::drafts_update,
             commands::drafts::drafts_delete,
             commands::publish::drafts_publish,

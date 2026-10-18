@@ -6,7 +6,7 @@ use tauri::State;
 use super::review::ReviewApp;
 use super::with_store;
 use crate::error::AppResult;
-use crate::review::drafts::{self, Draft, DraftPatch, NewDraft};
+use crate::review::drafts::{self, Draft, DraftPatch, NewDraft, NewMrDraft};
 use crate::store::Store;
 
 /// The drafts of a session in the order they were made.
@@ -35,6 +35,23 @@ pub async fn drafts_create(
     with_store(&store, move |c| Ok(drafts::create_at(c, &draft, line_step)))
         .await?
         .map_err(Into::into)
+}
+
+/// A draft made outside a review (Explain failure on S-08, Add as a question on S-12) of the MR
+/// `project` !`iid`: it joins the MR's latest session, else a new "drafts only" one that S-05 opens
+/// (F-12.7). Database only: no GitLab or Claude Code.
+#[tauri::command]
+pub async fn drafts_create_for_mr(
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    draft: NewMrDraft,
+) -> AppResult<Draft> {
+    with_store(&store, move |c| {
+        Ok(drafts::attach_to_mr(c, &project, iid, &draft))
+    })
+    .await?
+    .map_err(Into::into)
 }
 
 /// Edits the text or the Publish tick; a published draft is refused.

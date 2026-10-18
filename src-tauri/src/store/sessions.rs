@@ -47,7 +47,8 @@ struct ListedRow {
 }
 
 /// Unfinished sessions, most recently updated first, each with the screen to resume at and its
-/// card (F-04.1): title and progress. A self-review's title is its repository's name here; the
+/// card (F-04.1): title and progress. A "drafts only" session is one while it holds an unpublished
+/// draft (F-12.7, M5 decision 15). A self-review's title is its repository's name here; the
 /// command names it after the branch (`review::sessions::name_self_reviews`).
 pub fn list_unfinished(
     conn: &Connection,
@@ -80,7 +81,8 @@ pub fn list_unfinished(
     Ok(sessions)
 }
 
-/// The card of an unfinished session; `None` for a finished one or a row that doesn't parse.
+/// The card of an unfinished session; `None` for a finished one, a drafts-only one without
+/// unpublished drafts or a row that doesn't parse.
 fn unfinished(
     conn: &Connection,
     row: ListedRow,
@@ -91,7 +93,8 @@ fn unfinished(
         tracing::warn!(session = id, "session has an unknown status; skipped");
         return Ok(None);
     };
-    if !status.is_unfinished() {
+    let drafts_only = status == SessionStatus::DraftsOnly;
+    if !status.is_unfinished() && !drafts_only {
         return Ok(None);
     }
     let Some(source) = row
@@ -108,6 +111,10 @@ fn unfinished(
         .and_then(parse::<Mode>)
         .unwrap_or_default();
     let progress = session_progress::of(conn, &id)?;
+    // A drafts-only session is listed while it holds an unpublished draft (M5 decision 15).
+    if drafts_only && progress.drafts == 0 {
+        return Ok(None);
+    }
     let mr_title = row
         .mr_json
         .as_deref()
@@ -161,7 +168,7 @@ pub struct NewSession {
     pub mr_json: Option<String>,
 }
 
-fn stored<T: serde::Serialize>(value: T) -> Option<String> {
+pub(super) fn stored<T: serde::Serialize>(value: T) -> Option<String> {
     match serde_json::to_value(value) {
         Ok(Value::String(text)) => Some(text),
         _ => None,
@@ -193,7 +200,8 @@ pub fn insert(conn: &Connection, session: &NewSession) -> Result<(), StoreError>
 /// The stored source of a session.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SessionSource {
-    pub repo_id: i64,
+    /// `None`: a "drafts only" session of a project no repository here has (F-12.7).
+    pub repo_id: Option<i64>,
     pub source_json: String,
     pub base_sha: String,
     pub head_sha: String,

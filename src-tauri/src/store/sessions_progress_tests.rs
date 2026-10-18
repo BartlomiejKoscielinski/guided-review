@@ -362,8 +362,14 @@ fn f04_1_finished_sessions_are_not_listed() {
             .map(|s| (s.id, u32::try_from(s.total_steps).unwrap()))
             .collect::<Vec<_>>()
     });
+    // M5 decision 15 (F-12.7): a drafts-only session is listed while it holds an unpublished draft;
+    // the done session stays out.
     assert_eq!(
         listed,
-        [("reviewing".to_owned(), 3), ("planning".to_owned(), 3)]
+        [
+            ("drafts".to_owned(), 3),
+            ("reviewing".to_owned(), 3),
+            ("planning".to_owned(), 3)
+        ]
     );
 }
