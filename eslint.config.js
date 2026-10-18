@@ -40,6 +40,13 @@ export default defineConfig(
     languageOptions: { globals: globals.browser },
   },
   {
+    // A test double keeps the stubbed command's parameters for its signature: `_name` says unused.
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
     files: ['tests/e2e/**/*.ts'],
     rules: {
       'no-restricted-properties': [
