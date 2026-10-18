@@ -158,7 +158,9 @@ const SHOT_USERS = {
 
 /**
  * SummaryDesk.dc.html's five threads of !482, three open and two resolved (F-13.1: Open 3,
- * Resolved 2): [resolved, file, line, author, first message, replies by].
+ * Resolved 2): [resolved, file, line, author, first message, replies by]. The index thread was
+ * written on the older version 3b8d1f0, the one the mock's Claude finds addressed by a91f2c0
+ * (F-13.3); the others on the reviewed one.
  */
 const MR_482_SUMMARY_THREADS = (
   [
@@ -207,8 +209,14 @@ const MR_482_SUMMARY_THREADS = (
   id: `d-482-shot-${String(i + 1)}`,
   resolvable: true,
   resolved,
-  outdated: false,
-  position: { oldPath: file, newPath: file, newLine: line, headSha: '9c41e07', baseSha: '5e2a9c4' },
+  outdated: i === 1,
+  position: {
+    oldPath: file,
+    newPath: file,
+    newLine: line,
+    headSha: i === 1 ? '3b8d1f0' : '9c41e07',
+    baseSha: '5e2a9c4',
+  },
   notes: [author, ...replies].map((who, n) => ({
     id: 48300 + i * 10 + n,
     author: SHOT_USERS[who],
@@ -446,7 +454,9 @@ const SHOTS: Shot[] = [
     // without drafts it opens on "Threads 3 open" (M5 decision 5), with the mock's five threads
     // under the filters All / Open 3 / Resolved 2 (F-13.1); each row with "author · N replies ·
     // file:line", Show in code where a step shows the thread (three of them, once the steps are
-    // read) and Resolve or Reopen (F-13.2). The Approval tile (F-14) is not built yet.
+    // read) and Resolve or Reopen (F-13.2). Check with Claude has run (F-13.3, M5 decision 12):
+    // "Claude: index added in a91f2c0" under the index thread. The Approval tile (F-14) is not
+    // built yet.
     screen: 'S05',
     state: 'summary-threads',
     lastRoute: { screen: 'S-01' },
@@ -458,6 +468,12 @@ const SHOTS: Shot[] = [
         .getByLabel(/^Show in code: /)
         .nth(2)
         .waitFor();
+      await page.getByRole('button', { name: 'Check with Claude', exact: true }).click();
+      await page.getByText('Claude: index added in a91f2c0', { exact: true }).waitFor();
+      // The run ends with the focus back on the button: shoot it without the focus ring.
+      await page.evaluate(() => {
+        (document.activeElement as HTMLElement | null)?.blur();
+      });
     },
   },
   {

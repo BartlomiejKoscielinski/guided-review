@@ -126,3 +126,56 @@
   height: 32px;
   padding: 0 12px;
 }
+
+/* Claude's hint under the meta line (F-13.3): purple square and light purple text on a purple tint. */
+.hint {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 3px 10px;
+  background: var(--purple-tint);
+  color: var(--purple-text-2);
+  font-size: 13px;
+}
+
+/* Check with Claude above the rows (M5 decision 12), then what the check is doing. */
+.check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.check .checkStatus:empty {
+  display: none;
+}
+
+.checkLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.checkSpinner {
+  color: var(--purple);
+  animation: thread-check-spin 0.9s linear infinite;
+}
+
+@keyframes thread-check-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.checkFailed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}

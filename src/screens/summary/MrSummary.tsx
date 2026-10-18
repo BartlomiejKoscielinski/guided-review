@@ -17,6 +17,7 @@ import { ThreadFilters } from './ThreadFilters';
 import { ThreadsTab } from './ThreadsTab';
 import { usePublishFlow } from './usePublishFlow';
 import { useSummaryComment } from './useSummaryComment';
+import { useThreadCheck } from './useThreadCheck';
 import styles from './Summary.module.css';
 
 export interface MrSummaryProps {
@@ -43,6 +44,8 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
   const threads = useDiscussions(sessionId, !restored);
   // Held by the screen, not the tab: a summary run outlives a switch to Threads (F-12.4).
   const comment = useSummaryComment(sessionId);
+  // F-13.3: Check with Claude is held here too, so its run and hints outlive a visit to Drafts.
+  const threadCheck = useThreadCheck(sessionId);
   const publish = usePublishFlow(sessionId, drafts.data, comment.field, !restored);
   // M5 decision 5: the opening tab is picked once and kept while the screen is open; leaving the
   // screen (it unmounts) ends the choice. The tabs wait for it, so no tab shows first and then
@@ -124,6 +127,7 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
                     restored={restored}
                     draftsOnly={draftsOnly}
                     filter={filter}
+                    check={threadCheck}
                   />
                 )}
               </div>

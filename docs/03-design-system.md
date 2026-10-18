@@ -81,6 +81,7 @@ Paste into `src/styles/tokens.css` and use only these variables in components.
   --caption-close-hover: #C42B1C;   /* Windows close button hover, the only off-palette color */
   --switch-off: #333331;            /* Switch track when off (Settings mock) */
   --green-tint: #1F2A20;            /* selected RadioCard (Start mock) */
+  --purple-tint: rgba(185, 60, 246, 0.16); /* Claude's hint chip on a thread (SummaryDesk mock) */
 
   --font-ui: 'Barlow', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Barlow', sans-serif;

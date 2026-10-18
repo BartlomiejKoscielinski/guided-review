@@ -2,6 +2,7 @@ import { pathFor, stepScreen } from '../../app/routes';
 import { useGitlabStatus } from '../../ipc/hooks/useGitlab';
 import { useSessionState } from '../../ipc/hooks/useSessionState';
 import type { Thread } from '../../ipc/types/Thread';
+import type { ThreadHint } from '../../ipc/types/ThreadHint';
 import { ThreadRow } from './ThreadRow';
 import { useThreadSteps } from './useThreadSteps';
 import summary from './Summary.module.css';
@@ -10,13 +11,15 @@ export interface ThreadListProps {
   sessionId: string;
   threads: readonly Thread[];
   draftsOnly: boolean;
+  /** Claude's hints by discussion id (F-13.3); null before a check. */
+  hints: ReadonlyMap<string, ThreadHint> | null;
 }
 
 /**
  * The rows, once GitLab answered with threads: only then are the signed-in user and the steps
  * read, so a restored summary or a failed read runs no command for them (F-30.4).
  */
-export function ThreadList({ sessionId, threads, draftsOnly }: ThreadListProps) {
+export function ThreadList({ sessionId, threads, draftsOnly, hints }: ThreadListProps) {
   const me = useGitlabStatus().data?.user?.username ?? null;
   const mode = useSessionState(sessionId).data?.mode;
   const steps = useThreadSteps(sessionId, !draftsOnly);
@@ -32,6 +35,7 @@ export function ThreadList({ sessionId, threads, draftsOnly }: ThreadListProps) 
             thread={thread}
             me={me}
             code={step === undefined ? null : `${path}?step=${encodeURIComponent(step)}`}
+            hint={hints?.get(thread.id) ?? null}
           />
         );
       })}

@@ -5,7 +5,9 @@ import { cx } from '../../components/cx';
 import { CheckIcon, CodeIcon } from '../../components/icons';
 import { useResolveThread } from '../../ipc/hooks/useThreadActions';
 import type { Thread } from '../../ipc/types/Thread';
+import type { ThreadHint } from '../../ipc/types/ThreadHint';
 import { revealThreadState } from '../step/threadReveal';
+import { ThreadHintChip } from './ThreadHintChip';
 import { threadMeta, threadPlace } from './threadMeta';
 import styles from './Threads.module.css';
 
@@ -16,6 +18,8 @@ export interface ThreadRowProps {
   me: string | null;
   /** Where Show in code opens (the step screen on `?step=`); null for a thread no step shows. */
   code: string | null;
+  /** Claude's hint when it judges the thread addressed by a later commit (F-13.3). */
+  hint?: ThreadHint | null;
 }
 
 /**
@@ -26,8 +30,10 @@ export interface ThreadRowProps {
  * the grey Reopen. Resolve and Reopen go to GitLab at once (`gitlab_resolve`) and the row changes
  * only when GitLab has it: the button is busy meanwhile, a failure keeps the row and says why in
  * it (M5 decision 2), and the keyboard focus moves to the button that took the pressed one's place.
+ * An open thread Claude judges addressed has its hint under the meta line (F-13.3); resolved, it
+ * has none.
  */
-export function ThreadRow({ sessionId, thread, me, code }: ThreadRowProps) {
+export function ThreadRow({ sessionId, thread, me, code, hint = null }: ThreadRowProps) {
   const navigate = useNavigate();
   const resolve = useResolveThread(sessionId);
   const resolveRef = useRef<HTMLButtonElement>(null);
@@ -84,6 +90,7 @@ export function ThreadRow({ sessionId, thread, me, code }: ThreadRowProps) {
             </>
           )}
         </span>
+        {hint !== null && !thread.resolved && <ThreadHintChip hint={hint} />}
         {failed !== null && (
           <p role="alert" className={styles.error}>
             {failed}
