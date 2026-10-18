@@ -1,0 +1,75 @@
+/* S-05 Threads tab (F-13.1, SummaryDesk.dc.html): the filters next to the tabs and the rows. */
+
+/* All / Open N / Resolved N: flat toggle buttons, the pressed one on the dark fill. */
+.filters {
+  display: flex;
+  gap: 2px;
+}
+
+.filter {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filterOn {
+  background: var(--raised-2);
+  color: var(--text);
+}
+
+/* A thread: the resolved square, the first message, the actions (F-13.2). */
+.row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  background: var(--panel);
+}
+
+/* Open: the outlined square of the mock; resolved: the green square with the tick. */
+.state {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 2px var(--text-muted);
+}
+
+.stateResolved {
+  background: var(--green);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.text {
+  margin: 0;
+  max-width: 80ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.textResolved {
+  color: var(--text-muted);
+}

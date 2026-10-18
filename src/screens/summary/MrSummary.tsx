@@ -12,6 +12,9 @@ import { PublishBar } from './PublishBar';
 import { SummaryCommentField } from './SummaryCommentField';
 import { SummaryHeader } from './SummaryHeader';
 import { SummaryTabs } from './SummaryTabs';
+import type { ThreadFilter } from './threadFilter';
+import { ThreadFilters } from './ThreadFilters';
+import { ThreadsTab } from './ThreadsTab';
 import { usePublishFlow } from './usePublishFlow';
 import { useSummaryComment } from './useSummaryComment';
 import styles from './Summary.module.css';
@@ -26,8 +29,9 @@ export interface MrSummaryProps {
  * S-05 of an MR session (F-12.1, SummaryDesk.dc.html): "SUMMARY", how many steps are reviewed and
  * Back to steps; below, the Comments column with the tabs Drafts N and Threads N open (F-12.2)
  * and the drafts list (F-12.3) with "Add a summary comment" under it (F-12.4); on the Drafts tab
- * Publish (N) next to the tabs and its banners above the rows (F-12.5). The threads list (F-13.1)
- * and the Approval tile (F-14) fill the page as their criteria land. A "drafts only" session, made
+ * Publish (N) next to the tabs and its banners above the rows (F-12.5); on the Threads tab the
+ * filters All / Open N / Resolved N next to the tabs and the threads they keep (F-13.1). The
+ * Approval tile (F-14) fills the page as its criteria land. A "drafts only" session, made
  * by a draft from outside a review, is the same summary without its steps (F-12.7).
  */
 export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
@@ -47,6 +51,9 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
   const opening = openingTab(drafts, restored);
   if (picked === null && opening !== null) setPicked(opening);
   const tab = picked ?? opening;
+  // F-13.1: the threads filter, held here like the tab so a visit to Drafts keeps it; it starts
+  // on All each time the screen opens.
+  const [filter, setFilter] = useState<ThreadFilter>('all');
   const panelId = `${id}-panel`;
 
   return (
@@ -77,6 +84,9 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
                   onPublish={publish.publish}
                 />
               )}
+              {tab === 'threads' && !restored && threads.data && !threads.isError && (
+                <ThreadFilters threads={threads.data} filter={filter} onChange={setFilter} />
+              )}
             </div>
             {tab && (
               <div
@@ -106,6 +116,9 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
                       <SummaryCommentField comment={comment} locked={publish.pending} />
                     )}
                   </>
+                )}
+                {tab === 'threads' && (
+                  <ThreadsTab threads={threads} restored={restored} filter={filter} />
                 )}
               </div>
             )}
