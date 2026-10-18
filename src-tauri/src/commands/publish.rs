@@ -11,12 +11,12 @@ use super::gitlab::{GitlabApp, connected_client};
 use super::gitlab_threads::session_mr;
 use super::review::ReviewApp;
 use super::with_store;
-use crate::error::{AppError, AppResult, ErrorCode};
+use crate::error::AppResult;
 use crate::git::model::FileDiff;
-use crate::gitlab::draft_notes;
 use crate::os::process::Cancel;
 use crate::review::drafts::{self, DraftError};
-use crate::review::publish::{self, PublishOutcome, PublishRequest};
+use crate::review::publish::{self, PublishOutcome};
+use crate::review::publish_session;
 use crate::review::step_context;
 use crate::store::{self, Store};
 
@@ -53,45 +53,24 @@ pub async fn drafts_publish(
 ) -> AppResult<PublishOutcome> {
     let mr = session_mr(&store, &session).await?;
     let id = session.clone();
-    let (known, head) = with_store(&store, move |c| {
-        let head = store::sessions::source_of(c, &id)?.map(|row| row.head_sha);
-        Ok(drafts::list(c, &id).map(|known| (known, head)))
-    })
-    .await??;
+    let known = with_store(&store, move |c| Ok(drafts::list(c, &id))).await??;
     // Checked before GitLab is asked, like the mock backend.
     if let Some(missing) = ids.iter().find(|a| !known.iter().any(|d| &d.id == *a)) {
         return Err(DraftError::NotFound(missing.clone()).into());
     }
-    let head = head.ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
     let (client, _) = connected_client(&gitlab, &store).await?;
-    let files = session_files(&review, &store, &session).await?;
-    // The reviewed version's SHAs, never another version's: the line numbers come from the
-    // reviewed diff. Not built yet (F-12.5 follow-up): decision 10b's re-map of the positions to a
-    // newer version of the MR and the outdated drafts it finds.
-    let why = match draft_notes::version_refs(&client, &mr.project, mr.iid, &head).await {
-        Ok(Some(refs)) => {
-            let request = PublishRequest {
-                client: &client,
-                store: &store,
-                session: &session,
-                mr: &mr,
-                refs: &refs,
-                files: &files,
-                ids: &ids,
-                summary: summary.as_deref(),
-            };
-            return Ok(publish::run(&request).await?);
-        }
-        Ok(None) => publish::VERSION_GONE.to_owned(),
-        Err(error) => publish::reason(&error),
-    };
-    Ok(publish::fail_all(
+    // A "drafts only" session (F-12.7) never asks for the diff: it has none.
+    let files = || session_files(&review, &store, &session);
+    publish_session::publish(
+        &client,
         &store,
         &session,
+        &mr,
         &ids,
         summary.as_deref(),
-        &why,
-    )?)
+        files,
+    )
+    .await
 }
 
 /// The draft comments already in GitLab's own review of the session's MR, which a Publish sends

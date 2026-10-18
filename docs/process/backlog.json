@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-18T08:08:02.621Z",
+  "updated": "2026-10-18T09:44:40.592Z",
   "items": [
     {
       "id": "F-11.1",
@@ -169,9 +169,24 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "953975a",
+      "tests": [
+        "src-tauri/tests/drafts_of_the_mr.rs",
+        "src-tauri/tests/drafts_of_the_mr_pick_up.rs",
+        "src-tauri/tests/drafts_of_the_mr_review.rs",
+        "src-tauri/tests/support/mr_drafts.rs",
+        "src/ipc/tauriDraftsForMr.test.ts",
+        "src/ipc/mock/draftsForMr.test.ts",
+        "src/screens/summary/DraftsOnlySummary.test.tsx",
+        "src/screens/start/ResumeCardDraftsOnly.test.tsx",
+        "tests/e2e/summary-f12-7.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/drafts_of_the_mr_review.rs@5154260"
+      ]
     },
     {
       "id": "F-13.1",
@@ -179,9 +194,15 @@
       "title": "Filters All / Open N / Resolved N.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "4e12932",
+      "tests": [
+        "src/screens/summary/ThreadsFilters.test.tsx",
+        "tests/e2e/summary-f13-1.spec.ts"
+      ],
+      "forkSha": "5d31146"
     },
     {
       "id": "F-13.2",

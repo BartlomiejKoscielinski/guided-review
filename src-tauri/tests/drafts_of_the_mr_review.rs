@@ -197,7 +197,10 @@ async fn f12_7_opening_a_review_moves_the_drafts_of_the_mrs_drafts_only_session_
     assert_ne!(opened, drafts_only);
     assert_eq!(
         drafts_of(&store, &opened),
-        [first, second],
+        [first, second].map(|d| Draft {
+            session_id: opened.clone(),
+            ..d
+        }),
         "the same drafts, same order, now in the new session"
     );
     assert!(drafts_of(&store, &drafts_only).is_empty());
@@ -282,11 +285,16 @@ async fn f12_7_opening_a_review_moves_only_the_unpublished_drafts_of_older_sessi
     let opened = open(&store, &row, &server, 482).await.unwrap();
 
     // The unpublished drafts of both older sessions are in the new one: moved, not copied or
-    // rewritten (ID, text, position, severity, tick and step stay), in the order they were made.
+    // rewritten (ID, text, position, severity and tick stay), in the order they were made. The
+    // step and the note belong to the old session's plan, whose step IDs ("s1".."sN") the new
+    // plan reuses for other steps: a moved draft is outside the plan, like a draft from outside a
+    // review.
     assert_eq!(
         drafts_of(&store, &opened),
         moved_before.map(|d| Draft {
             session_id: opened.clone(),
+            step_id: None,
+            finding_id: None,
             ..d
         })
     );

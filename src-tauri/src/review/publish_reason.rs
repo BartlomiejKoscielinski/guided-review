@@ -7,6 +7,11 @@ pub const REFUSED: &str = "GitLab refused the token";
 pub const UNREACHABLE: &str = "GitLab is unreachable";
 /// GitLab no longer lists the version the user reviewed: its line numbers can't be anchored.
 pub const VERSION_GONE: &str = "the reviewed version is no longer in the MR";
+/// A line comment of a "drafts only" session (F-12.7): no diff on this PC to place its line;
+/// opening a review of the MR moves it into the review, which has one (M5 decision 15).
+pub const NEEDS_REVIEW: &str = "open a review of the MR to place its line";
+/// GitLab lists no version of the MR, so nothing can be anchored to it.
+pub const NO_VERSION: &str = "the MR has no version in GitLab";
 
 /// Why a request for a draft failed, in the words of decision 9.
 pub fn reason(error: &GitlabError) -> String {

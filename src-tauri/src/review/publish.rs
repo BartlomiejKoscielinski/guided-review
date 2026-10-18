@@ -41,7 +41,7 @@ use crate::store::sessions as sessions_summary;
 use crate::store::{Store, StoreError};
 
 pub use super::publish_reason::{
-    LINE_GONE, REFUSED, UNREACHABLE, VERSION_GONE, reason, stops_the_run,
+    LINE_GONE, NEEDS_REVIEW, NO_VERSION, REFUSED, UNREACHABLE, VERSION_GONE, reason, stops_the_run,
 };
 
 /// One Publish (or Retry) of a session's drafts.
