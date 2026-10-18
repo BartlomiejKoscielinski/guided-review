@@ -1,5 +1,5 @@
 {
-  "items": 46,
+  "items": 47,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 29,
+      "helpful": 30,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 31,
+      "helpful": 32,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -171,7 +171,7 @@
         "src/screens/summary/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 7,
       "created": "2026-10-14T15:13:07.675Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 23,
+      "helpful": 24,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -225,7 +225,7 @@
         "docs/plans/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T15:34:55.903Z",
@@ -243,7 +243,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -261,7 +261,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 21,
+      "helpful": 22,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -373,9 +373,9 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 15,
+      "helpful": 16,
       "harmful": 0,
-      "seen": 8,
+      "seen": 9,
       "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 15,
       "source": "F-17.2",
@@ -698,7 +698,7 @@
         "src/ipc/mock/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 11,
+      "helpful": 12,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-16T10:39:05.255Z",
@@ -1050,6 +1050,21 @@
       "created": "2026-10-18T09:44:23.161Z",
       "lastUsedItem": 45,
       "source": "F-12.7"
+    },
+    {
+      "id": "P-100",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/summary/**"
+      ],
+      "text": "When a row action can drop the row from the active filter (Resolve under Open, Reopen under Resolved), lock in the tests stage where keyboard focus lands (next row's action, else the list or filter) instead of writing 'focus is not locked', because F-13.2 locked focus only under All and the review's only substantive nit was focus falling back to the document body (WCAG 2.4.3).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-18T18:51:25.642Z",
+      "lastUsedItem": 46,
+      "source": "F-13.2"
     }
   ]
 }

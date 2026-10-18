@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-18T17:36:29.510Z",
+  "updated": "2026-10-18T18:51:35.020Z",
   "items": [
     {
       "id": "F-11.1",
@@ -209,9 +209,17 @@
       "title": "Each thread: first message, author · replies · file:line, Resolve or Reopen.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "f444a33",
+      "tests": [
+        "src/screens/summary/ThreadRow.test.tsx",
+        "src/screens/summary/ThreadRowActions.test.tsx",
+        "src/screens/summary/ThreadShowInCode.test.tsx",
+        "src/test/threadRows.tsx",
+        "tests/e2e/summary-f13-2.spec.ts"
+      ]
     },
     {
       "id": "F-13.3",
