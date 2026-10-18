@@ -13,6 +13,7 @@ import type { Layout } from './types/Layout';
 import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
+import type { NewMrDraft } from './types/NewMrDraft';
 import type { PlanView } from './types/PlanView';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
@@ -215,6 +216,12 @@ export interface IpcClient {
   // Drafts (F-09.2, F-10.3): kept on this PC; nothing reaches GitLab without Publish.
   draftsList(sessionId: string): Promise<Draft[]>;
   draftsCreate(draft: NewDraft): Promise<Draft>;
+  /**
+   * A draft made outside a review (Explain failure on S-08, Add as a question on S-12) of the MR
+   * `project` !`iid` (F-12.7): it joins the MR's latest session that isn't done, else a new "drafts
+   * only" session that S-05 opens. Database only.
+   */
+  draftsCreateForMr(project: string, iid: number, draft: NewMrDraft): Promise<Draft>;
   /** Edits the text or the Publish tick; a published draft is refused. */
   draftsUpdate(id: string, patch: DraftPatch): Promise<Draft>;
   draftsDelete(id: string): Promise<void>;

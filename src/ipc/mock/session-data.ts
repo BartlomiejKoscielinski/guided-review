@@ -54,6 +54,11 @@ export interface SessionData {
   /** Commit and local sessions opened from S-01 and what each one reviews (F-17.1). */
   local: string[];
   localCount: number;
+  /**
+   * "Drafts only" sessions (F-12.7): made for drafts added outside a review of an MR without a
+   * session; their MR is in `sources`.
+   */
+  draftsOnly: string[];
   sources: Record<string, Source>;
   /** Planned sessions; a session without a plan here has never been planned. */
   plans: Record<string, SessionPlan>;
@@ -87,6 +92,7 @@ const empty = (): SessionData => ({
   mrCount: 0,
   local: [],
   localCount: 0,
+  draftsOnly: [],
   sources: {},
   plans: {},
   marks: {},

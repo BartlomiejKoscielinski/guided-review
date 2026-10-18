@@ -135,6 +135,8 @@ export function createTauriClient(): IpcClient {
       call<ResumedSession | null>('session_resume', { session: sessionId }),
     draftsList: (sessionId) => call<Draft[]>('drafts_list', { sessionId }),
     draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
+    draftsCreateForMr: (project, iid, draft) =>
+      call<Draft>('drafts_create_for_mr', { project, iid, draft }),
     draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),
     draftsDelete: (id) => call<undefined>('drafts_delete', { id }),
     draftsPublish: (session, ids, summary) =>
