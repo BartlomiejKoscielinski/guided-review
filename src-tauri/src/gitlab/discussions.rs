@@ -15,7 +15,7 @@ use crate::claude::result::clamp;
 /// Pages of 100 discussions followed per MR; more are left out.
 pub const MAX_PAGES: u32 = 10;
 /// A note body in the threads file is clamped to this many characters.
-const NOTE_MAX: usize = 1000;
+pub const NOTE_MAX: usize = 1000;
 
 /// One discussion with its notes; the first note opens it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
@@ -251,7 +251,8 @@ pub fn render(threads: &[Thread]) -> String {
     out
 }
 
-fn place(position: Option<&ThreadPosition>) -> String {
+/// Where a thread sits: `path:line (new)`, a removed line, the file, or the merge request.
+pub fn place(position: Option<&ThreadPosition>) -> String {
     let Some(p) = position else {
         return "on the merge request".to_owned();
     };

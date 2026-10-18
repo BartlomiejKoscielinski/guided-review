@@ -19,12 +19,17 @@ use crate::store::{self, Store};
 
 /// The merge request of `session`; a session of commits or local changes has none (F-17.2).
 pub(super) async fn session_mr(store: &Store, session: &str) -> AppResult<MrRef> {
+    session_mr_head(store, session).await.map(|(mr, _)| mr)
+}
+
+/// The merge request of `session` and the head it reviews (empty for a "drafts only" session).
+pub(super) async fn session_mr_head(store: &Store, session: &str) -> AppResult<(MrRef, String)> {
     let id = session.to_owned();
     let row = with_store(store, move |c| store::sessions::source_of(c, &id))
         .await?
         .ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
     match serde_json::from_str::<Source>(&row.source_json) {
-        Ok(Source::Mr { project, iid }) => Ok(MrRef { project, iid }),
+        Ok(Source::Mr { project, iid }) => Ok((MrRef { project, iid }, row.head_sha)),
         _ => Err(AppError::new(
             ErrorCode::InvalidInput,
             "The session has no merge request.",
@@ -33,17 +38,20 @@ pub(super) async fn session_mr(store: &Store, session: &str) -> AppResult<MrRef>
 }
 
 /// The MR's threads as GitLab has them now, oldest first (S-05: "Threads N open", F-12.2). Read
-/// only; the remembered threads of the steps are left as they are. Called when the summary opens,
-/// never on a restored start (F-30.4).
+/// only, `outdated` set against the reviewed head; the remembered threads of the steps are left as
+/// they are. Called when the summary opens, never on a restored start (F-30.4).
 #[tauri::command]
 pub async fn gitlab_discussions(
     store: State<'_, Store>,
     gitlab: State<'_, GitlabApp>,
     session: String,
 ) -> AppResult<Vec<Thread>> {
-    let mr = session_mr(&store, &session).await?;
+    let (mr, head) = session_mr_head(&store, &session).await?;
     let (client, _) = connected_client(&gitlab, &store).await?;
-    Ok(discussions::list(&client, &mr.project, mr.iid).await?)
+    let mut threads = discussions::list(&client, &mr.project, mr.iid).await?;
+    // F-13.3: an open thread written on an older version shows **Check with Claude**.
+    thread_place::mark_outdated(&mut threads, &head);
+    Ok(threads)
 }
 
 /// Resolve (`resolved = true`) or Reopen (`false`) a thread of the session's MR.

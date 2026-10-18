@@ -24,8 +24,7 @@ pub async fn place(git: &Git, threads: &mut [Thread], base: &str, head: &str, ca
         let Some(pos) = thread.position.clone() else {
             continue;
         };
-        // Without a commit SHA the version is unknown: the thread keeps GitLab's position.
-        if !refs::is_sha_like(&pos.head_sha) || pos.head_sha.eq_ignore_ascii_case(head) {
+        if !written_on_another_head(&pos.head_sha, head) {
             continue;
         }
         thread.outdated = true;
@@ -41,6 +40,25 @@ pub async fn place(git: &Git, threads: &mut [Thread], base: &str, head: &str, ca
             }
             (None, None) => None,
         };
+    }
+}
+
+/// A thread written on `thread_head` is on another version than the reviewed `head`. Without a
+/// commit SHA the version is unknown: the thread keeps GitLab's position (counts as current).
+pub fn written_on_another_head(thread_head: &str, head: &str) -> bool {
+    refs::is_sha_like(thread_head) && !thread_head.eq_ignore_ascii_case(head)
+}
+
+/// Sets only `outdated` of the diff threads for the reviewed `head`, without looking for their
+/// lines: S-05's list of the MR's threads (F-13.3: **Check with Claude** shows for an open thread
+/// written on an older version). Without a reviewed head nothing is outdated.
+pub fn mark_outdated(threads: &mut [Thread], head: &str) {
+    for thread in threads {
+        thread.outdated = !head.is_empty()
+            && thread
+                .position
+                .as_ref()
+                .is_some_and(|p| written_on_another_head(&p.head_sha, head));
     }
 }
 

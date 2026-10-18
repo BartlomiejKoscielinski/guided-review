@@ -209,6 +209,7 @@ pub fn run() {
             commands::summary::claude_summary_comment,
             commands::summary::session_summary,
             commands::summary::session_set_summary,
+            commands::thread_check::claude_thread_check,
             commands::gitlab::gitlab_status,
             commands::gitlab::gitlab_account_save,
             commands::gitlab::gitlab_account_remove,

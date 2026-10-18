@@ -5,7 +5,7 @@
 use crate::settings::Lang;
 
 /// Version of the prompts and schemas below.
-pub const PROMPT_VERSION: u32 = 2;
+pub const PROMPT_VERSION: u32 = 3;
 
 pub const SYSTEM_COMMON: &str = include_str!("../../resources/prompts/system-common.md");
 pub const COMMIT_MESSAGE: &str = include_str!("../../resources/prompts/commit-message.md");
@@ -19,6 +19,9 @@ pub const STEP_SCHEMA: &str = include_str!("../../resources/schemas/step-finding
 pub const SUMMARY_COMMENT: &str = include_str!("../../resources/prompts/summary-comment.md");
 pub const SUMMARY_COMMENT_SCHEMA: &str =
     include_str!("../../resources/schemas/summary-comment.schema.json");
+pub const THREAD_CHECK: &str = include_str!("../../resources/prompts/thread-check.md");
+pub const THREAD_CHECK_SCHEMA: &str =
+    include_str!("../../resources/schemas/thread-check.schema.json");
 
 /// Fills `{{name}}` placeholders; unknown placeholders stay as they are.
 pub fn render(template: &str, values: &[(&str, &str)]) -> String {
