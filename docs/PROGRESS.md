@@ -133,7 +133,7 @@ Rules for Claude Code:
 - [ ] F-12.4 "Add a summary comment" checkbox reveals a text area prefilled by Claude with a short overall summary. — partial: built, live check with a real claude run on the stand-in MR left; autopilot (4a6c22a, 479b0a3, 6ebb047, e585cc3, 61059a8, ae7ef8c)
 - [ ] F-12.5 Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single… — partial: built; decision 10b re-map to a newer MR version not built, restored-start check of GitLab own drafts open (locked test MrSummaryPublish.test.tsx:509), stand-in check left; autopilot (fdaf618, 0efc71b, 7b2aa75, 80f3e79, 84ca621, a020f7b, dd171af, 5923114, 2478396)
 - [x] F-12.6 Publishing never approves the MR. (1c0614f, a5cf645)
-- [ ] F-12.7 Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a…
+- [x] F-12.7 Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a… (8877384, 701d723, f2df53b, 195c8ce, 5d31146, 5154260, ffb92ba, fefb3eb)
 - [ ] F-13.1 Filters All / Open N / Resolved N.
 - [ ] F-13.2 Each thread: first message, author · replies · file:line, Resolve or Reopen.
 - [ ] F-13.3 Claude hint chip when the thread looks addressed by a later commit ("Claude: index added in a91f2c0").
