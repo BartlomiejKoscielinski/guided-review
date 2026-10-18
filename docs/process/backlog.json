@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-18T19:53:23.709Z",
+  "updated": "2026-10-18T19:54:21.044Z",
   "items": [
     {
       "id": "F-11.1",
@@ -247,9 +247,18 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "af04ce5",
+      "tests": [
+        "src-tauri/tests/gitlab_approvals.rs",
+        "src/screens/summary/ApprovalTile.test.tsx",
+        "src/ipc/mock/approvalState.test.ts",
+        "src/ipc/tauriApprovalState.test.ts",
+        "tests/e2e/summary-f14-1.spec.ts"
+      ],
+      "forkSha": "d465348"
     },
     {
       "id": "F-14.2",
