@@ -135,7 +135,7 @@ Rules for Claude Code:
 - [x] F-12.6 Publishing never approves the MR. (1c0614f, a5cf645)
 - [x] F-12.7 Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a… (8877384, 701d723, f2df53b, 195c8ce, 5d31146, 5154260, ffb92ba, fefb3eb)
 - [x] F-13.1 Filters All / Open N / Resolved N. (4e12932, 78d23b4)
-- [ ] F-13.2 Each thread: first message, author · replies · file:line, Resolve or Reopen.
+- [x] F-13.2 Each thread: first message, author · replies · file:line, Resolve or Reopen. (f444a33, c10ba3b, 6a38fa3)
 - [ ] F-13.3 Claude hint chip when the thread looks addressed by a later commit ("Claude: index added in a91f2c0").
 - [ ] F-14.1 Approval tile: state ("NOT APPROVED YET" with dashed square / approved in solid green), "Approvals: X of…
 - [ ] F-14.2 Approve MR / Revoke approval. Approval is sent with the head SHA that was reviewed; if the MR changed…
