@@ -27,6 +27,7 @@ import type { StepAnalysis } from './types/StepAnalysis';
 import type { SummaryComment } from './types/SummaryComment';
 import type { SummaryField } from './types/SummaryField';
 import type { SummaryState } from './types/SummaryState';
+import type { ThreadCheck } from './types/ThreadCheck';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { CommitRange } from './types/CommitRange';
@@ -247,6 +248,17 @@ export interface IpcClient {
     sessionId: string,
     onEvent: (event: ClaudeTaskEvent<SummaryComment>) => void,
   ): Promise<SummaryComment>;
+  /**
+   * **Check with Claude** on S-05's Threads tab (F-13.3, M5 decision 12): which of the MR's open
+   * threads written on an older version a later commit addressed, as { discussionId, commit (full
+   * id), hint }. The core reads the threads from GitLab and the commits since each one's version
+   * from the review worktree; without such a thread no Claude run starts. Cached per head and
+   * thread set; nothing is resolved. The click is the explicit action; nothing runs it on its own.
+   */
+  claudeThreadCheck(
+    sessionId: string,
+    onEvent: (event: ClaudeTaskEvent<ThreadCheck>) => void,
+  ): Promise<ThreadCheck>;
   /**
    * The session's "Add a summary comment" tick, text and suggested flag, and `published` once a
    * Publish sent it (F-12.5: never sent again) (database only).

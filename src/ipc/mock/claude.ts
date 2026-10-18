@@ -4,6 +4,9 @@ import type { ClaudeStatus } from '../types/ClaudeStatus';
 import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
 import type { ModelInfo } from '../types/ModelInfo';
 import type { SummaryComment } from '../types/SummaryComment';
+import type { Thread } from '../types/Thread';
+import type { ThreadCheck } from '../types/ThreadCheck';
+import { isThreadCheckCandidate, MOCK_THREAD_CHECK_MS, mockThreadHints } from './threadCheck';
 
 /** Variations of the Claude part of the mock (`MOCK_CLAUDE_KEY`). */
 export interface ClaudeScenario {
@@ -22,6 +25,7 @@ type ClaudeClient = Pick<
   | 'claudeModels'
   | 'claudeCommitMessage'
   | 'claudeSummaryComment'
+  | 'claudeThreadCheck'
   | 'claudeCancel'
 >;
 
@@ -66,12 +70,16 @@ function failure(code: 'CLAUDE_LIMITED' | 'CLAUDE_NOT_SIGNED_IN' | 'CANCELLED', 
 /** The plan of an MR session is ready (the core loads the session's cached plan first). */
 export type PlanReady = (sessionId: string) => boolean;
 
+/** The MR's threads as the core reads them from GitLab, with its guards (`gitlab_discussions`). */
+export type MrThreads = (sessionId: string) => Promise<Thread[]>;
+
 /** The Claude part of the mock backend (Settings.dc.html: signed in, native install). */
 export function createClaudeBackend(
   scenario: ClaudeScenario,
   respond: <T>(value: T) => Promise<T>,
   wait: (ms: number) => Promise<void>,
   planReady: PlanReady = () => true,
+  mrThreads: MrThreads = () => Promise.resolve([]),
 ): ClaudeClient {
   let status: ClaudeStatus = {
     state: scenario.state ?? 'signedIn',
@@ -132,6 +140,30 @@ export function createClaudeBackend(
       const result: SummaryComment = { summary: SUMMARY_COMMENT };
       const done: ClaudeTaskEvent<SummaryComment> = { kind: 'done', result };
       onEvent(done);
+      return respond(result);
+    },
+    // F-13.3: as `claude_thread_check`: the MR's threads first (no MR, no GitLab account), then
+    // queued; without a candidate done at once (no Claude run), else started, done or failed.
+    claudeThreadCheck: async (sessionId, onEvent) => {
+      const threads = await mrThreads(sessionId);
+      onEvent({ kind: 'queued' });
+      if (!threads.some((t) => isThreadCheckCandidate(t))) {
+        const none: ThreadCheck = { hints: [] };
+        onEvent({ kind: 'done', result: none });
+        return respond(none);
+      }
+      onEvent({ kind: 'started' });
+      await wait(MOCK_THREAD_CHECK_MS);
+      const failed = suggestFailure();
+      if (failed) {
+        onEvent({
+          kind: 'failed',
+          error: { code: failed.code, message: failed.message, retryable: failed.retryable },
+        });
+        throw failed;
+      }
+      const result: ThreadCheck = { hints: mockThreadHints(threads) };
+      onEvent({ kind: 'done', result });
       return respond(result);
     },
     claudeCancel: (task) => {

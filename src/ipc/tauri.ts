@@ -22,6 +22,7 @@ import type { StepView } from './types/StepView';
 import type { SummaryComment } from './types/SummaryComment';
 import type { SummaryState } from './types/SummaryState';
 import type { Thread } from './types/Thread';
+import type { ThreadCheck } from './types/ThreadCheck';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
@@ -147,6 +148,11 @@ export function createTauriClient(): IpcClient {
       const ch = new Channel<ClaudeTaskEvent<SummaryComment>>();
       ch.onmessage = onEvent;
       return call<SummaryComment>('claude_summary_comment', { session: sessionId, ch });
+    },
+    claudeThreadCheck: (sessionId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<ThreadCheck>>();
+      ch.onmessage = onEvent;
+      return call<ThreadCheck>('claude_thread_check', { session: sessionId, ch });
     },
     sessionSummary: (sessionId) => call<SummaryState>('session_summary', { session: sessionId }),
     sessionSetSummary: (sessionId, summary) =>

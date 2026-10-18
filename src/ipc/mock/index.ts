@@ -148,6 +148,11 @@ export function createMockClient({
   const pause = (ms: number) => (latencyMs > 0 ? wait(ms) : Promise.resolve());
   const reviewScenario = loadJson(storage, MOCK_REVIEW_KEY, reviewOption);
   const runs = createStepRuns();
+  const gitlab = createGitlabBackend(
+    loadJson(storage, MOCK_GITLAB_KEY, gitlabOption),
+    respond,
+    data,
+  );
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -175,8 +180,9 @@ export function createMockClient({
       respond,
       pause,
       (sessionId) => data.data.plans[sessionId] !== undefined,
+      (sessionId) => gitlab.gitlabDiscussions(sessionId),
     ),
-    ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond, data),
+    ...gitlab,
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),
