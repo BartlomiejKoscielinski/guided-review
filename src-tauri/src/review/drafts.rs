@@ -317,8 +317,10 @@ pub fn attach_to_mr(
 
 /// Moves the unpublished drafts of the MR's other sessions, drafts-only ones included, into
 /// `session_id`, a review of the MR just opened (F-12.7, M5 decision 15): the same rows, so the
-/// ID, text, position, severity, tick, step and order stay. A published draft stays in the session
-/// it was published from. Returns how many moved.
+/// ID, text, position, severity, tick and order stay. The step and the note are the old plan's,
+/// whose step IDs the new plan reuses for other steps ("s1".."sN"), so a moved draft is outside
+/// the plan, like one made outside a review. A published draft stays in the session it was
+/// published from. Returns how many moved.
 pub fn move_to_session(
     conn: &Connection,
     project: &str,
@@ -328,7 +330,8 @@ pub fn move_to_session(
     let mut moved = 0;
     for from in mr_sessions::others(conn, project, iid, session_id)? {
         moved += conn.execute(
-            "UPDATE drafts SET session_id = ?1 WHERE session_id = ?2 AND published_note_id IS NULL",
+            "UPDATE drafts SET session_id = ?1, step_id = NULL, finding_id = NULL
+             WHERE session_id = ?2 AND published_note_id IS NULL",
             params![session_id, from],
         )?;
     }
