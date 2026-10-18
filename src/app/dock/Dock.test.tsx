@@ -72,7 +72,7 @@ describe('Dock', () => {
     expect(tile('Review')).toHaveAttribute('aria-current', 'page');
   });
 
-  it('F-12.7 Review skips a newer drafts-only session: it holds drafts, not a review', async () => {
+  it('F-12.7 Review resumes a newer drafts-only session at its summary, as Pick up lists it first', async () => {
     const user = userEvent.setup();
     const draftsOnly: UnfinishedSession = {
       ...session,
@@ -94,7 +94,7 @@ describe('Dock', () => {
       expect(tile('Review')).not.toHaveAttribute('aria-disabled');
     });
     await user.click(tile('Review'));
-    expect(router.state.location.pathname).toBe('/session/s-471/summary');
+    expect(router.state.location.pathname).toBe('/session/d-482/summary');
   });
 
   it('F-30.2 the Review tile lights up for a session opened after start, on the next screen', async () => {

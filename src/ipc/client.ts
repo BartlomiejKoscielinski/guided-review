@@ -18,6 +18,7 @@ import type { PlanView } from './types/PlanView';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
+import type { SessionStatus } from './types/SessionStatus';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
 import type { Thread } from './types/Thread';
@@ -117,6 +118,11 @@ export interface IpcClient {
   sessionMr(sessionId: string): Promise<SessionMr | null>;
   /** What the session reviews (F-17.1): S-02's header of a commit or local session. */
   sessionSource(sessionId: string): Promise<Source>;
+  /**
+   * Where the session is in its life (F-12.7): S-05 of a "drafts only" session has no steps, so it
+   * shows no progress line and no Back to steps. Database only.
+   */
+  sessionStatus(sessionId: string): Promise<SessionStatus>;
 
   // S-02 plan (F-06). Claude task events go to `onEvent`.
   /**

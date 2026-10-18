@@ -21,8 +21,8 @@ export interface DockProps {
 export function Dock({ active }: DockProps) {
   const navigate = useNavigate();
   const sessions = useUnfinishedSessions();
-  // A drafts-only session (F-12.7) is listed for Pick up, but it is no review to resume.
-  const resume = sessions.data?.find((s) => s.status !== 'draftsOnly')?.resume;
+  // The first session Pick up lists; a drafts-only one (F-12.7) resumes at its summary.
+  const resume = sessions.data?.[0]?.resume;
   const settingsKeys = keysText(useShortcutKeys('settings'));
   const go = (route: Route) => () => {
     void navigate(pathFor(route));

@@ -1,10 +1,11 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { Draft } from '../types/Draft';
+import type { SessionStatus } from '../types/SessionStatus';
 import type { Source } from '../types/Source';
 import { stateOf, type MockSessionData, type SessionData } from './session-data';
 
-type MrDraftsClient = Pick<IpcClient, 'draftsCreateForMr'>;
+type MrDraftsClient = Pick<IpcClient, 'draftsCreateForMr' | 'sessionStatus'>;
 
 /** The source of a mock session as `sessionSource` reports it. */
 export type SourceOf = (sessionId: string) => Source | undefined;
@@ -72,6 +73,21 @@ export function createMrDraftsBackend(
 ): MrDraftsClient {
   const { data } = store;
   return {
+    // The core's `session_status`: a session the mock knows is drafts-only, else planning until S-02
+    // showed its plan, then reviewing (as `sessionsListUnfinished` lists it).
+    sessionStatus: (sessionId) => {
+      if (!sourceOf(sessionId)) {
+        return Promise.reject(
+          new IpcError({ code: 'INVALID_INPUT', message: 'Unknown session.', retryable: false }),
+        );
+      }
+      const status: SessionStatus = data.draftsOnly.includes(sessionId)
+        ? 'draftsOnly'
+        : data.plans[sessionId]
+          ? 'reviewing'
+          : 'planning';
+      return respond(status);
+    },
     draftsCreateForMr: (project, iid, draft) => {
       if (draft.body.trim() === '') {
         return Promise.reject(

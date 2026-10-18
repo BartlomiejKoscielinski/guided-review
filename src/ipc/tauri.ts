@@ -15,6 +15,7 @@ import type { PublishOutcome } from './types/PublishOutcome';
 import type { PlanView } from './types/PlanView';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
+import type { SessionStatus } from './types/SessionStatus';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
@@ -83,6 +84,7 @@ export function createTauriClient(): IpcClient {
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
     sessionSource: (sessionId) => call<Source>('session_source', { sessionId }),
+    sessionStatus: (sessionId) => call<SessionStatus>('session_status', { sessionId }),
     reviewPlan: (sessionId, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<PlanView>>();
       ch.onmessage = onEvent;

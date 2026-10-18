@@ -177,6 +177,7 @@ pub fn run() {
             commands::sessions::session_prepare_cancel,
             commands::sessions::session_mr,
             commands::sessions::session_source,
+            commands::sessions::session_status,
             commands::session_state::session_state,
             commands::session_state::session_set_step,
             commands::session_state::session_set_layout,

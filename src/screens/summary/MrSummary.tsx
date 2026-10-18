@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import type { StartState } from '../../app/router';
 import { useDiscussions } from '../../ipc/hooks/useDiscussions';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
+import { DraftsOnlyHeader } from './DraftsOnlyHeader';
 import { DraftsTab } from './DraftsTab';
 import { ForeignDraftsBanner } from './ForeignDraftsBanner';
 import { openingTab, openThreadCount, type SummaryTab } from './openingTab';
@@ -17,6 +18,8 @@ import styles from './Summary.module.css';
 
 export interface MrSummaryProps {
   sessionId: string;
+  /** A "drafts only" session (F-12.7): no steps, so no progress line and no Back to steps. */
+  draftsOnly?: boolean;
 }
 
 /**
@@ -24,9 +27,10 @@ export interface MrSummaryProps {
  * Back to steps; below, the Comments column with the tabs Drafts N and Threads N open (F-12.2)
  * and the drafts list (F-12.3) with "Add a summary comment" under it (F-12.4); on the Drafts tab
  * Publish (N) next to the tabs and its banners above the rows (F-12.5). The threads list (F-13.1)
- * and the Approval tile (F-14) fill the page as their criteria land.
+ * and the Approval tile (F-14) fill the page as their criteria land. A "drafts only" session, made
+ * by a draft from outside a review, is the same summary without its steps (F-12.7).
  */
-export function MrSummary({ sessionId }: MrSummaryProps) {
+export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
   const id = useId();
   // Restored on start no GitLab command runs (F-30.4): the open threads are counted once the
   // summary is opened again; the drafts are on this PC and are read either way.
@@ -48,7 +52,7 @@ export function MrSummary({ sessionId }: MrSummaryProps) {
   return (
     <div className={styles.screen}>
       <div className={styles.page}>
-        <SummaryHeader sessionId={sessionId} />
+        {draftsOnly ? <DraftsOnlyHeader /> : <SummaryHeader sessionId={sessionId} />}
         <div className={styles.columns}>
           <section aria-label="Comments" className={styles.comments}>
             <div className={styles.commentsHead}>
