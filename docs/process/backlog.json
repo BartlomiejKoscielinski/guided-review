@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-18T09:44:40.592Z",
+  "updated": "2026-10-18T10:12:45.743Z",
   "items": [
     {
       "id": "F-11.1",
@@ -194,15 +194,14 @@
       "title": "Filters All / Open N / Resolved N.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "4e12932",
+      "lockSha": "bf65399",
       "tests": [
         "src/screens/summary/ThreadsFilters.test.tsx",
         "tests/e2e/summary-f13-1.spec.ts"
-      ],
-      "forkSha": "5d31146"
+      ]
     },
     {
       "id": "F-13.2",
