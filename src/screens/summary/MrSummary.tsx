@@ -118,7 +118,13 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
                   </>
                 )}
                 {tab === 'threads' && (
-                  <ThreadsTab threads={threads} restored={restored} filter={filter} />
+                  <ThreadsTab
+                    sessionId={sessionId}
+                    threads={threads}
+                    restored={restored}
+                    draftsOnly={draftsOnly}
+                    filter={filter}
+                  />
                 )}
               </div>
             )}

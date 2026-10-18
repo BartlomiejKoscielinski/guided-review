@@ -444,14 +444,21 @@ const SHOTS: Shot[] = [
   {
     // S-05 of !482 (F-12.1, F-12.2): SUMMARY, "All 8 steps reviewed.", Back to steps and the tabs;
     // without drafts it opens on "Threads 3 open" (M5 decision 5), with the mock's five threads
-    // under the filters All / Open 3 / Resolved 2 (F-13.1). The rows' meta and Resolve / Reopen
-    // (F-13.2) and the Approval tile (F-14) are not built yet.
+    // under the filters All / Open 3 / Resolved 2 (F-13.1); each row with "author · N replies ·
+    // file:line", Show in code where a step shows the thread (three of them, once the steps are
+    // read) and Resolve or Reopen (F-13.2). The Approval tile (F-14) is not built yet.
     screen: 'S05',
     state: 'summary-threads',
     lastRoute: { screen: 'S-01' },
     reviewed: MR_482_ALL_REVIEWED,
     threads: MR_482_SUMMARY_THREADS,
-    prepare: mrSummary,
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page
+        .getByLabel(/^Show in code: /)
+        .nth(2)
+        .waitFor();
+    },
   },
   {
     // The mock's five drafts, none published: S-05 opens on "Drafts 5" (F-12.2, M5 decision 5)

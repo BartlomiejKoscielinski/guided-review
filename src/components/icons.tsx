@@ -366,3 +366,12 @@ export function SkimIcon(props: IconProps) {
     </Svg>
   );
 }
+
+/** S-05 Threads tab: Show in code (SummaryDesk.dc.html, the brackets). */
+export function CodeIcon(props: IconProps) {
+  return (
+    <Svg viewBox="0 0 16 16" defaultSize={15} defaultStroke={1.8} {...props}>
+      <path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5" />
+    </Svg>
+  );
+}

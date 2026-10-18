@@ -61,15 +61,68 @@
   min-width: 0;
 }
 
+/* The first message on one line (M5 plan, F-13.2); the full text is its title. */
 .text {
   margin: 0;
   max-width: 80ch;
   font-size: 15px;
   line-height: 1.55;
   color: var(--text);
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .textResolved {
   color: var(--text-muted);
+}
+
+/* "author · N replies · file:line": grey 12.5px, the location in mono. */
+.meta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.place {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+
+/* "Couldn't resolve the thread. <reason>": in the row the user acted on (M5 decision 2). */
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--orange-text);
+}
+
+/* Show in code, then Resolve or Reopen. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.code:hover {
+  color: var(--text);
+}
+
+.actions .resolve {
+  gap: 7px;
+  height: 32px;
+}
+
+.actions .reopen {
+  height: 32px;
+  padding: 0 12px;
 }
