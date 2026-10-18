@@ -10,6 +10,7 @@ import { pathOf } from './diffPath';
 import { FileReviewed } from './FileReviewed';
 import { FileThreads } from './FileThreads';
 import { NoteMark } from './GutterMarks';
+import { useThreadReveal } from './threadReveal';
 import type { LineCard } from './useLineComments';
 import { useThreadRows } from './useThreadRows';
 import { NoteCard } from './NoteCard';
@@ -86,6 +87,7 @@ export function StepFile({
   const selection = selected?.selection.file === path ? selected.selection : null;
   const scope = { sessionId, stepId };
   const threadRows = useThreadRows(threads, scope);
+  const revealThread = useThreadReveal();
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
   const diffFolds = useMemo<DiffFold[]>(
@@ -188,6 +190,12 @@ export function StepFile({
     push(markers, row.key, row.mark);
     if (row.card) push(inserts, row.key, row.card);
     keep.add(row.key);
+  }
+  // Show in code on S-05 (M5 decision 13): the thread's card comes into view, unless a later
+  // request (a note picked, a comment opened) came after it.
+  const shown = threadRows.find((row) => row.id === revealThread?.thread);
+  if (shown && revealThread && revealThread.nonce > (reveal?.nonce ?? 0)) {
+    reveal = { at: shown.key, nonce: revealThread.nonce };
   }
 
   return (

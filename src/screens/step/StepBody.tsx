@@ -21,6 +21,7 @@ import { useMarkReviewed } from './useMarkReviewed';
 import { useReviewKeys } from './useReviewKeys';
 import { useSelfReview } from './useSelfReview';
 import { useStepFocus } from './useStepFocus';
+import { useThreadReveal } from './threadReveal';
 import { useStepScroll } from './useStepScroll';
 import styles from './Step.module.css';
 
@@ -55,9 +56,16 @@ export function StepBody({ sessionId, stepId, mainRef, onGo, restored = false }:
     const entry = useWalkStore.getState().entry;
     return entry?.sessionId === sessionId && entry.stepId === stepId;
   });
-  useStepScroll(mainRef, !walked && step.data !== undefined && !notes.isFetching, kept, (top) => {
-    writer.setScroll(stepId, top);
-  });
+  // A step opened by S-05's Show in code shows the thread's card, not where it was left either.
+  const revealing = useThreadReveal() !== null;
+  useStepScroll(
+    mainRef,
+    !walked && !revealing && step.data !== undefined && !notes.isFetching,
+    kept,
+    (top) => {
+      writer.setScroll(stepId, top);
+    },
+  );
   const toggleReviewed = useMarkReviewed(sessionId, stepId, step.data?.reviewed);
   const key = reviewKey(sessionId, stepId);
   const claim = useReviewStore((s) => s.claim);

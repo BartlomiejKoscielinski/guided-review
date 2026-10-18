@@ -152,14 +152,26 @@ export function DiffView({
   const revealAt = reveal?.at;
   const revealNonce = reveal?.nonce;
   const revealed = useRef(-Infinity);
+  const toReveal = useRef({ rows, virtualizer });
+  useEffect(() => {
+    toReveal.current = { rows, virtualizer };
+  });
   useEffect(() => {
     if (revealAt === undefined || revealNonce === undefined || revealNonce <= revealed.current)
-      return;
-    revealed.current = revealNonce;
-    const index = rows.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
-    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' });
+      return undefined;
+    // In the next frame: a virtualizer attaching to the scroller in this commit (a step opened on
+    // the request, S-05's Show in code; React running effects twice in development) moves it
+    // back to where it last saw it. The request counts as handled once it has scrolled.
+    const frame = requestAnimationFrame(() => {
+      revealed.current = revealNonce;
+      const { rows: now, virtualizer: list } = toReveal.current;
+      const index = now.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
+      if (index >= 0) list.scrollToIndex(index, { align: 'auto' });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
     // Once per request: the rows and the virtualizer change with every scroll.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealAt, revealNonce]);
 
   const currentHunk = current?.hunk;

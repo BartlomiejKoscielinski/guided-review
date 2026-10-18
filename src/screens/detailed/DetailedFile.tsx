@@ -10,6 +10,7 @@ import { pathOf } from '../step/diffPath';
 import { NoteMark } from '../step/GutterMarks';
 import type { LineCard } from '../step/useLineComments';
 import { FileThreads } from '../step/FileThreads';
+import { useThreadReveal } from '../step/threadReveal';
 import { useThreadRows } from '../step/useThreadRows';
 import { FileBar } from './FileBar';
 import { NoteCallout } from './NoteCallout';
@@ -78,6 +79,7 @@ export function DetailedFile({
   const path = pathOf(file);
   const scope = { sessionId, stepId };
   const threadRows = useThreadRows(threads, scope);
+  const revealThread = useThreadReveal();
   const layout = useDetailedStore((s) => s.layout);
   const setLayout = useDetailedStore((s) => s.setLayout);
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
@@ -159,6 +161,12 @@ export function DetailedFile({
     markers.set(row.key, [...(markers.get(row.key) ?? []), row.mark]);
     if (row.card) inserts.set(row.key, [...(inserts.get(row.key) ?? []), row.card]);
     keep.add(row.key);
+  }
+  // Show in code on S-05 (M5 decision 13): the thread's card comes into view, unless a later
+  // request (a note picked, a comment opened) came after it.
+  const shown = threadRows.find((row) => row.id === revealThread?.thread);
+  if (shown && revealThread && revealThread.nonce > (latest?.nonce ?? 0)) {
+    latest = { at: shown.key, nonce: revealThread.nonce };
   }
 
   return (

@@ -7,6 +7,8 @@ import type { ThreadScope } from './useThreadCard';
 
 /** One thread of a file, keyed by the diff line it sits on (`lineKey`). */
 export interface ThreadRow {
+  /** GitLab's discussion id. */
+  id: string;
   key: string;
   /** The gutter thread icon, which closes and opens the card. */
   mark: ReactNode;
@@ -40,6 +42,7 @@ export function useThreadRows(threads: readonly Thread[], scope?: ThreadScope): 
     if (!at) continue;
     const isOpen = !closed.has(thread.id);
     rows.push({
+      id: thread.id,
       key: at.key,
       mark: (
         <ThreadMark
