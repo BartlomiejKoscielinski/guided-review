@@ -131,7 +131,7 @@ Rules for Claude Code:
 - [x] F-12.2 Tabs Drafts N and Threads N open. (d007913, 47f94e7, 7c64225)
 - [x] F-12.3 Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note "Only you… (585dfc0, ee53bd6)
 - [x] F-12.4 "Add a summary comment" checkbox reveals a text area prefilled by Claude with a short overall summary. (4a6c22a, 479b0a3, 6ebb047, e585cc3, 61059a8, ae7ef8c)
-- [ ] F-12.5 Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single… — partial: built; decision 10b re-map to a newer MR version not built, restored-start check of GitLab own drafts open (locked test MrSummaryPublish.test.tsx:509), stand-in check left; autopilot (fdaf618, 0efc71b, 7b2aa75, 80f3e79, 84ca621, a020f7b, dd171af, 5923114, 2478396)
+- [ ] F-12.5 Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single… — partial: built; decision 10b re-map to a newer MR version not built, restored-start check of GitLab own drafts open (locked test MrSummaryPublish.test.tsx:509), stand-in check left; autopilot (fdaf618, 0efc71b, 7b2aa75, 80f3e79, 84ca621, a020f7b, dd171af, 5923114, 2478396); autopilot (08b2039, a424c1b, cfbea40, 338533d, 2bbdfc7, 57ecebf)
 - [x] F-12.6 Publishing never approves the MR. (1c0614f, a5cf645)
 - [x] F-12.7 Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a… (8877384, 701d723, f2df53b, 195c8ce, 5d31146, 5154260, ffb92ba, fefb3eb)
 - [x] F-13.1 Filters All / Open N / Resolved N. (4e12932, 78d23b4)
