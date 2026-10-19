@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T20:15:13.716Z",
+  "updated": "2026-10-19T20:15:30.940Z",
   "items": [
     {
       "id": "F-20.1",
@@ -134,16 +134,15 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "impl",
+      "attempts": 1,
       "note": "",
-      "lockSha": "a9c43cb",
+      "lockSha": "1cfdbde",
       "tests": [
         "src-tauri/tests/pipeline_explain_task.rs",
         "src/screens/pipeline/ExplainFailure.test.tsx",
         "tests/e2e/pipeline-f20-7.spec.ts"
-      ],
-      "forkSha": "cabaf59"
+      ]
     },
     {
       "id": "F-20.8",
