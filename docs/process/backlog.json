@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T15:02:40.316Z",
+  "updated": "2026-10-19T15:57:53.632Z",
   "items": [
     {
       "id": "F-20.1",
@@ -28,9 +28,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "da63776",
+      "tests": [
+        "src-tauri/tests/pipeline_jobs.rs",
+        "src/ipc/tauriPipelineJobs.test.ts",
+        "src/ipc/mock/pipelineJobs.test.ts",
+        "src/screens/pipeline/StageColumns.test.tsx",
+        "tests/e2e/pipeline-f20-2.spec.ts"
+      ]
     },
     {
       "id": "F-20.3",
@@ -39,9 +47,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "d8baf10",
+      "tests": [
+        "src-tauri/tests/pipeline_run.rs",
+        "src/ipc/mock/pipelineRun.test.ts",
+        "src/screens/pipeline/RunPipelineConfirm.test.tsx",
+        "tests/e2e/pipeline-f20-3.spec.ts"
+      ],
+      "forkSha": "3fdc665"
     },
     {
       "id": "F-20.4",
