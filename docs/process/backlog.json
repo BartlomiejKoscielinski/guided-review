@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T08:49:13.949Z",
+  "updated": "2026-10-19T09:20:55.178Z",
   "items": [
     {
       "id": "F-11.1",
@@ -287,15 +287,14 @@
       "title": "The tile states \"Approving doesn't publish comments.\" and the number of open threads (\"Open threads: 3.\"…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "d76f342",
+      "lockSha": "3c1befe",
       "tests": [
         "src/screens/summary/ApprovalTileNotes.test.tsx",
         "tests/e2e/summary-f14-3.spec.ts"
-      ],
-      "forkSha": "bf00194"
+      ]
     }
   ]
 }
