@@ -28,9 +28,18 @@ describe('job details text (F-20.5)', () => {
     );
   });
 
+  it('F-20.5 a job running for a while shows how long it has run, not "started just now"', () => {
+    expect(jobDetailsMeta(row({ state: 'running', durationSecs: 20 * 60 + 5 }), 'test')).toBe(
+      'Test stage · running 20:05',
+    );
+    expect(jobDetailsMeta(row({ state: 'canceled', durationSecs: null }), 'quality')).toBe(
+      'Quality stage',
+    );
+  });
+
   it('F-20.5 appended lines past 500 keep the last 500 and mark the log cut', () => {
     const start = applyLogEvent(
-      { lines: [], truncated: false, error: null },
+      { lines: [], truncated: false, error: null, replaces: 0 },
       {
         lines: Array.from({ length: MAX_LOG_LINES }, (_, i) => plain(i + 1)),
         replace: true,

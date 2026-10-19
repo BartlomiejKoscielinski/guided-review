@@ -13,21 +13,28 @@ export interface JobLogProps {
   truncated: boolean;
   /** The job still runs: a cursor ends the log and the view follows the tail. */
   running: boolean;
+  /** Bumped each time the log starts over: the view jumps to the tail again. */
+  replaces: number;
 }
 
 /**
  * The job log of S-08 (F-20.5): plain text in monospace, one element per line with its kind
- * (`data-kind`, colored from tokens); never HTML. While the job runs the view follows the new
- * lines unless the user scrolled up.
+ * (`data-kind`, colored from tokens); never HTML. The view opens at the tail (where a failed
+ * job's error is) and jumps there again on every `replace`; new lines keep it at the tail unless
+ * the user scrolled up.
  */
-export function JobLog({ lines, truncated, running }: JobLogProps) {
+export function JobLog({ lines, truncated, running, replaces }: JobLogProps) {
   const box = useRef<HTMLDivElement>(null);
   const following = useRef(true);
 
   useLayoutEffect(() => {
+    following.current = true;
+  }, [replaces]);
+
+  useLayoutEffect(() => {
     const el = box.current;
-    if (el && running && following.current) el.scrollTop = el.scrollHeight;
-  }, [lines, running]);
+    if (el && following.current) el.scrollTop = el.scrollHeight;
+  }, [lines, replaces]);
 
   const onScroll = () => {
     const el = box.current;
