@@ -404,6 +404,7 @@ describe('running the new pipeline (F-20.3)', () => {
               startedByMe: true,
               startedAt: new Date().toISOString(),
               durationSecs: null,
+              webUrl: null,
             })
           : base.pipelineGet(project, iid, id),
       pipelineJobs: () => Promise.resolve([]),

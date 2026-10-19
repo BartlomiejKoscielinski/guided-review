@@ -60,6 +60,7 @@ const head = (over: Partial<Head>): Head => ({
   startedByMe: false,
   startedAt: ago(2 * HOUR),
   durationSecs: 14 * 60,
+  webUrl: 'https://gitlab.local/mobile/mobile-app/-/pipelines/18342',
   ...over,
 });
 
