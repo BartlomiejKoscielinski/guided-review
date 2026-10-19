@@ -154,6 +154,7 @@ pub fn run() {
             app.manage(commands::gitlab::GitlabApp::default());
             app.manage(commands::sessions::PrepareTasks::default());
             app.manage(commands::review::ReviewApp::default());
+            app.manage(commands::job_trace::JobTraces::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -232,6 +233,8 @@ pub fn run() {
             commands::pipeline::pipeline_run_mr,
             commands::pipeline::pipeline_retry,
             commands::pipeline::pipeline_cancel,
+            commands::job_trace::job_trace,
+            commands::job_trace::job_trace_stop,
             commands::review_plan::review_plan,
             commands::review_plan::review_set_strategy,
             commands::review_plan::review_reorder_steps,

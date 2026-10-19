@@ -1,7 +1,8 @@
 //! The jobs of a pipeline over REST (F-20.2, docs/05 › GitLab REST API v4): `pipeline_jobs`
 //! (`GET …/pipelines/:id/jobs`, paged, `per_page=100`, optionally with the retried attempts) and
 //! the two job actions that act at once, `retry_job` and `cancel_job`
-//! (`POST …/jobs/:id/retry` / `…/cancel`), each answering with the job it leaves.
+//! (`POST …/jobs/:id/retry` / `…/cancel`), each answering with the job it leaves; `job` and
+//! `trace` (F-20.5): one job (`GET …/jobs/:id`) and its log as text (`GET …/jobs/:id/trace`).
 
 use serde::Deserialize;
 use serde_json::json;
@@ -25,6 +26,9 @@ pub struct Job {
     /// Seconds, fractional; `None` while the job has none.
     #[serde(default)]
     pub duration: Option<f64>,
+    /// The job's page in GitLab (Full log opens it).
+    #[serde(default)]
+    pub web_url: Option<String>,
 }
 
 fn decode<T: for<'de> Deserialize<'de>>(
@@ -71,4 +75,17 @@ pub async fn cancel_job(
     let path = format!("/projects/{}/jobs/{job}/cancel", project_id(project));
     let response = client.post(&path, &json!({})).await?;
     decode(&path, response.body)
+}
+
+/// Job `job` as it now is.
+pub async fn job(client: &GitlabClient, project: &str, job: u64) -> Result<Job, GitlabError> {
+    let path = format!("/projects/{}/jobs/{job}", project_id(project));
+    let response = client.get(&path, &[]).await?;
+    decode(&path, response.body)
+}
+
+/// The raw log of job `job` as GitLab has it so far (ANSI escapes and section markers included).
+pub async fn trace(client: &GitlabClient, project: &str, job: u64) -> Result<String, GitlabError> {
+    let path = format!("/projects/{}/jobs/{job}/trace", project_id(project));
+    client.get_text(&path).await
 }

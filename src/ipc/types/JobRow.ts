@@ -9,4 +9,8 @@ export type JobRow = { id: number, name: string, state: JobState, action: JobAct
 /**
  * Whole seconds; `None` while GitLab has none.
  */
-durationSecs: number | null, };
+durationSecs: number | null, 
+/**
+ * The job's page in GitLab (F-20.5's Full log); `None` when GitLab gave none.
+ */
+webUrl: string | null, };

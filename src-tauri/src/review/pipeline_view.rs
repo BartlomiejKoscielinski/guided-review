@@ -232,6 +232,8 @@ pub struct JobRow {
     /// Whole seconds; `None` while GitLab has none.
     #[ts(type = "number | null")]
     pub duration_secs: Option<u64>,
+    /// The job's page in GitLab (F-20.5's Full log); `None` when GitLab gave none.
+    pub web_url: Option<String>,
 }
 
 /// One stage of the pipeline with its jobs.
@@ -282,6 +284,7 @@ pub fn row_of(job: &Job) -> JobRow {
             .duration
             .filter(|d| d.is_finite() && *d >= 0.0)
             .map(|d| d.round() as u64),
+        web_url: job.web_url.clone(),
     }
 }
 
@@ -379,6 +382,7 @@ mod tests {
             allow_failure: false,
             retried,
             duration: Some(1.4),
+            web_url: None,
         }
     }
 
