@@ -139,7 +139,7 @@ Rules for Claude Code:
 - [ ] F-13.3 Claude hint chip when the thread looks addressed by a later commit ("Claude: index added in a91f2c0"). — partial: autopilot (421d7b8, 58b0531, 362cf80, 9e86162, d465348, 90e801e)
 - [x] F-14.1 Approval tile: state ("NOT APPROVED YET" with dashed square / approved in solid green), "Approvals: X of… (af04ce5, d1fc673)
 - [ ] F-14.2 Approve MR / Revoke approval. Approval is sent with the head SHA that was reviewed; if the MR changed… — partial: autopilot (25e7746, dce0661, bf00194, 8e1ccd7, f25cdf4)
-- [ ] F-14.3 The tile states "Approving doesn't publish comments." and the number of open threads ("Open threads: 3."…
+- [x] F-14.3 The tile states "Approving doesn't publish comments." and the number of open threads ("Open threads: 3."… (d76f342, 4821a8f)
 
 ## M6 · Pipelines
 - [ ] F-20.1 Shows the MR's pipelines as tabs (newest first, "version N · latest"), the selected pipeline's status…
