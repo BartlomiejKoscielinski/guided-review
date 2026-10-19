@@ -9,6 +9,7 @@ pub mod client;
 pub mod discussions;
 pub mod draft_notes;
 pub mod error;
+pub mod jobs;
 pub mod mr;
 pub mod mrs;
 pub mod pipelines;

@@ -1,7 +1,6 @@
 //! The pipelines of an MR over REST (F-20.1, docs/05 › GitLab REST API v4), read only:
 //! `mr_pipelines` (`GET …/merge_requests/:iid/pipelines`, paged; no `user` or `duration` there),
-//! `pipeline` (`GET …/pipelines/:id`, the full object) and `pipeline_jobs`
-//! (`GET …/pipelines/:id/jobs`, for the allowed failures).
+//! and `pipeline` (`GET …/pipelines/:id`, the full object). Its jobs are in `jobs.rs` (F-20.2).
 
 use serde::Deserialize;
 
@@ -43,15 +42,6 @@ pub struct Pipeline {
     pub duration: Option<u64>,
     #[serde(default)]
     pub web_url: Option<String>,
-}
-
-/// One job of a pipeline, as far as the head needs it.
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-pub struct PipelineJob {
-    pub name: String,
-    pub status: String,
-    #[serde(default)]
-    pub allow_failure: bool,
 }
 
 impl PipelineState {
@@ -125,17 +115,6 @@ pub async fn pipeline(
     let path = format!("/projects/{}/pipelines/{id}", project_id(project));
     let response = client.get(&path, &[]).await?;
     decode(&path, response.body)
-}
-
-/// The jobs of one pipeline (all pages).
-pub async fn pipeline_jobs(
-    client: &GitlabClient,
-    project: &str,
-    id: u64,
-) -> Result<Vec<PipelineJob>, GitlabError> {
-    let path = format!("/projects/{}/pipelines/{id}/jobs", project_id(project));
-    let (items, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
-    items.into_iter().map(|item| decode(&path, item)).collect()
 }
 
 #[cfg(test)]
