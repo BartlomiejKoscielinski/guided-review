@@ -4,6 +4,7 @@ import type { JobState } from '../../types/JobState';
 import type { PipelineHead } from '../../types/PipelineHead';
 import type { PipelineTab } from '../../types/PipelineTab';
 import type { StageColumn } from '../../types/StageColumn';
+import { jobPage } from './pipelineLog';
 
 /** The MR whose pipelines Pipeline.dc.html shows. */
 export const PIPELINE_MR = 482;
@@ -153,6 +154,7 @@ export function pipelineColumns(id: number): StageColumn[] | null {
       state,
       action: jobAction(state),
       durationSecs: ran ? job.secs : null,
+      webUrl: jobPage(id * 100 + index + 1),
     };
     const last = columns[columns.length - 1];
     if (last?.name === job.stage) last.jobs.push(row);
@@ -200,6 +202,7 @@ export function newPipelineColumns(): StageColumn[] {
       state,
       action: jobAction(state),
       durationSecs: null,
+      webUrl: jobPage(NEW_PIPELINE * 100 + index + 1),
     };
     const last = columns[columns.length - 1];
     if (last?.name === job.stage) last.jobs.push(row);

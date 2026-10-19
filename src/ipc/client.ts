@@ -17,6 +17,7 @@ import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { NewMrDraft } from './types/NewMrDraft';
+import type { JobLogEvent } from './types/JobLogEvent';
 import type { JobRow } from './types/JobRow';
 import type { PipelineHead } from './types/PipelineHead';
 import type { PipelineTab } from './types/PipelineTab';
@@ -381,6 +382,18 @@ export interface IpcClient {
   pipelineRetry(project: string, iid: number, id: number): Promise<PipelineHead>;
   /** Cancel pipeline `id` at once (F-20.4); its head as it now is. */
   pipelineCancel(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /**
+   * The log of job `job` (F-20.5, decision 10): `onEvent` gets the whole log first (`replace`),
+   * then only new lines while the job runs (re-read every 3 s); settles when the stream ends
+   * (`done`, or `signal` aborted: another job picked, the screen left). Read only.
+   */
+  jobTrace(
+    project: string,
+    iid: number,
+    job: number,
+    onEvent: (event: JobLogEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<void>;
   /**
    * Opens a page of the configured GitLab in the default browser (Open in GitLab, F-20.4); the
    * core refuses anything that is not `https` on the GitLab host (INVALID_INPUT).

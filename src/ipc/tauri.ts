@@ -15,6 +15,7 @@ import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { PublishOutcome } from './types/PublishOutcome';
+import type { JobLogEvent } from './types/JobLogEvent';
 import type { JobRow } from './types/JobRow';
 import type { PipelineHead } from './types/PipelineHead';
 import type { PipelineTab } from './types/PipelineTab';
@@ -219,6 +220,23 @@ export function createTauriClient(): IpcClient {
     pipelineRetry: (project, iid, id) => call<PipelineHead>('pipeline_retry', { project, iid, id }),
     pipelineCancel: (project, iid, id) =>
       call<PipelineHead>('pipeline_cancel', { project, iid, id }),
+    jobTrace: async (project, iid, job, onEvent, signal) => {
+      if (signal?.aborted) return;
+      const task = crypto.randomUUID();
+      const ch = new Channel<JobLogEvent>();
+      ch.onmessage = (event) => {
+        if (!signal?.aborted) onEvent(event);
+      };
+      const stop = () => {
+        call<undefined>('job_trace_stop', { task }).catch(() => undefined);
+      };
+      signal?.addEventListener('abort', stop, { once: true });
+      try {
+        await call<undefined>('job_trace', { project, iid, job, task, ch });
+      } finally {
+        signal?.removeEventListener('abort', stop);
+      }
+    },
     osOpenGitlabUrl: (url) => call<undefined>('os_open_gitlab_url', { url }),
     ...createTauriWindowControls(),
   };

@@ -17,6 +17,8 @@ import {
   pipelineHead,
   pipelineTabs,
 } from './fixtures/pipeline';
+import { jobPage } from './fixtures/pipelineLog';
+import { type FoundJob, traceJob } from './pipelineLog';
 
 type PipelineCommands =
   | 'pipelineList'
@@ -27,7 +29,8 @@ type PipelineCommands =
   | 'pipelineMrHead'
   | 'pipelineRunMr'
   | 'pipelineRetry'
-  | 'pipelineCancel';
+  | 'pipelineCancel'
+  | 'jobTrace';
 
 const notFound = () =>
   new IpcError({ code: 'GITLAB_NOT_FOUND', message: "GitLab didn't find it.", retryable: false });
@@ -46,6 +49,8 @@ const FIRST_ATTEMPT_ID = 9_000_000;
  * `pipelineCancel` (F-20.4): Retry failed jobs gives every failed, failed-allowed and canceled job
  * a running attempt with a new id and the pipeline reads Running; Cancel pipeline cancels every
  * running and waiting job and the pipeline reads Canceled; passed, skipped and manual jobs stay.
+ * `jobTrace` (F-20.5): the log of any job of !482's pipelines (`pipelineLog.ts`); every row has
+ * its page on the mock server as `webUrl`.
  */
 export function createPipelineBackend(
   user: () => GitlabUser | null,
@@ -113,6 +118,16 @@ export function createPipelineBackend(
     }
     return null;
   };
+  /** Job `id` of any of !482's pipelines with its pipeline and stage; null when no job has it. */
+  const find = (id: number): FoundJob | null => {
+    for (const tab of tabsOf(PIPELINE_MR)) {
+      for (const column of columnsOf(tab.id) ?? []) {
+        const row = column.jobs.find((j) => j.id === id);
+        if (row) return { row: { ...row }, pipeline: tab.id, stage: column.name };
+      }
+    }
+    return null;
+  };
   /** Rewrites every job of pipeline `id` of MR `iid`, then gives it `status`; its new head. */
   const actAll = (
     iid: number,
@@ -160,6 +175,7 @@ export function createPipelineBackend(
           state: 'running',
           action: jobAction('running'),
           durationSecs: null,
+          webUrl: jobPage(nextId),
         };
       }),
     jobCancel: (_project, _iid, job) =>
@@ -181,6 +197,7 @@ export function createPipelineBackend(
           state: 'running',
           action: jobAction('running'),
           durationSecs: null,
+          webUrl: jobPage(nextId),
         };
       }),
     pipelineCancel: (_project, iid, id) =>
@@ -189,6 +206,13 @@ export function createPipelineBackend(
           ? { ...row, state: 'canceled', action: jobAction('canceled'), durationSecs: null }
           : row,
       ),
+    jobTrace: async (_project, _iid, job, onEvent, signal) => {
+      if (!user()) throw unauthorized();
+      const found = find(job);
+      if (!found) throw notFound();
+      await respond(null);
+      await traceJob(found, onEvent, signal);
+    },
     pipelineMrHead: (_project, iid) => {
       if (!user()) return Promise.reject(unauthorized());
       return iid === PIPELINE_MR ? respond(SHA_V3) : Promise.reject(notFound());
