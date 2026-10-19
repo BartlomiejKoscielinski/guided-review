@@ -3,6 +3,7 @@ import { IpcError } from '../errors';
 import type { Draft } from '../types/Draft';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { PublishOutcome } from '../types/PublishOutcome';
+import type { ApprovalScenario } from './approvals';
 import { stateOf, type MockSessionData } from './session-data';
 
 type PublishActions = Pick<IpcClient, 'draftsPublish' | 'gitlabForeignDrafts'>;
@@ -19,6 +20,12 @@ export interface PublishScenario {
   publishFails?: number[];
   /** Draft comments already in GitLab's own review (decision 8); 0 once a Publish sent them. */
   foreignDrafts?: number;
+  /**
+   * 1-based places in the session's drafts whose line is gone from the MR's new version
+   * (`mrChanged`, decision 10b): Publish makes them outdated and unticked and sends nothing for
+   * them; ticked again, they go out as general comments.
+   */
+  linesGone?: number[];
 }
 
 const invalid = (message: string) =>
@@ -32,7 +39,7 @@ const invalid = (message: string) =>
  */
 export function createPublishActions(
   store: MockSessionData,
-  scenario: PublishScenario,
+  scenario: PublishScenario & Pick<ApprovalScenario, 'mrChanged'>,
   user: () => GitlabUser | null,
   unauthorized: () => IpcError,
   respond: <T>(value: T) => Promise<T>,
@@ -56,7 +63,13 @@ export function createPublishActions(
       const draft = mine.find((d) => d.id === id);
       if (!draft || draft.publishedNoteId !== null) continue;
       const place = mine.indexOf(draft) + 1;
-      if (scenario.publishFails?.includes(place) && !failedOnce.has(id)) {
+      // Like the core's re-map to the MR's new version (decision 10b): a line comment whose line
+      // is gone is held back, outdated and unticked; an outdated one goes out without its line.
+      const gone = scenario.mrChanged === true && scenario.linesGone?.includes(place) === true;
+      if (gone && draft.position !== null && !draft.outdated) {
+        outcome.failed.push({ id, reason: LINE_GONE });
+        changed.set(id, { ...draft, outdated: true, include: false, error: LINE_GONE });
+      } else if (scenario.publishFails?.includes(place) && !failedOnce.has(id)) {
         failedOnce.add(id);
         outcome.failed.push({ id, reason: LINE_GONE });
         changed.set(id, { ...draft, error: LINE_GONE });
