@@ -142,14 +142,17 @@
 
 /* Check with Claude above the rows (M5 decision 12), then what the check is doing. */
 .check {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 14px;
 }
 
+/* The status region stays in the accessibility tree while empty (no display:none), so the lines
+   that appear in it are announced (WCAG 4.1.3); out of the flow it adds no gap next to the button. */
 .check .checkStatus:empty {
-  display: none;
+  position: absolute;
 }
 
 .checkLine {

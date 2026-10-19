@@ -23,6 +23,7 @@ import {
   protectedChanges,
   ruleViolations,
   tickProgress,
+  untouchedVitestFailures,
   verifySteps,
 } from './gate-lib.mjs';
 import { itemSlug } from './worktree-lib.mjs';
@@ -145,6 +146,22 @@ const verifyArgs = [
 ];
 const verifyStart = Date.now();
 const verify = run(process.execPath, verifyArgs, wt, { ...process.env, GR_PORT: port });
+// E24: Vitest timeouts only in files the item did not touch → re-run those files alone, once.
+const testLog = join(wt, '.verify', 'test.log');
+const rerun = verify.ok
+  ? null
+  : untouchedVitestFailures(
+      verify.out,
+      existsSync(testLog) ? readFileSync(testLog, 'utf8') : '',
+      files,
+    );
+if (rerun) {
+  const vitest = join(wt, 'node_modules', 'vitest', 'vitest.mjs');
+  const again = run(process.execPath, [vitest, 'run', ...rerun], wt);
+  verdict.verifyRerun = { files: rerun, ok: again.ok };
+  if (again.ok) verify.ok = true;
+  else verify.out += `\n--- re-run alone (E24) failed ---\n${tail(again.out)}`;
+}
 verdict.verifySecs = Math.round((Date.now() - verifyStart) / 1000);
 if (!check('verify', verify.ok, tail(verify.out))) finish();
 

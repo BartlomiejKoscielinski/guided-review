@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-18T18:51:35.020Z",
+  "updated": "2026-10-19T07:18:11.099Z",
   "items": [
     {
       "id": "F-11.1",
@@ -228,9 +228,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (a93eb68; commits 421d7b8 58b0531 362cf80 9e86162 d465348 90e801e): claude_thread_check (read-only Step analysis task, cache per head + thread set, validation), Check with Claude bar on S-05 Threads, chips 'Claude: <hint> in <sha7>', none/failure + Retry. Live check left: Check with Claude in tauri dev against the stand-in GitLab with an open thread written on an older version (real Claude run, chip, focus return, spinner).",
+      "lockSha": "ed42de6",
+      "tests": [
+        "src-tauri/tests/thread_check_task.rs",
+        "src/ipc/tauriThreadCheck.test.ts",
+        "src/ipc/mock/threadCheck.test.ts",
+        "src/screens/summary/ThreadCheck.test.tsx",
+        "tests/e2e/summary-f13-3.spec.ts"
+      ]
     },
     {
       "id": "F-14.1",
@@ -239,9 +247,18 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "af04ce5",
+      "tests": [
+        "src-tauri/tests/gitlab_approvals.rs",
+        "src/screens/summary/ApprovalTile.test.tsx",
+        "src/ipc/mock/approvalState.test.ts",
+        "src/ipc/tauriApprovalState.test.ts",
+        "tests/e2e/summary-f14-1.spec.ts"
+      ],
+      "forkSha": "d465348"
     },
     {
       "id": "F-14.2",
