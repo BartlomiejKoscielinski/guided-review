@@ -11,12 +11,14 @@ Locked tests (written from the spec; you may not change them): {{tests}}. If one
 
 How (CLAUDE.md "How to work" 3–5): UI against the mock backend first, data matching the mocks; Rust: core module with unit tests, then the command, `npm run gen:types`, the mock implementation and the client in both src/ipc/tauri.ts and src/ipc/mock/. Small commits.
 Done when: `{{verify}}` is green (run it exactly so); for a screen also the design-check structure mode of its S-xx is clean (.claude/skills/design-check/SKILL.md, against port {{port}}). Every change committed.
+Before the output (E26), split into clauses every sentence of the criterion, every decision the context or the plan row cites (D-xx, "decision 8"), every clause of the plan row and of an owner request in the history, and give each in "clauses" the file:line that meets it and the test that shows it; build any clause left without both before you hand in.
 "complete" is true only when the whole criterion text is met in code and tests; a part that needs a live check in tauri dev or the field makes it false with the reason in "partialReason".
 
 Output:
 ```json
 { "commits": ["abc1234"], "verify": "green", "designCheck": "clean | n/a | <issues>", "complete": true,
   "partialReason": null, "testDispute": null, "decisions": [], "playbookUsed": ["P-001"],
+  "clauses": [{ "clause": "", "where": "src/…:12", "test": "" }],
   "needsOwner": null, "notes": "" }
 ```
 

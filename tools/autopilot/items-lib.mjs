@@ -7,6 +7,16 @@
  */
 export const RESULTS = ['done', 'partial', 'live', 'blocked', 'needs-owner'];
 
+/**
+ * E25: the reviewer's decision on a test dispute, "accept" | "reject" | null. Reviews have answered
+ * a string and an object `{test, decision, why}` (F-11.3, F-12.5); both count.
+ */
+export function disputeDecision(review) {
+  const d = review?.testDispute;
+  if (d && typeof d === 'object') return d.decision ?? null;
+  return typeof d === 'string' ? d : null;
+}
+
 /** Higher is better for rates, lower for costs and defects. */
 export const METRICS = {
   gateFirstPass: { better: 'higher', of: (r) => (r.gateFirstPass ? 1 : 0) },
@@ -17,7 +27,7 @@ export const METRICS = {
   rounds: { better: 'lower', of: (r) => r.rounds ?? 0 },
   wallMin: { better: 'lower', of: (r) => r.wallMin ?? 0 },
   // E22: an accepted dispute means the locked tests were wrong.
-  disputes: { better: 'lower', of: (r) => (r.testDispute === 'accept' ? 1 : 0) },
+  disputes: { better: 'lower', of: (r) => (disputeDecision(r) === 'accept' ? 1 : 0) },
 };
 /** A change this much worse (relative; absolute for rates) is reverted. */
 const WORSE = 0.1;
@@ -90,7 +100,7 @@ export function buildRow({ item, run, result, verdicts, startedAt, endedAt, usag
     gates: gates.length,
     rounds: Object.keys(verdicts).filter((k) => /^fix-\d+$/.test(k)).length,
     findings,
-    testDispute: verdicts.review?.testDispute ?? null,
+    testDispute: disputeDecision(verdicts.review),
     decisions:
       (verdicts.impl?.decisions ?? []).length +
       (verdicts['impl-core']?.decisions ?? []).length +

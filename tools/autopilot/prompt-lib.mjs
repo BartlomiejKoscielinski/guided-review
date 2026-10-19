@@ -1,7 +1,7 @@
 // Autopilot role prompts (docs/process/AUTOPILOT.md §5): `_common.md` + the role file, every
 // `{{field}}` filled from the backlog, the run, the worktree and `.autopilot/items/<id>/`.
 // Pure functions; I/O in prompt.mjs.
-import { RESULTS } from './items-lib.mjs';
+import { RESULTS, disputeDecision } from './items-lib.mjs';
 import { existing, render } from './playbook-lib.mjs';
 import { AHEAD_PORT, AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
 
@@ -84,17 +84,20 @@ export function fixProblems({ review, gates }) {
   const out = (review?.findings ?? [])
     .filter((f) => f.severity === 'severe' || f.severity === 'normal')
     .map((f) => `- [${f.severity}] ${f.file}${f.line ? `:${f.line}` : ''} ${f.text}`);
-  if (review?.testDispute === 'accept') out.push(`- ${disputeVerdict(review, null)}`);
+  if (disputeDecision(review) === 'accept') out.push(`- ${disputeVerdict(review, null)}`);
   return out.join('\n');
 }
 
 /** The implementer's dispute (for the reviewer) or the reviewer's verdict on it (for a fix round). */
 function disputeVerdict(review, impl) {
-  const detail = review?.testDisputeDetail;
+  const obj =
+    review?.testDispute && typeof review.testDispute === 'object' ? review.testDispute : null;
+  const detail =
+    review?.testDisputeDetail ?? (obj?.test ? { test: obj.test, reason: obj.why } : null);
   const what = detail ? `${detail.test}: ${detail.reason}` : (impl?.testDispute ?? 'see review');
-  if (review?.testDispute === 'accept')
-    return `accepted test dispute (change only this test): ${what}`;
-  if (review?.testDispute === 'reject') return 'rejected by the reviewer: keep the locked tests';
+  const decision = disputeDecision(review);
+  if (decision === 'accept') return `accepted test dispute (change only this test): ${what}`;
+  if (decision === 'reject') return 'rejected by the reviewer: keep the locked tests';
   return 'none';
 }
 
