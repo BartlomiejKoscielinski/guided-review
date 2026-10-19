@@ -148,7 +148,7 @@ Rules for Claude Code:
 - [x] F-20.3 Run new pipeline asks for confirmation ("Run a new merge request pipeline on <sha>? Uses the MR's latest… (d8baf10, 20283d2, e646e23, af35e6a, fdc6e1c, f98002f, bf30b81, 18a9272, 7570b42)
 - [ ] F-20.4 Retry failed jobs (pipeline), Cancel pipeline (while running), Open in GitLab. — partial: autopilot (295cd39, 769b95b, b0773b5, 4c3bb94, 1a128ec, 165cf8f)
 - [ ] F-20.5 Selecting a job shows details: name, status, stage, duration, Retry/Cancel, Full log; the log tail with… — partial: autopilot (3a689a2, cb5dade, 855d619, 221c770, 6e96ece, 05c545a, afca83a, a104690)
-- [ ] F-20.6 Manual jobs show their description (when GitLab provides one) and editable variables ("Variables for this…
+- [ ] F-20.6 Manual jobs show their description (when GitLab provides one) and editable variables ("Variables for this… — partial: autopilot (065a008, 04303f9, cabaf59, 28c09ed, 9f29f7f)
 - [ ] F-20.7 Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by…
 - [ ] F-20.8 Successful jobs list artifacts with Download.
 - [ ] F-20.9 A retry that fails the same way says "Retried: failed again on the same test."
