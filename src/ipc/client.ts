@@ -19,6 +19,7 @@ import type { NewDraft } from './types/NewDraft';
 import type { NewMrDraft } from './types/NewMrDraft';
 import type { JobLogEvent } from './types/JobLogEvent';
 import type { JobRow } from './types/JobRow';
+import type { JobVariable } from './types/JobVariable';
 import type { PipelineHead } from './types/PipelineHead';
 import type { PipelineTab } from './types/PipelineTab';
 import type { StageColumn } from './types/StageColumn';
@@ -374,6 +375,13 @@ export interface IpcClient {
   jobRetry(project: string, iid: number, job: number): Promise<JobRow>;
   /** Cancels job `job` at once (F-20.2, decision 6); the row as GitLab now has it. */
   jobCancel(project: string, iid: number, job: number): Promise<JobRow>;
+  /**
+   * Plays manual job `job` with the variables for this run (F-20.6, decision 11); only the form's
+   * Run `<job>` calls it. After GitLab accepted it they are that job name's last values.
+   */
+  jobPlay(project: string, iid: number, job: number, vars: JobVariable[]): Promise<JobRow>;
+  /** The variables job `jobName` of `project` last ran with on this machine (F-20.6). */
+  jobVariablesGet(project: string, jobName: string): Promise<JobVariable[]>;
   /** The MR's full head SHA, read when Run new pipeline's confirmation opens (F-20.3). */
   pipelineMrHead(project: string, iid: number): Promise<string>;
   /** Starts a new merge request pipeline after the user confirmed; the new latest tab (F-20.3). */

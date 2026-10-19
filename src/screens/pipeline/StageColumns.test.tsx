@@ -76,6 +76,14 @@ const select = (name: string, label?: string) =>
   screen.getByRole('button', {
     name: label === undefined ? new RegExp(`^${escape(name)}, `) : `${name}, ${label}`,
   });
+/** A manual job row's own Run (F-20.2); the form's Run <job> in Job details (F-20.6) is another. */
+const rowRun = (name: string) => {
+  const found = screen
+    .getAllByRole('button', { name: `Run ${name}` })
+    .find((b) => b.closest('[data-testid="job-row"]') !== null);
+  if (!found) throw new Error(`no row Run for ${name}`);
+  return found;
+};
 const rowOf = (name: string) => {
   const found = select(name).closest('[data-testid="job-row"]');
   if (!(found instanceof HTMLElement)) throw new Error(`no row for ${name}`);
@@ -373,28 +381,31 @@ describe('S-08 selecting a job (F-20.2)', () => {
     await columns();
     const before = calls.length;
 
-    await user.click(screen.getByRole('button', { name: 'Run distribute:qa' }));
+    await user.click(rowRun('distribute:qa'));
 
     expect(select('distribute:qa', 'Manual')).toHaveAttribute('aria-pressed', 'true');
     expect(select('ui-tests:android')).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByRole('button', { name: 'Run distribute:qa' })).toBeInTheDocument();
+    expect(rowRun('distribute:qa')).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('alertdialog')).toBeNull();
-    expect(calls.slice(before).filter((c) => /^(job|gitlab)/.test(c))).toEqual([]);
+    // F-20.6: the form that opens reads the job name's saved variables; nothing goes to GitLab.
+    expect(calls.slice(before).filter((c) => /^(job|gitlab)/.test(c))).toEqual(['jobVariablesGet']);
   });
 
   it('F-20.2 Run does not call jobRetry, jobCancel or anything that plays a job, however often it is clicked', async () => {
     const user = userEvent.setup();
     const jobRetry = vi.fn<IpcClient['jobRetry']>();
     const jobCancel = vi.fn<IpcClient['jobCancel']>();
-    await openPipeline({ jobRetry, jobCancel });
+    const jobPlay = vi.fn<IpcClient['jobPlay']>();
+    await openPipeline({ jobRetry, jobCancel, jobPlay });
     await columns();
 
-    await user.click(screen.getByRole('button', { name: 'Run ui-tests:ios-device' }));
-    await user.click(screen.getByRole('button', { name: 'Run ui-tests:ios-device' }));
+    await user.click(rowRun('ui-tests:ios-device'));
+    await user.click(rowRun('ui-tests:ios-device'));
 
     expect(jobRetry).not.toHaveBeenCalled();
     expect(jobCancel).not.toHaveBeenCalled();
+    expect(jobPlay).not.toHaveBeenCalled();
     expect(select('ui-tests:ios-device')).toHaveAttribute('aria-pressed', 'true');
   });
 });

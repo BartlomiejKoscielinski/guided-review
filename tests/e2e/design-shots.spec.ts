@@ -593,6 +593,19 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    // S08-pipeline-manual-job.png: distribute:qa of #18342 selected with its row's Run (F-20.2):
+    // the manual-job form (F-20.6), no variables yet, Run distribute:qa and where it runs.
+    screen: 'S08',
+    state: 'pipeline-manual-job',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).click();
+      await page.getByText('Runs on', { exact: false }).waitFor();
+    },
+  },
+  {
     // S08-pipeline-running.png: the new pipeline #18351 after Run pipeline (F-20.3), running,
     // started by you just now, its build stage running and the manual jobs still manual;
     // build:android selected with its first two log lines streaming (F-20.5).

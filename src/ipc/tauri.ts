@@ -17,6 +17,7 @@ import type { Draft } from './types/Draft';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { JobLogEvent } from './types/JobLogEvent';
 import type { JobRow } from './types/JobRow';
+import type { JobVariable } from './types/JobVariable';
 import type { PipelineHead } from './types/PipelineHead';
 import type { PipelineTab } from './types/PipelineTab';
 import type { StageColumn } from './types/StageColumn';
@@ -215,6 +216,9 @@ export function createTauriClient(): IpcClient {
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),
     jobCancel: (project, iid, job) => call<JobRow>('job_cancel', { project, iid, job }),
+    jobPlay: (project, iid, job, vars) => call<JobRow>('job_play', { project, iid, job, vars }),
+    jobVariablesGet: (project, jobName) =>
+      call<JobVariable[]>('job_variables_get', { project, jobName }),
     pipelineMrHead: (project, iid) => call<string>('pipeline_mr_head', { project, iid }),
     pipelineRunMr: (project, iid) => call<PipelineTab>('pipeline_run_mr', { project, iid }),
     pipelineRetry: (project, iid, id) => call<PipelineHead>('pipeline_retry', { project, iid, id }),

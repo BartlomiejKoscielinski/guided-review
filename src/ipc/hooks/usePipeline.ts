@@ -8,6 +8,7 @@ import {
 import type { IpcError } from '../errors';
 import { useIpc } from '../IpcContext';
 import type { JobRow } from '../types/JobRow';
+import type { JobVariable } from '../types/JobVariable';
 import type { PipelineHead } from '../types/PipelineHead';
 import type { PipelineTab } from '../types/PipelineTab';
 import type { StageColumn } from '../types/StageColumn';
@@ -18,6 +19,8 @@ export const pipelineHeadKey = (project: string, iid: number, id: number) =>
   ['gitlab', 'pipeline', project, iid, id] as const;
 export const pipelineJobsKey = (project: string, iid: number, id: number) =>
   ['gitlab', 'pipeline-jobs', project, iid, id] as const;
+export const jobVariablesKey = (project: string, jobName: string) =>
+  ['job-variables', project, jobName] as const;
 
 /** How often an active pipeline and its jobs are read again (M6 decision 7). */
 export const PIPELINE_POLL_MS = 5_000;
@@ -97,6 +100,8 @@ export interface JobActions {
   retry: UseMutationResult<JobRow, IpcError, number>;
   /** Cancel job `id` at once. */
   cancel: UseMutationResult<JobRow, IpcError, number>;
+  /** Play manual job `id` with `vars` (F-20.6); sent only by the form's Run `<job>`. */
+  play: UseMutationResult<JobRow, IpcError, { id: number; vars: JobVariable[] }>;
 }
 
 /**
@@ -126,7 +131,30 @@ export function useJobActions(project: string, iid: number, pipeline: number): J
       settle(id, row);
     },
   });
-  return { retry, cancel };
+  const play = useMutation<JobRow, IpcError, { id: number; vars: JobVariable[] }>({
+    mutationFn: ({ id, vars }) => ipc.jobPlay(project, iid, id, vars),
+    onSuccess: (row, { id }) => {
+      settle(id, row);
+      void queryClient.invalidateQueries({ queryKey: jobVariablesKey(project, row.name) });
+    },
+  });
+  return { retry, cancel, play };
+}
+
+/**
+ * The variables job `jobName` of `project` last ran with on this machine (F-20.6), read when its
+ * form opens and never on a timer.
+ */
+export function useJobVariables(
+  project: string,
+  jobName: string,
+): UseQueryResult<JobVariable[], IpcError> {
+  const ipc = useIpc();
+  return useQuery<JobVariable[], IpcError>({
+    queryKey: jobVariablesKey(project, jobName),
+    queryFn: () => ipc.jobVariablesGet(project, jobName),
+    staleTime: 0,
+  });
 }
 
 export interface RunPipeline {

@@ -4,6 +4,7 @@ import type { IpcError } from '../../ipc/errors';
 import { useJobActions } from '../../ipc/hooks/usePipeline';
 import type { JobAction } from '../../ipc/types/JobAction';
 import type { JobRow } from '../../ipc/types/JobRow';
+import type { JobVariable } from '../../ipc/types/JobVariable';
 import type { StageColumn } from '../../ipc/types/StageColumn';
 import { JobDetails } from './JobDetails';
 import { StageColumns } from './StageColumns';
@@ -15,6 +16,8 @@ export interface PipelineJobsProps {
   iid: number;
   pipeline: number;
   jobs: UseQueryResult<StageColumn[], IpcError>;
+  /** The pipeline's head SHA (the manual-job form's "Runs on <sha> as you."). */
+  sha?: string | null;
   /** GitLab's 403 reason after a refused write (F-20.4, decision 9): Retry and Cancel are off. */
   refused?: string | null;
   onRefused?: (reason: string) => void;
@@ -25,7 +28,7 @@ export interface PipelineJobsProps {
  * they load, the error as an alert), the selected job (the first that did not pass when the
  * pipeline opens) and the row actions. Retry and Cancel act at once, without a confirmation;
  * Retry selects its row and the selection follows the new attempt by name; a manual job's Run
- * only selects the job (its form is F-20.6). A refused (403) Retry or Cancel disables them all
+ * only selects the job; its form's Run `<job>` plays it (F-20.6). A refused (403) Retry or Cancel disables them all
  * with GitLab's reason (decision 9). Below the columns, the selected job's details and log
  * (F-20.5), whose Retry job and Cancel job act like the row's buttons. Mount it with
  * `key={pipeline}`.
@@ -35,6 +38,7 @@ export function PipelineJobs({
   iid,
   pipeline,
   jobs,
+  sha = null,
   refused = null,
   onRefused,
 }: PipelineJobsProps) {
@@ -59,17 +63,13 @@ export function PipelineJobs({
 
   const shown = selectedJob(columns, picked);
 
-  const act = (row: JobRow, action: JobAction) => {
-    if (action !== 'cancel') setPicked(row.name);
-    if (action === 'run' || refused !== null) return;
+  /** Sends one job write with the row busy; a failure becomes the alert (and a 403 the refusal). */
+  const send = (row: JobRow, verb: string, write: () => Promise<JobRow>) => {
     setError(null);
     setBusy((ids) => new Set(ids).add(row.id));
-    const mutation = action === 'retry' ? actions.retry : actions.cancel;
-    mutation
-      .mutateAsync(row.id)
+    write()
       .catch((e: unknown) => {
         const reason = e instanceof Error ? e.message : String(e);
-        const verb = action === 'retry' ? 'retry' : 'cancel';
         setError(`Couldn't ${verb} the job. ${reason}`);
         const refusal = refusalOf(e);
         if (refusal !== null) onRefused?.(refusal);
@@ -81,6 +81,18 @@ export function PipelineJobs({
           return next;
         });
       });
+  };
+
+  const act = (row: JobRow, action: JobAction) => {
+    if (action !== 'cancel') setPicked(row.name);
+    if (action === 'run' || refused !== null) return;
+    const mutation = action === 'retry' ? actions.retry : actions.cancel;
+    send(row, action, () => mutation.mutateAsync(row.id));
+  };
+
+  const play = (row: JobRow, vars: JobVariable[]) => {
+    if (refused !== null || busy.has(row.id)) return;
+    send(row, 'run', () => actions.play.mutateAsync({ id: row.id, vars }));
   };
 
   return (
@@ -112,6 +124,10 @@ export function PipelineJobs({
           }}
           onCancel={() => {
             act(shown.row, 'cancel');
+          }}
+          sha={sha}
+          onPlay={(vars) => {
+            play(shown.row, vars);
           }}
           onOpenError={setError}
         />

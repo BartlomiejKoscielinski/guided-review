@@ -2,6 +2,7 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { JobRow } from '../types/JobRow';
+import type { JobVariable } from '../types/JobVariable';
 import type { PipelineHead } from '../types/PipelineHead';
 import type { PipelineState } from '../types/PipelineState';
 import type { PipelineTab } from '../types/PipelineTab';
@@ -26,11 +27,17 @@ type PipelineCommands =
   | 'pipelineJobs'
   | 'jobRetry'
   | 'jobCancel'
+  | 'jobPlay'
+  | 'jobVariablesGet'
   | 'pipelineMrHead'
   | 'pipelineRunMr'
   | 'pipelineRetry'
   | 'pipelineCancel'
   | 'jobTrace';
+
+/** GitLab's 400 for a play of a job that is not manual, in its own words. */
+const unplayable = () =>
+  new IpcError({ code: 'INVALID_INPUT', message: 'Unplayable Job', retryable: false });
 
 const notFound = () =>
   new IpcError({ code: 'GITLAB_NOT_FOUND', message: "GitLab didn't find it.", retryable: false });
@@ -50,7 +57,10 @@ const FIRST_ATTEMPT_ID = 9_000_000;
  * a running attempt with a new id and the pipeline reads Running; Cancel pipeline cancels every
  * running and waiting job and the pipeline reads Canceled; passed, skipped and manual jobs stay.
  * `jobTrace` (F-20.5): the log of any job of !482's pipelines (`pipelineLog.ts`); every row has
- * its page on the mock server as `webUrl`.
+ * its page on the mock server as `webUrl`. `jobPlay` (F-20.6): a manual job reads Waiting with
+ * Cancel and its variables become the last values of its project and job name (this client only);
+ * any other job is GitLab's 400, an unknown one its 404, and neither saves. `jobVariablesGet` reads
+ * the saved values (no GitLab call, so no account needed, like the core's store read).
  */
 export function createPipelineBackend(
   user: () => GitlabUser | null,
@@ -58,6 +68,10 @@ export function createPipelineBackend(
   respond: <T>(value: T) => Promise<T>,
 ): Pick<IpcClient, PipelineCommands> {
   const jobs = new Map<number, StageColumn[]>();
+  /** The last variables per `project` and job name, as `job_variables` keeps them. */
+  const lastVars = new Map<string, JobVariable[]>();
+  const varsKey = (project: string, name: string) => `${project}
+${name}`;
   let nextId = FIRST_ATTEMPT_ID;
   /** The fixture pipelines started relative to this, so a pipeline's start time never moves. */
   const loadedAt = new Date();
@@ -185,6 +199,26 @@ export function createPipelineBackend(
         action: jobAction('canceled'),
         durationSecs: null,
       })),
+    jobPlay: (project, _iid, job, vars) => {
+      if (!user()) return Promise.reject(unauthorized());
+      const found = find(job);
+      if (!found) return Promise.reject(notFound());
+      if (found.row.state !== 'manual') return Promise.reject(unplayable());
+      const row = change(job, (old) => ({
+        ...old,
+        state: 'waiting',
+        action: jobAction('waiting'),
+        durationSecs: null,
+      }));
+      if (!row) return Promise.reject(notFound());
+      lastVars.set(
+        varsKey(project, row.name),
+        vars.map((v) => ({ ...v })),
+      );
+      return respond({ ...row });
+    },
+    jobVariablesGet: (project, jobName) =>
+      respond((lastVars.get(varsKey(project, jobName)) ?? []).map((v) => ({ ...v }))),
     pipelineRetry: (_project, iid, id) =>
       actAll(iid, id, 'running', (row) => {
         if (row.state !== 'failed' && row.state !== 'failedAllowed' && row.state !== 'canceled') {

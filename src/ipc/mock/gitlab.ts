@@ -35,6 +35,8 @@ type GitlabClient = Pick<
   | 'pipelineJobs'
   | 'jobRetry'
   | 'jobCancel'
+  | 'jobPlay'
+  | 'jobVariablesGet'
   | 'pipelineMrHead'
   | 'pipelineRunMr'
   | 'pipelineRetry'

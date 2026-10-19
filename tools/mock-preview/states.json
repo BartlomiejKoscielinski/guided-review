@@ -33,6 +33,7 @@
   "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } },
   "S08-pipeline": { "mock": "Pipeline.dc.html", "state": {} },
   "S08-pipeline-confirm": { "mock": "Pipeline.dc.html", "state": { "confirm": true } },
+  "S08-pipeline-manual-job": { "mock": "Pipeline.dc.html", "state": { "job": "distribute:qa" } },
   "S08-pipeline-running": {
     "mock": "Pipeline.dc.html",
     "state": { "hasNew": true, "pipe": "p351", "job": "build:android", "tick": 1 }

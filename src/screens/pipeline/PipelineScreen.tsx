@@ -152,6 +152,7 @@ export function PipelineScreen() {
               iid={iid}
               pipeline={selected}
               jobs={jobs}
+              sha={tabs.find((t) => t.id === selected)?.sha ?? null}
               refused={refused}
               onRefused={setRefused}
             />

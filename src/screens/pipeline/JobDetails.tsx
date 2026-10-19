@@ -3,7 +3,9 @@ import { useJobLog } from '../../ipc/hooks/useJobLog';
 import type { JobRow } from '../../ipc/types/JobRow';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
+import type { JobVariable } from '../../ipc/types/JobVariable';
 import { JobLog } from './JobLog';
+import { ManualJobForm } from './ManualJobForm';
 import { JobSquare } from './JobSquare';
 import { JOB_LABEL, hasJobLog, jobDetailsMeta } from './pipelineText';
 import columnStyles from './StageColumns.module.css';
@@ -21,6 +23,10 @@ export interface JobDetailsProps {
   refused: string | null;
   onRetry: () => void;
   onCancel: () => void;
+  /** The pipeline's head SHA the manual-job form names; null while it is not known. */
+  sha: string | null;
+  /** The manual-job form's Run `<job>` (F-20.6), the only play. */
+  onPlay: (vars: JobVariable[]) => void;
   /** Full log could not open the browser. */
   onOpenError: (message: string) => void;
 }
@@ -29,7 +35,7 @@ export interface JobDetailsProps {
  * The job details panel of S-08 (F-20.5): the selected job's square, name, status tag and meta
  * line, Retry job / Cancel job (the row's action, decision 6) and Full log (the job's page in the
  * browser); below, the streamed log on the left and, while the job runs, the running note on the
- * right. A job that never ran has no log.
+ * right. A job that never ran has no log; a manual job shows its form instead (F-20.6).
  */
 export function JobDetails({
   project,
@@ -40,6 +46,8 @@ export function JobDetails({
   refused,
   onRetry,
   onCancel,
+  sha,
+  onPlay,
   onOpenError,
 }: JobDetailsProps) {
   const hasLog = hasJobLog(row.state);
@@ -83,6 +91,16 @@ export function JobDetails({
           </Button>
         </span>
       </div>
+      {row.state === 'manual' && (
+        <ManualJobForm
+          project={project}
+          jobName={row.name}
+          sha={sha}
+          busy={busy}
+          refused={refused}
+          onRun={onPlay}
+        />
+      )}
       {hasLog && (
         <div className={styles.body}>
           <div className={styles.logColumn}>
