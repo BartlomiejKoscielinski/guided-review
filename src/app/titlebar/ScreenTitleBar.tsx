@@ -3,6 +3,7 @@ import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
 import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
 import { BranchBlock } from './BranchBlock';
+import { ClaudeActivity } from './ClaudeActivity';
 import { ClaudeStatusChip } from './ClaudeStatusChip';
 import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
@@ -32,7 +33,8 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
           controls={
             <>
               <GitlabStatusControl />
-              {<ClaudeStatusChip />}
+              <ClaudeStatusChip />
+              <ClaudeActivity />
             </>
           }
         />

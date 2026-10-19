@@ -9,6 +9,7 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
@@ -181,6 +182,7 @@ export function createTauriClient(): IpcClient {
       }
     },
     claudeStatus: () => call<ClaudeStatus>('claude_status'),
+    claudeActivity: () => call<ClaudeActivity>('claude_activity'),
     claudeRefresh: () => call<ClaudeStatus>('claude_refresh'),
     claudeSignIn: () => call<undefined>('claude_sign_in'),
     claudePickExecutable: () => call<ClaudeStatus | null>('claude_pick_executable'),

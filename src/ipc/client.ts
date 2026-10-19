@@ -5,6 +5,7 @@ import type { ApprovalState } from './types/ApprovalState';
 import type { SummaryStatus } from './types/SummaryStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
@@ -297,6 +298,8 @@ export interface IpcClient {
   // Claude Code (F-16.4, F-18).
   /** The latest status: auth status, startup probe, last task result (F-18.1). */
   claudeStatus(): Promise<ClaudeStatus>;
+  /** Claude tasks running and waiting in the queue (F-18.8): the title bar spinner. */
+  claudeActivity(): Promise<ClaudeActivity>;
   /** Runs the startup checks again. */
   claudeRefresh(): Promise<ClaudeStatus>;
   /** Opens `claude auth login` in its own console window. */

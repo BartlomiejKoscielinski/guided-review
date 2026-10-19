@@ -1,5 +1,6 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
+import type { ClaudeActivity } from '../types/ClaudeActivity';
 import type { ClaudeStatus } from '../types/ClaudeStatus';
 import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
 import type { ModelInfo } from '../types/ModelInfo';
@@ -14,11 +15,14 @@ export interface ClaudeScenario {
   state?: ClaudeStatus['state'];
   /** Suggest fails like a usage limit (F-18.7) or a sign-in problem. */
   suggestFails?: 'limited' | 'notSignedIn';
+  /** Claude tasks running and waiting in the queue (F-18.8), added to the mock's own tasks. */
+  activity?: ClaudeActivity;
 }
 
 type ClaudeClient = Pick<
   IpcClient,
   | 'claudeStatus'
+  | 'claudeActivity'
   | 'claudeRefresh'
   | 'claudeSignIn'
   | 'claudePickExecutable'
@@ -88,6 +92,16 @@ export function createClaudeBackend(
     ...(scenario.state === 'limited' ? { resetsAt: resetAt() } : {}),
   };
   const cancelled = new Set<string>();
+  /** Mock Claude runs in progress, counted like the core's queue (F-18.8). */
+  let running = 0;
+  const busy = async (ms: number) => {
+    running += 1;
+    try {
+      await wait(ms);
+    } finally {
+      running -= 1;
+    }
+  };
   /** A usage limit or a sign-in problem, as the core's `after_task` updates the status. */
   const suggestFailure = (): IpcError | null => {
     if (scenario.suggestFails === 'limited') {
@@ -103,6 +117,11 @@ export function createClaudeBackend(
   };
   return {
     claudeStatus: () => respond(status),
+    claudeActivity: () =>
+      respond({
+        running: (scenario.activity?.running ?? 0) + running,
+        waiting: scenario.activity?.waiting ?? 0,
+      }),
     claudeRefresh: () => {
       if (status.state === 'notSignedIn') status = { ...status, state: 'signedIn' };
       return respond(status);
@@ -111,7 +130,7 @@ export function createClaudeBackend(
     claudePickExecutable: () => respond(status),
     claudeModels: () => respond(MOCK_MODELS),
     claudeCommitMessage: async (task) => {
-      await wait(1100);
+      await busy(1100);
       if (cancelled.has(task)) throw failure('CANCELLED', 'Cancelled.');
       const failed = suggestFailure();
       if (failed) throw failed;
@@ -128,7 +147,7 @@ export function createClaudeBackend(
       }
       onEvent({ kind: 'queued' });
       onEvent({ kind: 'started' });
-      await wait(MOCK_SUMMARY_MS);
+      await busy(MOCK_SUMMARY_MS);
       const failed = suggestFailure();
       if (failed) {
         onEvent({
@@ -153,7 +172,7 @@ export function createClaudeBackend(
         return respond(none);
       }
       onEvent({ kind: 'started' });
-      await wait(MOCK_THREAD_CHECK_MS);
+      await busy(MOCK_THREAD_CHECK_MS);
       const failed = suggestFailure();
       if (failed) {
         onEvent({

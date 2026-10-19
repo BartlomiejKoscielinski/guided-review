@@ -15,7 +15,7 @@ use crate::claude::commit_message::{self, Context};
 use crate::claude::discover::{ClaudeExecutable, DiscoveryInput, discover};
 use crate::claude::exec;
 use crate::claude::models::{self, ModelInfo};
-use crate::claude::queue::Queue;
+use crate::claude::queue::{ClaudeActivity, Queue};
 use crate::claude::runner;
 use crate::claude::status::{self, CheckInput, ClaudeStatus, StatusCell};
 use crate::claude::task_dir;
@@ -104,6 +104,12 @@ async fn run_check(claude: &ClaudeApp, store: &Store) -> AppResult<ClaudeStatus>
 #[tauri::command]
 pub fn claude_status(claude: State<'_, ClaudeApp>) -> ClaudeStatus {
     claude.status.get()
+}
+
+/// Claude tasks running and waiting (F-18.8); reads the queue only, no discovery.
+#[tauri::command]
+pub fn claude_activity(claude: State<'_, ClaudeApp>) -> ClaudeActivity {
+    claude.queue.activity().into()
 }
 
 /// Runs the checks again (after Sign in, Change, or on request).

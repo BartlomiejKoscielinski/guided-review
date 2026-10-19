@@ -200,6 +200,7 @@ pub fn run() {
             commands::os::rider_status,
             commands::os::rider_pick_executable,
             commands::claude::claude_status,
+            commands::claude::claude_activity,
             commands::claude::claude_refresh,
             commands::claude::claude_sign_in,
             commands::claude::claude_pick_executable,

@@ -6,7 +6,9 @@
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 
+use serde::Serialize;
 use tokio::sync::Notify;
+use ts_rs::TS;
 
 use super::error::ClaudeError;
 use crate::os::process::Cancel;
@@ -25,6 +27,25 @@ pub enum Priority {
 impl Priority {
     pub const fn is_background(self) -> bool {
         !matches!(self, Self::Interactive)
+    }
+}
+
+/// Claude tasks running and waiting in the queue: the title bar spinner (F-18.8).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct ClaudeActivity {
+    pub running: u32,
+    pub waiting: u32,
+}
+
+impl From<(usize, usize)> for ClaudeActivity {
+    fn from((running, waiting): (usize, usize)) -> Self {
+        let n = |v: usize| u32::try_from(v).unwrap_or(u32::MAX);
+        Self {
+            running: n(running),
+            waiting: n(waiting),
+        }
     }
 }
 
@@ -55,6 +76,23 @@ impl Drop for Permit {
             s.running = s.running.saturating_sub(1);
         }
         self.queue.notify.notify_waiters();
+    }
+}
+
+/// A place in the waiting set; dropping it (cancel, or a dropped `acquire`) leaves the queue.
+struct Waiting<'a> {
+    queue: &'a Queue,
+    key: Option<(Priority, u64)>,
+}
+
+impl Drop for Waiting<'_> {
+    fn drop(&mut self) {
+        if let Some(key) = self.key.take() {
+            if let Ok(mut s) = self.queue.state.lock() {
+                s.waiting.remove(&key);
+            }
+            self.queue.notify.notify_waiters();
+        }
     }
 }
 
@@ -98,6 +136,14 @@ impl Queue {
         self.state.lock().map(|s| s.paused).unwrap_or(false)
     }
 
+    /// `(running, waiting)` for the title bar spinner (F-18.8).
+    pub fn activity(&self) -> (usize, usize) {
+        self.state
+            .lock()
+            .map(|s| (s.running, s.waiting.len()))
+            .unwrap_or((0, 0))
+    }
+
     /// Waits for a slot. Cancelling while waiting returns `Cancelled`.
     pub async fn acquire(
         &self,
@@ -114,6 +160,11 @@ impl Queue {
             s.waiting.insert(key);
             key
         };
+        // A dropped `acquire` future must not stay counted as waiting (F-18.8).
+        let mut waiting = Waiting {
+            queue: self,
+            key: Some(key),
+        };
         loop {
             let notified = self.notify.notified();
             tokio::pin!(notified);
@@ -127,6 +178,7 @@ impl Queue {
                 let first = s.waiting.iter().find(|k| eligible(k)).copied();
                 if s.running < s.max && first == Some(key) {
                     s.waiting.remove(&key);
+                    waiting.key = None;
                     s.running += 1;
                     return Ok(Permit {
                         queue: self.clone(),
@@ -136,10 +188,7 @@ impl Queue {
             tokio::select! {
                 () = &mut notified => {}
                 () = cancel.cancelled() => {
-                    if let Ok(mut s) = self.state.lock() {
-                        s.waiting.remove(&key);
-                    }
-                    self.notify.notify_waiters();
+                    drop(waiting);
                     return Err(ClaudeError::Cancelled);
                 }
             }
@@ -191,6 +240,22 @@ mod tests {
         assert_eq!(queue.activity(), (1, 1));
         cancel.cancel();
         assert!(waiter.await.unwrap().is_err());
+        assert_eq!(queue.activity(), (1, 0));
+    }
+
+    #[tokio::test]
+    async fn f18_8_a_dropped_acquire_is_no_longer_counted() {
+        let queue = Queue::new(1);
+        let _busy = queue
+            .acquire(Priority::Other, &Cancel::new())
+            .await
+            .unwrap();
+        let waited = tokio::time::timeout(
+            Duration::from_millis(20),
+            queue.acquire(Priority::Other, &Cancel::new()),
+        )
+        .await;
+        assert!(waited.is_err());
         assert_eq!(queue.activity(), (1, 0));
     }
 
