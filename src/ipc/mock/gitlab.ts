@@ -6,6 +6,7 @@ import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
 import { createApprovalActions, type ApprovalScenario } from './approvals';
 import type { MockSessionData } from './session-data';
+import { createPipelineBackend } from './pipeline';
 import { createPublishActions, type PublishScenario } from './publish';
 import { createThreadActions } from './threads';
 
@@ -28,6 +29,8 @@ type GitlabClient = Pick<
   | 'gitlabUnapprove'
   | 'gitlabResolve'
   | 'gitlabReply'
+  | 'pipelineList'
+  | 'pipelineGet'
   | 'draftsPublish'
   | 'gitlabForeignDrafts'
 >;
@@ -251,5 +254,6 @@ export function createGitlabBackend(
     ...createThreadActions(store, signedIn, addToken, respond),
     ...createApprovalActions(store, scenario, signedIn, addToken, respond),
     ...createPublishActions(store, scenario, signedIn, addToken, respond),
+    ...createPipelineBackend(signedIn, addToken, respond),
   };
 }

@@ -1,0 +1,211 @@
+/* S-08 Pipeline (Pipeline.dc.html): head, pipeline tabs, notes. */
+.screen {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  padding: 26px 32px 18px;
+}
+
+.headLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 0.95;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  color: var(--ink);
+  background: var(--ring-2);
+}
+
+.status-passed {
+  background: var(--green);
+}
+
+.status-failed {
+  background: var(--orange);
+}
+
+.status-running {
+  background: var(--blue);
+}
+
+/* The neutral states sit on the dark fill: light text keeps the word readable (WCAG AA). */
+.status-waiting,
+.status-canceled,
+.status-skipped,
+.status-manual {
+  color: var(--text-secondary);
+}
+
+.allowed {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  color: var(--orange);
+  box-shadow: inset 0 0 0 2px var(--orange);
+}
+
+.meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.metaNum {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.metaSha {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--yellow);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tabs {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 32px 18px;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  cursor: pointer;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+}
+
+.tabOn {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--ring);
+}
+
+.dot-passed {
+  background: var(--green);
+}
+
+.dot-failed {
+  background: var(--orange);
+}
+
+.dot-running {
+  background: var(--blue);
+}
+
+.dot-canceled {
+  background: var(--ring-2);
+}
+
+.tabNum {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.tabSub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.tabOn .tabSub {
+  color: var(--ink);
+}
+
+.note {
+  margin: 0;
+  padding: 0 32px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.error {
+  margin: 0;
+  padding: 0 32px;
+  font-size: 14px;
+  color: var(--orange);
+}

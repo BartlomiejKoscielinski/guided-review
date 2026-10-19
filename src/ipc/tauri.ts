@@ -15,6 +15,8 @@ import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { PublishOutcome } from './types/PublishOutcome';
+import type { PipelineHead } from './types/PipelineHead';
+import type { PipelineTab } from './types/PipelineTab';
 import type { PlanView } from './types/PlanView';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
@@ -204,6 +206,8 @@ export function createTauriClient(): IpcClient {
     gitlabReply: (session, discussion, body) =>
       call<undefined>('gitlab_reply', { session, discussion, body }),
     gitlabForeignDrafts: (session) => call<number>('gitlab_foreign_drafts', { session }),
+    pipelineList: (project, iid) => call<PipelineTab[]>('pipeline_list', { project, iid }),
+    pipelineGet: (project, iid, id) => call<PipelineHead>('pipeline_get', { project, iid, id }),
     ...createTauriWindowControls(),
   };
 }

@@ -17,6 +17,8 @@ import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { NewMrDraft } from './types/NewMrDraft';
+import type { PipelineHead } from './types/PipelineHead';
+import type { PipelineTab } from './types/PipelineTab';
 import type { PlanView } from './types/PlanView';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
@@ -357,6 +359,12 @@ export interface IpcClient {
    * too (F-12.5, M5 decision 8); read only. Never called on a restored start (F-30.4).
    */
   gitlabForeignDrafts(sessionId: string): Promise<number>;
+
+  // S-08 Pipeline (F-20), read only. Never called on a restored start (F-30.4).
+  /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */
+  pipelineList(project: string, iid: number): Promise<PipelineTab[]>;
+  /** The status block and meta line of pipeline `id` of the MR (F-20.1). */
+  pipelineGet(project: string, iid: number, id: number): Promise<PipelineHead>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

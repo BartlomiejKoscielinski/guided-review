@@ -564,6 +564,18 @@ const SHOTS: Shot[] = [
       await page.getByText('Created').waitFor();
     },
   },
+  {
+    // S08-pipeline.png: !482's newest pipeline (#18342, Passed, 1 allowed failure), opened from
+    // the plan's pipeline link (F-20.1).
+    screen: 'S08',
+    state: 'pipeline',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByTestId('pipeline-meta').waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

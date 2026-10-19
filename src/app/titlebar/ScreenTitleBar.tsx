@@ -8,6 +8,7 @@ import { ClaudeStatusChip } from './ClaudeStatusChip';
 import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
 import { GitlabStatusControl } from './GitlabStatusControl';
+import { PipelineContext } from './PipelineContext';
 import { PlanContext } from './PlanContext';
 import { PlanStatus } from './PlanStatus';
 import { PLACEHOLDER } from './placeholders';
@@ -63,7 +64,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-07':
       return <TitleBar context={<SettingsContext />} />;
     case 'S-08':
-      return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
+      return <TitleBar context={<PipelineContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-09':
       return (
         <TitleBar

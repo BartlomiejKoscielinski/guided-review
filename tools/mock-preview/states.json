@@ -30,5 +30,6 @@
   "S07-settings-integrations": { "mock": "Settings.dc.html", "state": { "section": "integrations" } },
   "S07-settings-notifications": { "mock": "Settings.dc.html", "state": { "section": "notifications" } },
   "S07-settings-rules": { "mock": "Settings.dc.html", "state": { "section": "rules" } },
-  "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } }
+  "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } },
+  "S08-pipeline": { "mock": "Pipeline.dc.html", "state": {} }
 }
