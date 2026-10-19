@@ -1,9 +1,11 @@
 import { usePipelineActions } from '../../ipc/hooks/usePipelineActions';
+import { useJobExplain } from '../../ipc/hooks/useJobExplain';
 import { useJobLog } from '../../ipc/hooks/useJobLog';
 import type { JobRow } from '../../ipc/types/JobRow';
 import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import type { JobVariable } from '../../ipc/types/JobVariable';
+import { ExplainFailure } from './ExplainFailure';
 import { JobLog } from './JobLog';
 import { ManualJobForm } from './ManualJobForm';
 import { JobSquare } from './JobSquare';
@@ -29,13 +31,16 @@ export interface JobDetailsProps {
   onPlay: (vars: JobVariable[]) => void;
   /** Full log could not open the browser. */
   onOpenError: (message: string) => void;
+  /** An Explain failure `pipeline #N` chip selects that pipeline's tab (F-20.7). */
+  onSelectPipeline?: (number: number) => void;
 }
 
 /**
  * The job details panel of S-08 (F-20.5): the selected job's square, name, status tag and meta
  * line, Retry job / Cancel job (the row's action, decision 6) and Full log (the job's page in the
  * browser); below, the streamed log on the left and, while the job runs, the running note on the
- * right. A job that never ran has no log; a manual job shows its form instead (F-20.6).
+ * right. A job that never ran has no log; a manual job shows its form instead (F-20.6). A failed
+ * job (an allowed failure too) shows "Why it failed" with Explain failure on the right (F-20.7).
  */
 export function JobDetails({
   project,
@@ -49,10 +54,15 @@ export function JobDetails({
   sha,
   onPlay,
   onOpenError,
+  onSelectPipeline = () => undefined,
 }: JobDetailsProps) {
   const hasLog = hasJobLog(row.state);
   const log = useJobLog(project, iid, hasLog ? row.id : null);
   const { open } = usePipelineActions(project, iid);
+  const explain = useJobExplain(project, iid, row.id);
+  // The panel keeps one alert: once Explain failure ran, its outcome is the live region and a
+  // log that couldn't be read stays on screen as a status (F-20.7).
+  const explained = explain.running || explain.failed || explain.result !== undefined;
   const running = row.state === 'running';
   const off = busy || refused !== null;
   const tip = refused ?? undefined;
@@ -105,7 +115,7 @@ export function JobDetails({
         <div className={styles.body}>
           <div className={styles.logColumn}>
             {log.error !== null && (
-              <p role="alert" className={styles.alert}>
+              <p role={explained ? 'status' : 'alert'} className={styles.alert}>
                 {log.error}
               </p>
             )}
@@ -122,6 +132,9 @@ export function JobDetails({
                 <span className={styles.runningDot} aria-hidden="true" />
                 Running. The log streams on the left.
               </span>
+            )}
+            {(row.state === 'failed' || row.state === 'failedAllowed') && (
+              <ExplainFailure iid={iid} explain={explain} onSelectPipeline={onSelectPipeline} />
             )}
           </div>
         </div>

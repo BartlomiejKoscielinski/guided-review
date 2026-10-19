@@ -20,6 +20,7 @@ import {
 } from './fixtures/pipeline';
 import { jobPage } from './fixtures/pipelineLog';
 import { type FoundJob, traceJob } from './pipelineLog';
+import { createExplainBackend } from './pipelineExplain';
 
 type PipelineCommands =
   | 'pipelineList'
@@ -33,7 +34,8 @@ type PipelineCommands =
   | 'pipelineRunMr'
   | 'pipelineRetry'
   | 'pipelineCancel'
-  | 'jobTrace';
+  | 'jobTrace'
+  | 'jobExplain';
 
 /** GitLab's 400 for a play of a job that is not manual, in its own words. */
 const unplayable = () =>
@@ -61,6 +63,7 @@ const FIRST_ATTEMPT_ID = 9_000_000;
  * Cancel and its variables become the last values of its project and job name (this client only);
  * any other job is GitLab's 400, an unknown one its 404, and neither saves. `jobVariablesGet` reads
  * the saved values (no GitLab call, so no account needed, like the core's store read).
+ * `jobExplain` (F-20.7): `pipelineExplain.ts`.
  */
 export function createPipelineBackend(
   user: () => GitlabUser | null,
@@ -164,6 +167,7 @@ ${name}`;
   };
 
   return {
+    ...createExplainBackend(user, unauthorized, notFound, find),
     pipelineList: (_project, iid) => {
       if (!user()) return Promise.reject(unauthorized());
       return respond(tabsOf(iid));

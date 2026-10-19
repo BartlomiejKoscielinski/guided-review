@@ -43,6 +43,8 @@ import type { CommitRange } from './types/CommitRange';
 import type { DetectedSource } from './types/DetectedSource';
 import type { LocalScope } from './types/LocalScope';
 import type { OpenedSession } from './types/OpenedSession';
+import type { JobExplainEvent } from './types/JobExplainEvent';
+import type { JobExplanation } from './types/JobExplanation';
 import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
@@ -390,6 +392,18 @@ export interface IpcClient {
   pipelineRetry(project: string, iid: number, id: number): Promise<PipelineHead>;
   /** Cancel pipeline `id` at once (F-20.4); its head as it now is. */
   pipelineCancel(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /**
+   * Explain failure of failed job `job` (F-20.7, M6 decisions 12 and 14), only on its click: the
+   * review worktree is prepared (`preparing`), then Claude reads the log, the test report, the
+   * MR diff and the MR's pipelines (`reading`), then `done` or `failed`. Nothing is posted; a
+   * repeat for the same job comes from the cache.
+   */
+  jobExplain(
+    project: string,
+    iid: number,
+    job: number,
+    onEvent: (event: JobExplainEvent) => void,
+  ): Promise<JobExplanation>;
   /**
    * The log of job `job` (F-20.5, decision 10): `onEvent` gets the whole log first (`replace`),
    * then only new lines while the job runs (re-read every 3 s); settles when the stream ends

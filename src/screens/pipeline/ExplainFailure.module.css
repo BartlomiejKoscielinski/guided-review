@@ -1,0 +1,172 @@
+/* S-08 "Why it failed" (Pipeline.dc.html, M6 decision 14). */
+.why {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.idle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.hint {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.running {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--purple-text-2);
+}
+
+.spinner {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* The verdict word on its color (decision 14). */
+.verdict {
+  align-self: flex-start;
+  padding: 2px 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.causedByMr {
+  background: var(--orange);
+}
+
+.alreadyFixed {
+  background: var(--green);
+}
+
+.unrelated,
+.flaky {
+  background: var(--blue);
+}
+
+.unknown {
+  background: var(--text-muted);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 2px 7px;
+  border: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text);
+  background: var(--raised);
+}
+
+.link {
+  cursor: pointer;
+}
+
+.link:hover {
+  background: var(--raised-2);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg-sunken);
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.commentText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.add {
+  align-self: flex-start;
+}
+
+.drafted {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--yellow);
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--orange-text);
+}

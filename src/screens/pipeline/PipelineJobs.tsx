@@ -21,6 +21,8 @@ export interface PipelineJobsProps {
   /** GitLab's 403 reason after a refused write (F-20.4, decision 9): Retry and Cancel are off. */
   refused?: string | null;
   onRefused?: (reason: string) => void;
+  /** An Explain failure `pipeline #N` chip selects that pipeline's tab (F-20.7). */
+  onSelectPipeline?: (number: number) => void;
 }
 
 /**
@@ -41,6 +43,7 @@ export function PipelineJobs({
   sha = null,
   refused = null,
   onRefused,
+  onSelectPipeline,
 }: PipelineJobsProps) {
   const actions = useJobActions(project, iid, pipeline);
   const [picked, setPicked] = useState<string | null>(null);
@@ -130,6 +133,7 @@ export function PipelineJobs({
             play(shown.row, vars);
           }}
           onOpenError={setError}
+          onSelectPipeline={onSelectPipeline}
         />
       )}
     </>

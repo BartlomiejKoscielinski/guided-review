@@ -15,6 +15,8 @@ import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { PublishOutcome } from './types/PublishOutcome';
+import type { JobExplainEvent } from './types/JobExplainEvent';
+import type { JobExplanation } from './types/JobExplanation';
 import type { JobLogEvent } from './types/JobLogEvent';
 import type { JobRow } from './types/JobRow';
 import type { JobVariable } from './types/JobVariable';
@@ -224,6 +226,11 @@ export function createTauriClient(): IpcClient {
     pipelineRetry: (project, iid, id) => call<PipelineHead>('pipeline_retry', { project, iid, id }),
     pipelineCancel: (project, iid, id) =>
       call<PipelineHead>('pipeline_cancel', { project, iid, id }),
+    jobExplain: (project, iid, job, onEvent) => {
+      const ch = new Channel<JobExplainEvent>();
+      ch.onmessage = onEvent;
+      return call<JobExplanation>('job_explain', { project, iid, job, ch });
+    },
     jobTrace: async (project, iid, job, onEvent, signal) => {
       if (signal?.aborted) return;
       const task = crypto.randomUUID();

@@ -155,6 +155,10 @@ export function PipelineScreen() {
               sha={tabs.find((t) => t.id === selected)?.sha ?? null}
               refused={refused}
               onRefused={setRefused}
+              onSelectPipeline={(number) => {
+                const tab = tabs.find((t) => t.number === number);
+                if (tab) setPicked(tab.id);
+              }}
             />
           )}
         </>
