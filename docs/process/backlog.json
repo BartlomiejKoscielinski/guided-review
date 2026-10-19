@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T11:43:11.302Z",
+  "updated": "2026-10-19T11:46:45.997Z",
   "items": [
     {
       "id": "F-11.1",
@@ -133,7 +133,7 @@
       "deps": [],
       "status": "live",
       "attempts": 2,
-      "note": "Merged acb86e8. Built: decision 10b re-map to the newer MR version (outdated drafts unticked, sent as general comment with file:line quoted), restored-start foreign-drafts check, stale-note refs (migration 010). Left: live check on the stand-in GitLab 17.11.7 (re-mapped positions, GET versions, DELETE draft_notes/:id, git fetch origin <sha>) and in the real app.",
+      "note": "Merged acb86e8. Live 2026-10-19: plain Publish in one batch works on the stand-in (MR !5). Still unchecked live: decision 10b re-map to a newer MR version (outdated drafts, GET versions, DELETE draft_notes/:id, git fetch origin <sha>), summary comment in the batch, restored-start foreign-drafts check. Needs a sandbox MR pushed after drafts were written.",
       "lockSha": "fdaf618",
       "tests": [
         "src-tauri/tests/publish_drafts.rs",
@@ -303,7 +303,7 @@
       "title": "While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chi…",
       "kind": "mixed",
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 1,
       "note": "Merged 92ca577. Built: claude_activity command (queue counts), useClaudeActivity poll 1 s, purple spinner right of the Claude status chip (S-01) and of every model chip (S-02..S-11 except S-07), reduced motion stops it. Left: live check in tauri dev (spinner visible and spinning while a Claude task runs).",
       "lockSha": "998a3c2",
