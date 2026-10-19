@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T09:57:01.142Z",
+  "updated": "2026-10-19T11:04:23.900Z",
   "items": [
     {
       "id": "F-11.1",
@@ -131,9 +131,9 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 1,
-      "note": "Merged 5be1992. Open: (1) decision 10b re-map not built: positions are not moved to a newer MR version, drafts.outdated is never set, a ticked outdated draft is not sent as a general comment with file:line quoted (verify the re-map on the stand-in first); (2) review normal: on a restored S-05 Publish should re-check GitLab's own drafts (seenForeign: foreign.data ?? 0), blocked by locked MrSummaryPublish.test.tsx:509; (3) DELETE draft_notes/:id and GET versions are marked verify on 17.11.7; (4) not tried in the real app.",
+      "status": "live",
+      "attempts": 2,
+      "note": "Merged acb86e8. Built: decision 10b re-map to the newer MR version (outdated drafts unticked, sent as general comment with file:line quoted), restored-start foreign-drafts check, stale-note refs (migration 010). Left: live check on the stand-in GitLab 17.11.7 (re-mapped positions, GET versions, DELETE draft_notes/:id, git fetch origin <sha>) and in the real app.",
       "lockSha": "fdaf618",
       "tests": [
         "src-tauri/tests/publish_drafts.rs",
@@ -143,7 +143,8 @@
         "tests/e2e/summary-f12-5.spec.ts"
       ],
       "disputes": [
-        "src-tauri/tests/publish_drafts.rs@a020f7b"
+        "src-tauri/tests/publish_drafts.rs@a020f7b",
+        "src/screens/summary/MrSummaryPublish.test.tsx@338533d"
       ]
     },
     {
@@ -302,9 +303,17 @@
       "title": "While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chi…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "cb6a077",
+      "tests": [
+        "src/app/titlebar/ClaudeActivity.test.tsx",
+        "src/ipc/mock/claudeActivity.test.ts",
+        "tests/e2e/titlebar-f18-8.spec.ts",
+        "src/app/shell.test.tsx"
+      ],
+      "forkSha": "6421a70"
     }
   ]
 }
