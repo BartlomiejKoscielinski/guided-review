@@ -373,6 +373,10 @@ export interface IpcClient {
   jobRetry(project: string, iid: number, job: number): Promise<JobRow>;
   /** Cancels job `job` at once (F-20.2, decision 6); the row as GitLab now has it. */
   jobCancel(project: string, iid: number, job: number): Promise<JobRow>;
+  /** The MR's full head SHA, read when Run new pipeline's confirmation opens (F-20.3). */
+  pipelineMrHead(project: string, iid: number): Promise<string>;
+  /** Starts a new merge request pipeline after the user confirmed; the new latest tab (F-20.3). */
+  pipelineRunMr(project: string, iid: number): Promise<PipelineTab>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

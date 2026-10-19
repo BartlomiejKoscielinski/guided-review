@@ -128,3 +128,33 @@ export function useJobActions(project: string, iid: number, pipeline: number): J
   });
   return { retry, cancel };
 }
+
+export interface RunPipeline {
+  /** Reads the MR's head SHA the confirmation names (F-20.3); read only, on each opening. */
+  head: UseMutationResult<string, IpcError>;
+  /** Starts a new merge request pipeline; sent only by the confirmation's Run pipeline. */
+  run: UseMutationResult<PipelineTab, IpcError>;
+}
+
+/**
+ * Run new pipeline (F-20.3): the head SHA for the confirmation, and the one run. GitLab's new
+ * pipeline becomes the cached list's first, latest tab at once; then the list is read again.
+ */
+export function useRunPipeline(project: string, iid: number): RunPipeline {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  const head = useMutation<string, IpcError>({
+    mutationFn: () => ipc.pipelineMrHead(project, iid),
+  });
+  const run = useMutation<PipelineTab, IpcError>({
+    mutationFn: () => ipc.pipelineRunMr(project, iid),
+    onSuccess: (tab) => {
+      queryClient.setQueryData<PipelineTab[]>(pipelineListKey(project, iid), (tabs) => [
+        tab,
+        ...(tabs ?? []).filter((t) => t.id !== tab.id).map((t) => ({ ...t, latest: false })),
+      ]);
+      void queryClient.invalidateQueries({ queryKey: pipelineListKey(project, iid) });
+    },
+  });
+  return { head, run };
+}

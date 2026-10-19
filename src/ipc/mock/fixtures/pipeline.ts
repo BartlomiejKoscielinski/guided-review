@@ -23,7 +23,8 @@ interface MockPipeline {
 
 /**
  * !482's pipelines as Pipeline.dc.html lists them, newest first (its #18351 is the new pipeline
- * of F-20.3). #18320 has no duration: "canceled by a newer push" is not data GitLab's REST gives.
+ * of F-20.3, `newPipeline…` below). #18320 has no duration: "canceled by a newer push" is not
+ * data GitLab's REST gives.
  */
 const PIPELINES: MockPipeline[] = [
   {
@@ -147,6 +148,52 @@ export function pipelineColumns(id: number): StageColumn[] | null {
       state,
       action: jobAction(state),
       durationSecs: ran ? job.secs : null,
+    };
+    const last = columns[columns.length - 1];
+    if (last?.name === job.stage) last.jobs.push(row);
+    else columns.push({ name: job.stage, jobs: [row] });
+  });
+  return columns;
+}
+
+/** The pipeline F-20.3's Run new pipeline starts on !482 (Pipeline.dc.html's #18351). */
+export const NEW_PIPELINE = 18351;
+
+/** The head of the new pipeline, run at `ranAt` by the signed-in user `author`. */
+export function newPipelineHead(ranAt: Date, author: string | null): PipelineHead {
+  return {
+    status: 'running',
+    allowedFailures: 0,
+    number: NEW_PIPELINE,
+    kind: 'Merge request pipeline',
+    sha: SHA_V3,
+    version: 3,
+    author,
+    startedByMe: true,
+    startedAt: ranAt.toISOString(),
+    durationSecs: null,
+  };
+}
+
+/**
+ * The jobs of the new pipeline (Pipeline.dc.html's p351): the build stage runs, the later stages
+ * wait, and the manual jobs stay manual. Ids `<pipeline><index>` like the others.
+ */
+export function newPipelineColumns(): StageColumn[] {
+  const columns: StageColumn[] = [];
+  JOBS.forEach((job, index) => {
+    const state: JobState =
+      job.stage === 'build'
+        ? 'running'
+        : job.name === 'ui-tests:ios-device' || job.name === 'distribute:qa'
+          ? 'manual'
+          : 'waiting';
+    const row: JobRow = {
+      id: NEW_PIPELINE * 100 + index + 1,
+      name: job.name,
+      state,
+      action: jobAction(state),
+      durationSecs: null,
     };
     const last = columns[columns.length - 1];
     if (last?.name === job.stage) last.jobs.push(row);

@@ -214,6 +214,8 @@ export function createTauriClient(): IpcClient {
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),
     jobCancel: (project, iid, job) => call<JobRow>('job_cancel', { project, iid, job }),
+    pipelineMrHead: (project, iid) => call<string>('pipeline_mr_head', { project, iid }),
+    pipelineRunMr: (project, iid) => call<PipelineTab>('pipeline_run_mr', { project, iid }),
     ...createTauriWindowControls(),
   };
 }

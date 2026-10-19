@@ -2,16 +2,28 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { JobRow } from '../types/JobRow';
+import type { PipelineTab } from '../types/PipelineTab';
 import type { StageColumn } from '../types/StageColumn';
 import {
+  NEW_PIPELINE,
   PIPELINE_MR,
+  SHA_V3,
   jobAction,
+  newPipelineColumns,
+  newPipelineHead,
   pipelineColumns,
   pipelineHead,
   pipelineTabs,
 } from './fixtures/pipeline';
 
-type PipelineCommands = 'pipelineList' | 'pipelineGet' | 'pipelineJobs' | 'jobRetry' | 'jobCancel';
+type PipelineCommands =
+  | 'pipelineList'
+  | 'pipelineGet'
+  | 'pipelineJobs'
+  | 'jobRetry'
+  | 'jobCancel'
+  | 'pipelineMrHead'
+  | 'pipelineRunMr';
 
 const notFound = () =>
   new IpcError({ code: 'GITLAB_NOT_FOUND', message: "GitLab didn't find it.", retryable: false });
@@ -24,7 +36,9 @@ const FIRST_ATTEMPT_ID = 9_000_000;
  * `commands/pipeline.rs` answers them: no GitLab account first, then the data of
  * `fixtures/pipeline.ts`; an unknown pipeline or job is GitLab's 404. Retry and Cancel change
  * this client's copy of the jobs only: a retry puts a running attempt with a new id in the old
- * row's place, a cancel leaves the row canceled.
+ * row's place, a cancel leaves the row canceled. `pipelineMrHead` and `pipelineRunMr` (F-20.3):
+ * !482's head is version 3's SHA; a run adds #18351 (`fixtures/pipeline.ts`) as the latest
+ * pipeline of this client, once; any other MR is GitLab's 404.
  */
 export function createPipelineBackend(
   user: () => GitlabUser | null,
@@ -33,16 +47,28 @@ export function createPipelineBackend(
 ): Pick<IpcClient, PipelineCommands> {
   const jobs = new Map<number, StageColumn[]>();
   let nextId = FIRST_ATTEMPT_ID;
+  /** When Run new pipeline started #18351; null before. */
+  let ranAt: Date | null = null;
+  const tabsOf = (iid: number): PipelineTab[] => {
+    const tabs = pipelineTabs(iid);
+    if (iid !== PIPELINE_MR || ranAt === null) return tabs;
+    return [newTab(), ...tabs.map((t) => ({ ...t, latest: false }))];
+  };
   const columnsOf = (pipeline: number): StageColumn[] | null => {
     const known = jobs.get(pipeline);
     if (known) return known;
-    const fresh = pipelineColumns(pipeline);
+    const fresh =
+      pipeline === NEW_PIPELINE
+        ? ranAt === null
+          ? null
+          : newPipelineColumns()
+        : pipelineColumns(pipeline);
     if (fresh) jobs.set(pipeline, fresh);
     return fresh;
   };
   /** Replaces job `id` of any of !482's pipelines with `next(row)`; null when no job has it. */
   const change = (id: number, next: (row: JobRow) => JobRow): JobRow | null => {
-    for (const tab of pipelineTabs(PIPELINE_MR)) {
+    for (const tab of tabsOf(PIPELINE_MR)) {
       for (const column of columnsOf(tab.id) ?? []) {
         const index = column.jobs.findIndex((j) => j.id === id);
         const old = column.jobs[index];
@@ -64,11 +90,16 @@ export function createPipelineBackend(
   return {
     pipelineList: (_project, iid) => {
       if (!user()) return Promise.reject(unauthorized());
-      return respond(pipelineTabs(iid));
+      return respond(tabsOf(iid));
     },
     pipelineGet: (_project, iid, id) => {
       if (!user()) return Promise.reject(unauthorized());
-      const head = pipelineHead(iid, id);
+      const head =
+        iid === PIPELINE_MR && id === NEW_PIPELINE
+          ? ranAt === null
+            ? null
+            : newPipelineHead(ranAt, user()?.name ?? null)
+          : pipelineHead(iid, id);
       if (!head) return Promise.reject(notFound());
       return respond(head);
     },
@@ -96,5 +127,27 @@ export function createPipelineBackend(
         action: jobAction('canceled'),
         durationSecs: null,
       })),
+    pipelineMrHead: (_project, iid) => {
+      if (!user()) return Promise.reject(unauthorized());
+      return iid === PIPELINE_MR ? respond(SHA_V3) : Promise.reject(notFound());
+    },
+    pipelineRunMr: (_project, iid) => {
+      if (!user()) return Promise.reject(unauthorized());
+      if (iid !== PIPELINE_MR) return Promise.reject(notFound());
+      ranAt ??= new Date();
+      return respond(newTab());
+    },
+  };
+}
+
+/** #18351 as its tab: the newest pipeline, on version 3's head, running. */
+function newTab(): PipelineTab {
+  return {
+    id: NEW_PIPELINE,
+    number: NEW_PIPELINE,
+    sha: SHA_V3,
+    version: 3,
+    latest: true,
+    status: 'running',
   };
 }
