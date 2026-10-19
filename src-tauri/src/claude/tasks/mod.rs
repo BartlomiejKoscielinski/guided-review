@@ -3,6 +3,8 @@
 
 pub mod ask;
 pub mod events;
+pub mod pipeline_explain;
+pub mod pipeline_explain_inputs;
 pub mod plan;
 pub mod plan_inputs;
 pub mod step;
