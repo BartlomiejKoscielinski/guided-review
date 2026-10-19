@@ -7,6 +7,7 @@ import { ApprovalTile } from './ApprovalTile';
 import { DraftsOnlyHeader } from './DraftsOnlyHeader';
 import { DraftsTab } from './DraftsTab';
 import { ForeignDraftsBanner } from './ForeignDraftsBanner';
+import { MrChangedBanner } from './MrChangedBanner';
 import { openingTab, openThreadCount, type SummaryTab } from './openingTab';
 import { PublishBanner } from './PublishBanner';
 import { PublishBar } from './PublishBar';
@@ -33,7 +34,8 @@ export interface MrSummaryProps {
  * and the drafts list (F-12.3) with "Add a summary comment" under it (F-12.4); on the Drafts tab
  * Publish (N) next to the tabs and its banners above the rows (F-12.5); on the Threads tab the
  * filters All / Open N / Resolved N next to the tabs and the threads they keep (F-13.1). To the
- * right, on both tabs, the Approval tile (F-14.1). A "drafts only" session, made
+ * right, on both tabs, the Approval tile (F-14.1) with Approve MR / Revoke approval, and above
+ * the columns the MR-changed banner (F-14.2). A "drafts only" session, made
  * by a draft from outside a review, is the same summary without its steps (F-12.7).
  */
 export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
@@ -64,6 +66,7 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
     <div className={styles.screen}>
       <div className={styles.page}>
         {draftsOnly ? <DraftsOnlyHeader /> : <SummaryHeader sessionId={sessionId} />}
+        {!draftsOnly && <MrChangedBanner sessionId={sessionId} restored={restored} />}
         <div className={styles.columns}>
           <section aria-label="Comments" className={styles.comments}>
             <div className={styles.commentsHead}>

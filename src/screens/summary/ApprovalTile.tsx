@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { CheckIcon } from '../../components/icons';
 import { cx } from '../../components/cx';
 import { useApprovalState } from '../../ipc/hooks/useApprovalState';
+import { ApprovalButtons } from './ApprovalButtons';
 import { approvalCount } from './approvalCopy';
 import styles from './ApprovalTile.module.css';
 
@@ -15,7 +16,7 @@ export interface ApprovalTileProps {
  * S-05's Approval tile (F-14.1, SummaryDesk.dc.html): "Not approved yet" with a dashed square on
  * the dark tile, or "Approved by you" with a checked square on solid green, and "Approvals: X of
  * Y". The state is the user's own approval; nothing is claimed before GitLab answers or when it
- * can't. Approve and Revoke come with F-14.2, the notes with F-14.3.
+ * can't. Under it Approve MR or Revoke approval (F-14.2); the notes come with F-14.3.
  */
 export function ApprovalTile({ sessionId, restored }: ApprovalTileProps) {
   const headingId = useId();
@@ -36,20 +37,23 @@ export function ApprovalTile({ sessionId, restored }: ApprovalTileProps) {
         </p>
       ) : (
         state && (
-          <div className={styles.state}>
-            <span
-              data-testid="approval-mark"
-              className={approved ? styles.markApproved : styles.markEmpty}
-            >
-              {approved && <CheckIcon size={24} strokeWidth={2.6} />}
-            </span>
-            <div className={styles.text}>
-              <span className={styles.title}>
-                {approved ? 'Approved by you' : 'Not approved yet'}
+          <>
+            <div className={styles.state}>
+              <span
+                data-testid="approval-mark"
+                className={approved ? styles.markApproved : styles.markEmpty}
+              >
+                {approved && <CheckIcon size={24} strokeWidth={2.6} />}
               </span>
-              <span className={styles.count}>{approvalCount(state)}</span>
+              <div className={styles.text}>
+                <span className={styles.title}>
+                  {approved ? 'Approved by you' : 'Not approved yet'}
+                </span>
+                <span className={styles.count}>{approvalCount(state)}</span>
+              </div>
             </div>
-          </div>
+            <ApprovalButtons sessionId={sessionId} state={state} />
+          </>
         )
       )}
     </aside>

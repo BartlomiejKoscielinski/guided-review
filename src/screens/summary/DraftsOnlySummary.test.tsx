@@ -51,6 +51,18 @@ describe('S-05 of a drafts-only session (F-12.7)', () => {
     expect(screen.queryByRole('button', { name: 'Back to steps' })).toBeNull();
   });
 
+  it('F-14.2 a drafts-only session reviewed no version: Approve MR is disabled with "Review the MR to approve it."', async () => {
+    const { ipc, draft } = await draftsOnly();
+    const app = renderApp({ screen: 'S-01' }, ipc);
+
+    await act(() => app.router.navigate(`/session/${draft.sessionId}/summary`));
+
+    const aside = await screen.findByRole('complementary', { name: 'Approval' });
+    expect(await within(aside).findByText('Review the MR to approve it.')).toBeInTheDocument();
+    expect(within(aside).getByRole('button', { name: 'Approve MR' })).toBeDisabled();
+    expect(screen.queryByText('The MR has a new version since your review.')).toBeNull();
+  });
+
   it('F-12.7 is the MR summary with its Drafts and Threads tabs, never the self-review summary', async () => {
     // The core answers "no MR" (null) for a session without prepared MR fields, which is also how
     // a self-review looks; the drafts-only session is an MR session all the same.

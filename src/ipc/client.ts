@@ -2,6 +2,7 @@ import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { ApprovalState } from './types/ApprovalState';
+import type { SummaryStatus } from './types/SummaryStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
@@ -328,6 +329,18 @@ export interface IpcClient {
    * password. Read only; never called on a restored start (F-30.4).
    */
   gitlabApprovalState(sessionId: string): Promise<ApprovalState>;
+  /**
+   * The head the session reviewed against the MR's head now (S-05, F-14.2): `changed` shows the
+   * banner and disables Approve. Read only; never called on a restored start (F-30.4).
+   */
+  summaryStatus(sessionId: string): Promise<SummaryStatus>;
+  /**
+   * Approve MR for the head `sha` the user reviewed (F-14.2): `CONFLICT` for another SHA or when
+   * the MR moved on (GitLab's 409). Only ever sent on its own click.
+   */
+  gitlabApprove(sessionId: string, sha: string): Promise<void>;
+  /** Revoke approval: the user's approval of the session's MR is taken back (F-14.2). */
+  gitlabUnapprove(sessionId: string): Promise<void>;
   /**
    * Resolve (`resolved` true) or Reopen (false) a thread of the session's MR, sent at once and
    * independent of drafts and approval (F-11.2); the core takes the project and the MR from the

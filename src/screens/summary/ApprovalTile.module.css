@@ -77,3 +77,23 @@
   font-size: 13.5px;
   line-height: 1.5;
 }
+
+/* F-14.2 Revoke approval on the green tile: dark fill, light text (SummaryDesk.dc.html). */
+.revoke {
+  height: 44px;
+  border: 0;
+  border-radius: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.revoke:disabled {
+  cursor: default;
+  opacity: 0.8;
+}

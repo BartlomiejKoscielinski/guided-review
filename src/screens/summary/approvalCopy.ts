@@ -7,3 +7,12 @@ export function approvalCount(state: ApprovalState): string {
     ? `Approvals: ${given} of ${String(state.approvalsRequired)}`
     : `Approvals: ${given}`;
 }
+
+/** Why GitLab won't take an approval from the user (M5 decision 14); `null` when it would. */
+export function approveBlockedReason(state: ApprovalState): string | null {
+  if (state.requirePasswordToApprove) {
+    return 'This project asks for your password to approve. Approve it in GitLab.';
+  }
+  if (!state.userCanApprove) return "GitLab doesn't let you approve this MR.";
+  return null;
+}
