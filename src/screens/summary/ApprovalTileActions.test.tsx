@@ -74,11 +74,7 @@ async function enabledApprove() {
 
 describe('S-05 Approve MR and Revoke approval (F-14.2)', () => {
   it('F-14.2 a click on Approve MR sends the reviewed head of the session, once', async () => {
-    const approve = vi.fn((session: string, sha: string) => {
-      void session;
-      void sha;
-      return Promise.resolve();
-    });
+    const approve = vi.fn((_session: string, _sha: string) => Promise.resolve());
     await openSummary({ gitlabApprove: approve });
 
     await userEvent.click(await enabledApprove());

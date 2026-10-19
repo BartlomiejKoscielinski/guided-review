@@ -1,5 +1,5 @@
 {
-  "items": 49,
+  "items": 50,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 14,
+      "helpful": 15,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 14,
+      "helpful": 15,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 16,
+      "helpful": 17,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 33,
+      "helpful": 34,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -261,7 +261,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 24,
+      "helpful": 25,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -373,7 +373,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 9,
       "created": "2026-10-15T09:26:23.811Z",
@@ -444,7 +444,7 @@
       "text": "When an item routes a new source kind to an existing screen, assert content of that screen (the 'Start step 1' button or the plan list) and never the Shell landmark, the router path or page.toHaveURL (the app uses createMemoryRouter, so the URL stays at the origin), because the 'Review plan' landmark and pathname checks passed on an empty StubScreen while review rated the unusable screen severe. When the screen still renders a stub for that source or state, decide its content in the tests stage and lock it, because F-17.1 left it 'outside this item' and the fix round had to build the non-MR plan screen.",
       "helpful": 1,
       "harmful": 0,
-      "seen": 4,
+      "seen": 5,
       "created": "2026-10-15T11:47:51.456Z",
       "lastUsedItem": 17,
       "source": "F-17.1",
@@ -1126,6 +1126,22 @@
       "created": "2026-10-19T07:48:16.265Z",
       "lastUsedItem": 48,
       "source": "F-14.1"
+    },
+    {
+      "id": "P-105",
+      "tags": [
+        "mixed",
+        "tests",
+        "tests/e2e/**",
+        "src/**/*.test.tsx"
+      ],
+      "text": "Run eslint (npx eslint on the new test files) before the tests commit, not only vitest/playwright, because F-14.2 locked tests carried `void session; void sha;` and a toHaveURL line that failed lint, which forced a test dispute and a fix round (48k tokens) over two one-line edits.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T08:49:12.941Z",
+      "lastUsedItem": 49,
+      "source": "F-14.2"
     }
   ]
 }
