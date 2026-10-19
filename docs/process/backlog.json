@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T14:05:13.356Z",
+  "updated": "2026-10-19T15:02:40.316Z",
   "items": [
     {
       "id": "F-20.1",
@@ -9,9 +9,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "d1c239f",
+      "tests": [
+        "src-tauri/tests/pipeline_view.rs",
+        "src/ipc/mock/pipeline.test.ts",
+        "src/ipc/tauriPipeline.test.ts",
+        "src/screens/pipeline/PipelineScreen.test.tsx",
+        "tests/e2e/pipeline-f20-1.spec.ts"
+      ]
     },
     {
       "id": "F-20.2",
