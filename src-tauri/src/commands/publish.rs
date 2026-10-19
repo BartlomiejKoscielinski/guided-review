@@ -104,7 +104,8 @@ pub async fn drafts_publish(
 }
 
 /// The draft comments already in GitLab's own review of the session's MR, which a Publish sends
-/// too (decision 8). Read only; asked when S-05 opens, never on a restored start (F-30.4).
+/// too (decision 8). Read only; asked when S-05 opens (never on a restored start, F-30.4) and
+/// right before each Publish click.
 #[tauri::command]
 pub async fn gitlab_foreign_drafts(
     store: State<'_, Store>,

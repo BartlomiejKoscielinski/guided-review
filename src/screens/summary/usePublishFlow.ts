@@ -39,7 +39,8 @@ const sentKey = (sessionId: string) => ['summary', 'published', sessionId] as co
  * with only the summary waiting it is "Publish summary". Retry sends the rows of the last failure
  * that are still ticked, and the summary when it failed and is still ticked. Whether the summary
  * went out is kept by the core, so it isn't sent twice after a restart either.
- * `live` is false on a restored start: no GitLab count then (F-30.4).
+ * `live` is false on a restored start: no GitLab count when S-05 opens (F-30.4); Publish still
+ * checks right before sending and holds the first click when GitLab's own review has drafts.
  */
 export function usePublishFlow(
   sessionId: string,
@@ -74,7 +75,9 @@ export function usePublishFlow(
       {
         ids,
         summary: summaryWaiting ? field.text : null,
-        seenForeign: live ? (foreign.data ?? 0) : null,
+        // Checked right before publishing (decision 8), on a restored start too: the click is
+        // the user's, so asking GitLab then isn't work the restore started (F-30.4).
+        seenForeign: foreign.data ?? 0,
       },
       {
         onSuccess: (result) => {
