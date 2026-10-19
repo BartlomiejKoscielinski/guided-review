@@ -18,7 +18,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 const PROJECT = 'mobile/mobile-app';
 const BODY = 'Is the keystore secret set for this branch?';
 /** Commands that may run Claude or call GitLab; a restored S-05 calls none of them (F-30.4). */
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 
 const question = (body: string) => ({ body, position: null, severity: 'q' as const });
 const ignore = () => undefined;

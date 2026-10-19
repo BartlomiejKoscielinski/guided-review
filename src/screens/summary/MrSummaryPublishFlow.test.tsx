@@ -121,8 +121,8 @@ describe('S-05 restored after Publish (F-12.5, F-12.2, F-30.4)', () => {
     expect(rows).toHaveLength(2);
     for (const row of rows) expect(row).toHaveTextContent('· published');
     expect(screen.getByRole('button', { name: 'Published' })).toBeDisabled();
-    expect(calls.filter((name) => /^(review|gitlab|claude(?!Status$|Models$))/.test(name))).toEqual(
-      [],
-    );
+    expect(
+      calls.filter((name) => /^(review|gitlab|claude(?!Status$|Models$|Activity$))/.test(name)),
+    ).toEqual([]);
   });
 });

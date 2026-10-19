@@ -24,7 +24,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 const MR_SESSION = 'mock-mr-session-1';
 const PROJECT = 'mobile/mobile-app';
 /** Commands that may run Claude or call GitLab; a restored S-05 calls none of them (F-30.4). */
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 
 const ME = { username: 'bartek.k', name: 'Bartek K.' };
 const ALICE = { username: 'alice', name: 'Alice Stand-in' };

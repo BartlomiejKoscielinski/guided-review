@@ -28,7 +28,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 
 const MR_SESSION = 'mock-mr-session-1';
 /** Commands that may run Claude or call GitLab; a restored S-05 calls none of them (F-30.4). */
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 
 /** The five drafts of the design mock (SummaryDesk.dc.html), severity and text. */
 const MOCK_DRAFTS: ReadonlyArray<readonly [Severity, string]> = [

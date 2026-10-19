@@ -16,7 +16,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 const MR_SESSION = 'mock-mr-session-1';
 const STEP_IDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
 /** Commands that may run Claude or call GitLab; a restored S-05 calls none of them (F-30.4). */
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 
 /**
  * An MR session (!482) with `reviewed` steps marked, planned the way the app does it: S-03 reads

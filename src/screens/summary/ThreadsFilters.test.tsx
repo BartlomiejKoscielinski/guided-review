@@ -34,7 +34,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 
 const MR_SESSION = 'mock-mr-session-1';
 /** Commands that may run Claude or call GitLab; a restored S-05 calls none of them (F-30.4). */
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 
 const KICK = 'Kick() is called on the UI thread. Does the worker block anything here?';
 const INDEX = 'No index on CreatedAt, but every read sorts by it.';

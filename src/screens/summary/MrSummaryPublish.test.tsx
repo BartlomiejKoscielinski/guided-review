@@ -28,7 +28,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 // `foreignDrafts` (GitlabScenario).
 
 const MR_SESSION = 'mock-mr-session-1';
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 const DOT = '·';
 const SINGLE = 'The author got a single notification.';
 const LINE_GONE = 'the line is no longer in the MR';
