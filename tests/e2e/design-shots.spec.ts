@@ -567,7 +567,7 @@ const SHOTS: Shot[] = [
   {
     // S08-pipeline.png: !482's newest pipeline (#18342, Passed, 1 allowed failure), opened from
     // the plan's pipeline link (F-20.1), with its four stage columns and ui-tests:android
-    // selected (F-20.2).
+    // selected (F-20.2) with its details and log (F-20.5).
     screen: 'S08',
     state: 'pipeline',
     lastRoute: { screen: 'S-01' },
@@ -576,6 +576,7 @@ const SHOTS: Shot[] = [
       await page.getByRole('link', { name: /pipeline passed/i }).click();
       await page.getByTestId('pipeline-meta').waitFor();
       await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('log', { name: 'Job log' }).locator('[data-kind]').first().waitFor();
     },
   },
   {
@@ -593,7 +594,8 @@ const SHOTS: Shot[] = [
   },
   {
     // S08-pipeline-running.png: the new pipeline #18351 after Run pipeline (F-20.3), running,
-    // started by you just now, its build stage running and the manual jobs still manual.
+    // started by you just now, its build stage running and the manual jobs still manual;
+    // build:android selected with its first two log lines streaming (F-20.5).
     screen: 'S08',
     state: 'pipeline-running',
     lastRoute: { screen: 'S-01' },
@@ -603,7 +605,9 @@ const SHOTS: Shot[] = [
       await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
       await page.getByRole('button', { name: 'Run new pipeline', exact: true }).click();
       await page.getByRole('button', { name: 'Run pipeline', exact: true }).click();
-      await page.getByRole('button', { name: 'build:android, Running' }).waitFor();
+      await page.getByRole('button', { name: 'build:android, Running' }).click();
+      await page.getByText('Running. The log streams on the left.').waitFor();
+      await page.getByRole('log', { name: 'Job log' }).locator('[data-kind]').nth(1).waitFor();
     },
   },
 ];

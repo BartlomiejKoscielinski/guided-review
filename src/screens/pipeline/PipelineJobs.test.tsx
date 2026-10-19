@@ -24,6 +24,7 @@ async function openWith(rows: Row[], override: Partial<IpcClient>) {
   const rec = recordingClient({
     ...base,
     pipelineJobs: () => Promise.resolve([{ name: 'test', jobs: rows }]),
+    jobTrace: () => new Promise<void>(() => undefined),
     ...override,
   });
   const app = renderApp({ screen: 'S-01' }, rec.client);
@@ -34,7 +35,16 @@ async function openWith(rows: Row[], override: Partial<IpcClient>) {
 describe('S-08 refused row actions (F-20.2)', () => {
   it('F-20.2 a refused Retry says the retry failed, then GitLab’s reason', async () => {
     const user = await openWith(
-      [{ id: 5, name: 'unit-tests', state: 'failed', action: 'retry', durationSecs: null }],
+      [
+        {
+          id: 5,
+          name: 'unit-tests',
+          state: 'failed',
+          action: 'retry',
+          durationSecs: null,
+          webUrl: null,
+        },
+      ],
       { jobRetry: refused },
     );
 
@@ -47,7 +57,16 @@ describe('S-08 refused row actions (F-20.2)', () => {
 
   it('F-20.2 a refused Cancel says the cancel failed, then GitLab’s reason', async () => {
     const user = await openWith(
-      [{ id: 6, name: 'sonar', state: 'running', action: 'cancel', durationSecs: null }],
+      [
+        {
+          id: 6,
+          name: 'sonar',
+          state: 'running',
+          action: 'cancel',
+          durationSecs: null,
+          webUrl: null,
+        },
+      ],
       { jobCancel: refused },
     );
 

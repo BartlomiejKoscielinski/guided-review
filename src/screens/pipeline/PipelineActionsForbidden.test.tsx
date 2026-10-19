@@ -154,11 +154,19 @@ describe('after a refused write every write action is disabled (F-20.4)', () => 
           {
             name: 'test',
             jobs: [
-              { id: 6, name: 'sonar', state: 'running', action: 'cancel', durationSecs: null },
+              {
+                id: 6,
+                name: 'sonar',
+                state: 'running',
+                action: 'cancel',
+                durationSecs: null,
+                webUrl: null,
+              },
             ],
           },
         ]),
       pipelineCancel: () => Promise.reject(forbidden()),
+      jobTrace: () => new Promise<void>(() => undefined),
     }));
 
     await user.click(await screen.findByRole('button', { name: 'Cancel pipeline', exact: true }));

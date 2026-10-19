@@ -39,6 +39,7 @@ const row = (over: Partial<Row> & Pick<Row, 'name'>): Row => ({
   state: 'passed',
   action: null,
   durationSecs: null,
+  webUrl: null,
   ...over,
 });
 
@@ -61,9 +62,12 @@ async function openPipeline(override: Override = {}) {
   return { ...app, ...rec };
 }
 
-/** The columns answered by hand: one stage "test" with these rows. */
+/** The columns answered by hand: one stage "test" with these rows (their log never arrives). */
 function jobsOf(...rows: Row[]): Partial<IpcClient> {
-  return { pipelineJobs: () => Promise.resolve([{ name: 'test', jobs: rows }]) };
+  return {
+    pipelineJobs: () => Promise.resolve([{ name: 'test', jobs: rows }]),
+    jobTrace: () => new Promise<void>(() => undefined),
+  };
 }
 
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -104,7 +108,10 @@ describe('S-08 stage columns from the mock backend (F-20.2)', () => {
     await openPipeline();
 
     await columns();
-    const regions = screen.getAllByRole('region').filter((r) => r.tagName === 'SECTION');
+    // The stage columns; the job details panel below them (F-20.5) is a region too.
+    const regions = screen
+      .getAllByRole('region')
+      .filter((r) => r.tagName === 'SECTION' && r.getAttribute('aria-label') !== 'Job details');
     expect(regions.map((r) => within(r).getByRole('heading', { level: 2 }).textContent)).toEqual([
       expect.stringMatching(/^build$/i),
       expect.stringMatching(/^test$/i),
@@ -210,8 +217,9 @@ describe('S-08 stage columns from the mock backend (F-20.2)', () => {
     });
     expect(select('restore', 'Passed')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Retry build:android' })).toBeInTheDocument();
-    // The eight row Retries; the head's "Retry failed jobs" (F-20.4) is not a row button.
-    expect(screen.getAllByRole('button', { name: /^Retry (?!failed jobs$)/ })).toHaveLength(8);
+    // The eight row Retries; the head's "Retry failed jobs" (F-20.4) and the details' "Retry job"
+    // (F-20.5) are not row buttons.
+    expect(screen.getAllByRole('button', { name: /^Retry (?!failed jobs$|job$)/ })).toHaveLength(8);
     const right = within(rowOf('build:android')).queryByTestId('job-meta');
     expect(right?.textContent ?? '').toBe('');
   });
@@ -355,7 +363,8 @@ describe('S-08 selecting a job (F-20.2)', () => {
     expect(select('sonar')).toHaveAttribute('aria-pressed', 'true');
     expect(select('ui-tests:android')).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(1);
-    expect(calls.slice(before).filter((c) => /^job/.test(c))).toEqual([]);
+    // Only the picked job's log is read (F-20.5); no job action is sent.
+    expect(calls.slice(before).filter((c) => /^job/.test(c))).toEqual(['jobTrace']);
   });
 
   it('F-20.2 Run on a manual job only selects it: no request, no change of its state, no confirmation', async () => {

@@ -43,6 +43,7 @@ const row = (over: Partial<Row> & Pick<Row, 'name'>): Row => ({
   state: 'passed',
   action: null,
   durationSecs: null,
+  webUrl: null,
   ...over,
 });
 const head = (over: Partial<Head> = {}): Head => ({
@@ -60,6 +61,7 @@ const head = (over: Partial<Head> = {}): Head => ({
   ...over,
 });
 const answers = (h: Head, ...rows: Row[]): Partial<IpcClient> => ({
+  jobTrace: () => new Promise<void>(() => undefined),
   pipelineGet: () => Promise.resolve(h),
   pipelineJobs: () => Promise.resolve([{ name: 'test', jobs: rows }]),
 });

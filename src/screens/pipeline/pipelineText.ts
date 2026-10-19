@@ -92,6 +92,22 @@ export function jobMeta(row: JobRow): string {
   }
 }
 
+/** A job in these states never ran, so it has no log to read (Pipeline.dc.html's showLog). */
+export function hasJobLog(state: JobState): boolean {
+  return state !== 'waiting' && state !== 'manual' && state !== 'skipped';
+}
+
+/** The details' meta (F-20.5): "<stage> stage · <clock>", "… · started just now" while running,
+ * "… · allowed to fail". */
+export function jobDetailsMeta(row: JobRow, stage: string): string {
+  const parts = [`${stage} stage`];
+  if (row.state === 'running') parts.push('started just now');
+  else if (row.durationSecs !== null && hasJobLog(row.state))
+    parts.push(jobClock(row.durationSecs));
+  if (row.state === 'failedAllowed') parts.push('allowed to fail');
+  return parts.join(' · ');
+}
+
 /** "1 job" / "3 jobs". */
 export function jobCount(count: number): string {
   return `${String(count)} job${count === 1 ? '' : 's'}`;

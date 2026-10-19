@@ -5,6 +5,7 @@ import { useJobActions } from '../../ipc/hooks/usePipeline';
 import type { JobAction } from '../../ipc/types/JobAction';
 import type { JobRow } from '../../ipc/types/JobRow';
 import type { StageColumn } from '../../ipc/types/StageColumn';
+import { JobDetails } from './JobDetails';
 import { StageColumns } from './StageColumns';
 import { firstJobToShow, refusalOf } from './pipelineText';
 import styles from './Pipeline.module.css';
@@ -25,7 +26,9 @@ export interface PipelineJobsProps {
  * pipeline opens) and the row actions. Retry and Cancel act at once, without a confirmation;
  * Retry selects its row and the selection follows the new attempt by name; a manual job's Run
  * only selects the job (its form is F-20.6). A refused (403) Retry or Cancel disables them all
- * with GitLab's reason (decision 9). Mount it with `key={pipeline}`.
+ * with GitLab's reason (decision 9). Below the columns, the selected job's details and log
+ * (F-20.5), whose Retry job and Cancel job act like the row's buttons. Mount it with
+ * `key={pipeline}`.
  */
 export function PipelineJobs({
   project,
@@ -53,6 +56,8 @@ export function PipelineJobs({
     );
   }
   if (!columns) return null;
+
+  const shown = selectedJob(columns, picked);
 
   const act = (row: JobRow, action: JobAction) => {
     if (action !== 'cancel') setPicked(row.name);
@@ -93,6 +98,36 @@ export function PipelineJobs({
         onSelect={setPicked}
         onAction={act}
       />
+      {shown && (
+        <JobDetails
+          key={shown.row.id}
+          project={project}
+          iid={iid}
+          row={shown.row}
+          stage={shown.stage}
+          busy={busy.has(shown.row.id)}
+          refused={refused}
+          onRetry={() => {
+            act(shown.row, 'retry');
+          }}
+          onCancel={() => {
+            act(shown.row, 'cancel');
+          }}
+          onOpenError={setError}
+        />
+      )}
     </>
   );
+}
+
+/** The picked job's row and its stage column; null when no job is picked. */
+function selectedJob(
+  columns: StageColumn[],
+  name: string | null,
+): { row: JobRow; stage: string } | null {
+  for (const column of columns) {
+    const row = column.jobs.find((j) => j.name === name);
+    if (row) return { row, stage: column.name };
+  }
+  return null;
 }
