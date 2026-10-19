@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { usePreviousScreen } from '../../app/PreviousScreen';
 import { Button } from '../../components/Button';
@@ -11,13 +12,27 @@ export interface PipelineHeaderProps {
   /** The selected pipeline's head; none while it loads, failed or the MR has no pipeline. */
   head: PipelineHead | undefined;
   id: string;
+  /** Opens Run new pipeline's confirmation (F-20.3). */
+  onRun: () => void;
+  /** GitLab is starting the confirmed run: the button is busy and sends nothing more. */
+  running: boolean;
+  /** No project or a restored start: there is nothing to run the pipeline of yet. */
+  runDisabled?: boolean;
+  runRef?: Ref<HTMLButtonElement>;
 }
 
 /**
  * S-08's head (Pipeline.dc.html): the back link (M6 decision 4), "PIPELINE" with the status block
- * and the allowed-failure tag, the meta line, and Run new pipeline (F-20.1).
+ * and the allowed-failure tag, the meta line, and Run new pipeline (F-20.1, F-20.3).
  */
-export function PipelineHeader({ head, id }: PipelineHeaderProps) {
+export function PipelineHeader({
+  head,
+  id,
+  onRun,
+  running,
+  runDisabled = false,
+  runRef,
+}: PipelineHeaderProps) {
   const navigate = useNavigate();
   const previous = usePreviousScreen();
   // Decision 4: "Back to MRs" from S-01, "Back to review" otherwise; both go back in history.
@@ -66,7 +81,14 @@ export function PipelineHeader({ head, id }: PipelineHeaderProps) {
       </div>
       <div className={styles.actions}>
         {/* Opens the confirmation strip and runs the MR's pipeline (F-20.3). */}
-        <Button variant="primary" size={40}>
+        <Button
+          ref={runRef}
+          variant="primary"
+          size={40}
+          disabled={running || runDisabled}
+          aria-busy={running}
+          onClick={onRun}
+        >
           <PlayIcon size={13} />
           Run new pipeline
         </Button>

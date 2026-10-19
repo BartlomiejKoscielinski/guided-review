@@ -31,5 +31,10 @@
   "S07-settings-notifications": { "mock": "Settings.dc.html", "state": { "section": "notifications" } },
   "S07-settings-rules": { "mock": "Settings.dc.html", "state": { "section": "rules" } },
   "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } },
-  "S08-pipeline": { "mock": "Pipeline.dc.html", "state": {} }
+  "S08-pipeline": { "mock": "Pipeline.dc.html", "state": {} },
+  "S08-pipeline-confirm": { "mock": "Pipeline.dc.html", "state": { "confirm": true } },
+  "S08-pipeline-running": {
+    "mock": "Pipeline.dc.html",
+    "state": { "hasNew": true, "pipe": "p351", "job": "build:android", "tick": 1 }
+  }
 }

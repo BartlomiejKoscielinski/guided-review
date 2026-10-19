@@ -578,6 +578,34 @@ const SHOTS: Shot[] = [
       await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
     },
   },
+  {
+    // Pipeline.dc.html {"confirm":true}: Run new pipeline's confirmation strip (F-20.3).
+    screen: 'S08',
+    state: 'pipeline-confirm',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('button', { name: 'Run new pipeline', exact: true }).click();
+      await page.getByRole('alertdialog').getByText('a3f9c12', { exact: true }).waitFor();
+    },
+  },
+  {
+    // S08-pipeline-running.png: the new pipeline #18351 after Run pipeline (F-20.3), running,
+    // started by you just now, its build stage running and the manual jobs still manual.
+    screen: 'S08',
+    state: 'pipeline-running',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('button', { name: 'Run new pipeline', exact: true }).click();
+      await page.getByRole('button', { name: 'Run pipeline', exact: true }).click();
+      await page.getByRole('button', { name: 'build:android, Running' }).waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

@@ -209,3 +209,11 @@
   font-size: 14px;
   color: var(--orange);
 }
+
+/* F-20.3 / decision 8: one line under the actions row when Run new pipeline fails. */
+.runError {
+  margin: 0;
+  padding: 0 32px 14px;
+  font-size: 14px;
+  color: var(--orange);
+}
