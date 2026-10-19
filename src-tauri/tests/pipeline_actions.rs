@@ -36,6 +36,7 @@ const PROJECT: &str = "sandbox/gr-sandbox";
 const BASE: &str = "/api/v4/projects/sandbox%2Fgr-sandbox";
 const IID: u64 = 482;
 
+const V1: &str = "1111111e0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a";
 const V2: &str = "6a02f9e0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0";
 const V3: &str = "a3f9c120c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0";
 
@@ -73,6 +74,8 @@ async fn serve_versions(server: &MockServer) {
             { "id": 903, "head_commit_sha": V3, "base_commit_sha": "ba5e00",
               "start_commit_sha": "57a400", "state": "collected" },
             { "id": 902, "head_commit_sha": V2, "base_commit_sha": "ba5e00",
+              "start_commit_sha": "57a400", "state": "collected" },
+            { "id": 901, "head_commit_sha": V1, "base_commit_sha": "ba5e00",
               "start_commit_sha": "57a400", "state": "collected" }
         ])))
         .mount(server)
