@@ -105,7 +105,9 @@ export function jobDetailsMeta(row: JobRow, stage: string): string {
   else if (row.durationSecs !== null && hasJobLog(row.state))
     parts.push(jobClock(row.durationSecs));
   if (row.state === 'failedAllowed') parts.push('allowed to fail');
-  return parts.join(' · ');
+  const text = parts.join(' · ');
+  // GitLab's stage names are lower case; the line starts like a sentence ("Test stage").
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /** "1 job" / "3 jobs". */
