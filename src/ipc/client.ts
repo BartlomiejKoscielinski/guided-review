@@ -377,6 +377,15 @@ export interface IpcClient {
   pipelineMrHead(project: string, iid: number): Promise<string>;
   /** Starts a new merge request pipeline after the user confirmed; the new latest tab (F-20.3). */
   pipelineRunMr(project: string, iid: number): Promise<PipelineTab>;
+  /** Retry failed jobs of pipeline `id` at once (F-20.4); its head as it now is. */
+  pipelineRetry(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /** Cancel pipeline `id` at once (F-20.4); its head as it now is. */
+  pipelineCancel(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /**
+   * Opens a page of the configured GitLab in the default browser (Open in GitLab, F-20.4); the
+   * core refuses anything that is not `https` on the GitLab host (INVALID_INPUT).
+   */
+  osOpenGitlabUrl(url: string): Promise<void>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

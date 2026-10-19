@@ -14,10 +14,14 @@ export const SHA_V2 = '6a02f9e'.padEnd(40, '0');
 
 const MINUTE = 60_000;
 
+/** The GitLab page of pipeline `id` of the mock project on the mock server (`gitlab.ts`). */
+export const pipelinePage = (id: number) =>
+  `https://gitlab.local/mobile/mobile-app/-/pipelines/${String(id)}`;
+
 /** One pipeline of !482: its tab and how long ago it started. */
 interface MockPipeline {
   tab: Omit<PipelineTab, 'latest'>;
-  head: Omit<PipelineHead, 'startedAt' | 'status' | 'number' | 'sha' | 'version'>;
+  head: Omit<PipelineHead, 'startedAt' | 'status' | 'number' | 'sha' | 'version' | 'webUrl'>;
   startedMinutesAgo: number;
 }
 
@@ -80,6 +84,7 @@ export function pipelineHead(iid: number, id: number, now: Date = new Date()): P
     sha: pipeline.tab.sha,
     version: pipeline.tab.version,
     startedAt: new Date(now.getTime() - pipeline.startedMinutesAgo * MINUTE).toISOString(),
+    webUrl: pipelinePage(pipeline.tab.id),
   };
 }
 
@@ -172,6 +177,7 @@ export function newPipelineHead(ranAt: Date, author: string | null): PipelineHea
     startedByMe: true,
     startedAt: ranAt.toISOString(),
     durationSecs: null,
+    webUrl: pipelinePage(NEW_PIPELINE),
   };
 }
 

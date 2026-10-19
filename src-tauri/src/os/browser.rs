@@ -15,7 +15,7 @@ use super::process::{ProcessError, spawn_detached};
 #[derive(Debug, Error)]
 pub enum BrowserError {
     /// The URL is not an `https` URL on the configured GitLab host (or no server is configured).
-    #[error("That link isn't on your GitLab server.")]
+    #[error("That link isn’t on your GitLab server.")]
     Refused,
     #[error("The browser could not be started: {0}")]
     Launch(#[from] ProcessError),

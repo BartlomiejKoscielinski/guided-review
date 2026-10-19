@@ -153,5 +153,6 @@ test('F-20.2 the canceled pipeline shows restore passed and every other job canc
 
   await expect(select(page, 'build:android', 'Canceled')).toBeVisible();
   await expect(select(page, 'restore', 'Passed')).toBeVisible();
-  await expect(page.getByRole('button', { name: /^Retry / })).toHaveCount(8);
+  // The eight row Retries; the head's "Retry failed jobs" (F-20.4) is not a row button.
+  await expect(page.getByRole('button', { name: /^Retry (?!failed jobs$)/ })).toHaveCount(8);
 });

@@ -6,6 +6,7 @@ import type { PipelineHead } from '../../ipc/types/PipelineHead';
 import type { PipelineState } from '../../ipc/types/PipelineState';
 import type { PipelineTab } from '../../ipc/types/PipelineTab';
 import type { StageColumn } from '../../ipc/types/StageColumn';
+import { IpcError } from '../../ipc/errors';
 
 /** The status block's word (M6 decision 1: the app's PipelineState words; CSS uppercases). */
 export const STATUS_WORD: Record<PipelineState, string> = {
@@ -118,4 +119,22 @@ export function stageState(states: JobState[]): JobState {
 export function firstJobToShow(columns: StageColumn[]): string | null {
   const rows = columns.flatMap((c) => c.jobs);
   return (rows.find((j) => j.state !== 'passed') ?? rows[0])?.name ?? null;
+}
+
+/** The pipeline has a job Retry failed jobs restarts: failed, failed-allowed or canceled (F-20.4). */
+export function hasRetryableJob(columns: StageColumn[]): boolean {
+  return columns.some((c) =>
+    c.jobs.some(
+      (j) => j.state === 'failed' || j.state === 'failedAllowed' || j.state === 'canceled',
+    ),
+  );
+}
+
+/**
+ * GitLab's reason when a write was refused with 403 (M6 decision 9): its own words (`detail`)
+ * when it sent some, else the error's message; null for any other failure.
+ */
+export function refusalOf(error: unknown): string | null {
+  if (!(error instanceof IpcError) || error.code !== 'GITLAB_FORBIDDEN') return null;
+  return error.detail ?? error.message;
 }

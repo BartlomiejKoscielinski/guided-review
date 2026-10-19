@@ -12,6 +12,8 @@ export interface JobRowViewProps {
   selected: boolean;
   /** Its Retry or Cancel is on its way. */
   busy: boolean;
+  /** GitLab's 403 reason (decision 9): Retry and Cancel are disabled with it as tooltip. */
+  refused?: string | null;
   onSelect: () => void;
   onAction: (action: JobAction) => void;
 }
@@ -53,9 +55,18 @@ function ActionIcon({ action }: { action: JobAction }) {
  * One job of a stage column (F-20.2): a select button (status square, name, duration or state)
  * and, beside it, never inside it, the row's one action button (decision 6).
  */
-export function JobRowView({ row, selected, busy, onSelect, onAction }: JobRowViewProps) {
+export function JobRowView({
+  row,
+  selected,
+  busy,
+  refused = null,
+  onSelect,
+  onAction,
+}: JobRowViewProps) {
   const meta = jobMeta(row);
   const action = row.action;
+  // A manual job's Run only selects it (F-20.2), so a refusal leaves it alone.
+  const blocked = action !== 'run' ? refused : null;
   const label = action === null ? null : `${ACTION_WORD[action]} ${row.name}`;
   const quiet = row.state === 'skipped' || row.state === 'waiting';
   return (
@@ -81,8 +92,8 @@ export function JobRowView({ row, selected, busy, onSelect, onAction }: JobRowVi
         <button
           type="button"
           aria-label={label}
-          title={label}
-          disabled={busy}
+          title={blocked ?? label}
+          disabled={busy || blocked !== null}
           className={cx(styles.action, action === 'run' && styles.actionRun)}
           onClick={() => {
             onAction(action);

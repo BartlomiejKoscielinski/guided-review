@@ -12,6 +12,8 @@ export interface StageColumnsProps {
   selected: string | null;
   /** The ids of the jobs whose Retry or Cancel is on its way. */
   busy: ReadonlySet<number>;
+  /** GitLab's 403 reason after a refused write (decision 9): Retry and Cancel are disabled. */
+  refused?: string | null;
   onSelect: (name: string) => void;
   onAction: (row: JobRow, action: JobAction) => void;
 }
@@ -20,7 +22,14 @@ export interface StageColumnsProps {
  * S-08's stages as columns in the core's order (F-20.2, decision 5): a heading with the stage's
  * dot, its name and its job count, then one row per job.
  */
-export function StageColumns({ columns, selected, busy, onSelect, onAction }: StageColumnsProps) {
+export function StageColumns({
+  columns,
+  selected,
+  busy,
+  refused = null,
+  onSelect,
+  onAction,
+}: StageColumnsProps) {
   return (
     <div className={styles.grid}>
       {columns.map((column) => (
@@ -44,6 +53,7 @@ export function StageColumns({ columns, selected, busy, onSelect, onAction }: St
               row={row}
               selected={row.name === selected}
               busy={busy.has(row.id)}
+              refused={refused}
               onSelect={() => {
                 onSelect(row.name);
               }}

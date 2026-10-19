@@ -1,4 +1,4 @@
-import type { Ref } from 'react';
+import type { ReactNode, Ref } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { usePreviousScreen } from '../../app/PreviousScreen';
 import { Button } from '../../components/Button';
@@ -19,11 +19,16 @@ export interface PipelineHeaderProps {
   /** No project or a restored start: there is nothing to run the pipeline of yet. */
   runDisabled?: boolean;
   runRef?: Ref<HTMLButtonElement>;
+  /** GitLab's 403 reason after a refused write (decision 9): Run new pipeline is disabled. */
+  refused?: string | null;
+  /** The pipeline actions before Run new pipeline (F-20.4). */
+  children?: ReactNode;
 }
 
 /**
  * S-08's head (Pipeline.dc.html): the back link (M6 decision 4), "PIPELINE" with the status block
- * and the allowed-failure tag, the meta line, and Run new pipeline (F-20.1, F-20.3).
+ * and the allowed-failure tag, the meta line, the pipeline actions (F-20.4) and Run new pipeline
+ * (F-20.1, F-20.3).
  */
 export function PipelineHeader({
   head,
@@ -32,6 +37,8 @@ export function PipelineHeader({
   running,
   runDisabled = false,
   runRef,
+  refused = null,
+  children,
 }: PipelineHeaderProps) {
   const navigate = useNavigate();
   const previous = usePreviousScreen();
@@ -80,13 +87,15 @@ export function PipelineHeader({
         )}
       </div>
       <div className={styles.actions}>
+        {children}
         {/* Opens the confirmation strip and runs the MR's pipeline (F-20.3). */}
         <Button
           ref={runRef}
           variant="primary"
           size={40}
-          disabled={running || runDisabled}
+          disabled={running || runDisabled || refused !== null}
           aria-busy={running}
+          title={refused ?? undefined}
           onClick={onRun}
         >
           <PlayIcon size={13} />

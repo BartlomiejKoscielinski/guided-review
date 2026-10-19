@@ -216,6 +216,10 @@ export function createTauriClient(): IpcClient {
     jobCancel: (project, iid, job) => call<JobRow>('job_cancel', { project, iid, job }),
     pipelineMrHead: (project, iid) => call<string>('pipeline_mr_head', { project, iid }),
     pipelineRunMr: (project, iid) => call<PipelineTab>('pipeline_run_mr', { project, iid }),
+    pipelineRetry: (project, iid, id) => call<PipelineHead>('pipeline_retry', { project, iid, id }),
+    pipelineCancel: (project, iid, id) =>
+      call<PipelineHead>('pipeline_cancel', { project, iid, id }),
+    osOpenGitlabUrl: (url) => call<undefined>('os_open_gitlab_url', { url }),
     ...createTauriWindowControls(),
   };
 }

@@ -6,6 +6,7 @@ import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
 import { createApprovalActions, type ApprovalScenario } from './approvals';
 import type { MockSessionData } from './session-data';
+import { createBrowserBackend } from './browser';
 import { createPipelineBackend } from './pipeline';
 import { createPublishActions, type PublishScenario } from './publish';
 import { createThreadActions } from './threads';
@@ -260,5 +261,6 @@ export function createGitlabBackend(
     ...createApprovalActions(store, scenario, signedIn, addToken, respond),
     ...createPublishActions(store, scenario, signedIn, addToken, respond),
     ...createPipelineBackend(signedIn, addToken, respond),
+    ...createBrowserBackend(() => status.server, respond),
   };
 }

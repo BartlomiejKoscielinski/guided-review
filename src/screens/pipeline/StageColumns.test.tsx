@@ -210,7 +210,8 @@ describe('S-08 stage columns from the mock backend (F-20.2)', () => {
     });
     expect(select('restore', 'Passed')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Retry build:android' })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /^Retry / })).toHaveLength(8);
+    // The eight row Retries; the head's "Retry failed jobs" (F-20.4) is not a row button.
+    expect(screen.getAllByRole('button', { name: /^Retry (?!failed jobs$)/ })).toHaveLength(8);
     const right = within(rowOf('build:android')).queryByTestId('job-meta');
     expect(right?.textContent ?? '').toBe('');
   });
@@ -506,7 +507,7 @@ describe('S-08 Retry and Cancel act at once (F-20.2, decision 6)', () => {
     });
   });
 
-  it('F-20.2 a refused Retry shows GitLab’s message as an alert and leaves the row failed with Retry ready again', async () => {
+  it('F-20.2 a refused Retry shows GitLab’s message as an alert and leaves the row failed with Retry disabled', async () => {
     const jobRetry = vi.fn<IpcClient['jobRetry']>(() =>
       Promise.reject(
         new IpcError({
@@ -522,7 +523,8 @@ describe('S-08 Retry and Cancel act at once (F-20.2, decision 6)', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('403 Forbidden');
     expect(select('unit-tests', 'Failed')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Retry unit-tests' })).toBeEnabled();
+    // F-20.4 (M6 decision 9): after a 403 the row's Retry stays disabled until the screen reopens.
+    expect(screen.getByRole('button', { name: 'Retry unit-tests' })).toBeDisabled();
   });
 
   it('F-20.2 Cancel sends jobCancel with the job id at once, without a dialog, and the row reads Canceled with Retry', async () => {
@@ -603,7 +605,8 @@ describe('S-08 Retry and Cancel act at once (F-20.2, decision 6)', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('403 Forbidden');
     expect(select('sonar', 'Running')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel sonar' })).toBeEnabled();
+    // F-20.4 (M6 decision 9): after a 403 the row's Cancel stays disabled until the screen reopens.
+    expect(screen.getByRole('button', { name: 'Cancel sonar' })).toBeDisabled();
   });
 });
 

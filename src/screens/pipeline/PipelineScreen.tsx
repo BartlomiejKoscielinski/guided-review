@@ -9,10 +9,12 @@ import {
   useRunPipeline,
 } from '../../ipc/hooks/usePipeline';
 import { useRepos } from '../../ipc/hooks/useRepos';
+import { PipelineActions } from './PipelineActions';
 import { PipelineHeader } from './PipelineHeader';
 import { PipelineJobs } from './PipelineJobs';
 import { PipelineTabs } from './PipelineTabs';
 import { RunPipelineConfirm } from './RunPipelineConfirm';
+import { refusalOf } from './pipelineText';
 import styles from './Pipeline.module.css';
 
 const HEAD_ID = 'pipeline-head';
@@ -21,7 +23,9 @@ const HEAD_ID = 'pipeline-head';
  * S-08 Pipeline (F-20.1): the MR's pipelines as tabs, newest first, and the selected pipeline's
  * status block and meta line, read from the active repository's GitLab project; its stage
  * columns (F-20.2), with the head and the jobs read again every 5 s while a job runs or waits;
- * Run new pipeline asks first and then selects the new pipeline (F-20.3, decision 8). A restored
+ * Run new pipeline asks first and then selects the new pipeline (F-20.3, decision 8); Retry failed
+ * jobs, Cancel pipeline and Open in GitLab (F-20.4). After a write GitLab refuses with 403 every
+ * write of the screen is disabled with GitLab's reason until it reopens (decision 9). A restored
  * start reads nothing (F-30.4); it asks to open the pipeline again.
  */
 export function PipelineScreen() {
@@ -40,6 +44,7 @@ export function PipelineScreen() {
   const runner = useRunPipeline(project ?? '', iid);
   const [confirming, setConfirming] = useState(false);
   const [runError, setRunError] = useState<string | null>(null);
+  const [refused, setRefused] = useState<string | null>(null);
   const runButton = useRef<HTMLButtonElement>(null);
   const refocus = useRef(false);
   const running = runner.run.isPending;
@@ -54,7 +59,7 @@ export function PipelineScreen() {
     setRunError(`Couldn't run a pipeline. ${e.message}`);
   };
   const askRun = () => {
-    if (confirming || running) return;
+    if (confirming || running || refused !== null) return;
     setRunError(null);
     setConfirming(true);
     runner.head.reset();
@@ -77,7 +82,11 @@ export function PipelineScreen() {
       onSuccess: (tab) => {
         setPicked(tab.id);
       },
-      onError: failed,
+      onError: (e) => {
+        failed(e);
+        const refusal = refusalOf(e);
+        if (refusal !== null) setRefused(refusal);
+      },
     });
   };
 
@@ -90,7 +99,20 @@ export function PipelineScreen() {
         running={running}
         runDisabled={restored || !project}
         runRef={runButton}
-      />
+        refused={refused}
+      >
+        <PipelineActions
+          project={project ?? ''}
+          iid={iid}
+          pipeline={shown}
+          head={head.data}
+          jobs={jobs.data}
+          refused={refused}
+          onRefused={setRefused}
+          onFailure={setRunError}
+          showOpen={!(list.isSuccess && tabs.length === 0)}
+        />
+      </PipelineHeader>
       {runError !== null && (
         <p role="alert" className={styles.runError}>
           {runError}
@@ -130,6 +152,8 @@ export function PipelineScreen() {
               iid={iid}
               pipeline={selected}
               jobs={jobs}
+              refused={refused}
+              onRefused={setRefused}
             />
           )}
         </>

@@ -2,6 +2,8 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { JobRow } from '../types/JobRow';
+import type { PipelineHead } from '../types/PipelineHead';
+import type { PipelineState } from '../types/PipelineState';
 import type { PipelineTab } from '../types/PipelineTab';
 import type { StageColumn } from '../types/StageColumn';
 import {
@@ -23,7 +25,9 @@ type PipelineCommands =
   | 'jobRetry'
   | 'jobCancel'
   | 'pipelineMrHead'
-  | 'pipelineRunMr';
+  | 'pipelineRunMr'
+  | 'pipelineRetry'
+  | 'pipelineCancel';
 
 const notFound = () =>
   new IpcError({ code: 'GITLAB_NOT_FOUND', message: "GitLab didn't find it.", retryable: false });
@@ -38,7 +42,10 @@ const FIRST_ATTEMPT_ID = 9_000_000;
  * this client's copy of the jobs only: a retry puts a running attempt with a new id in the old
  * row's place, a cancel leaves the row canceled. `pipelineMrHead` and `pipelineRunMr` (F-20.3):
  * !482's head is version 3's SHA; a run adds #18351 (`fixtures/pipeline.ts`) as the latest
- * pipeline of this client, once; any other MR is GitLab's 404.
+ * pipeline of this client, once; any other MR is GitLab's 404. `pipelineRetry` and
+ * `pipelineCancel` (F-20.4): Retry failed jobs gives every failed, failed-allowed and canceled job
+ * a running attempt with a new id and the pipeline reads Running; Cancel pipeline cancels every
+ * running and waiting job and the pipeline reads Canceled; passed, skipped and manual jobs stay.
  */
 export function createPipelineBackend(
   user: () => GitlabUser | null,
@@ -51,10 +58,33 @@ export function createPipelineBackend(
   const loadedAt = new Date();
   /** When Run new pipeline started #18351; null before. */
   let ranAt: Date | null = null;
+  /** The status a pipeline-level Retry or Cancel left a pipeline of !482 in. */
+  const statuses = new Map<number, PipelineState>();
+  const withStatus = (tab: PipelineTab): PipelineTab => ({
+    ...tab,
+    status: statuses.get(tab.id) ?? tab.status,
+  });
   const tabsOf = (iid: number): PipelineTab[] => {
     const tabs = pipelineTabs(iid);
-    if (iid !== PIPELINE_MR || ranAt === null) return tabs;
-    return [newTab(), ...tabs.map((t) => ({ ...t, latest: false }))];
+    if (iid !== PIPELINE_MR) return tabs;
+    if (ranAt === null) return tabs.map(withStatus);
+    return [newTab(), ...tabs.map((t) => ({ ...t, latest: false }))].map(withStatus);
+  };
+  const headOf = (iid: number, id: number): PipelineHead | null => {
+    const head =
+      iid === PIPELINE_MR && id === NEW_PIPELINE
+        ? ranAt === null
+          ? null
+          : newPipelineHead(ranAt, user()?.name ?? null)
+        : pipelineHead(iid, id, loadedAt);
+    const status = statuses.get(id);
+    if (!head || status === undefined) return head;
+    return {
+      ...head,
+      status,
+      allowedFailures: 0,
+      durationSecs: status === 'running' ? null : head.durationSecs,
+    };
   };
   const columnsOf = (pipeline: number): StageColumn[] | null => {
     const known = jobs.get(pipeline);
@@ -83,6 +113,21 @@ export function createPipelineBackend(
     }
     return null;
   };
+  /** Rewrites every job of pipeline `id` of MR `iid`, then gives it `status`; its new head. */
+  const actAll = (
+    iid: number,
+    id: number,
+    status: PipelineState,
+    next: (row: JobRow) => JobRow,
+  ): Promise<PipelineHead> => {
+    if (!user()) return Promise.reject(unauthorized());
+    const columns = iid === PIPELINE_MR && headOf(iid, id) ? columnsOf(id) : null;
+    if (!columns) return Promise.reject(notFound());
+    for (const column of columns) column.jobs = column.jobs.map(next);
+    statuses.set(id, status);
+    const head = headOf(iid, id);
+    return head ? respond(head) : Promise.reject(notFound());
+  };
   const act = (id: number, next: (row: JobRow) => JobRow): Promise<JobRow> => {
     if (!user()) return Promise.reject(unauthorized());
     const row = change(id, next);
@@ -96,12 +141,7 @@ export function createPipelineBackend(
     },
     pipelineGet: (_project, iid, id) => {
       if (!user()) return Promise.reject(unauthorized());
-      const head =
-        iid === PIPELINE_MR && id === NEW_PIPELINE
-          ? ranAt === null
-            ? null
-            : newPipelineHead(ranAt, user()?.name ?? null)
-          : pipelineHead(iid, id, loadedAt);
+      const head = headOf(iid, id);
       if (!head) return Promise.reject(notFound());
       return respond(head);
     },
@@ -129,6 +169,26 @@ export function createPipelineBackend(
         action: jobAction('canceled'),
         durationSecs: null,
       })),
+    pipelineRetry: (_project, iid, id) =>
+      actAll(iid, id, 'running', (row) => {
+        if (row.state !== 'failed' && row.state !== 'failedAllowed' && row.state !== 'canceled') {
+          return row;
+        }
+        nextId += 1;
+        return {
+          ...row,
+          id: nextId,
+          state: 'running',
+          action: jobAction('running'),
+          durationSecs: null,
+        };
+      }),
+    pipelineCancel: (_project, iid, id) =>
+      actAll(iid, id, 'canceled', (row) =>
+        row.state === 'running' || row.state === 'waiting'
+          ? { ...row, state: 'canceled', action: jobAction('canceled'), durationSecs: null }
+          : row,
+      ),
     pipelineMrHead: (_project, iid) => {
       if (!user()) return Promise.reject(unauthorized());
       return iid === PIPELINE_MR ? respond(SHA_V3) : Promise.reject(notFound());
