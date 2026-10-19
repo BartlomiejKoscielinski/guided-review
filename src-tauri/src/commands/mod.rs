@@ -2,6 +2,7 @@
 //! They only translate between IPC and the core modules; command names are `area_action`.
 
 pub mod app;
+pub mod approval;
 pub mod claude;
 pub mod drafts;
 pub mod git;
