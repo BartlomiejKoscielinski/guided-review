@@ -1,4 +1,11 @@
-import { act, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  screen,
+  waitFor,
+  within,
+  type BoundFunctions,
+  type queries,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { pathFor } from '../../app/routes';
@@ -36,7 +43,7 @@ const IOS = 'ui-tests:ios-device';
 type Row = Awaited<ReturnType<IpcClient['pipelineJobs']>>[number]['jobs'][number];
 type Vars = Parameters<IpcClient['jobPlay']>[3];
 type User = ReturnType<typeof userEvent.setup>;
-type Form = ReturnType<typeof within>;
+type Form = BoundFunctions<typeof queries>;
 
 /** What the core answers after a play: the same job, now waiting. */
 const playedRow = (id: number): Row => ({
@@ -260,7 +267,9 @@ describe('S-08 manual job form (F-20.6)', () => {
 
   it('F-20.6 a failed play says why, keeps the typed rows and leaves Run ready', async () => {
     const jobPlay = vi.fn<IpcClient['jobPlay']>(() =>
-      Promise.reject(new IpcError({ code: 'GITLAB_ERROR', message: 'boom', retryable: false })),
+      Promise.reject(
+        new IpcError({ code: 'GITLAB_UNREACHABLE', message: 'boom', retryable: false }),
+      ),
     );
     const { user, form } = await openForm(IOS, () => ({ jobPlay }));
     await addRow(user, form, 'DEVICE', 'iPhone 16');
