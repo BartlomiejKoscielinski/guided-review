@@ -149,6 +149,23 @@ export function verifySteps(files, { full = false } = {}) {
   return rust ? RUST_STEPS : JS_STEPS;
 }
 
+/**
+ * E24: the Vitest files to re-run alone when a gate verify failed only on Vitest timeouts in files
+ * the item did not touch (S-03 F-09.7 under parallel load, ap-20261017-0624). Returns the failed
+ * test files when `test` is the only failed step, the log reports a timeout and no failed file is
+ * in the diff; else null (a real failure stays a failure).
+ */
+export function untouchedVitestFailures(verifyOut, testLog, files) {
+  const steps = [...verifyOut.matchAll(/^FAIL {2}(\S+)/gm)].map((m) => m[1]);
+  if (steps.length !== 1 || steps[0] !== 'test' || !/timed out|timeout/i.test(testLog)) return null;
+  const norm = (f) => f.replace(/\\/g, '/');
+  const failed = [
+    ...new Set([...testLog.matchAll(/FAIL\s+(\S+\.test\.[cm]?[jt]sx?)/g)].map((m) => norm(m[1]))),
+  ];
+  const touched = new Set(files.map(norm));
+  return failed.length && !failed.some((f) => touched.has(f)) ? failed : null;
+}
+
 /** Changed files that are protected. */
 export function protectedChanges(files) {
   return files.filter((f) => PROTECTED.includes(f));

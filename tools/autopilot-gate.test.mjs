@@ -15,6 +15,7 @@ import {
   protectedChanges,
   ruleViolations,
   tickProgress,
+  untouchedVitestFailures,
   verifySteps,
 } from './autopilot/gate-lib.mjs';
 
@@ -336,4 +337,16 @@ test('E22 autopilot gate: after the base is merged in, commits are the item own 
   } finally {
     await rm(r.dir, { recursive: true, force: true });
   }
+});
+
+test('untouchedVitestFailures: only test failed on timeouts outside the diff (E24)', () => {
+  const out = 'PASS  lint  30s\nFAIL  test  42s\nPASS  rust:test  90s\nFAILED: test';
+  const log =
+    ' FAIL  src/screens/step/LineComposer.test.tsx > F-09.7 x\nError: Test timed out in 5000ms.\n';
+  assert.deepEqual(untouchedVitestFailures(out, log, ['src/screens/threads/A.tsx']), [
+    'src/screens/step/LineComposer.test.tsx',
+  ]);
+  assert.equal(untouchedVitestFailures(out, log, ['src/screens/step/LineComposer.test.tsx']), null);
+  assert.equal(untouchedVitestFailures(out, log.replace('timed out', 'failed'), []), null);
+  assert.equal(untouchedVitestFailures(`${out}\nFAIL  lint  3s`, log, []), null);
 });
