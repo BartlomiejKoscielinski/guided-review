@@ -1,5 +1,5 @@
 {
-  "items": 52,
+  "items": 53,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 16,
+      "helpful": 17,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 16,
+      "helpful": 17,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 9,
+      "helpful": 10,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -1175,6 +1175,21 @@
       "created": "2026-10-19T11:04:22.313Z",
       "lastUsedItem": 51,
       "source": "F-12.5"
+    },
+    {
+      "id": "P-108",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/app/**"
+      ],
+      "text": "For an indicator mounted in shared chrome (title bar, chips), lock it as a red test on every screen that renders the chrome, not only the screen the plan row names, because F-18.8 locked S-01 only, the implementer followed that, and review had to send a fix round to mount it on S-02 to S-11 where Claude tasks actually run.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T11:43:10.535Z",
+      "lastUsedItem": 52,
+      "source": "F-18.8"
     }
   ]
 }

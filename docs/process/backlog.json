@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T11:04:23.900Z",
+  "updated": "2026-10-19T11:43:11.302Z",
   "items": [
     {
       "id": "F-11.1",
@@ -303,17 +303,15 @@
       "title": "While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chi…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "cb6a077",
+      "status": "live",
+      "attempts": 1,
+      "note": "Merged 92ca577. Built: claude_activity command (queue counts), useClaudeActivity poll 1 s, purple spinner right of the Claude status chip (S-01) and of every model chip (S-02..S-11 except S-07), reduced motion stops it. Left: live check in tauri dev (spinner visible and spinning while a Claude task runs).",
+      "lockSha": "998a3c2",
       "tests": [
         "src/app/titlebar/ClaudeActivity.test.tsx",
-        "src/ipc/mock/claudeActivity.test.ts",
         "tests/e2e/titlebar-f18-8.spec.ts",
         "src/app/shell.test.tsx"
-      ],
-      "forkSha": "6421a70"
+      ]
     }
   ]
 }
