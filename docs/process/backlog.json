@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T07:18:11.099Z",
+  "updated": "2026-10-19T07:48:23.732Z",
   "items": [
     {
       "id": "F-11.1",
@@ -247,18 +247,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "af04ce5",
+      "lockSha": "d148f8d",
       "tests": [
         "src-tauri/tests/gitlab_approvals.rs",
         "src/screens/summary/ApprovalTile.test.tsx",
         "src/ipc/mock/approvalState.test.ts",
         "src/ipc/tauriApprovalState.test.ts",
         "tests/e2e/summary-f14-1.spec.ts"
-      ],
-      "forkSha": "d465348"
+      ]
     },
     {
       "id": "F-14.2",
@@ -267,9 +266,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "25e7746",
+      "tests": [
+        "src-tauri/tests/gitlab_approve.rs",
+        "src/ipc/mock/approve.test.ts",
+        "src/screens/summary/ApprovalTileActions.test.tsx",
+        "tests/e2e/summary-f14-2.spec.ts"
+      ],
+      "forkSha": "d1fc673"
     },
     {
       "id": "F-14.3",
