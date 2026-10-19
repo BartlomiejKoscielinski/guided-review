@@ -17,8 +17,10 @@ import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { NewMrDraft } from './types/NewMrDraft';
+import type { JobRow } from './types/JobRow';
 import type { PipelineHead } from './types/PipelineHead';
 import type { PipelineTab } from './types/PipelineTab';
+import type { StageColumn } from './types/StageColumn';
 import type { PlanView } from './types/PlanView';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
@@ -360,11 +362,17 @@ export interface IpcClient {
    */
   gitlabForeignDrafts(sessionId: string): Promise<number>;
 
-  // S-08 Pipeline (F-20), read only. Never called on a restored start (F-30.4).
+  // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
   /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */
   pipelineList(project: string, iid: number): Promise<PipelineTab[]>;
   /** The status block and meta line of pipeline `id` of the MR (F-20.1). */
   pipelineGet(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /** The stage columns of pipeline `pipeline` of the MR, retried attempts hidden (F-20.2). */
+  pipelineJobs(project: string, iid: number, pipeline: number): Promise<StageColumn[]>;
+  /** Retries job `job` at once (F-20.2, decision 6); the row of the new attempt (a new id). */
+  jobRetry(project: string, iid: number, job: number): Promise<JobRow>;
+  /** Cancels job `job` at once (F-20.2, decision 6); the row as GitLab now has it. */
+  jobCancel(project: string, iid: number, job: number): Promise<JobRow>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

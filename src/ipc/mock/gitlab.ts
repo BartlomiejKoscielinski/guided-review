@@ -31,6 +31,9 @@ type GitlabClient = Pick<
   | 'gitlabReply'
   | 'pipelineList'
   | 'pipelineGet'
+  | 'pipelineJobs'
+  | 'jobRetry'
+  | 'jobCancel'
   | 'draftsPublish'
   | 'gitlabForeignDrafts'
 >;

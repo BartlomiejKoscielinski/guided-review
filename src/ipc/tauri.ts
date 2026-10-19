@@ -15,8 +15,10 @@ import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { PublishOutcome } from './types/PublishOutcome';
+import type { JobRow } from './types/JobRow';
 import type { PipelineHead } from './types/PipelineHead';
 import type { PipelineTab } from './types/PipelineTab';
+import type { StageColumn } from './types/StageColumn';
 import type { PlanView } from './types/PlanView';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
@@ -208,6 +210,10 @@ export function createTauriClient(): IpcClient {
     gitlabForeignDrafts: (session) => call<number>('gitlab_foreign_drafts', { session }),
     pipelineList: (project, iid) => call<PipelineTab[]>('pipeline_list', { project, iid }),
     pipelineGet: (project, iid, id) => call<PipelineHead>('pipeline_get', { project, iid, id }),
+    pipelineJobs: (project, iid, pipeline) =>
+      call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
+    jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),
+    jobCancel: (project, iid, job) => call<JobRow>('job_cancel', { project, iid, job }),
     ...createTauriWindowControls(),
   };
 }
