@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T09:41:37.569Z",
+  "updated": "2026-10-19T09:57:01.142Z",
   "items": [
     {
       "id": "F-11.1",
@@ -131,7 +131,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "partial",
+      "status": "todo",
       "attempts": 1,
       "note": "Merged 5be1992. Open: (1) decision 10b re-map not built: positions are not moved to a newer MR version, drafts.outdated is never set, a ticked outdated draft is not sent as a general comment with file:line quoted (verify the re-map on the stand-in first); (2) review normal: on a restored S-05 Publish should re-check GitLab's own drafts (seenForeign: foreign.data ?? 0), blocked by locked MrSummaryPublish.test.tsx:509; (3) DELETE draft_notes/:id and GET versions are marked verify on 17.11.7; (4) not tried in the real app.",
       "lockSha": "fdaf618",
@@ -295,6 +295,16 @@
         "src/screens/summary/ApprovalTileNotes.test.tsx",
         "tests/e2e/summary-f14-3.spec.ts"
       ]
+    },
+    {
+      "id": "F-18.8",
+      "milestone": "M5",
+      "title": "While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chi…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     }
   ]
 }

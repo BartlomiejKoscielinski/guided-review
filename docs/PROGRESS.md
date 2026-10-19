@@ -140,6 +140,7 @@ Rules for Claude Code:
 - [x] F-14.1 Approval tile: state ("NOT APPROVED YET" with dashed square / approved in solid green), "Approvals: X of… (af04ce5, d1fc673)
 - [x] F-14.2 Approve MR / Revoke approval. Approval is sent with the head SHA that was reviewed; if the MR changed… (25e7746, dce0661, bf00194, 8e1ccd7, f25cdf4)
 - [x] F-14.3 The tile states "Approving doesn't publish comments." and the number of open threads ("Open threads: 3."… (d76f342, 4821a8f)
+- [ ] F-18.8 While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chip.
 
 ## M6 · Pipelines
 - [ ] F-20.1 Shows the MR's pipelines as tabs (newest first, "version N · latest"), the selected pipeline's status…
