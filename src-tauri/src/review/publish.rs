@@ -10,7 +10,8 @@
 //! with the text it carries (`drafts.gitlab_draft_id` and `gitlab_draft_note`, the summary's in
 //! `sessions.summary_json`), so a Retry makes only what is missing and nothing is published twice.
 //! Before anything is made, the notes this app made that no longer say what goes out (a draft not
-//! asked now, an edited draft, a summary edited or no longer ticked) are deleted, because
+//! asked now, an edited draft, a line comment's note on another version than `req.refs`, a summary
+//! edited or no longer ticked) are deleted ([`publish_notes`](super::publish_notes)), because
 //! `bulk_publish` sends every pending note: if one can't be deleted, nothing goes out. A failed
 //! batch fails every draft it carried, and the summary. A refused token or an unreachable GitLab
 //! stops the run: the drafts left get the same reason without a request each. A failure of GitLab
@@ -29,10 +30,9 @@ use ts_rs::TS;
 
 use super::drafts::{Draft, DraftError};
 use super::note_position::note_position;
+use super::publish_notes::delete_stale_notes;
 use super::publish_remap::{self, Moved};
-use super::publish_store::{
-    Pending, forget_note, mark_published, pending, remember_failure, remember_note,
-};
+use super::publish_store::{Pending, mark_published, pending, remember_failure, remember_note};
 use super::step_context::MrRef;
 use crate::error::AppError;
 use crate::git::model::FileDiff;
@@ -42,6 +42,7 @@ use crate::gitlab::error::GitlabError;
 use crate::store::sessions as sessions_summary;
 use crate::store::{Store, StoreError};
 
+pub use super::publish_notes::foreign_drafts;
 pub use super::publish_reason::{
     LINE_GONE, NEEDS_REVIEW, NO_VERSION, REFUSED, UNREACHABLE, VERSION_GONE, reason, stops_the_run,
 };
@@ -135,50 +136,6 @@ fn summary_text<'a>(req: &PublishRequest<'a>) -> Result<Option<&'a str>, Publish
     Ok(req.summary.filter(|t| !t.trim().is_empty() && !published))
 }
 
-/// Deletes the GitLab draft notes this app made that no longer say what goes out, so the batch
-/// can't send them (see the module docs). `Some(reason)` when one could not be deleted.
-async fn delete_stale_notes(
-    req: &PublishRequest<'_>,
-    text: Option<&str>,
-) -> Result<Option<String>, PublishError> {
-    let all = req.store.with_conn(|c| Ok(pending(c, req.session)))??;
-    let wanted: HashSet<&str> = req.ids.iter().map(String::as_str).collect();
-    // (the draft, or None for the summary; the note)
-    let mut stale: Vec<(Option<&str>, i64)> = all
-        .iter()
-        .filter(|p| !p.published)
-        .filter(|p| !(wanted.contains(p.draft.id.as_str()) && p.note_is_current()))
-        .filter_map(|p| {
-            p.gitlab_draft_id
-                .map(|note| (Some(p.draft.id.as_str()), note))
-        })
-        .collect();
-    let summary = req
-        .store
-        .with_conn(|c| sessions_summary::summary_note(c, req.session))?;
-    // A summary no longer sent, or whose text changed.
-    if let Some((note, carries)) = summary
-        && (text.is_none() || carries.as_deref() != text)
-    {
-        stale.push((None, note));
-    }
-    let (mr, session) = (req.mr, req.session);
-    for (draft, note) in stale {
-        match draft_notes::delete(req.client, &mr.project, mr.iid, note).await {
-            // Gone already (deleted in GitLab's web UI): nothing left to send.
-            Ok(()) | Err(GitlabError::NotFound) => req.store.with_conn(|c| match draft {
-                Some(id) => forget_note(c, id),
-                None => sessions_summary::set_summary_draft(c, session, None),
-            })?,
-            Err(error) => {
-                tracing::warn!(%error, "an outdated draft note could not be deleted");
-                return Ok(Some(reason(&error)));
-            }
-        }
-    }
-    Ok(None)
-}
-
 /// The note of a draft: made now, or the one an earlier attempt made.
 enum Note {
     Made,
@@ -258,8 +215,9 @@ pub async fn run_on(
             .await;
             match made.map(|n| i64::try_from(n.id)) {
                 Ok(Ok(made)) => {
-                    req.store
-                        .with_conn(|c| remember_note(c, id, made, &draft.body))?;
+                    req.store.with_conn(|c| {
+                        remember_note(c, id, made, &draft.body, position.as_ref().map(|_| refs))
+                    })?;
                     Note::Made
                 }
                 Ok(Err(_)) => Note::Failed(reason(&GitlabError::Decode("note id".into()))),
@@ -392,33 +350,6 @@ pub fn fail_all(
         failed,
         summary_failed: summary_asked.then(|| why.to_owned()),
     })
-}
-
-/// The pending draft notes of the user on the MR that this session did not make (decision 8):
-/// `bulk_publish` sends them too. Reads only.
-pub async fn foreign_drafts(
-    client: &GitlabClient,
-    store: &Store,
-    session: &str,
-    mr: &MrRef,
-) -> Result<u32, PublishError> {
-    let listed = draft_notes::list(client, &mr.project, mr.iid).await?;
-    let ours = store.with_conn(|c| {
-        let mut stmt = c.prepare(
-            "SELECT gitlab_draft_id FROM drafts WHERE session_id = ?1
-             AND gitlab_draft_id IS NOT NULL",
-        )?;
-        let mut ids = stmt
-            .query_map([session], |r| r.get::<_, i64>(0))?
-            .collect::<Result<HashSet<_>, _>>()?;
-        ids.extend(sessions_summary::summary_draft(c, session)?);
-        Ok(ids)
-    })?;
-    let foreign = listed
-        .iter()
-        .filter(|n| !i64::try_from(n.id).is_ok_and(|id| ours.contains(&id)))
-        .count();
-    Ok(u32::try_from(foreign).unwrap_or(u32::MAX))
 }
 
 #[cfg(test)]

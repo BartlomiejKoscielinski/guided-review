@@ -27,6 +27,7 @@ pub mod position;
 pub mod prepare;
 pub mod progress;
 pub mod publish;
+mod publish_notes;
 mod publish_reason;
 pub mod publish_remap;
 pub mod publish_session;
