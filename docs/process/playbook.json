@@ -1,5 +1,5 @@
 {
-  "items": 53,
+  "items": 54,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 17,
+      "helpful": 18,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 17,
+      "helpful": 18,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 10,
+      "helpful": 11,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 34,
+      "helpful": 35,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -171,7 +171,7 @@
         "src/screens/summary/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
-      "helpful": 29,
+      "helpful": 30,
       "harmful": 0,
       "seen": 7,
       "created": "2026-10-14T15:13:07.675Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 28,
+      "helpful": 29,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -261,7 +261,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -373,7 +373,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 21,
+      "helpful": 22,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
@@ -1190,6 +1190,36 @@
       "created": "2026-10-19T11:43:10.535Z",
       "lastUsedItem": 52,
       "source": "F-18.8"
+    },
+    {
+      "id": "P-109",
+      "tags": [
+        "mixed",
+        "implement",
+        "src-tauri/src/gitlab/**"
+      ],
+      "text": "Before adding a second mapper for a status enum (e.g. PipelineState::from_rest next to from_graphql), grep the existing mapper and its test and make both agree, or record the difference in the plan, because review found pending mapped to Running by one and Waiting by the other, so the same pipeline read differently on S-01 and S-08.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T15:02:24.101Z",
+      "lastUsedItem": 53,
+      "source": "F-20.1"
+    },
+    {
+      "id": "P-110",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "When a tabs component sets aria-controls, render the matching role=tabpanel element in the same commit, and give a not-yet-wired control (e.g. a no-op Run new pipeline button) a disabled state or an explicit note instead of an inert onClick, because review raised both as nits on F-20.1.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T15:02:24.181Z",
+      "lastUsedItem": 53,
+      "source": "F-20.1"
     }
   ]
 }
