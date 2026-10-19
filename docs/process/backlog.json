@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T19:36:38.512Z",
+  "updated": "2026-10-19T20:15:13.716Z",
   "items": [
     {
       "id": "F-20.1",
@@ -113,17 +113,19 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "065a008",
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (f53eb13): manual job form with variables, job_play and job_variables_get. Live check left in tauri dev against the stand-in: a real play with variables, remembered values on the next pipeline, a 403 disabling Run <job>.",
+      "lockSha": "082b14c",
       "tests": [
         "src-tauri/tests/job_play.rs",
         "src/ipc/mock/pipelinePlay.test.ts",
         "src/screens/pipeline/ManualJobForm.test.tsx",
         "tests/e2e/pipeline-f20-6.spec.ts"
       ],
-      "forkSha": "05c545a"
+      "disputes": [
+        "src/screens/pipeline/ManualJobForm.test.tsx@28c09ed"
+      ]
     },
     {
       "id": "F-20.7",
@@ -132,9 +134,16 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "a9c43cb",
+      "tests": [
+        "src-tauri/tests/pipeline_explain_task.rs",
+        "src/screens/pipeline/ExplainFailure.test.tsx",
+        "tests/e2e/pipeline-f20-7.spec.ts"
+      ],
+      "forkSha": "cabaf59"
     },
     {
       "id": "F-20.8",
