@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T15:57:53.632Z",
+  "updated": "2026-10-19T17:08:14.802Z",
   "items": [
     {
       "id": "F-20.1",
@@ -47,17 +47,19 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "d8baf10",
+      "lockSha": "83f35ee",
       "tests": [
         "src-tauri/tests/pipeline_run.rs",
         "src/ipc/mock/pipelineRun.test.ts",
         "src/screens/pipeline/RunPipelineConfirm.test.tsx",
         "tests/e2e/pipeline-f20-3.spec.ts"
       ],
-      "forkSha": "3fdc665"
+      "disputes": [
+        "src-tauri/tests/pipeline_run.rs@f98002f"
+      ]
     },
     {
       "id": "F-20.4",
@@ -66,9 +68,19 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "295cd39",
+      "tests": [
+        "src-tauri/tests/pipeline_actions.rs",
+        "src-tauri/tests/browser_open.rs",
+        "src/ipc/mock/pipelineActions.test.ts",
+        "src/screens/pipeline/PipelineActions.test.tsx",
+        "src/screens/pipeline/PipelineActionsForbidden.test.tsx",
+        "tests/e2e/pipeline-f20-4.spec.ts"
+      ],
+      "forkSha": "fdc6e1c"
     },
     {
       "id": "F-20.5",

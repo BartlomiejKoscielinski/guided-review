@@ -47,6 +47,8 @@ export function createPipelineBackend(
 ): Pick<IpcClient, PipelineCommands> {
   const jobs = new Map<number, StageColumn[]>();
   let nextId = FIRST_ATTEMPT_ID;
+  /** The fixture pipelines started relative to this, so a pipeline's start time never moves. */
+  const loadedAt = new Date();
   /** When Run new pipeline started #18351; null before. */
   let ranAt: Date | null = null;
   const tabsOf = (iid: number): PipelineTab[] => {
@@ -99,7 +101,7 @@ export function createPipelineBackend(
           ? ranAt === null
             ? null
             : newPipelineHead(ranAt, user()?.name ?? null)
-          : pipelineHead(iid, id);
+          : pipelineHead(iid, id, loadedAt);
       if (!head) return Promise.reject(notFound());
       return respond(head);
     },
