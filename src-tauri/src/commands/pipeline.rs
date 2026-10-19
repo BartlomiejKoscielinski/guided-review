@@ -112,8 +112,16 @@ pub async fn job_play(
     let result = pipeline_view::play_job(&client, &project, job, &vars).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     let row = result?;
-    store.with_conn(|c| job_variables::save(c, &project, &row.name, &vars))?;
+    remember_played_vars(&store, &project, &row.name, &vars);
     Ok(row)
+}
+
+/// Keeps `vars` as `job_name`'s last values after GitLab accepted the play. The job already runs,
+/// so a failed write is only logged (no names or values) and never turns the play into an error.
+fn remember_played_vars(store: &Store, project: &str, job_name: &str, vars: &[JobVariable]) {
+    if let Err(err) = store.with_conn(|c| job_variables::save(c, project, job_name, vars)) {
+        tracing::warn!(error = %err, "job_play: the job runs, but its variables were not kept");
+    }
 }
 
 /// The variables job `job_name` of `project` last ran with on this machine (F-20.6); read only.
@@ -188,4 +196,28 @@ pub async fn pipeline_cancel(
     let result = pipeline_view::cancel_pipeline(&client, &project, iid, id, &user.username).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     Ok(result?)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn f20_6_a_failed_save_after_a_play_is_only_logged() {
+        let store = Store::open_in_memory().unwrap();
+        store
+            .with_conn(|c| Ok(c.execute_batch("DROP TABLE job_variables")?))
+            .unwrap();
+        let vars = vec![JobVariable {
+            key: "DEVICE".into(),
+            value: "iPhone 16".into(),
+        }];
+        let failed = store.with_conn(|c| job_variables::save(c, "p", "j", &vars));
+        assert!(
+            failed.is_err(),
+            "the write must fail for this test to mean anything"
+        );
+        // Returns `()`: job_play goes on to `Ok(row)` whatever the write did.
+        remember_played_vars(&store, "mobile/mobile-app", "ui-tests:ios-device", &vars);
+    }
 }
