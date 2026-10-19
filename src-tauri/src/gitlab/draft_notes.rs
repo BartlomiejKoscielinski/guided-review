@@ -130,8 +130,8 @@ pub async fn bulk_publish(
 }
 
 /// The `diff_refs` of the version whose head is `head_sha`; `None` when GitLab doesn't list it.
-/// Never another version: the line numbers come from the reviewed diff, and anchoring them to
-/// other SHAs could put a comment on the wrong line (the re-map of decision 10b isn't built).
+/// Never another version: the line numbers come from the reviewed diff; a newer version gets
+/// positions only through the re-map of decision 10b (`review::publish_remap`).
 pub fn pick_version(versions: &[Value], head_sha: &str) -> Option<DiffRefs> {
     versions
         .iter()
@@ -171,6 +171,22 @@ pub async fn version_refs(
     );
     let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
     Ok(pick_version(&versions, head_sha))
+}
+
+/// The `diff_refs` of the reviewed version (head `head_sha`, [`pick_version`]) and of the MR's
+/// latest version ([`pick_latest`]) from one `GET …/versions`.
+pub async fn reviewed_and_latest_refs(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+    head_sha: &str,
+) -> Result<(Option<DiffRefs>, Option<DiffRefs>), GitlabError> {
+    let path = format!(
+        "/projects/{}/merge_requests/{iid}/versions",
+        project_id(project)
+    );
+    let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
+    Ok((pick_version(&versions, head_sha), pick_latest(&versions)))
 }
 
 /// The `diff_refs` of the MR's latest version (`GET …/versions`, [`pick_latest`]).

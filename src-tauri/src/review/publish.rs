@@ -17,9 +17,10 @@
 //! is a `failed` entry (or `summary_failed`), never an `Err`. A published summary is never sent
 //! again.
 //!
-//! Not built yet (follow-up of F-12.5): the re-map of positions to a newer version of the MR
-//! (decision 10b). Positions are anchored to the reviewed version's `diff_refs`, and nothing sets
-//! `drafts.outdated` yet.
+//! [`run`] places line comments on the reviewed version (`req.refs`, `req.files`); [`run_on`] with
+//! the positions [`publish_remap::remap`] found places them on a newer version of the MR (decision
+//! 10b, `req.refs` then being that version's). An outdated draft the user ticked goes out without
+//! a position, its `file:line` quoted ([`publish_remap::quoted`]).
 
 use std::collections::HashSet;
 
@@ -28,6 +29,7 @@ use ts_rs::TS;
 
 use super::drafts::{Draft, DraftError};
 use super::note_position::note_position;
+use super::publish_remap::{self, Moved};
 use super::publish_store::{
     Pending, forget_note, mark_published, pending, remember_failure, remember_note,
 };
@@ -183,8 +185,18 @@ enum Note {
     Failed(String),
 }
 
-/// Publishes the ticked drafts and the summary comment in one batch (see the module docs).
+/// Publishes the ticked drafts and the summary comment in one batch on the reviewed version (see
+/// the module docs).
 pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishError> {
+    run_on(req, None).await
+}
+
+/// [`run`], with the line comments placed at `moved` (positions on the version of `req.refs`)
+/// when the MR has a newer version than the reviewed one (decision 10b).
+pub async fn run_on(
+    req: &PublishRequest<'_>,
+    moved: Option<&Moved>,
+) -> Result<PublishOutcome, PublishError> {
     let text = summary_text(req)?;
     // Unknown drafts are refused before GitLab is asked.
     asked(
@@ -213,21 +225,34 @@ pub async fn run(req: &PublishRequest<'_>) -> Result<PublishOutcome, PublishErro
         } else if let Some(reason) = &stopped {
             Note::Failed(reason.clone())
         } else {
+            // An outdated draft goes out as a general comment (decision 10b).
             let position = match &draft.position {
-                Some(at) => match note_position(req.files, at) {
-                    Some(position) => Some(position),
-                    None => {
-                        notes.push((id, Note::Failed(LINE_GONE.to_owned())));
-                        continue;
+                Some(_) if draft.outdated => None,
+                Some(at) => {
+                    let placed = match moved {
+                        Some(moved) => moved.positions.get(id).cloned(),
+                        None => note_position(req.files, at),
+                    };
+                    match placed {
+                        Some(position) => Some(position),
+                        None => {
+                            notes.push((id, Note::Failed(LINE_GONE.to_owned())));
+                            continue;
+                        }
                     }
-                },
+                }
                 None => None,
+            };
+            let text = if draft.outdated {
+                publish_remap::quoted(draft)
+            } else {
+                draft.body.clone()
             };
             let made = draft_notes::create(
                 req.client,
                 &mr.project,
                 mr.iid,
-                &draft.body,
+                &text,
                 position.as_ref().map(|p| (refs, p)),
             )
             .await;

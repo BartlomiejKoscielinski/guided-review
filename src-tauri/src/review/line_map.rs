@@ -112,7 +112,7 @@ impl<'a> LineMap<'a> {
     }
 
     /// The commit is in the object store, fetched now if it wasn't.
-    async fn readable(&mut self, sha: &str) -> bool {
+    pub async fn readable(&mut self, sha: &str) -> bool {
         if let Some(&known) = self.commits.get(sha) {
             return known;
         }

@@ -12,12 +12,15 @@ use super::gitlab_threads::session_mr;
 use super::review::ReviewApp;
 use super::with_store;
 use crate::error::AppResult;
+use crate::git::Git;
 use crate::git::model::FileDiff;
 use crate::os::process::Cancel;
 use crate::review::drafts::{self, DraftError};
 use crate::review::publish::{self, PublishOutcome};
+use crate::review::publish_remap::Repo;
 use crate::review::publish_session;
 use crate::review::step_context;
+use crate::source::model::Source;
 use crate::store::{self, Store};
 
 /// The session's diff of the reviewed version: the loaded one, else read from git (no plan, no
@@ -36,6 +39,31 @@ async fn session_files(
     let inputs =
         step_context::load_inputs(store, git_program, session, no_threads, &Cancel::new()).await?;
     Ok(inputs.files)
+}
+
+/// The session's repository and source, where the MR's versions are read for the re-map of
+/// decision 10b; `None` when the session has none. Reads only the store and settings.
+async fn session_repo(store: &Store, session: &str) -> AppResult<Option<Repo>> {
+    let settings = with_store(store, |c| store::settings::load(c)).await?;
+    let id = session.to_owned();
+    let (row, folders) = with_store(store, move |c| {
+        Ok((
+            store::sessions::source_of(c, &id)?,
+            store::sessions::folders(c, &id)?,
+        ))
+    })
+    .await?;
+    let (Some(row), Some(folders)) = (row, folders) else {
+        return Ok(None);
+    };
+    let Ok(source) = serde_json::from_str::<Source>(&row.source_json) else {
+        return Ok(None);
+    };
+    let git_program = settings.git.path.as_deref().map(Path::new);
+    Ok(Some(Repo {
+        git: Git::new(git_program, &folders.checkout),
+        source,
+    }))
 }
 
 /// Publish (N) and Retry: the drafts `ids` (in the list's order) and the summary comment
@@ -61,7 +89,8 @@ pub async fn drafts_publish(
     let (client, _) = connected_client(&gitlab, &store).await?;
     // A "drafts only" session (F-12.7) never asks for the diff: it has none.
     let files = || session_files(&review, &store, &session);
-    publish_session::publish(
+    let repo = session_repo(&store, &session).await?;
+    publish_session::publish_in(
         &client,
         &store,
         &session,
@@ -69,6 +98,7 @@ pub async fn drafts_publish(
         &ids,
         summary.as_deref(),
         files,
+        repo.as_ref(),
     )
     .await
 }

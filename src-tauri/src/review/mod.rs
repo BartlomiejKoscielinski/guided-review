@@ -28,6 +28,7 @@ pub mod prepare;
 pub mod progress;
 pub mod publish;
 mod publish_reason;
+pub mod publish_remap;
 pub mod publish_session;
 mod publish_store;
 pub mod resume;

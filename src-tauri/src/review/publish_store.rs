@@ -108,3 +108,15 @@ pub(super) fn mark_published(conn: &Connection, session: &str) -> Result<Vec<Str
     )?;
     Ok(ids)
 }
+
+/// A draft whose line is gone from the MR's newer version (decision 10b): outdated, unticked, and
+/// `reason` kept like a failed note's.
+pub(super) fn mark_outdated(conn: &Connection, id: &str, reason: &str) -> Result<(), StoreError> {
+    conn.execute(
+        "UPDATE drafts SET outdated = 1, include = 0, error = ?2,
+                updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+         WHERE id = ?1",
+        params![id, reason],
+    )?;
+    Ok(())
+}
