@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T18:16:34.705Z",
+  "updated": "2026-10-19T19:36:38.512Z",
   "items": [
     {
       "id": "F-20.1",
@@ -92,9 +92,19 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (e165ff8): job details panel, job_trace streaming, log classification. Live check left in tauri dev against the stand-in: 3 s re-read of a running job's trace, job_trace_stop on job switch, tail follow on scroll, Full log opens web_url in the browser.",
+      "lockSha": "3a689a2",
+      "tests": [
+        "src-tauri/tests/job_log.rs",
+        "src/ipc/mock/pipelineLog.test.ts",
+        "src/screens/pipeline/JobDetails.test.tsx",
+        "tests/e2e/pipeline-f20-5.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/pipeline/JobDetails.test.tsx@afca83a"
+      ]
     },
     {
       "id": "F-20.6",
@@ -103,9 +113,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "065a008",
+      "tests": [
+        "src-tauri/tests/job_play.rs",
+        "src/ipc/mock/pipelinePlay.test.ts",
+        "src/screens/pipeline/ManualJobForm.test.tsx",
+        "tests/e2e/pipeline-f20-6.spec.ts"
+      ],
+      "forkSha": "05c545a"
     },
     {
       "id": "F-20.7",

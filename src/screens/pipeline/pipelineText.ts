@@ -97,12 +97,16 @@ export function hasJobLog(state: JobState): boolean {
   return state !== 'waiting' && state !== 'manual' && state !== 'skipped';
 }
 
-/** The details' meta (F-20.5): "<stage> stage · <clock>", "… · started just now" while running,
+/** The details' meta (F-20.5): "<stage> stage · <clock>"; while running "… · running <clock>"
+ * from the elapsed time GitLab returns, or "… · started just now" before GitLab has one;
  * "… · allowed to fail". */
 export function jobDetailsMeta(row: JobRow, stage: string): string {
   const parts = [`${stage} stage`];
-  if (row.state === 'running') parts.push('started just now');
-  else if (row.durationSecs !== null && hasJobLog(row.state))
+  if (row.state === 'running') {
+    parts.push(
+      row.durationSecs === null ? 'started just now' : `running ${jobClock(row.durationSecs)}`,
+    );
+  } else if (row.durationSecs !== null && hasJobLog(row.state))
     parts.push(jobClock(row.durationSecs));
   if (row.state === 'failedAllowed') parts.push('allowed to fail');
   const text = parts.join(' · ');

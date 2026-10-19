@@ -91,7 +91,12 @@ export function JobDetails({
                 {log.error}
               </p>
             )}
-            <JobLog lines={log.lines} truncated={log.truncated} running={running} />
+            <JobLog
+              lines={log.lines}
+              truncated={log.truncated}
+              running={running}
+              replaces={log.replaces}
+            />
           </div>
           <div className={styles.side}>
             {running && (

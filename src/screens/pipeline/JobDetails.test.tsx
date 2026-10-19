@@ -29,7 +29,6 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 //    (data-kind="plain") when an event says `truncated`.
 
 const IID = 482;
-const PROJECT = 'mobile/mobile-app';
 type Row = Awaited<ReturnType<IpcClient['pipelineJobs']>>[number]['jobs'][number];
 type Event = Parameters<Parameters<IpcClient['jobTrace']>[3]>[0];
 type Line = Event['lines'][number];
@@ -340,7 +339,7 @@ describe('S-08 job details (F-20.5)', () => {
         jobTrace: () =>
           Promise.reject(
             new IpcError({
-              code: 'GITLAB_NETWORK',
+              code: 'GITLAB_UNREACHABLE',
               message: 'GitLab is not answering.',
               retryable: true,
             }),

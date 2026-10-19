@@ -12,9 +12,11 @@ export interface JobLog {
   truncated: boolean;
   /** "Couldn't load the log. <reason>" once the stream failed. */
   error: string | null;
+  /** How many times the log started over (`replace`): the panel jumps to the tail on each. */
+  replaces: number;
 }
 
-const EMPTY: JobLog = { lines: [], truncated: false, error: null };
+const EMPTY: JobLog = { lines: [], truncated: false, error: null, replaces: 0 };
 
 /** The log after `event`: started over on `replace`, else the new lines appended. */
 export function applyLogEvent(log: JobLog, event: JobLogEvent): JobLog {
@@ -26,6 +28,7 @@ export function applyLogEvent(log: JobLog, event: JobLogEvent): JobLog {
     lines: lines.length > MAX_LOG_LINES ? lines.slice(lines.length - MAX_LOG_LINES) : lines,
     truncated,
     error: null,
+    replaces: event.replace ? log.replaces + 1 : log.replaces,
   };
 }
 
