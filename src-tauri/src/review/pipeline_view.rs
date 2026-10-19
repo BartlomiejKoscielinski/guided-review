@@ -230,13 +230,15 @@ pub fn row_of(job: &Job) -> JobRow {
 pub fn columns(jobs: &[Job]) -> Vec<StageColumn> {
     let mut stage_rank: HashMap<&str, u64> = HashMap::new();
     let mut name_rank: HashMap<(&str, &str), u64> = HashMap::new();
+    let mut newest: HashMap<(&str, &str), u64> = HashMap::new();
     for job in jobs {
         let stage = stage_rank.entry(job.stage.as_str()).or_insert(job.id);
         *stage = (*stage).min(job.id);
-        let name = name_rank
-            .entry((job.stage.as_str(), job.name.as_str()))
-            .or_insert(job.id);
+        let key = (job.stage.as_str(), job.name.as_str());
+        let name = name_rank.entry(key).or_insert(job.id);
         *name = (*name).min(job.id);
+        let last = newest.entry(key).or_insert(job.id);
+        *last = (*last).max(job.id);
     }
     let rank = |job: &Job| {
         (
@@ -251,7 +253,15 @@ pub fn columns(jobs: &[Job]) -> Vec<StageColumn> {
             job.id,
         )
     };
-    let mut latest: Vec<&Job> = jobs.iter().filter(|j| !j.retried).collect();
+    // An attempt is superseded when GitLab marks it `retried` or when the pipeline has a later
+    // job (higher id) with the same stage and name, so a missing `retried` field hides it too.
+    let is_latest = |job: &Job| {
+        !job.retried
+            && newest
+                .get(&(job.stage.as_str(), job.name.as_str()))
+                .is_none_or(|&id| id == job.id)
+    };
+    let mut latest: Vec<&Job> = jobs.iter().filter(|j| is_latest(j)).collect();
     latest.sort_by_key(|j| rank(j));
     let mut out: Vec<StageColumn> = Vec::new();
     for job in latest {
@@ -324,6 +334,22 @@ mod tests {
             .collect();
 
         assert_eq!(names, vec!["lint", "unit"]);
+    }
+
+    #[test]
+    fn f20_2_an_earlier_attempt_is_hidden_without_the_retried_field() {
+        let jobs = [
+            job(1, "lint", "test", false),
+            job(2, "unit", "test", false),
+            job(9, "lint", "test", false),
+        ];
+
+        let rows: Vec<(String, u64)> = columns(&jobs)
+            .into_iter()
+            .flat_map(|c| c.jobs.into_iter().map(|j| (j.name, j.id)))
+            .collect();
+
+        assert_eq!(rows, vec![("lint".to_owned(), 9), ("unit".to_owned(), 2)]);
     }
 
     #[test]
