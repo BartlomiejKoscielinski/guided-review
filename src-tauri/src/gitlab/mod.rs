@@ -4,6 +4,7 @@
 //! positions come later in M5.
 
 pub mod account;
+pub mod approvals;
 pub mod client;
 pub mod discussions;
 pub mod draft_notes;

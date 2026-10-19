@@ -3,6 +3,7 @@ import { useLocation } from 'react-router';
 import type { StartState } from '../../app/router';
 import { useDiscussions } from '../../ipc/hooks/useDiscussions';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
+import { ApprovalTile } from './ApprovalTile';
 import { DraftsOnlyHeader } from './DraftsOnlyHeader';
 import { DraftsTab } from './DraftsTab';
 import { ForeignDraftsBanner } from './ForeignDraftsBanner';
@@ -31,8 +32,8 @@ export interface MrSummaryProps {
  * Back to steps; below, the Comments column with the tabs Drafts N and Threads N open (F-12.2)
  * and the drafts list (F-12.3) with "Add a summary comment" under it (F-12.4); on the Drafts tab
  * Publish (N) next to the tabs and its banners above the rows (F-12.5); on the Threads tab the
- * filters All / Open N / Resolved N next to the tabs and the threads they keep (F-13.1). The
- * Approval tile (F-14) fills the page as its criteria land. A "drafts only" session, made
+ * filters All / Open N / Resolved N next to the tabs and the threads they keep (F-13.1). To the
+ * right, on both tabs, the Approval tile (F-14.1). A "drafts only" session, made
  * by a draft from outside a review, is the same summary without its steps (F-12.7).
  */
 export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
@@ -133,6 +134,7 @@ export function MrSummary({ sessionId, draftsOnly = false }: MrSummaryProps) {
               </div>
             )}
           </section>
+          <ApprovalTile sessionId={sessionId} restored={restored} />
         </div>
       </div>
     </div>

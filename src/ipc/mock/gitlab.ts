@@ -4,12 +4,13 @@ import type { GitlabStatus } from '../types/GitlabStatus';
 import type { MrList } from '../types/MrList';
 import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
+import { createApprovalActions, type ApprovalScenario } from './approvals';
 import type { MockSessionData } from './session-data';
 import { createPublishActions, type PublishScenario } from './publish';
 import { createThreadActions } from './threads';
 
 /** Variations of the GitLab part of the mock (`MOCK_GITLAB_KEY`). */
-export interface GitlabScenario extends PublishScenario {
+export interface GitlabScenario extends PublishScenario, ApprovalScenario {
   /** The status at start: connected (default), no token yet, or a failing token. */
   state?: GitlabStatus['state'];
 }
@@ -21,6 +22,7 @@ type GitlabClient = Pick<
   | 'gitlabAccountRemove'
   | 'gitlabListMrs'
   | 'gitlabDiscussions'
+  | 'gitlabApprovalState'
   | 'gitlabResolve'
   | 'gitlabReply'
   | 'draftsPublish'
@@ -244,6 +246,7 @@ export function createGitlabBackend(
       return respond(list);
     },
     ...createThreadActions(store, signedIn, addToken, respond),
+    ...createApprovalActions(store, scenario, signedIn, addToken, respond),
     ...createPublishActions(store, scenario, signedIn, addToken, respond),
   };
 }

@@ -2,7 +2,8 @@
 //! thread, sent to GitLab at once and independent of drafts and approval. The project and the MR
 //! come from the session in the store, never from the UI; the UI names only the discussion.
 //! An action GitLab accepted updates the session's remembered threads, so the step shows it.
-//! `gitlab_discussions` reads the MR's threads for S-05 ("Threads N open", F-12.2).
+//! `gitlab_discussions` reads the MR's threads for S-05 ("Threads N open", F-12.2) and
+//! `gitlab_approval_state` its approval state for the Approval tile (F-14.1).
 
 use tauri::State;
 
@@ -10,6 +11,7 @@ use super::gitlab::{GitlabApp, connected_client};
 use super::review::ReviewApp;
 use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
+use crate::gitlab::approvals::{self, ApprovalState};
 use crate::gitlab::discussions::{self, Thread};
 use crate::gitlab::thread_actions;
 use crate::review::step_context::MrRef;
@@ -52,6 +54,19 @@ pub async fn gitlab_discussions(
     // F-13.3: an open thread written on an older version shows **Check with Claude**.
     thread_place::mark_outdated(&mut threads, &head);
     Ok(threads)
+}
+
+/// The approval state of the session's MR (S-05 Approval tile, F-14.1): one read, nothing
+/// written. Called when the summary opens, never on a restored start (F-30.4).
+#[tauri::command]
+pub async fn gitlab_approval_state(
+    store: State<'_, Store>,
+    gitlab: State<'_, GitlabApp>,
+    session: String,
+) -> AppResult<ApprovalState> {
+    let mr = session_mr(&store, &session).await?;
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    Ok(approvals::state(&client, &mr.project, mr.iid).await?)
 }
 
 /// Resolve (`resolved = true`) or Reopen (`false`) a thread of the session's MR.

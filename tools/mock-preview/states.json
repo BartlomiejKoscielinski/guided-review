@@ -13,6 +13,10 @@
     "mock": "SummaryDesk.dc.html",
     "state": { "tab": "drafts", "published": true }
   },
+  "S05-summary-approved": {
+    "mock": "SummaryDesk.dc.html",
+    "state": { "tab": "drafts", "approved": true }
+  },
   "S05-summary-self-review": { "mock": "SummaryDesk.dc.html", "state": { "tab": "drafts" } },
   "S06-changes-local": { "mock": "Changes.dc.html", "state": {} },
   "S06-changes-commit": { "mock": "Changes.dc.html", "state": { "source": "commit" } },

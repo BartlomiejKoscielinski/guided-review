@@ -1,6 +1,7 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AnalysisStatus } from './types/AnalysisStatus';
+import type { ApprovalState } from './types/ApprovalState';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeStatus } from './types/ClaudeStatus';
@@ -321,6 +322,12 @@ export interface IpcClient {
    * F-12.2); read only. Never called on a restored start (F-30.4).
    */
   gitlabDiscussions(sessionId: string): Promise<Thread[]>;
+  /**
+   * The approval state of the session's MR for the S-05 Approval tile (F-14.1): who approved, how
+   * many approvals GitLab asks for, and whether the user approved, may approve, or would need a
+   * password. Read only; never called on a restored start (F-30.4).
+   */
+  gitlabApprovalState(sessionId: string): Promise<ApprovalState>;
   /**
    * Resolve (`resolved` true) or Reopen (false) a thread of the session's MR, sent at once and
    * independent of drafts and approval (F-11.2); the core takes the project and the MR from the

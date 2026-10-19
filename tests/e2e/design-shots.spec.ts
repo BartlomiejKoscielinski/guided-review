@@ -23,6 +23,8 @@ interface Shot {
   analyzed?: string[];
   /** The MR threads the mock GitLab has (its `threads`; !482's three open ones when left out). */
   threads?: Record<string, unknown>[];
+  /** The mock GitLab's variations (`MOCK_GITLAB_KEY`, e.g. the `approval` of the MR, F-14.1). */
+  gitlab?: Record<string, unknown>;
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -455,8 +457,8 @@ const SHOTS: Shot[] = [
     // under the filters All / Open 3 / Resolved 2 (F-13.1); each row with "author · N replies ·
     // file:line", Show in code where a step shows the thread (three of them, once the steps are
     // read) and Resolve or Reopen (F-13.2). Check with Claude has run (F-13.3, M5 decision 12):
-    // "Claude: index added in a91f2c0" under the index thread. The Approval tile (F-14) is not
-    // built yet.
+    // "Claude: index added in a91f2c0" under the index thread. To the right the Approval tile:
+    // NOT APPROVED YET, "Approvals: 0 of 1" (F-14.1).
     screen: 'S05',
     state: 'summary-threads',
     lastRoute: { screen: 'S-01' },
@@ -489,6 +491,26 @@ const SHOTS: Shot[] = [
       await page.getByRole('tab', { name: 'Drafts 5', selected: true }).waitFor();
       await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
       await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+    },
+  },
+  {
+    // The mock's five drafts, approved by the user (F-14.1): the solid green Approval tile with
+    // the checked square, APPROVED BY YOU and "Approvals: 1 of 1".
+    screen: 'S05',
+    state: 'summary-approved',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    drafts: MR_482_SUMMARY_DRAFTS,
+    gitlab: {
+      approval: {
+        approvedBy: [{ username: 'bartek.k', name: 'Bartek K.' }],
+        userHasApproved: true,
+      },
+    },
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+      await page.getByText('Approved by you', { exact: true }).waitFor();
     },
   },
   {
@@ -552,7 +574,7 @@ const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
     await page.addInitScript(
-      ({ lastRoute, sessions, review, reviewed, drafts, analyzed, threads }) => {
+      ({ lastRoute, sessions, review, reviewed, drafts, analyzed, threads, gitlab }) => {
         if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
         if (reviewed || drafts || analyzed || threads) {
           localStorage.setItem(
@@ -568,6 +590,7 @@ for (const shot of SHOTS) {
           );
         }
         if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
+        if (gitlab) localStorage.setItem('guided-review.mock.gitlab', JSON.stringify(gitlab));
         localStorage.setItem(
           'guided-review.mock.settings',
           JSON.stringify({

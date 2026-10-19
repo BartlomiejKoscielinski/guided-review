@@ -1,5 +1,6 @@
 import { Channel, invoke, type InvokeArgs } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import type { ApprovalState } from './types/ApprovalState';
 import type { IpcClient } from './client';
 import { toIpcError } from './errors';
 import { createTauriWindowControls } from './tauri-window';
@@ -191,6 +192,7 @@ export function createTauriClient(): IpcClient {
     gitlabAccountRemove: () => call<GitlabStatus>('gitlab_account_remove'),
     gitlabListMrs: (tab) => call<MrList>('gitlab_list_mrs', { tab }),
     gitlabDiscussions: (session) => call<Thread[]>('gitlab_discussions', { session }),
+    gitlabApprovalState: (session) => call<ApprovalState>('gitlab_approval_state', { session }),
     gitlabResolve: (session, discussion, resolved) =>
       call<undefined>('gitlab_resolve', { session, discussion, resolved }),
     gitlabReply: (session, discussion, body) =>

@@ -162,7 +162,7 @@
   background: var(--panel);
 }
 
-/* S-05 of an MR session: the Comments column, next to the Approval tile (F-14) when it lands. */
+/* S-05 of an MR session: the Comments column, next to the Approval tile (F-14.1). */
 .columns {
   display: flex;
   flex-wrap: wrap;
