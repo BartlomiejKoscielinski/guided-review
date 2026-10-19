@@ -175,7 +175,8 @@ describe('S-05 self-review summary', () => {
     await ipc.repoPick();
     const { router } = renderApp({ screen: 'S-01' }, ipc);
     await act(() => router.navigate(`/session/${MR_SESSION}/summary`));
-    expect(await within(screen.getByTestId('title-bar')).findByText('!482')).toBeInTheDocument();
+    // The MR summary's tabs show it is drawn; a self-review summary has none.
+    expect((await screen.findAllByRole('tab')).length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Copy as checklist' })).toBeNull();
     expect(screen.queryByText('Nothing to fix.')).toBeNull();
   });

@@ -4,16 +4,32 @@ import type { GitlabStatus } from '../types/GitlabStatus';
 import type { MrList } from '../types/MrList';
 import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
+import { createApprovalActions, type ApprovalScenario } from './approvals';
+import type { MockSessionData } from './session-data';
+import { createPublishActions, type PublishScenario } from './publish';
+import { createThreadActions } from './threads';
 
 /** Variations of the GitLab part of the mock (`MOCK_GITLAB_KEY`). */
-export interface GitlabScenario {
+export interface GitlabScenario extends PublishScenario, ApprovalScenario {
   /** The status at start: connected (default), no token yet, or a failing token. */
   state?: GitlabStatus['state'];
 }
 
 type GitlabClient = Pick<
   IpcClient,
-  'gitlabStatus' | 'gitlabAccountSave' | 'gitlabAccountRemove' | 'gitlabListMrs'
+  | 'gitlabStatus'
+  | 'gitlabAccountSave'
+  | 'gitlabAccountRemove'
+  | 'gitlabListMrs'
+  | 'gitlabDiscussions'
+  | 'gitlabApprovalState'
+  | 'summaryStatus'
+  | 'gitlabApprove'
+  | 'gitlabUnapprove'
+  | 'gitlabResolve'
+  | 'gitlabReply'
+  | 'draftsPublish'
+  | 'gitlabForeignDrafts'
 >;
 
 const HOUR = 3_600_000;
@@ -165,6 +181,7 @@ function mask(token: string): string {
 export function createGitlabBackend(
   scenario: GitlabScenario,
   respond: <T>(value: T) => Promise<T>,
+  store: MockSessionData,
 ): GitlabClient {
   let status: GitlabStatus =
     scenario.state === 'noToken'
@@ -191,6 +208,7 @@ export function createGitlabBackend(
             },
           }
         : CONNECTED;
+  const signedIn = () => (status.state === 'connected' ? status.user : null);
   return {
     gitlabStatus: () => respond(status),
     gitlabAccountSave: (server, token) => {
@@ -230,5 +248,8 @@ export function createGitlabBackend(
       const list: MrList = { tab, rows: lists()[tab], counts: COUNTS, truncated: false };
       return respond(list);
     },
+    ...createThreadActions(store, signedIn, addToken, respond),
+    ...createApprovalActions(store, scenario, signedIn, addToken, respond),
+    ...createPublishActions(store, scenario, signedIn, addToken, respond),
   };
 }

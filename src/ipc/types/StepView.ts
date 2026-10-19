@@ -15,9 +15,15 @@ number: number, total: number, prev?: string, next?: string,
  */
 files: Array<FileDiff>, 
 /**
- * Diff threads whose line falls inside one of the step's hunks.
+ * Diff threads whose line (the placed line of an outdated one) falls inside one of the
+ * step's hunks.
  */
-threads: Array<Thread>, reviewed: boolean, 
+threads: Array<Thread>, 
+/**
+ * Diff threads shown on a file header of this step: no step shows their line, and this is
+ * the first step in the reader's order with their file (F-11.3, M5 decision 4).
+ */
+fileThreads: Array<Thread>, reviewed: boolean, 
 /**
  * The plan is the app's file-order fallback (Claude failed).
  */

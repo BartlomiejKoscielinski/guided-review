@@ -72,6 +72,31 @@ describe('Dock', () => {
     expect(tile('Review')).toHaveAttribute('aria-current', 'page');
   });
 
+  it('F-12.7 Review resumes a newer drafts-only session at its summary, as Pick up lists it first', async () => {
+    const user = userEvent.setup();
+    const draftsOnly: UnfinishedSession = {
+      ...session,
+      id: 'd-482',
+      status: 'draftsOnly',
+      updatedAt: '2026-10-12T09:00:00Z',
+      resume: { screen: 'S-05', sessionId: 'd-482' },
+      source: { kind: 'mr', project: 'mobile/mobile-app', iid: 482 },
+      title: 'mobile/mobile-app',
+      reviewedSteps: 0,
+      totalSteps: 0,
+      drafts: 1,
+    };
+    const { router } = renderApp(
+      { screen: 'S-01' },
+      { sessionsListUnfinished: () => Promise.resolve([draftsOnly, session]) },
+    );
+    await waitFor(() => {
+      expect(tile('Review')).not.toHaveAttribute('aria-disabled');
+    });
+    await user.click(tile('Review'));
+    expect(router.state.location.pathname).toBe('/session/d-482/summary');
+  });
+
   it('F-30.2 the Review tile lights up for a session opened after start, on the next screen', async () => {
     const user = userEvent.setup();
     let unfinished: UnfinishedSession[] = [];

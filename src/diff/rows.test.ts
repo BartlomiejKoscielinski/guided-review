@@ -72,6 +72,54 @@ describe('diff rows', () => {
     expect(rows.map((r) => r.kind)).toEqual(['hunk', ...Array<string>(5).fill('pair')]);
   });
 
+  it('F-11.3 a thread line and 3 lines on each side are cut out of its fold; the rest stays folded', () => {
+    // 20 added lines, lines 2–19 folded.
+    const long: FileDiff = {
+      ...diff,
+      additions: 20,
+      deletions: 0,
+      hunks: [
+        {
+          id: 'h2',
+          oldStart: 0,
+          oldLines: 0,
+          newStart: 1,
+          newLines: 20,
+          header: 'Long',
+          fileLevel: false,
+          stagedDiffers: false,
+          lines: Array.from({ length: 20 }, (_, i) => add(i + 1)),
+        },
+      ],
+    };
+    const folds = [{ newStart: 2, newEnd: 19, label: 'Body' }];
+    const shown = (file: FileDiff, keep: ReadonlySet<string>, headers = false) =>
+      buildRows(file, 'split', { headers, folds, keep }).map((r) =>
+        r.kind === 'pair' ? (r.right?.newNo ?? 0) : r.kind,
+      );
+    expect(shown(long, new Set(['n10']))).toEqual([1, 'fold', 7, 8, 9, 10, 11, 12, 13, 'fold', 20]);
+    // The window ends at the fold's edge.
+    expect(shown(long, new Set(['n3']))).toEqual([1, 2, 3, 4, 5, 6, 'fold', 20]);
+    // A thread outside the fold, next to it, leaves the fold whole.
+    expect(shown(long, new Set(['n20']))).toEqual([1, 'fold', 20]);
+    const mechanical: FileDiff = {
+      ...long,
+      hunks: long.hunks.map((h) => ({ ...h, mechanical: 'whitespace' })),
+    };
+    expect(shown(mechanical, new Set(['n10']), true)).toEqual([
+      'hunk',
+      'fold',
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      'fold',
+    ]);
+  });
+
   it('labels hunks by their new-side range', () => {
     const hunk = diff.hunks[0];
     if (!hunk) throw new Error('fixture');

@@ -11,6 +11,7 @@ import {
   planRows,
   points,
   setItem,
+  splitOf,
   sync,
 } from './autopilot/backlog-lib.mjs';
 
@@ -40,6 +41,34 @@ test('autopilot backlog: plan rows and kinds from the test column', () => {
   assert.equal(kindOf(rows.get('F-07.1')), 'ui');
   assert.equal(kindOf(rows.get('F-17.1')), 'core');
   assert.equal(kindOf(undefined), 'mixed');
+});
+
+test('autopilot backlog E12: a mixed row that adds an IPC command is split into two passes', () => {
+  const rows =
+    planRows(`| F-11.2 | \`gitlab/thread_actions.rs\`; commands \`gitlab_resolve(session, discussion)\` in \`commands/gitlab_threads.rs\`; ThreadCard actions | Rust \`f11_2_*\` + Vitest + e2e |
+| F-12.1 | \`MrSummary.tsx\` replaces the stub | Vitest + design-check |
+| F-17.1 | sources per scope, \`review_plan(session)\` | \`f17_1_*\` |
+| F-13.1 | Threads tab filters | Vitest + e2e |
+| F-08.8 | footer hints, \`claude_status\` command | cargo + e2e |
+`);
+  assert.equal(splitOf(rows.get('F-11.2')), true, 'command named in the build column, mixed tests');
+  assert.equal(splitOf(rows.get('F-08.8')), true, 'a backticked command name');
+  assert.equal(splitOf(rows.get('F-12.1')), false, 'no command');
+  assert.equal(splitOf(rows.get('F-17.1')), false, 'core only: one pass');
+  assert.equal(splitOf(rows.get('F-13.1')), false);
+  assert.equal(splitOf(undefined), false);
+  const progress = '## M5 · T\n- [ ] F-11.2 Actions.\n- [ ] F-12.1 Summary.\n';
+  const planMd = [...rows].map(([id, r]) => `| ${id} | ${r.build} | ${r.test} |`).join('\n');
+  const b = sync({
+    progressMd: progress,
+    planMd,
+    decisionsMd: '',
+    milestone: 'M5',
+    previous: null,
+    now: 't',
+  });
+  assert.equal(b.items.find((i) => i.id === 'F-11.2').split, true);
+  assert.equal('split' in b.items.find((i) => i.id === 'F-12.1'), false);
 });
 
 test('autopilot backlog: sync keeps the milestone open items, statuses and vetoed decisions', () => {

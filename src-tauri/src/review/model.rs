@@ -47,7 +47,8 @@ pub enum SessionStatus {
 }
 
 impl SessionStatus {
-    /// A session the Review tile can resume (F-30.2). Done and drafts-only sessions are not.
+    /// A session with steps left to review (F-30.2). Done and drafts-only sessions are not; the
+    /// listing still offers a drafts-only session while it holds unpublished drafts (F-12.7).
     pub const fn is_unfinished(self) -> bool {
         matches!(self, Self::Preparing | Self::Planning | Self::Reviewing)
     }

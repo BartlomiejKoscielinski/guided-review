@@ -14,6 +14,7 @@ import {
   itemHistory,
   offeredIds,
   promptValues,
+  coreVerifyCommand,
   verifyCommand,
 } from './autopilot/prompt-lib.mjs';
 
@@ -111,6 +112,32 @@ test('autopilot prompt: every role composes with no empty field', () => {
   assert.doesNotMatch(live, /^- F-04\.3/m);
   assert.match(live, /Worktree C:\/Repos\/guided review ł, branch m3-plan-focus/);
   assert.match(live, /run \.app-driver\/live-ap-20261015-0900\/<id>\.json/);
+});
+
+test('autopilot prompt E12: the implementer of a two-pass item gets its pass and verify', () => {
+  const compose = (over) =>
+    composePrompt(COMMON, role('implement'), promptValues(args('implement', over)));
+  assert.match(compose({}), /^Scope: the whole criterion in one pass\.$/m);
+  const tests = ['src-tauri/tests/a.rs', 'src/ipc/mock/threads.test.ts', 'src/screens/A.test.tsx'];
+  const core = compose({ part: 'core', item: { ...ITEM, tests } });
+  assert.match(core, /^Scope: pass 1 of 2 \(E12/m);
+  assert.ok(
+    core.includes(
+      'Done when: `node tools/verify.mjs --only rust:fmt,rust:clippy,rust:test && npx vitest run src/ipc/mock/threads.test.ts` is green',
+    ),
+  );
+  const ui = compose({ part: 'ui', item: { ...ITEM, tests } });
+  assert.match(ui, /^Scope: pass 2 of 2 \(E12\)/m);
+  assert.ok(ui.includes('.autopilot/items/F-04.3/impl-core.json'));
+  assert.ok(ui.includes('Done when: `node tools/verify.mjs` is green'));
+  assert.equal(
+    coreVerifyCommand(['src-tauri/src/store/state_tests.rs', 'tests/e2e/step.spec.ts']),
+    'node tools/verify.mjs --only rust:fmt,rust:clippy,rust:test',
+  );
+  assert.equal(
+    coreVerifyCommand(['src\\ipc\\tauri.test.ts']),
+    'node tools/verify.mjs --only rust:fmt,rust:clippy,rust:test && npx vitest run src/ipc/tauri.test.ts',
+  );
 });
 
 test('autopilot prompt: fix problems come from the last failed gate, else the review', () => {

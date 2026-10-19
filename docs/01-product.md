@@ -190,6 +190,7 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-18.5** The model chip in the title bar shows the model · effort of the task relevant to the screen and opens this section.
 - **F-18.6** The section shows the Claude Code executable the app uses (path and version, **Change**) and "Run at most N Claude tasks at once" (1–4, default 2).
 - **F-18.7** When Claude reports a usage limit, background analysis pauses and the UI says "Claude usage limit reached" (with the reset time when Claude gives one); nothing is lost and the task can be retried later.
+- **F-18.8** While at least one Claude task runs or waits in the queue, the title bar shows a spinner (03 › Motion, purple) right of the Claude status chip (S-01) or the model chip (the other screens with one); its tooltip and accessible name say "Claude is working: N running, M waiting." (", M waiting" only when tasks wait). It disappears when the queue is empty; with reduced motion the arc stays still. (Owner request, 2026-10-19.)
 
 ### F-19 Settings: General, GitLab, Shortcuts · S-07
 - **F-19.1** General: Start in (Focus/Detailed), Focus layout (A/B/C), Diff colors (Blue · orange / Green · red), Start with Windows (default off).

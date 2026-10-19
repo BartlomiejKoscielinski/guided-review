@@ -12,6 +12,9 @@ pub fn migrations() -> Migrations<'static> {
         M::up(include_str!("migrations/005_findings_per_session.sql")),
         M::up(include_str!("migrations/006_plan_opened_draft_step.sql")),
         M::up(include_str!("migrations/007_file_marks.sql")),
+        M::up(include_str!("migrations/008_publish.sql")),
+        M::up(include_str!("migrations/009_publish_note_text.sql")),
+        M::up(include_str!("migrations/010_publish_note_refs.sql")),
     ])
 }
 
@@ -73,6 +76,8 @@ mod tests {
             ("steps_state", "checklist_json"),
             ("repos", "worktree_root"),
             ("worktrees", "head_sha"),
+            ("drafts", "gitlab_draft_note"),
+            ("drafts", "gitlab_draft_refs"),
         ] {
             let found: i64 = conn
                 .query_row(
@@ -93,7 +98,7 @@ mod tests {
         let version: i64 = conn
             .query_row("PRAGMA user_version", [], |row| row.get(0))
             .unwrap();
-        assert_eq!(version, 7);
+        assert_eq!(version, 10);
     }
 
     #[test]

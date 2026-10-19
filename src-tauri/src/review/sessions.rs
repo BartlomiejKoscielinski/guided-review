@@ -134,8 +134,14 @@ pub fn new_session(
 }
 
 /// The session's last screen: the saved last route if it belongs to the session, otherwise the
-/// plan while it is being prepared, or step review in the session's mode.
+/// plan while it is being prepared, or step review in the session's mode. A "drafts only" session
+/// has no steps, so it always opens the summary (F-12.7, M5 decision 15).
 pub fn resume_route(id: &str, status: SessionStatus, mode: Mode, last_route: &Route) -> Route {
+    if status == SessionStatus::DraftsOnly {
+        return Route::Summary {
+            session_id: id.to_owned(),
+        };
+    }
     if last_route.session_id() == Some(id) {
         return last_route.clone();
     }
@@ -160,6 +166,22 @@ mod tests {
             resume_route("s1", SessionStatus::Reviewing, Mode::Focus, &last),
             last
         );
+    }
+
+    #[test]
+    fn f12_7_a_drafts_only_session_resumes_at_the_summary_whatever_was_open_last() {
+        let summary = || Route::Summary {
+            session_id: "d1".into(),
+        };
+        let own_step = Route::Step {
+            session_id: "d1".into(),
+        };
+        for last in [Route::Start, own_step] {
+            assert_eq!(
+                resume_route("d1", SessionStatus::DraftsOnly, Mode::Detailed, &last),
+                summary()
+            );
+        }
     }
 
     #[test]

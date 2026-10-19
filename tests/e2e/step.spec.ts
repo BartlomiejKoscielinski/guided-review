@@ -67,6 +67,8 @@ test('F-06.9 the steps named in Already discussed (2 and 4) show their threads a
   await expect(first).toContainText(
     'It runs once per connection; I can move it to the migration step.',
   );
+  // F-11.2: an open thread has its Resolve and Reply (checked before the scroll leaves it).
+  await expect(first.getByRole('button')).toHaveCount(2);
   await page
     .locator('main[class*="main"]')
     .first()
@@ -75,9 +77,7 @@ test('F-06.9 the steps named in Already discussed (2 and 4) show their threads a
     });
   const second = page.getByRole('region', { name: 'Thread at line 61' });
   await expect(second).toContainText('What happens to a photo that keeps failing?');
-  // Read-only until F-11: no Resolve, Reply or Reopen on a thread.
-  await expect(first.getByRole('button')).toHaveCount(0);
-  await expect(second.getByRole('button')).toHaveCount(0);
+  await expect(second.getByRole('button')).toHaveCount(2);
   await expect(page.getByRole('region', { name: 'Thread at line 48' })).toHaveCount(0);
 
   // Step 3 has none; step 4 has the third, with the reply.

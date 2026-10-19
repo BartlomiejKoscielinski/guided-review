@@ -2,11 +2,14 @@
 //! They only translate between IPC and the core modules; command names are `area_action`.
 
 pub mod app;
+pub mod approval;
 pub mod claude;
 pub mod drafts;
 pub mod git;
 pub mod gitlab;
+pub mod gitlab_threads;
 pub mod os;
+pub mod publish;
 pub mod repo;
 pub mod review;
 pub mod review_plan;
@@ -14,6 +17,8 @@ pub mod review_status;
 pub mod session_state;
 pub mod sessions;
 pub mod source;
+pub mod summary;
+pub mod thread_check;
 
 use crate::error::{AppError, AppResult};
 use crate::store::{Store, StoreError};

@@ -15,6 +15,8 @@ import {
   protectedChanges,
   ruleViolations,
   tickProgress,
+  untouchedVitestFailures,
+  verifySteps,
 } from './autopilot/gate-lib.mjs';
 
 const GATE = join(import.meta.dirname, 'autopilot', 'gate.mjs');
@@ -101,6 +103,40 @@ function repo() {
   };
   return { dir, main, wt, git, commit, gate };
 }
+
+test('E15 autopilot gate: verify runs only the steps the diff affects', () => {
+  const js = ['typecheck', 'lint', 'format:check', 'test', 'test:tools'];
+  const rust = ['rust:fmt', 'rust:clippy', 'rust:test'];
+  assert.deepEqual(verifySteps(['src/screens/a.tsx', 'tests/e2e/a-f01-1.spec.ts']), js);
+  assert.deepEqual(verifySteps(['src-tauri/src/gitlab/a.rs', 'src-tauri/tests/a.rs']), rust);
+  assert.deepEqual(verifySteps(['src-tauri\\src\\a.rs']), rust, 'Windows separators');
+  assert.equal(
+    verifySteps(['src-tauri/src/a.rs', 'src/ipc/types/A.ts']),
+    null,
+    'a Rust type change',
+  );
+  assert.equal(verifySteps(['src/a.ts'], { full: true }), null);
+  assert.equal(verifySteps([]), null);
+});
+
+test('E15 autopilot gate: the verdict names the verify steps; --full runs all', async () => {
+  const r = repo();
+  try {
+    r.commit({ 'src/a.ts': 'export const a = 3;\n' }, 'impl');
+    const first = r.gate('--no-merge');
+    assert.deepEqual(first.verdict.verifySteps, [
+      'typecheck',
+      'lint',
+      'format:check',
+      'test',
+      'test:tools',
+    ]);
+    assert.equal(typeof first.verdict.verifySecs, 'number');
+    assert.equal(r.gate('--no-merge', '--full').verdict.verifySteps, 'all');
+  } finally {
+    await rm(r.dir, { recursive: true, force: true });
+  }
+});
 
 test('autopilot gate: a clean item is ticked and fast-forwarded', async () => {
   const r = repo();
@@ -301,4 +337,16 @@ test('E22 autopilot gate: after the base is merged in, commits are the item own 
   } finally {
     await rm(r.dir, { recursive: true, force: true });
   }
+});
+
+test('untouchedVitestFailures: only test failed on timeouts outside the diff (E24)', () => {
+  const out = 'PASS  lint  30s\nFAIL  test  42s\nPASS  rust:test  90s\nFAILED: test';
+  const log =
+    ' FAIL  src/screens/step/LineComposer.test.tsx > F-09.7 x\nError: Test timed out in 5000ms.\n';
+  assert.deepEqual(untouchedVitestFailures(out, log, ['src/screens/threads/A.tsx']), [
+    'src/screens/step/LineComposer.test.tsx',
+  ]);
+  assert.equal(untouchedVitestFailures(out, log, ['src/screens/step/LineComposer.test.tsx']), null);
+  assert.equal(untouchedVitestFailures(out, log.replace('timed out', 'failed'), []), null);
+  assert.equal(untouchedVitestFailures(`${out}\nFAIL  lint  3s`, log, []), null);
 });

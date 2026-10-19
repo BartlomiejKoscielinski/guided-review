@@ -117,6 +117,7 @@ fn thread(id: &str, path: &str, new_line: Option<u32>, old_line: Option<u32>) ->
             old_line,
             new_line,
             head_sha: "h".into(),
+            base_sha: "b".into(),
         }),
         notes: vec![ThreadNote {
             id: 1,
@@ -127,6 +128,8 @@ fn thread(id: &str, path: &str, new_line: Option<u32>, old_line: Option<u32>) ->
             body: "Why not a channel?".into(),
             created_at: "2026-10-12T09:00:00Z".into(),
         }],
+        outdated: false,
+        placed_line: None,
     }
 }
 
@@ -216,4 +219,29 @@ fn f07_5_threads_inside_the_step_hunks_only() {
     assert_eq!(ids(&s2.threads, |t| &t.id), ["in-a2", "removed-line"]);
     let s1 = build(&plan(), &files(), &threads, &order(), "s1", false).unwrap();
     assert_eq!(ids(&s1.threads, |t| &t.id), ["in-a1"]);
+}
+
+#[test]
+fn f11_3_a_thread_no_step_shows_on_a_line_is_on_the_file_header_of_the_first_step_in_order() {
+    let threads = vec![
+        thread("in-a1", VM, Some(11), None),
+        thread("past-a2", VM, Some(103), None),
+        thread("other-file", "src/Other.cs", Some(1), None),
+        Thread {
+            outdated: true,
+            ..thread("no-match", VM, Some(11), None)
+        },
+        Thread {
+            outdated: true,
+            placed_line: Some(102),
+            ..thread("placed", VM, Some(11), None)
+        },
+    ];
+    // The order is s2, s1, s3: s2 is the first step with the ViewModel.
+    let s2 = build(&plan(), &files(), &threads, &order(), "s2", false).unwrap();
+    assert_eq!(ids(&s2.threads, |t| &t.id), ["placed"]);
+    assert_eq!(ids(&s2.file_threads, |t| &t.id), ["past-a2", "no-match"]);
+    let s1 = build(&plan(), &files(), &threads, &order(), "s1", false).unwrap();
+    assert_eq!(ids(&s1.threads, |t| &t.id), ["in-a1"]);
+    assert!(s1.file_threads.is_empty());
 }

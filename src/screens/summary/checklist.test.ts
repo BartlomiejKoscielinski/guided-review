@@ -13,6 +13,7 @@ const draft = (patch: Partial<Draft>): Draft => ({
   publishedNoteId: null,
   error: null,
   stepId: null,
+  outdated: false,
   ...patch,
 });
 

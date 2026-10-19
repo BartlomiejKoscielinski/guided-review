@@ -5,6 +5,9 @@ import type { Mode } from '../types/Mode';
 import type { MrRow } from '../types/MrRow';
 import type { Source } from '../types/Source';
 import type { Strategy } from '../types/Strategy';
+import type { SummaryState } from '../types/SummaryState';
+import type { Thread } from '../types/Thread';
+import { MOCK_THREADS } from './fixtures/step';
 
 /**
  * Key under which the mock keeps its review sessions between page loads, as the core keeps them
@@ -36,6 +39,11 @@ export interface StoredState {
   files?: Record<string, string[]>;
   /** When the session was opened (ISO 8601): the core's `updated_at` for its card (F-04.1). */
   openedAt?: string;
+  /**
+   * S-05's "Add a summary comment" tick, text and suggested flag (F-12.4), and `published` once a
+   * Publish sent it (F-12.5); missing: unticked.
+   */
+  summary?: SummaryState;
 }
 
 /** Everything the mock knows about review sessions. */
@@ -46,6 +54,11 @@ export interface SessionData {
   /** Commit and local sessions opened from S-01 and what each one reviews (F-17.1). */
   local: string[];
   localCount: number;
+  /**
+   * "Drafts only" sessions (F-12.7): made for drafts added outside a review of an MR without a
+   * session; their MR is in `sources`.
+   */
+  draftsOnly: string[];
   sources: Record<string, Source>;
   /** Planned sessions; a session without a plan here has never been planned. */
   plans: Record<string, SessionPlan>;
@@ -61,6 +74,11 @@ export interface SessionData {
   drafts: Draft[];
   nextDraft: number;
   states: Record<string, StoredState>;
+  /**
+   * !482's threads as the mock GitLab has them now (F-11.2): Resolve, Reopen and Reply change
+   * them, and every MR session of the mock shows them.
+   */
+  threads: Thread[];
 }
 
 export interface MockSessionData {
@@ -74,6 +92,7 @@ const empty = (): SessionData => ({
   mrCount: 0,
   local: [],
   localCount: 0,
+  draftsOnly: [],
   sources: {},
   plans: {},
   marks: {},
@@ -82,6 +101,7 @@ const empty = (): SessionData => ({
   drafts: [],
   nextDraft: 1,
   states: {},
+  threads: structuredClone(MOCK_THREADS),
 });
 
 function load(storage: MockStorage): SessionData {

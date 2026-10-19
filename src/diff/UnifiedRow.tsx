@@ -14,14 +14,17 @@ export interface UnifiedRowProps {
   dim: boolean;
   last: boolean;
   staging?: DiffStaging;
-  /** Gutter markers of the line (F-07.5). */
-  marker?: ReactNode;
+  /**
+   * Gutter markers of the line by side (F-07.5): a removed line's on its old number, the others'
+   * on the new one; `undefined` when the diff has none.
+   */
+  markerOf?: (side: 'old' | 'new', line: Line) => ReactNode;
 }
 
 const SIGN = { add: '+', del: '−', ctx: '' } as const;
 
 /** One line of the unified diff: old and new numbers, sign, code. */
-export function UnifiedRow({ line, tokens, dim, last, staging, marker }: UnifiedRowProps) {
+export function UnifiedRow({ line, tokens, dim, last, staging, markerOf }: UnifiedRowProps) {
   const side = line.kind === 'del' ? tokens?.old : tokens?.new;
   const no = line.kind === 'del' ? line.oldNo : line.newNo;
   const toggle = staging
@@ -35,8 +38,18 @@ export function UnifiedRow({ line, tokens, dim, last, staging, marker }: Unified
       data-kind={line.kind}
       data-staged={line.staged === undefined ? undefined : String(line.staged)}
     >
-      <LineNumber no={line.oldNo} line={line} onShiftClick={toggle} />
-      <LineNumber no={line.newNo} line={line} onShiftClick={toggle} marker={marker} />
+      <LineNumber
+        no={line.oldNo}
+        line={line}
+        onShiftClick={toggle}
+        marker={markerOf?.('old', line)}
+      />
+      <LineNumber
+        no={line.newNo}
+        line={line}
+        onShiftClick={toggle}
+        marker={markerOf?.('new', line)}
+      />
       <span className={styles.sign} aria-hidden="true">
         {SIGN[line.kind]}
       </span>

@@ -11,6 +11,7 @@ All calls go through `git/runner.rs` with `-c core.quotepath=off -c core.longpat
 | Purpose | Command |
 | - | - |
 | Fetch MR head | `git fetch origin +refs/merge-requests/<iid>/head:refs/review/mr/<iid>` and the target branch |
+| Old MR version (F-11.3) | a thread's `head_sha`/`base_sha` read from the object store (`git cat-file blob <sha>:<path>`, `git diff -U0 <from> <to> -- <path>`); missing: `git fetch --no-tags --no-write-fetch-head origin <sha>` once per app run, 60 s, no ref (`review/line_map.rs`). **verify** on the stand-in that GitLab serves an old MR head by SHA; else fallback REST `repository/compare` + `repository/files/:path/raw`. Unreadable: the thread goes to the file header |
 | Review worktree | one per MR at `<worktree_root>\<repo>\<iid>`: `git worktree add --detach <path> <head_sha>`; a new version moves it with `git -C <path> checkout --detach <sha>`; remove with `git worktree remove --force <path>` + `git worktree prune`, only for paths registered in `worktrees` |
 | Fix scratch worktree (ADR-018) | `git stash create` → SHA (empty output = clean tree, use `HEAD`); `git worktree add --detach <tmp path> <sha>`; after the run `git -C <tmp path> status --porcelain=v2 -z` + `git -C <tmp path> diff`; then remove it. The user's checkout is never touched by this |
 | File list + counts | `git diff --name-status -z -M <base> <head>` and `git diff --numstat -z -M <base> <head>` |
@@ -97,6 +98,7 @@ During development the same client talks to the **stand-in GitLab** (GitLab EE 1
 | Resolve / unresolve | `PUT /projects/:id/merge_requests/:iid/discussions/:discussion_id?resolved=true|false` | standard |
 | Draft notes | `POST /projects/:id/merge_requests/:iid/draft_notes` (`note`, `position[…]`, optional `in_reply_to_discussion_id`) | verified on 17.11.7 (S5) |
 | Publish drafts at once | `POST /projects/:id/merge_requests/:iid/draft_notes/bulk_publish` | verified on 17.11.7 (S5, 204); its own `note` parameter is not published there, don't send it |
+| Delete a draft note | `DELETE /projects/:id/merge_requests/:iid/draft_notes/:draft_note_id` (204): before `bulk_publish`, Publish deletes the notes it made earlier that no longer say what goes out (an edited or unticked draft or summary, F-12.5) | **verify** on 17.11.7 |
 | Approve / revoke | `POST /projects/:id/merge_requests/:iid/approve` (send `sha` = reviewed head) · `POST …/unapprove` | standard |
 | Approval state | `GET /projects/:id/merge_requests/:iid/approvals` | verified on unlicensed EE 17.11.7 (S5: `approved_by`, `approvals_required`, `approvals_left`, rules); the on-prem tier at field visit 1 |
 | Create MR | `POST /projects/:id/merge_requests` (`source_branch`, `target_branch`, `title`, `description`, `reviewer_ids`, `remove_source_branch`, `squash`, `labels`; draft via the `Draft:` title prefix) | verified on 17.11.7 (S5): the `draft` field is ignored, the prefix works |

@@ -20,7 +20,15 @@ import { rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildRow, judge, judgeRun, pace, roleUsage, summary } from './autopilot/items-lib.mjs';
+import {
+  buildRow,
+  judge,
+  judgeRun,
+  milestoneSummary,
+  pace,
+  roleUsage,
+  summary,
+} from './autopilot/items-lib.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -204,6 +212,47 @@ test('autopilot metrics: record.mjs reads the conductor session transcripts, els
   const fromVerdicts = record('sess-unknown');
   assert.deepEqual(fromVerdicts.tokens, { total: 5, review: 5 });
   assert.equal(fromVerdicts.tokenSource, 'agent');
+});
+
+test('autopilot metrics E12: a two-pass item is marked split, its core decisions count', () => {
+  const base = { item: 'F-12.5', run: 'ap-1', result: 'done', endedAt: '2026-10-17T10:00:00.000Z' };
+  const one = buildRow({ ...base, verdicts: { impl: { decisions: [{}] } } });
+  assert.equal(one.split, false);
+  const two = buildRow({
+    ...base,
+    verdicts: {
+      'impl-core': { tokens: 30, decisions: [{}, {}] },
+      impl: { tokens: 20, decisions: [{}] },
+    },
+  });
+  assert.equal(two.split, true);
+  assert.equal(two.decisions, 3);
+  assert.equal(two.tokens.impl, 50, 'both passes count as the implementer');
+});
+
+test('autopilot metrics: the milestone summary of the retro mechanism review', () => {
+  const rows = [
+    row('2026-10-16', { item: 'F-11.1', wallMin: 30, findings: { severe: 1, normal: 0 } }),
+    row('2026-10-16', { item: 'F-11.2', result: 'blocked', wallMin: 40, rounds: 2 }),
+    row('2026-10-17', { item: 'F-11.2', run: 'ap-2', result: 'live', wallMin: 20, split: true }),
+    row('2026-10-17', { item: 'F-08.1', wallMin: 99 }),
+  ];
+  const m = milestoneSummary(rows, ['F-11.1', 'F-11.2', 'F-11.3']);
+  assert.equal(m.criteria, 2);
+  assert.equal(m.items, 3, 'attempts');
+  assert.equal(m.wallMin, 30);
+  const f112 = m.perItem.find((o) => o.item === 'F-11.2');
+  assert.deepEqual(
+    {
+      attempts: f112.attempts,
+      result: f112.result,
+      wallMin: f112.wallMin,
+      rounds: f112.rounds,
+      split: f112.split,
+    },
+    { attempts: 2, result: 'live', wallMin: 60, rounds: 2, split: true },
+  );
+  assert.equal(m.perItem.find((o) => o.item === 'F-11.1').severe, 1);
 });
 
 test('autopilot metrics: judge waits for k rows, keeps or reverts by direction', () => {

@@ -161,3 +161,224 @@
   color: var(--text-muted);
   background: var(--panel);
 }
+
+/* S-05 of an MR session: the Comments column, next to the Approval tile (F-14.1). */
+.columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.comments {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.commentsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  /* The tab strip's height, kept while the opening tab is not known yet. */
+  min-height: 36px;
+}
+
+/* Drafts N / Threads N open (F-12.2): the selected tab is the white block on the dark strip. */
+.tabs {
+  display: flex;
+  background: var(--panel-2);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tabOn {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* The selected tab's list: the note above the rows (F-12.3). */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.commentsSub {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+/* A draft of S-05 (F-12.3): checkbox, severity square, text with file:line, pencil. */
+.draftRow {
+  display: grid;
+  grid-template-columns: 18px 12px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  background: var(--panel);
+}
+
+/* Left out of the next Publish: still a draft, drawn dimmed as in the mock. */
+.draftOff {
+  opacity: 0.5;
+}
+
+.draftCheck {
+  margin-top: 4px;
+}
+
+/* A draft already on GitLab (M5 decision 6). */
+.noteSent {
+  color: var(--text-secondary);
+}
+
+.draftError {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--orange-text);
+}
+
+.pencil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.pencil:hover {
+  color: var(--text);
+}
+
+.pencilSpace {
+  width: 32px;
+}
+
+/* The pencil's in-place editor (M5 decision 6). */
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.editorField {
+  width: 100%;
+  min-height: 84px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.editorButtons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* "Add a summary comment" under the drafts (F-12.4, SummaryDesk.dc.html, M5 decision 11). */
+.summaryComment {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.summaryTick {
+  align-self: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+
+.summaryBody {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The status region stays in the DOM while ticked (it announces the labels); the 6px between
+   a label or the failure line and the area is a margin, so an empty region takes no space. */
+.summaryStatus:not(:empty),
+.summaryFailed {
+  margin-bottom: 6px;
+}
+
+.summaryLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.summarySpinner {
+  color: var(--purple);
+  animation: summary-spin 0.9s linear infinite;
+}
+
+@keyframes summary-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.summaryFailed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.summaryArea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  line-height: 1.55;
+  resize: vertical;
+}

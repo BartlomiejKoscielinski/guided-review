@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Autopilot run state .autopilot/run.json (docs/process/AUTOPILOT.md §3.1), read by the Stop hook.
-//   node tools/autopilot/run.mjs start --milestone M3 [--cap 12] [--budget 60000000]  → prints the marker
+//   node tools/autopilot/run.mjs start --milestone M3 [--cap 4] [--budget 60000000]  → prints the marker
 //   node tools/autopilot/run.mjs status | stop (kill switch: .autopilot/STOP) | end (after the closing turn)
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -20,7 +20,7 @@ switch (argv[0]) {
   case 'start': {
     const milestone = String(flag('milestone', '')).toUpperCase();
     if (!/^M\d+$/.test(milestone)) {
-      console.error('usage: run.mjs start --milestone Mx [--cap 12] [--budget tokens]');
+      console.error('usage: run.mjs start --milestone Mx [--cap 4] [--budget tokens]');
       process.exit(2);
     }
     if (existsSync(runPath)) {
@@ -35,7 +35,7 @@ switch (argv[0]) {
       runId,
       milestone,
       startedAt: now.toISOString(),
-      cap: Number(flag('cap', 12)),
+      cap: Number(flag('cap', 4)),
       iterations: 0,
       budgetTokens: Number(flag('budget', 0)) || null,
       finalized: false,

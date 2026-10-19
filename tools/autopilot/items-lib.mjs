@@ -7,21 +7,33 @@
  */
 export const RESULTS = ['done', 'partial', 'live', 'blocked', 'needs-owner'];
 
+/**
+ * E25: the reviewer's decision on a test dispute, "accept" | "reject" | null. Reviews have answered
+ * a string and an object `{test, decision, why}` (F-11.3, F-12.5); both count.
+ */
+export function disputeDecision(review) {
+  const d = review?.testDispute;
+  if (d && typeof d === 'object') return d.decision ?? null;
+  return typeof d === 'string' ? d : null;
+}
+
 /** Higher is better for rates, lower for costs and defects. */
 export const METRICS = {
   gateFirstPass: { better: 'higher', of: (r) => (r.gateFirstPass ? 1 : 0) },
   done: { better: 'higher', of: (r) => (r.result === 'done' ? 1 : 0) },
   tokens: { better: 'lower', of: (r) => r.tokens?.total ?? 0 },
   severe: { better: 'lower', of: (r) => r.findings?.severe ?? 0 },
+  normal: { better: 'lower', of: (r) => r.findings?.normal ?? 0 },
   rounds: { better: 'lower', of: (r) => r.rounds ?? 0 },
   wallMin: { better: 'lower', of: (r) => r.wallMin ?? 0 },
   // E22: an accepted dispute means the locked tests were wrong.
-  disputes: { better: 'lower', of: (r) => (r.testDispute === 'accept' ? 1 : 0) },
+  disputes: { better: 'lower', of: (r) => (disputeDecision(r) === 'accept' ? 1 : 0) },
 };
 /** A change this much worse (relative; absolute for rates) is reverted. */
 const WORSE = 0.1;
 
-const ROLE_OF = (name) => name.replace(/-\d+$/, '');
+// E12: the core pass of a two-pass item (impl-core.json) is the implementer too.
+const ROLE_OF = (name) => name.replace(/-\d+$/, '').replace(/^impl-core$/, 'impl');
 /** Agent descriptions name the implementer `implement`; its verdict file is `impl`. */
 const ROLE_ALIAS = { implement: 'impl' };
 
@@ -88,8 +100,13 @@ export function buildRow({ item, run, result, verdicts, startedAt, endedAt, usag
     gates: gates.length,
     rounds: Object.keys(verdicts).filter((k) => /^fix-\d+$/.test(k)).length,
     findings,
-    testDispute: verdicts.review?.testDispute ?? null,
-    decisions: (verdicts.impl?.decisions ?? []).length + (verdicts.tests?.decisions ?? []).length,
+    testDispute: disputeDecision(verdicts.review),
+    decisions:
+      (verdicts.impl?.decisions ?? []).length +
+      (verdicts['impl-core']?.decisions ?? []).length +
+      (verdicts.tests?.decisions ?? []).length,
+    // E12: built in two implementer passes (core, then screens).
+    split: 'impl-core' in verdicts,
     // E17: the reflector's new lessons and its confirmations of existing ones (`same`).
     lessons: {
       new: (verdicts.reflect?.lessons ?? []).filter((l) => !l?.same).length,
@@ -174,6 +191,40 @@ export function summary(rows, run = null) {
   const out = { items: pick.length };
   for (const [name, m] of Object.entries(METRICS)) out[name] = mean(pick.map(m.of));
   if (run) out.pace = pace(pick);
+  return out;
+}
+
+/**
+ * The rows of one milestone's criteria (`ids` from its plan) for the retro's mechanism review:
+ * the means over all attempts and one line per criterion (attempts added up, last result).
+ */
+export function milestoneSummary(rows, ids) {
+  const want = new Set(ids);
+  const pick = rows.filter((r) => want.has(r.item));
+  const out = { ...summary(pick), criteria: new Set(pick.map((r) => r.item)).size };
+  const byItem = new Map();
+  for (const r of pick) {
+    const o = byItem.get(r.item) ?? {
+      item: r.item,
+      attempts: 0,
+      wallMin: 0,
+      rounds: 0,
+      severe: 0,
+      normal: 0,
+      tokensM: 0,
+      split: false,
+    };
+    o.attempts += 1;
+    o.result = r.result;
+    o.wallMin = Math.round((o.wallMin + (r.wallMin ?? 0)) * 10) / 10;
+    o.rounds += r.rounds ?? 0;
+    o.severe += r.findings?.severe ?? 0;
+    o.normal += r.findings?.normal ?? 0;
+    o.tokensM = Math.round((o.tokensM + (r.tokens?.total ?? 0) / 1e6) * 10) / 10;
+    o.split ||= r.split === true;
+    byItem.set(r.item, o);
+  }
+  out.perItem = [...byItem.values()];
   return out;
 }
 

@@ -1,5 +1,7 @@
 import { Channel, invoke, type InvokeArgs } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import type { ApprovalState } from './types/ApprovalState';
+import type { SummaryStatus } from './types/SummaryStatus';
 import type { IpcClient } from './client';
 import { toIpcError } from './errors';
 import { createTauriWindowControls } from './tauri-window';
@@ -7,16 +9,23 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
+import type { PublishOutcome } from './types/PublishOutcome';
 import type { PlanView } from './types/PlanView';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
+import type { SessionStatus } from './types/SessionStatus';
 import type { StepAnalysis } from './types/StepAnalysis';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
+import type { SummaryComment } from './types/SummaryComment';
+import type { SummaryState } from './types/SummaryState';
+import type { Thread } from './types/Thread';
+import type { ThreadCheck } from './types/ThreadCheck';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { DetectedSource } from './types/DetectedSource';
@@ -79,6 +88,7 @@ export function createTauriClient(): IpcClient {
     sessionPrepareCancel: (task) => call<undefined>('session_prepare_cancel', { task }),
     sessionMr: (sessionId) => call<SessionMr | null>('session_mr', { sessionId }),
     sessionSource: (sessionId) => call<Source>('session_source', { sessionId }),
+    sessionStatus: (sessionId) => call<SessionStatus>('session_status', { sessionId }),
     reviewPlan: (sessionId, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<PlanView>>();
       ch.onmessage = onEvent;
@@ -131,8 +141,25 @@ export function createTauriClient(): IpcClient {
       call<ResumedSession | null>('session_resume', { session: sessionId }),
     draftsList: (sessionId) => call<Draft[]>('drafts_list', { sessionId }),
     draftsCreate: (draft) => call<Draft>('drafts_create', { draft }),
+    draftsCreateForMr: (project, iid, draft) =>
+      call<Draft>('drafts_create_for_mr', { project, iid, draft }),
     draftsUpdate: (id, patch) => call<Draft>('drafts_update', { id, patch }),
     draftsDelete: (id) => call<undefined>('drafts_delete', { id }),
+    draftsPublish: (session, ids, summary) =>
+      call<PublishOutcome>('drafts_publish', { session, ids, summary }),
+    claudeSummaryComment: (sessionId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<SummaryComment>>();
+      ch.onmessage = onEvent;
+      return call<SummaryComment>('claude_summary_comment', { session: sessionId, ch });
+    },
+    claudeThreadCheck: (sessionId, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<ThreadCheck>>();
+      ch.onmessage = onEvent;
+      return call<ThreadCheck>('claude_thread_check', { session: sessionId, ch });
+    },
+    sessionSummary: (sessionId) => call<SummaryState>('session_summary', { session: sessionId }),
+    sessionSetSummary: (sessionId, summary) =>
+      call<undefined>('session_set_summary', { session: sessionId, summary }),
     gitStatus: () => call<LocalChanges>('git_status'),
     gitCommitInfo: (sha) => call<CommitInfo>('git_commit_info', { sha: sha ?? null }),
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),
@@ -155,6 +182,7 @@ export function createTauriClient(): IpcClient {
       }
     },
     claudeStatus: () => call<ClaudeStatus>('claude_status'),
+    claudeActivity: () => call<ClaudeActivity>('claude_activity'),
     claudeRefresh: () => call<ClaudeStatus>('claude_refresh'),
     claudeSignIn: () => call<undefined>('claude_sign_in'),
     claudePickExecutable: () => call<ClaudeStatus | null>('claude_pick_executable'),
@@ -166,6 +194,16 @@ export function createTauriClient(): IpcClient {
       call<GitlabStatus>('gitlab_account_save', { server, token }),
     gitlabAccountRemove: () => call<GitlabStatus>('gitlab_account_remove'),
     gitlabListMrs: (tab) => call<MrList>('gitlab_list_mrs', { tab }),
+    gitlabDiscussions: (session) => call<Thread[]>('gitlab_discussions', { session }),
+    gitlabApprovalState: (session) => call<ApprovalState>('gitlab_approval_state', { session }),
+    summaryStatus: (session) => call<SummaryStatus>('summary_status', { session }),
+    gitlabApprove: (session, sha) => call<undefined>('gitlab_approve', { session, sha }),
+    gitlabUnapprove: (session) => call<undefined>('gitlab_unapprove', { session }),
+    gitlabResolve: (session, discussion, resolved) =>
+      call<undefined>('gitlab_resolve', { session, discussion, resolved }),
+    gitlabReply: (session, discussion, body) =>
+      call<undefined>('gitlab_reply', { session, discussion, body }),
+    gitlabForeignDrafts: (session) => call<number>('gitlab_foreign_drafts', { session }),
     ...createTauriWindowControls(),
   };
 }

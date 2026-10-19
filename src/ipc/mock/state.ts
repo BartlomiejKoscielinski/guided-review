@@ -3,6 +3,7 @@ import type { Layout } from '../types/Layout';
 import type { Mode } from '../types/Mode';
 import type { ResumedSession } from '../types/ResumedSession';
 import type { SessionState } from '../types/SessionState';
+import type { SummaryField } from '../types/SummaryField';
 import { mockPlan } from './fixtures/plan';
 import { mockStepView } from './fixtures/step';
 import { reviewedFilesOf } from './fileMarks';
@@ -20,6 +21,8 @@ type StateClient = Pick<
   | 'sessionSetScroll'
   | 'sessionSetChecklist'
   | 'sessionResume'
+  | 'sessionSummary'
+  | 'sessionSetSummary'
 >;
 
 /**
@@ -83,6 +86,19 @@ export function createStateBackend(
       write(() => {
         stateOf(data, sessionId).checklist[stepId] = [...ticked];
       }),
+    // F-12.4: S-05's summary field, kept per session like the core's `sessions.summary_json`.
+    sessionSummary: (sessionId) => {
+      const unticked: SummaryField = { enabled: false, text: '', suggested: false };
+      return respond({ ...(data.states[sessionId]?.summary ?? unticked) });
+    },
+    // Only Publish marks the summary published (F-12.5); the field the UI writes keeps it.
+    sessionSetSummary: (sessionId, summary) =>
+      write(() => {
+        const state = stateOf(data, sessionId);
+        const { enabled, text, suggested } = summary;
+        const published = state.summary?.published === true;
+        state.summary = { enabled, text, suggested, ...(published ? { published } : {}) };
+      }),
     sessionResume: (sessionId) => {
       const planned = data.plans[sessionId];
       if (!planned) return respond(null);
@@ -94,11 +110,22 @@ export function createStateBackend(
       const step =
         stepId === undefined
           ? undefined
-          : mockStepView(mockPlan(), order, stepId, plan.reviewed.includes(stepId), false);
+          : mockStepView(
+              mockPlan(),
+              order,
+              stepId,
+              plan.reviewed.includes(stepId),
+              false,
+              data.threads,
+            );
       if (stepId === undefined || !step) return respond(null);
       const findings = cachedFindings(data, sessionId, stepId);
       store.save();
-      const resumed: ResumedSession = { plan, step: { ...step, threads: [] }, findings };
+      const resumed: ResumedSession = {
+        plan,
+        step: { ...step, threads: [], fileThreads: [] },
+        findings,
+      };
       return respond(resumed);
     },
   };

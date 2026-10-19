@@ -45,6 +45,8 @@ export function createPrepareBackend(
   store: MockSessionData,
   focusLayout: () => Layout,
   startIn: () => Mode,
+  /** A review of the MR `project` !`iid` was opened as `sessionId` (F-12.7: it takes the drafts). */
+  onOpened: (sessionId: string, mr: { project: string; iid: number }) => void = () => undefined,
 ): PrepareClient {
   const cancelled = new Set<string>();
   const { data } = store;
@@ -101,6 +103,7 @@ export function createPrepareBackend(
         mode: startIn(),
         openedAt: new Date().toISOString(),
       });
+      onOpened(sessionId, { project: resolved, iid });
       store.save();
       const result: OpenedSession = { sessionId, route: { screen: 'S-02', sessionId } };
       return result;

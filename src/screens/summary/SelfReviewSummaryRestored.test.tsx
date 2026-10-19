@@ -9,7 +9,7 @@ import { recordingClient, renderApp } from '../../test/renderApp';
 
 const STEP_IDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'];
 /** Commands that may run Claude or call GitLab. */
-const WORK = /^(review|gitlab|claude(?!Status$|Models$))/;
+const WORK = /^(review|gitlab|claude(?!Status$|Models$|Activity$))/;
 
 /** A planned self-review session (staged changes) with `reviewed` steps marked, then restored on S-05. */
 async function restoreSummary(reviewed: number, planned = true) {

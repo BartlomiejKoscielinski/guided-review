@@ -130,6 +130,42 @@ export function ruleViolations(added) {
   return hits;
 }
 
+const JS_STEPS = ['typecheck', 'lint', 'format:check', 'test', 'test:tools'];
+const RUST_STEPS = ['rust:fmt', 'rust:clippy', 'rust:test'];
+
+/**
+ * E15: the verify steps the item's diff can affect, or `null` for all of them. The Rust steps only
+ * when something under src-tauri/ changed, the others only when something outside it changed: the
+ * TypeScript side reads the Rust types only through the committed src/ipc/types/ (ts-rs), so a type
+ * change is a change outside src-tauri/ too. Steps whose inputs did not change passed at the gate
+ * that merged them; the full verify at the Closing of every run is the guard (SKILL.md).
+ */
+export function verifySteps(files, { full = false } = {}) {
+  if (full) return null;
+  const inRust = (f) => f.replace(/\\/g, '/').startsWith('src-tauri/');
+  const rust = files.some(inRust);
+  const other = files.some((f) => !inRust(f));
+  if (rust === other) return null;
+  return rust ? RUST_STEPS : JS_STEPS;
+}
+
+/**
+ * E24: the Vitest files to re-run alone when a gate verify failed only on Vitest timeouts in files
+ * the item did not touch (S-03 F-09.7 under parallel load, ap-20261017-0624). Returns the failed
+ * test files when `test` is the only failed step, the log reports a timeout and no failed file is
+ * in the diff; else null (a real failure stays a failure).
+ */
+export function untouchedVitestFailures(verifyOut, testLog, files) {
+  const steps = [...verifyOut.matchAll(/^FAIL {2}(\S+)/gm)].map((m) => m[1]);
+  if (steps.length !== 1 || steps[0] !== 'test' || !/timed out|timeout/i.test(testLog)) return null;
+  const norm = (f) => f.replace(/\\/g, '/');
+  const failed = [
+    ...new Set([...testLog.matchAll(/FAIL\s+(\S+\.test\.[cm]?[jt]sx?)/g)].map((m) => norm(m[1]))),
+  ];
+  const touched = new Set(files.map(norm));
+  return failed.length && !failed.some((f) => touched.has(f)) ? failed : null;
+}
+
 /** Changed files that are protected. */
 export function protectedChanges(files) {
   return files.filter((f) => PROTECTED.includes(f));

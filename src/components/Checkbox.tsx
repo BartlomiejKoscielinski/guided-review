@@ -44,7 +44,7 @@ export function Checkbox({
       aria-checked={state === 'mixed' ? 'mixed' : state === 'on'}
       aria-label={label}
       disabled={disabled}
-      className={cx(styles.control, className)}
+      className={cx(styles.control, styles[tone], className)}
       onClick={(event) => {
         event.stopPropagation();
         onToggle();

@@ -1,8 +1,11 @@
 import type { SettingsPatch } from './settings-patch';
 import type { ActiveRepo } from './types/ActiveRepo';
 import type { AnalysisStatus } from './types/AnalysisStatus';
+import type { ApprovalState } from './types/ApprovalState';
+import type { SummaryStatus } from './types/SummaryStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
@@ -13,13 +16,21 @@ import type { Layout } from './types/Layout';
 import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
+import type { NewMrDraft } from './types/NewMrDraft';
 import type { PlanView } from './types/PlanView';
+import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
 import type { SessionState } from './types/SessionState';
+import type { SessionStatus } from './types/SessionStatus';
 import type { StepOrder } from './types/StepOrder';
 import type { StepView } from './types/StepView';
+import type { Thread } from './types/Thread';
 import type { Strategy } from './types/Strategy';
 import type { StepAnalysis } from './types/StepAnalysis';
+import type { SummaryComment } from './types/SummaryComment';
+import type { SummaryField } from './types/SummaryField';
+import type { SummaryState } from './types/SummaryState';
+import type { ThreadCheck } from './types/ThreadCheck';
 import type { CommitInfo } from './types/CommitInfo';
 import type { CommitList } from './types/CommitList';
 import type { CommitRange } from './types/CommitRange';
@@ -111,6 +122,11 @@ export interface IpcClient {
   sessionMr(sessionId: string): Promise<SessionMr | null>;
   /** What the session reviews (F-17.1): S-02's header of a commit or local session. */
   sessionSource(sessionId: string): Promise<Source>;
+  /**
+   * Where the session is in its life (F-12.7): S-05 of a "drafts only" session has no steps, so it
+   * shows no progress line and no Back to steps. Database only.
+   */
+  sessionStatus(sessionId: string): Promise<SessionStatus>;
 
   // S-02 plan (F-06). Claude task events go to `onEvent`.
   /**
@@ -210,9 +226,49 @@ export interface IpcClient {
   // Drafts (F-09.2, F-10.3): kept on this PC; nothing reaches GitLab without Publish.
   draftsList(sessionId: string): Promise<Draft[]>;
   draftsCreate(draft: NewDraft): Promise<Draft>;
+  /**
+   * A draft made outside a review (Explain failure on S-08, Add as a question on S-12) of the MR
+   * `project` !`iid` (F-12.7): it joins the MR's latest session that isn't done, else a new "drafts
+   * only" session that S-05 opens. Database only.
+   */
+  draftsCreateForMr(project: string, iid: number, draft: NewMrDraft): Promise<Draft>;
   /** Edits the text or the Publish tick; a published draft is refused. */
   draftsUpdate(id: string, patch: DraftPatch): Promise<Draft>;
   draftsDelete(id: string): Promise<void>;
+  /**
+   * Publish (N) and Retry (F-12.5): the ticked drafts `ids` in the list's order and the summary
+   * comment (`null`: none) go out in one batch, so the author gets a single notification. A
+   * GitLab failure comes back per draft in `failed`; an unknown draft is refused before anything
+   * is sent. The core takes the MR, its reviewed version and the diff from the session.
+   */
+  draftsPublish(sessionId: string, ids: string[], summary: string | null): Promise<PublishOutcome>;
+  /**
+   * The summary comment Claude suggests when "Add a summary comment" is ticked (F-12.4, M5
+   * decision 11): from the plan, the drafts going out and the open threads; clamped to 600
+   * characters. The tick is the explicit action; nothing runs it in the background.
+   */
+  claudeSummaryComment(
+    sessionId: string,
+    onEvent: (event: ClaudeTaskEvent<SummaryComment>) => void,
+  ): Promise<SummaryComment>;
+  /**
+   * **Check with Claude** on S-05's Threads tab (F-13.3, M5 decision 12): which of the MR's open
+   * threads written on an older version a later commit addressed, as { discussionId, commit (full
+   * id), hint }. The core reads the threads from GitLab and the commits since each one's version
+   * from the review worktree; without such a thread no Claude run starts. Cached per head and
+   * thread set; nothing is resolved. The click is the explicit action; nothing runs it on its own.
+   */
+  claudeThreadCheck(
+    sessionId: string,
+    onEvent: (event: ClaudeTaskEvent<ThreadCheck>) => void,
+  ): Promise<ThreadCheck>;
+  /**
+   * The session's "Add a summary comment" tick, text and suggested flag, and `published` once a
+   * Publish sent it (F-12.5: never sent again) (database only).
+   */
+  sessionSummary(sessionId: string): Promise<SummaryState>;
+  /** Keeps the tick, the text and the suggested flag as the reviewer left them. */
+  sessionSetSummary(sessionId: string, summary: SummaryField): Promise<void>;
 
   // S-06 (F-15, F-16).
   /** Local changes with their index state (S-06 local mode). */
@@ -242,6 +298,8 @@ export interface IpcClient {
   // Claude Code (F-16.4, F-18).
   /** The latest status: auth status, startup probe, last task result (F-18.1). */
   claudeStatus(): Promise<ClaudeStatus>;
+  /** Claude tasks running and waiting in the queue (F-18.8): the title bar spinner. */
+  claudeActivity(): Promise<ClaudeActivity>;
   /** Runs the startup checks again. */
   claudeRefresh(): Promise<ClaudeStatus>;
   /** Opens `claude auth login` in its own console window. */
@@ -254,7 +312,7 @@ export interface IpcClient {
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;
 
-  // GitLab (F-01.6, F-02.1, F-02.2, F-19.2, F-19.5).
+  // GitLab (F-01.6, F-02.1, F-02.2, F-11.2, F-19.2, F-19.5).
   /** Connected / no token / failing; `refresh` checks GitLab again (F-01.6). */
   gitlabStatus(refresh: boolean): Promise<GitlabStatus>;
   /** Check and save / Replace token: stored only if GitLab accepts it with scope api (F-19.5). */
@@ -263,6 +321,42 @@ export interface IpcClient {
   gitlabAccountRemove(): Promise<GitlabStatus>;
   /** One S-01 tab of the active repository's project with the counts of all three tabs. */
   gitlabListMrs(tab: MrTab): Promise<MrList>;
+  /**
+   * The threads of the session's MR as GitLab has them now, oldest first (S-05 "Threads N open",
+   * F-12.2); read only. Never called on a restored start (F-30.4).
+   */
+  gitlabDiscussions(sessionId: string): Promise<Thread[]>;
+  /**
+   * The approval state of the session's MR for the S-05 Approval tile (F-14.1): who approved, how
+   * many approvals GitLab asks for, and whether the user approved, may approve, or would need a
+   * password. Read only; never called on a restored start (F-30.4).
+   */
+  gitlabApprovalState(sessionId: string): Promise<ApprovalState>;
+  /**
+   * The head the session reviewed against the MR's head now (S-05, F-14.2): `changed` shows the
+   * banner and disables Approve. Read only; never called on a restored start (F-30.4).
+   */
+  summaryStatus(sessionId: string): Promise<SummaryStatus>;
+  /**
+   * Approve MR for the head `sha` the user reviewed (F-14.2): `CONFLICT` for another SHA or when
+   * the MR moved on (GitLab's 409). Only ever sent on its own click.
+   */
+  gitlabApprove(sessionId: string, sha: string): Promise<void>;
+  /** Revoke approval: the user's approval of the session's MR is taken back (F-14.2). */
+  gitlabUnapprove(sessionId: string): Promise<void>;
+  /**
+   * Resolve (`resolved` true) or Reopen (false) a thread of the session's MR, sent at once and
+   * independent of drafts and approval (F-11.2); the core takes the project and the MR from the
+   * session.
+   */
+  gitlabResolve(sessionId: string, discussionId: string, resolved: boolean): Promise<void>;
+  /** Reply: `body` becomes a note of the thread at once, as written; not a draft (F-11.2). */
+  gitlabReply(sessionId: string, discussionId: string, body: string): Promise<void>;
+  /**
+   * The draft comments already in GitLab's own review of the session's MR, which a Publish sends
+   * too (F-12.5, M5 decision 8); read only. Never called on a restored start (F-30.4).
+   */
+  gitlabForeignDrafts(sessionId: string): Promise<number>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

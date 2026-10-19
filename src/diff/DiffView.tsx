@@ -43,6 +43,8 @@ export interface DiffViewProps {
   inserts?: ReadonlyMap<string, ReactNode>;
   /** Line keys (`lineKey`) whose fold opens on its own: line comments (F-09.7). */
   unfold?: ReadonlySet<string>;
+  /** Line keys never folded: the fold is cut around them and 3 lines each side (threads, F-11.3). */
+  keep?: ReadonlySet<string>;
   /** Selected lines of one side, highlighted (F-10.1; split layout). */
   selection?: { side: 'old' | 'new'; start: number; end: number } | null;
   /** A click on a line number: select it, Shift+click extends (F-10.1; split layout). */
@@ -105,6 +107,7 @@ export function DiffView({
   markers,
   inserts,
   unfold,
+  keep,
   selection,
   onPickLine,
   scrollRoot,
@@ -120,6 +123,7 @@ export function DiffView({
   const [shown, setShown] = useState<ReadonlySet<string>>(() => new Set());
   const insertKeys = [...(inserts?.keys() ?? [])].join(' ');
   const unfoldKeys = [...(unfold ?? [])].join(' ');
+  const keepKeys = [...(keep ?? [])].join(' ');
   const rows = useMemo(
     () =>
       buildRows(diff, layout, {
@@ -129,8 +133,9 @@ export function DiffView({
         shown,
         inserts: new Set(insertKeys.split(' ')),
         unfold: new Set(unfoldKeys.split(' ')),
+        keep: new Set(keepKeys.split(' ')),
       }),
-    [diff, layout, note, headers, folds, shown, insertKeys, unfoldKeys],
+    [diff, layout, note, headers, folds, shown, insertKeys, unfoldKeys, keepKeys],
   );
   const margin = useScrollMargin(scrollRoot, listRef);
   // TanStack Virtual returns fresh functions each render; this component isn't memoized.
@@ -147,14 +152,26 @@ export function DiffView({
   const revealAt = reveal?.at;
   const revealNonce = reveal?.nonce;
   const revealed = useRef(-Infinity);
+  const toReveal = useRef({ rows, virtualizer });
+  useEffect(() => {
+    toReveal.current = { rows, virtualizer };
+  });
   useEffect(() => {
     if (revealAt === undefined || revealNonce === undefined || revealNonce <= revealed.current)
-      return;
-    revealed.current = revealNonce;
-    const index = rows.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
-    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'auto' });
+      return undefined;
+    // In the next frame: a virtualizer attaching to the scroller in this commit (a step opened on
+    // the request, S-05's Show in code; React running effects twice in development) moves it
+    // back to where it last saw it. The request counts as handled once it has scrolled.
+    const frame = requestAnimationFrame(() => {
+      revealed.current = revealNonce;
+      const { rows: now, virtualizer: list } = toReveal.current;
+      const index = now.findIndex((row) => row.kind === 'insert' && row.at === revealAt);
+      if (index >= 0) list.scrollToIndex(index, { align: 'auto' });
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+    };
     // Once per request: the rows and the virtualizer change with every scroll.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealAt, revealNonce]);
 
   const currentHunk = current?.hunk;
@@ -263,11 +280,7 @@ export function DiffView({
       case 'line':
         return (
           <UnifiedRow
-            marker={
-              row.line.newNo === undefined
-                ? undefined
-                : markers?.get(lineKey('new', row.line.newNo))
-            }
+            markerOf={markers ? markerOf : undefined}
             line={row.line}
             tokens={tokens}
             dim={isDim(row.hunk)(row.line)}

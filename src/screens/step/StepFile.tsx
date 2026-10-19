@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode, type RefObject } from 'react';
+import { useMemo, type ReactNode, type RefObject } from 'react';
 import { DiffView, type DiffCurrent } from '../../diff/DiffView';
 import { lineKey, type DiffFold } from '../../diff/rows';
 import type { FileDiff } from '../../ipc/types/FileDiff';
@@ -8,19 +8,25 @@ import type { LineSelection } from '../../ipc/types/LineSelection';
 import type { Thread } from '../../ipc/types/Thread';
 import { pathOf } from './diffPath';
 import { FileReviewed } from './FileReviewed';
-import { NoteMark, ThreadMark } from './GutterMarks';
+import { FileThreads } from './FileThreads';
+import { NoteMark } from './GutterMarks';
+import { useThreadReveal } from './threadReveal';
 import type { LineCard } from './useLineComments';
+import { useThreadRows } from './useThreadRows';
 import { NoteCard } from './NoteCard';
-import { ThreadCard } from './ThreadCard';
 import styles from './Step.module.css';
 
 export interface StepFileProps {
   sessionId: string;
+  /** The step shown: its thread cards keep their state with the step's (F-11.2). */
+  stepId: string;
   file: FileDiff;
   /** The step's notes in this file, with their number in the step. */
   findings: { finding: Finding; number: number }[];
   folds: Fold[];
   threads: Thread[];
+  /** The step's threads on this file's header (F-11.3). */
+  fileThreads?: readonly Thread[];
   focus: string | null;
   onFocus: (findingId: string) => void;
   scrollRoot: RefObject<HTMLElement | null>;
@@ -49,25 +55,19 @@ export interface StepFileProps {
   onReviewed?: () => void;
 }
 
-/** Where a thread sits in the diff: its new-side line, else its old-side line. */
-function threadAt(thread: Thread): { key: string; line: number } | null {
-  const pos = thread.position;
-  if (pos?.newLine !== undefined) return { key: lineKey('new', pos.newLine), line: pos.newLine };
-  if (pos?.oldLine !== undefined) return { key: lineKey('old', pos.oldLine), line: pos.oldLine };
-  return null;
-}
-
 /**
  * One file of a step (F-07.3–F-07.6): path, `+add −del`, "N notes" and the Reviewed toggle
- * (F-07.10), then the split diff with fold rows, gutter squares and thread icons, the focused note
- * and open threads under their lines.
+ * (F-07.10), the threads on the file header (F-11.3), then the split diff with fold rows, gutter
+ * squares and thread icons, the focused note and open threads under their lines.
  */
 export function StepFile({
   sessionId,
+  stepId,
   file,
   findings,
   folds,
   threads,
+  fileThreads = [],
   focus,
   onFocus,
   scrollRoot,
@@ -85,7 +85,9 @@ export function StepFile({
 }: StepFileProps) {
   const path = pathOf(file);
   const selection = selected?.selection.file === path ? selected.selection : null;
-  const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
+  const scope = { sessionId, stepId };
+  const threadRows = useThreadRows(threads, scope);
+  const revealThread = useThreadReveal();
   const open = findings.filter(({ finding }) => finding.decision === 'open').length;
 
   const diffFolds = useMemo<DiffFold[]>(
@@ -180,30 +182,20 @@ export function StepFile({
       reveal = { at, nonce: card.reveal };
     }
   }
-  for (const thread of threads) {
-    const at = threadAt(thread);
-    if (!at) continue;
-    const isOpen = !closed.has(thread.id);
-    push(
-      markers,
-      at.key,
-      <ThreadMark
-        key={thread.id}
-        thread={thread}
-        line={at.line}
-        open={isOpen}
-        onToggle={() => {
-          setClosed((old) => {
-            const next = new Set(old);
-            if (isOpen) next.add(thread.id);
-            else next.delete(thread.id);
-            return next;
-          });
-        }}
-      />,
-    );
-    if (isOpen)
-      push(inserts, at.key, <ThreadCard key={thread.id} thread={thread} line={at.line} />);
+  // A thread's line is never folded: the fold is cut around it and 3 lines on each side, so the
+  // thread shows on its line with the lines around it and the rest of the fold still closed
+  // (F-11.3, an outdated thread placed inside a fold).
+  const keep = new Set<string>();
+  for (const row of threadRows) {
+    push(markers, row.key, row.mark);
+    if (row.card) push(inserts, row.key, row.card);
+    keep.add(row.key);
+  }
+  // Show in code on S-05 (M5 decision 13): the thread's card comes into view, unless a later
+  // request (a note picked, a comment opened) came after it.
+  const shown = threadRows.find((row) => row.id === revealThread?.thread);
+  if (shown && revealThread && revealThread.nonce > (reveal?.nonce ?? 0)) {
+    reveal = { at: shown.key, nonce: revealThread.nonce };
   }
 
   return (
@@ -226,6 +218,7 @@ export function StepFile({
           {onReviewed && <FileReviewed path={path} reviewed={reviewed} onToggle={onReviewed} />}
         </span>
       </div>
+      <FileThreads threads={fileThreads} path={path} scope={scope} />
       <DiffView
         path={path}
         diff={file}
@@ -236,6 +229,7 @@ export function StepFile({
         markers={markers}
         inserts={inserts}
         unfold={unfold}
+        keep={keep}
         selection={selection}
         onPickLine={
           onPickLine

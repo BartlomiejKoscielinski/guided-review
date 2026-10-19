@@ -27,6 +27,11 @@ export default defineConfig(
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
+      // A new union member (source kind, ErrorCode) fails every switch that misses it (L1).
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: false, allowDefaultCaseForExhaustiveSwitch: false },
+      ],
     },
   },
   {
@@ -40,6 +45,13 @@ export default defineConfig(
     languageOptions: { globals: globals.browser },
   },
   {
+    // A test double keeps the stubbed command's parameters for its signature: `_name` says unused.
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
     files: ['tests/e2e/**/*.ts'],
     rules: {
       'no-restricted-properties': [
@@ -49,6 +61,14 @@ export default defineConfig(
           property: 'waitForTimeout',
           message:
             'Wait for a state, not a time: a web-first assertion, expect.poll on the saved state, or page.clock (CODING-RULES-PROPOSAL L2).',
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "CallExpression[callee.property.name='toHaveURL']",
+          message:
+            'createMemoryRouter keeps the URL at the origin, so toHaveURL proves nothing: assert the content the criterion names (CODING-RULES-PROPOSAL L3).',
         },
       ],
     },

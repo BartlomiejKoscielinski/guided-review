@@ -23,4 +23,8 @@ error: string | null,
  * The plan step it belongs to (F-08.3): the note's step, else the step holding the hunk of
  * its line; `None` for a comment on the merge request or a line in no step.
  */
-stepId: string | null, };
+stepId: string | null, 
+/**
+ * Its line is gone from a newer version of the MR (M5 decision 10b).
+ */
+outdated: boolean, };

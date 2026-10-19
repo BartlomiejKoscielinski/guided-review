@@ -1,0 +1,184 @@
+/* S-05 Threads tab (F-13.1, SummaryDesk.dc.html): the filters next to the tabs and the rows. */
+
+/* All / Open N / Resolved N: flat toggle buttons, the pressed one on the dark fill. */
+.filters {
+  display: flex;
+  gap: 2px;
+}
+
+.filter {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filterOn {
+  background: var(--raised-2);
+  color: var(--text);
+}
+
+/* A thread: the resolved square, the first message, the actions (F-13.2). */
+.row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 16px;
+  background: var(--panel);
+}
+
+/* Open: the outlined square of the mock; resolved: the green square with the tick. */
+.state {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 2px var(--text-muted);
+}
+
+.stateResolved {
+  background: var(--green);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* The first message on one line (M5 plan, F-13.2); the full text is its title. */
+.text {
+  margin: 0;
+  max-width: 80ch;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.textResolved {
+  color: var(--text-muted);
+}
+
+/* "author · N replies · file:line": grey 12.5px, the location in mono. */
+.meta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.place {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+
+/* "Couldn't resolve the thread. <reason>": in the row the user acted on (M5 decision 2). */
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--orange-text);
+}
+
+/* Show in code, then Resolve or Reopen. */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.code:hover {
+  color: var(--text);
+}
+
+.actions .resolve {
+  gap: 7px;
+  height: 32px;
+}
+
+.actions .reopen {
+  height: 32px;
+  padding: 0 12px;
+}
+
+/* Claude's hint under the meta line (F-13.3): purple square and light purple text on a purple tint. */
+.hint {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  padding: 3px 10px;
+  background: var(--purple-tint);
+  color: var(--purple-text-2);
+  font-size: 13px;
+}
+
+/* Check with Claude above the rows (M5 decision 12), then what the check is doing. */
+.check {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+/* The status region stays in the accessibility tree while empty (no display:none), so the lines
+   that appear in it are announced (WCAG 4.1.3); out of the flow it adds no gap next to the button. */
+.check .checkStatus:empty {
+  position: absolute;
+}
+
+.checkLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.checkSpinner {
+  color: var(--purple);
+  animation: thread-check-spin 0.9s linear infinite;
+}
+
+@keyframes thread-check-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.checkFailed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}

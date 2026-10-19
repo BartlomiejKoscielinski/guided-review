@@ -13,6 +13,8 @@
   letter-spacing: inherit;
   text-transform: inherit;
   cursor: pointer;
+  /* The tick's colour, as the mocks' native checkboxes carry it (accent-color). */
+  accent-color: var(--check-color);
 }
 
 .control:disabled {

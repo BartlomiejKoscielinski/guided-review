@@ -1,0 +1,88 @@
+/* F-12.5 Publish on S-05 (SummaryDesk.dc.html): the button, the banners, the row additions. */
+
+/* Publish (N): blue with ink text; "Published" on the grey fill (the mock's --raised-2 / --text-lineno). */
+.publish {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 0;
+  background: var(--blue);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.publish:disabled {
+  background: var(--raised-2);
+  color: var(--text-lineno);
+  cursor: default;
+}
+
+/* While the call runs it stays blue: the action is under way, not unavailable. */
+.publish.busy {
+  background: var(--blue);
+  color: var(--ink);
+}
+
+.spinner {
+  animation: publish-spin 0.9s linear infinite;
+}
+
+@keyframes publish-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sent,
+.failed,
+.foreign {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sent {
+  background: var(--blue);
+}
+
+/* M5 decision 9: orange means a failure (docs/03 › Color meaning). */
+.failed {
+  background: var(--orange);
+}
+
+.failedText {
+  flex: 1 1 auto;
+}
+
+/* M5 decision 8: the yellow banner. */
+.foreign {
+  background: var(--yellow);
+}
+
+/* A failed row's own reason, under `file:line` (decision 9). */
+.reason {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--orange-text);
+}
+
+/* M5 decision 10b: the OUTDATED tag before `file:line · line changed, …`. */
+.outdated {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

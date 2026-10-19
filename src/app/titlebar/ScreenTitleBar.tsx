@@ -3,6 +3,7 @@ import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
 import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
 import { BranchBlock } from './BranchBlock';
+import { ClaudeActivity } from './ClaudeActivity';
 import { ClaudeStatusChip } from './ClaudeStatusChip';
 import { ChangesContext } from './ChangesContext';
 import { ContextText } from './ContextText';
@@ -10,6 +11,7 @@ import { GitlabStatusControl } from './GitlabStatusControl';
 import { PlanContext } from './PlanContext';
 import { PlanStatus } from './PlanStatus';
 import { PLACEHOLDER } from './placeholders';
+import { ReviewContext } from './ReviewContext';
 import { SessionContext } from './StepControls';
 import { StepTitleBar } from './StepTitleBar';
 import { SettingsContext } from './SettingsContext';
@@ -32,7 +34,8 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
           controls={
             <>
               <GitlabStatusControl />
-              {<ClaudeStatusChip />}
+              <ClaudeStatusChip />
+              <ClaudeActivity />
             </>
           }
         />
@@ -54,7 +57,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-04':
       return <StepTitleBar mode="detailed" />;
     case 'S-05':
-      return <TitleBar context={<SessionContext />} controls={<TaskModelChip group="mr" />} />;
+      return <TitleBar context={<ReviewContext />} controls={<TaskModelChip group="mr" />} />;
     case 'S-06':
       return <TitleBar context={<ChangesContext />} controls={<TaskModelChip group="commit" />} />;
     case 'S-07':

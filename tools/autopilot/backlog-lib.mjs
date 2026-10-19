@@ -42,6 +42,18 @@ export function kindOf(row) {
   return 'mixed';
 }
 
+/**
+ * E12: a criterion whose plan row adds an IPC command and whose tests cover both the core and a
+ * screen is built in two implementer passes (core, then screens; SKILL.md step d.2).
+ */
+export function splitOf(row) {
+  if (!row || kindOf(row) !== 'mixed') return false;
+  const call = /`[a-z]+(?:_[a-z]+)+\(/;
+  const named = /\bcommands?\b[^|]*`[a-z]+(?:_[a-z]+)+`|`[a-z]+(?:_[a-z]+)+`\s+commands?\b/;
+  const file = /`commands\/[a-z_]+\.rs`/;
+  return [call, named, file].some((re) => re.test(row.build));
+}
+
 /** The criterion text of a PROGRESS line without the "— partial: …" note. */
 function titleAndNote(progressMd, id) {
   const line = progressMd.split(/\r?\n/).find((l) => l.startsWith(`- [ ] ${id} `));
@@ -109,6 +121,7 @@ export function sync({ progressMd, planMd, decisionsMd, milestone, previous, now
       milestone,
       title: title.length > 120 ? `${title.slice(0, 119)}…` : title,
       kind: old?.kind ?? kindOf(rows.get(id)),
+      ...(splitOf(rows.get(id)) ? { split: true } : {}),
       deps: old?.deps ?? [],
       status: old && old.status !== 'todo' ? old.status : waitsForLive ? 'live' : 'todo',
       attempts: old?.attempts ?? 0,

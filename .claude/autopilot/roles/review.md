@@ -17,3 +17,4 @@ Output:
 { "findings": [{ "severity": "severe|normal|nit", "file": "src/…", "line": 12, "text": "" }],
   "testDispute": null, "verdict": "merge | fix" }
 ```
+"testDispute" is exactly `null`, `"accept"` or `"reject"` (a string, never an object); put the test and your reason in a finding when they matter.

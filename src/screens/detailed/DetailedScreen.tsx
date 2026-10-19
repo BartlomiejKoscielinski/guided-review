@@ -6,7 +6,7 @@ import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
 import { reviewKey, useReviewStore, useStepReview } from '../../state/review';
 import { selectionOf } from '../step/askState';
-import { pathOf } from '../step/diffPath';
+import { pathOf, threadOnFile } from '../step/diffPath';
 import { nextNonce } from '../step/lineComment';
 import { pickedSelection } from '../step/lineSelection';
 import { useArrowWalk, useCurrentChange } from '../step/useArrowWalk';
@@ -127,6 +127,12 @@ export function DetailedScreen() {
     selfReview: selfReview ?? false,
     current,
   });
+  // The step's threads on a file's lines, under their lines as in S-03 (F-11.1, M5 decision 3).
+  // A thread written before a rename matches the renamed file by its old path (F-11.3).
+  const threadsIn = (file: FileDiff) => (files.data?.threads ?? []).filter(threadOnFile(file));
+  // Threads no step shows on a line, on the file header of their first step (F-11.3).
+  const fileThreadsIn = (file: FileDiff) =>
+    (files.data?.fileThreads ?? []).filter(threadOnFile(file));
   const onAsk = (finding: Finding) => {
     if (key === null) return;
     change(key, (s) => ({
@@ -156,6 +162,7 @@ export function DetailedScreen() {
               <DetailedFile
                 key={pathOf(file)}
                 sessionId={sessionId}
+                stepId={step.id}
                 file={file}
                 scrollRoot={mainRef}
                 findings={findings
@@ -167,6 +174,8 @@ export function DetailedScreen() {
                 onAsk={onAsk}
                 reveal={reveal?.id === focused ? reveal.nonce : undefined}
                 comments={comments.cards}
+                threads={threadsIn(file)}
+                fileThreads={fileThreadsIn(file)}
                 current={current?.file === pathOf(file) ? current : undefined}
                 reviewed={marks.isReviewed(pathOf(file))}
                 onReviewed={() => {

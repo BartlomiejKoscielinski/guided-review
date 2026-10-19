@@ -18,6 +18,7 @@ import type { LocalScope } from '../types/LocalScope';
 import type { OpenedSession } from '../types/OpenedSession';
 import type { PrepareProgress } from '../types/PrepareProgress';
 import type { SessionMr } from '../types/SessionMr';
+import type { SessionStatus } from '../types/SessionStatus';
 import type { Source } from '../types/Source';
 import type { StatusSummary } from '../types/StatusSummary';
 import { LOCAL_KEY } from './useChanges';
@@ -178,6 +179,21 @@ export function useSessionSource(
     queryFn: () => ipc.sessionSource(sessionId),
     enabled,
   });
+}
+
+/**
+ * S-05: whether the session is a "drafts only" one (F-12.7), made by a draft from outside a
+ * review: it has no steps, so no progress line and no Back to steps. Unknown (undefined) while it
+ * is looked up; a failed lookup reads as a session with steps. Database only.
+ */
+export function useDraftsOnly(sessionId: string): boolean | undefined {
+  const ipc = useIpc();
+  const status = useQuery<SessionStatus, IpcError>({
+    queryKey: ['session', sessionId, 'status'],
+    queryFn: () => ipc.sessionStatus(sessionId),
+  });
+  if (status.isPending) return undefined;
+  return status.data === 'draftsOnly';
 }
 
 /** Cancel on S-02 Preparing (F-05.6): stops the preparation; the caller goes back to S-01. */

@@ -14,6 +14,7 @@ use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::git::Git;
 use crate::os::process::Cancel;
+use crate::review::model::SessionStatus;
 use crate::review::mr_summary::{self, MrMeta, SessionMr};
 use crate::review::open_mr::{self, OpenMr, OpenMrError, SessionDefaults};
 use crate::review::prepare::PrepareProgress;
@@ -273,6 +274,28 @@ pub async fn session_source(store: State<'_, Store>, session_id: String) -> AppR
     parse_source(row.map(|row| row.source_json))
 }
 
+/// Where the session is in its life (F-12.7): S-05 of a "drafts only" session, made by a draft
+/// from outside a review, has no steps, so it leaves out the progress line and Back to steps.
+/// `session_mr` can't tell it from a self-review (neither has MR fields). Database only.
+#[tauri::command]
+pub async fn session_status(
+    store: State<'_, Store>,
+    session_id: String,
+) -> AppResult<SessionStatus> {
+    let row = with_store(&store, move |conn| {
+        store::sessions::source_of(conn, &session_id)
+    })
+    .await?;
+    status_of(row)
+}
+
+/// The stored status; "Unknown session." without a row.
+fn status_of(row: Option<store::sessions::SessionSource>) -> AppResult<SessionStatus> {
+    let row = row.ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
+    row.status
+        .ok_or_else(|| AppError::internal("The session could not be read."))
+}
+
 /// The stored `sessions.source_json`; "Unknown session." without a row.
 fn parse_source(json: Option<String>) -> AppResult<Source> {
     let json = json.ok_or_else(|| AppError::new(ErrorCode::InvalidInput, "Unknown session."))?;
@@ -309,5 +332,36 @@ mod tests {
         );
         let unknown = parse_source(None).unwrap_err();
         assert_eq!(unknown.code, ErrorCode::InvalidInput);
+    }
+
+    #[test]
+    fn f12_7_session_status_tells_a_drafts_only_session_from_a_review() {
+        let row = |status| store::sessions::SessionSource {
+            repo_id: None,
+            source_json: r#"{"kind":"mr","project":"mobile/mobile-app","iid":482}"#.into(),
+            base_sha: String::new(),
+            head_sha: String::new(),
+            status,
+            worktree: None,
+            mr_json: None,
+        };
+        assert_eq!(
+            status_of(Some(row(Some(SessionStatus::DraftsOnly)))).unwrap(),
+            SessionStatus::DraftsOnly
+        );
+        assert_eq!(
+            status_of(Some(row(Some(SessionStatus::Reviewing)))).unwrap(),
+            SessionStatus::Reviewing
+        );
+        assert_eq!(
+            status_of(None).unwrap_err().code,
+            ErrorCode::InvalidInput,
+            "no such session"
+        );
+        assert_eq!(
+            status_of(Some(row(None))).unwrap_err().code,
+            ErrorCode::Internal,
+            "a status this version does not know"
+        );
     }
 }

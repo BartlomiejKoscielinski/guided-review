@@ -21,6 +21,10 @@ interface Shot {
   drafts?: Record<string, unknown>[];
   /** Steps in Claude's cache as `session\0step` (the S-04 footer's ready steps, F-08.8). */
   analyzed?: string[];
+  /** The MR threads the mock GitLab has (its `threads`; !482's three open ones when left out). */
+  threads?: Record<string, unknown>[];
+  /** The mock GitLab's variations (`MOCK_GITLAB_KEY`, e.g. the `approval` of the MR, F-14.1). */
+  gitlab?: Record<string, unknown>;
   /** Steps that bring the screen into the mock's state (selection, typed text). */
   prepare?: (page: Page) => Promise<void>;
 }
@@ -95,6 +99,145 @@ const MR_482_DRAFTS = [
 
 /** The first local session of an empty mock, with all 8 steps marked reviewed (SummaryDesk.dc.html). */
 const LOCAL_ALL_REVIEWED = { 'mock-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'] };
+
+/** SummaryDesk.dc.html: every step of !482 reviewed. */
+const MR_482_ALL_REVIEWED = {
+  'mock-mr-session-1': ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'],
+};
+
+/** SummaryDesk.dc.html's five drafts of !482, none published yet: S-05 opens on Drafts (F-12.2). */
+const MR_482_SUMMARY_DRAFTS = [
+  [
+    'fix',
+    'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs',
+    54,
+    'Consider a separate catch (OperationCanceledException) without a message. Closing the camera isn’t a save error.',
+  ],
+  [
+    'fix',
+    'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs',
+    49,
+    'PendingCount doesn’t refresh after the worker uploads. Maybe a Changed event on IUploadQueue?',
+  ],
+  [
+    'fix',
+    'src/Mobile.Infrastructure/Uploads/UploadWorker.cs',
+    71,
+    'Retries have no upper limit. On a permanent 4xx the photo will be retried forever.',
+  ],
+  [
+    'q',
+    'src/Mobile.Core/Uploads/PendingUpload.cs',
+    5,
+    'Did we consider saving the photo to disk and keeping only the path in the queue?',
+  ],
+  [
+    'nit',
+    'src/Mobile.App/Views/DeliveryPhotoPage.xaml',
+    41,
+    'Nit: the banner has a fixed height. With a larger system font the text gets clipped.',
+  ],
+].map(([severity, file, line, body], i) => ({
+  id: `mock-draft-${String(i + 1)}`,
+  sessionId: 'mock-mr-session-1',
+  findingId: null,
+  body,
+  position: { file, side: 'new', line },
+  severity,
+  include: true,
+  publishedNoteId: null,
+  error: null,
+  stepId: null,
+  outdated: false,
+}));
+
+const SHOT_USERS = {
+  pawel: { username: 'pawel.s', name: 'Paweł S.' },
+  marta: { username: 'marta.k', name: 'Marta K.' },
+  ola: { username: 'ola.m', name: 'Ola M.' },
+  you: { username: 'bartek.k', name: 'Bartek K.' },
+};
+
+/**
+ * SummaryDesk.dc.html's five threads of !482, three open and two resolved (F-13.1: Open 3,
+ * Resolved 2): [resolved, file, line, author, first message, replies by]. The index thread was
+ * written on the older version 3b8d1f0, the one the mock's Claude finds addressed by a91f2c0
+ * (F-13.3); the others on the reviewed one.
+ */
+const MR_482_SUMMARY_THREADS = (
+  [
+    [
+      false,
+      'src/Mobile.App/ViewModels/DeliveryPhotoViewModel.cs',
+      48,
+      'pawel',
+      'Kick() is called on the UI thread. Does the worker block anything here?',
+      ['marta'],
+    ],
+    [
+      false,
+      'src/Mobile.Infrastructure/Uploads/SqliteUploadQueue.cs',
+      34,
+      'pawel',
+      'No index on CreatedAt, but every read sorts by it.',
+      ['you'],
+    ],
+    [
+      false,
+      'src/Mobile.App/Platforms/Android/AndroidManifest.xml',
+      12,
+      'you',
+      'Do we need ACCESS_NETWORK_STATE here?',
+      ['pawel'],
+    ],
+    [
+      true,
+      'src/Mobile.App/Views/DeliveryPhotoPage.xaml',
+      22,
+      'ola',
+      'Banner color should come from resources, not be hardcoded.',
+      ['you', 'ola'],
+    ],
+    [
+      true,
+      'src/Mobile.Core/Uploads/PendingUpload.cs',
+      3,
+      'you',
+      'Maybe a record instead of a class?',
+      ['pawel'],
+    ],
+  ] as const
+).map(([resolved, file, line, author, body, replies], i) => ({
+  id: `d-482-shot-${String(i + 1)}`,
+  resolvable: true,
+  resolved,
+  outdated: i === 1,
+  position: {
+    oldPath: file,
+    newPath: file,
+    newLine: line,
+    headSha: i === 1 ? '3b8d1f0' : '9c41e07',
+    baseSha: '5e2a9c4',
+  },
+  notes: [author, ...replies].map((who, n) => ({
+    id: 48300 + i * 10 + n,
+    author: SHOT_USERS[who],
+    body: n === 0 ? body : 'Agreed.',
+    createdAt: `2026-10-12T${String(9 + n).padStart(2, '0')}:${String(10 + i)}:00.000Z`,
+  })),
+}));
+
+/** S-05 of !482 (F-12.1): step 1 opened from S-01, then Finish review in the title bar. */
+async function mrSummary(page: Page) {
+  await openMr482(page);
+  await page.getByRole('button', { name: /Start step 1/ }).click();
+  await page.getByText('Step 1 of 8').waitFor();
+  await page.getByTestId('title-bar').getByRole('button', { name: 'Finish review' }).click();
+  await page.getByText('All 8 steps reviewed.', { exact: true }).waitFor();
+  // The tabs (F-12.2) once the opening tab is picked and the open threads are counted.
+  await page.getByRole('tab', { selected: true }).waitFor();
+  await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
+}
 
 /**
  * S-05 of a self-review (F-17.4): Review before push on staged changes, the four notes of step 4
@@ -309,6 +452,87 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    // S-05 of !482 (F-12.1, F-12.2): SUMMARY, "All 8 steps reviewed.", Back to steps and the tabs;
+    // without drafts it opens on "Threads 3 open" (M5 decision 5), with the mock's five threads
+    // under the filters All / Open 3 / Resolved 2 (F-13.1); each row with "author · N replies ·
+    // file:line", Show in code where a step shows the thread (three of them, once the steps are
+    // read) and Resolve or Reopen (F-13.2). Check with Claude has run (F-13.3, M5 decision 12):
+    // "Claude: index added in a91f2c0" under the index thread. To the right the Approval tile:
+    // NOT APPROVED YET, "Approvals: 0 of 1" (F-14.1).
+    screen: 'S05',
+    state: 'summary-threads',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    threads: MR_482_SUMMARY_THREADS,
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page
+        .getByLabel(/^Show in code: /)
+        .nth(2)
+        .waitFor();
+      await page.getByRole('button', { name: 'Check with Claude', exact: true }).click();
+      await page.getByText('Claude: index added in a91f2c0', { exact: true }).waitFor();
+      // The run ends with the focus back on the button: shoot it without the focus ring.
+      await page.evaluate(() => {
+        (document.activeElement as HTMLElement | null)?.blur();
+      });
+    },
+  },
+  {
+    // The mock's five drafts, none published: S-05 opens on "Drafts 5" (F-12.2, M5 decision 5)
+    // with the note and the five rows of the drafts list (F-12.3).
+    screen: 'S05',
+    state: 'summary-drafts',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    drafts: MR_482_SUMMARY_DRAFTS,
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page.getByRole('tab', { name: 'Drafts 5', selected: true }).waitFor();
+      await page.getByRole('tab', { name: 'Threads 3 open' }).waitFor();
+      await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+    },
+  },
+  {
+    // The mock's five drafts, approved by the user (F-14.1): the solid green Approval tile with
+    // the checked square, APPROVED BY YOU and "Approvals: 1 of 1".
+    screen: 'S05',
+    state: 'summary-approved',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    drafts: MR_482_SUMMARY_DRAFTS,
+    gitlab: {
+      approval: {
+        approvedBy: [{ username: 'bartek.k', name: 'Bartek K.' }],
+        userHasApproved: true,
+      },
+    },
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+      await page.getByText('Approved by you', { exact: true }).waitFor();
+    },
+  },
+  {
+    // The mock's five drafts after Publish (5) (F-12.5): the blue banner, every row "· published",
+    // "Published to GitLab." and the grey Published button.
+    screen: 'S05',
+    state: 'summary-published',
+    lastRoute: { screen: 'S-01' },
+    reviewed: MR_482_ALL_REVIEWED,
+    drafts: MR_482_SUMMARY_DRAFTS,
+    prepare: async (page) => {
+      await mrSummary(page);
+      await page.getByRole('tabpanel').getByRole('listitem').nth(4).waitFor();
+      await page.getByRole('button', { name: 'Publish (5)', exact: true }).click();
+      await page
+        .getByRole('status')
+        .filter({ hasText: 'Published 5 comments. The author got a single notification.' })
+        .waitFor();
+      await page.getByRole('button', { name: 'Published', exact: true }).waitFor();
+    },
+  },
+  {
     screen: 'S05',
     state: 'summary-self-review',
     lastRoute: { screen: 'S-01' },
@@ -349,27 +573,33 @@ const collectDom = readFileSync('tools/mock-preview/collect-dom.js', 'utf8');
 
 for (const shot of SHOTS) {
   test(`design shot ${shot.screen} ${shot.state}`, async ({ page }) => {
-    await page.addInitScript(({ lastRoute, sessions, review, reviewed, drafts, analyzed }) => {
-      if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
-      if (reviewed || drafts || analyzed) {
+    await page.addInitScript(
+      ({ lastRoute, sessions, review, reviewed, drafts, analyzed, threads, gitlab }) => {
+        if (sessions) localStorage.setItem('guided-review.mock.sessions', JSON.stringify(sessions));
+        if (reviewed || drafts || analyzed || threads) {
+          localStorage.setItem(
+            'guided-review.mock.sessionData',
+            JSON.stringify({
+              marks: reviewed ?? {},
+              drafts: drafts ?? [],
+              nextDraft: (drafts?.length ?? 0) + 1,
+              analyzed: analyzed ?? [],
+              // Left out, the mock keeps its own threads of !482.
+              ...(threads ? { threads } : {}),
+            }),
+          );
+        }
+        if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
+        if (gitlab) localStorage.setItem('guided-review.mock.gitlab', JSON.stringify(gitlab));
         localStorage.setItem(
-          'guided-review.mock.sessionData',
+          'guided-review.mock.settings',
           JSON.stringify({
-            marks: reviewed ?? {},
-            drafts: drafts ?? [],
-            nextDraft: (drafts?.length ?? 0) + 1,
-            analyzed: analyzed ?? [],
+            ui: { startIn: 'focus', focusLayout: 'A', diffColors: 'blue-orange', lastRoute },
           }),
         );
-      }
-      if (review) localStorage.setItem('guided-review.mock.review', JSON.stringify(review));
-      localStorage.setItem(
-        'guided-review.mock.settings',
-        JSON.stringify({
-          ui: { startIn: 'focus', focusLayout: 'A', diffColors: 'blue-orange', lastRoute },
-        }),
-      );
-    }, shot);
+      },
+      shot,
+    );
     await page.goto('/');
     await page.getByTestId('title-bar').waitFor();
     if (shot.prepare) await shot.prepare(page);

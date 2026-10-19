@@ -19,6 +19,7 @@ import defaultSettings from './fixtures/default-settings.json';
 import { unfinishedSessions } from './fixtures/sessions';
 import { restoreRoute } from './route-restore';
 import { openedSessions } from './unfinished';
+import { createMrDraftsBackend, moveMrDrafts } from './mrDrafts';
 import { BRANCH } from './fixtures/changes';
 
 export { MOCK_SESSION_DATA_KEY } from './session-data';
@@ -139,10 +140,19 @@ export function createMockClient({
   const focusLayout = () => settings.ui.focusLayout;
   const startIn = () => settings.ui.startIn;
   const sessionExists = (id: string) =>
-    sessions.some((s) => s.id === id) || id in data.data.mrs || data.data.local.includes(id);
+    sessions.some((s) => s.id === id) ||
+    id in data.data.mrs ||
+    data.data.local.includes(id) ||
+    data.data.draftsOnly.includes(id);
+  const sourceOf = (id: string) => mockSessionSource(data.data, repos, id);
   const pause = (ms: number) => (latencyMs > 0 ? wait(ms) : Promise.resolve());
   const reviewScenario = loadJson(storage, MOCK_REVIEW_KEY, reviewOption);
   const runs = createStepRuns();
+  const gitlab = createGitlabBackend(
+    loadJson(storage, MOCK_GITLAB_KEY, gitlabOption),
+    respond,
+    data,
+  );
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -154,16 +164,25 @@ export function createMockClient({
         ...openedSessions(data.data, {
           startIn: startIn(),
           lastRoute: settings.ui.lastRoute,
-          sourceOf: (id) => mockSessionSource(data.data, repos, id),
+          sourceOf,
           branch: BRANCH,
         }),
         ...sessions,
       ]),
     ...createChangesBackend(changes, respond, repos),
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
-    ...createPrepareBackend(repos, pause, data, focusLayout, startIn),
-    ...createClaudeBackend(loadJson(storage, MOCK_CLAUDE_KEY, claudeOption), respond, pause),
-    ...createGitlabBackend(loadJson(storage, MOCK_GITLAB_KEY, gitlabOption), respond),
+    ...createPrepareBackend(repos, pause, data, focusLayout, startIn, (sessionId, mr) => {
+      moveMrDrafts(data.data, sourceOf, mr, sessionId);
+    }),
+    ...createMrDraftsBackend(respond, data, sourceOf),
+    ...createClaudeBackend(
+      loadJson(storage, MOCK_CLAUDE_KEY, claudeOption),
+      respond,
+      pause,
+      (sessionId) => data.data.plans[sessionId] !== undefined,
+      (sessionId) => gitlab.gitlabDiscussions(sessionId),
+    ),
+    ...gitlab,
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),

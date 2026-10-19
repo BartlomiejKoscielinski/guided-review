@@ -21,6 +21,7 @@ const draft = (
   publishedNoteId,
   error: null,
   stepId,
+  outdated: false,
 });
 
 describe('S-04 rail text (F-08.3)', () => {

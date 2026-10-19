@@ -40,6 +40,8 @@ fn thread(id: &str, resolvable: bool, resolved: bool) -> Thread {
         resolved,
         position: None,
         notes: Vec::new(),
+        outdated: false,
+        placed_line: None,
     }
 }
 

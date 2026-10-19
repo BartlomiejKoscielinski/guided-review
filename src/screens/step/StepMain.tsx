@@ -9,7 +9,7 @@ import type { StepView } from '../../ipc/types/StepView';
 import type { FocusLayout } from '../../state/focus';
 import { AnswerCard } from './AnswerCard';
 import type { AskState } from './askState';
-import { pathOf } from './diffPath';
+import { pathOf, threadOnFile } from './diffPath';
 import { StepFile, type StepFileProps } from './StepFile';
 import { StepNotes } from './StepNotes';
 import type { FileMarks } from './useFileMarks';
@@ -140,14 +140,14 @@ export function StepMain({
           <StepFile
             key={path}
             sessionId={sessionId}
+            stepId={stepId}
             file={file}
             findings={findings
               .map((finding, i) => ({ finding, number: i + 1 }))
               .filter(({ finding }) => finding.file === path)}
             folds={analysis?.folds.filter((f) => f.file === path) ?? []}
-            threads={view.threads.filter(
-              (t) => t.position?.newPath === path || t.position?.oldPath === path,
-            )}
+            threads={view.threads.filter(threadOnFile(file))}
+            fileThreads={view.fileThreads.filter(threadOnFile(file))}
             focus={focused}
             onFocus={onFocus}
             scrollRoot={mainRef}

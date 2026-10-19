@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { useIpc } from '../IpcContext';
 import type { IpcError } from '../errors';
+import type { ClaudeActivity } from '../types/ClaudeActivity';
 import type { ClaudeStatus } from '../types/ClaudeStatus';
 import type { ModelInfo } from '../types/ModelInfo';
 import { SETTINGS_KEY } from './useSettings';
@@ -76,5 +77,20 @@ export function useCommitMessage(onMessage: (message: string) => void) {
     mutationFn: (task) => ipc.claudeCommitMessage(task),
     onSuccess: onMessage,
     onSettled: () => queryClient.invalidateQueries({ queryKey: CLAUDE_STATUS_KEY }),
+  });
+}
+
+export const CLAUDE_ACTIVITY_KEY = ['claude', 'activity'] as const;
+
+/** How often the title bar asks the queue (F-18.8). */
+export const CLAUDE_ACTIVITY_POLL_MS = 1000;
+
+/** Claude tasks running and waiting in the core's queue (F-18.8); reads the queue only. */
+export function useClaudeActivity(): UseQueryResult<ClaudeActivity, IpcError> {
+  const ipc = useIpc();
+  return useQuery<ClaudeActivity, IpcError>({
+    queryKey: CLAUDE_ACTIVITY_KEY,
+    queryFn: () => ipc.claudeActivity(),
+    refetchInterval: CLAUDE_ACTIVITY_POLL_MS,
   });
 }

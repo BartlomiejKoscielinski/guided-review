@@ -1,14 +1,8 @@
-import { useLocation, useNavigate } from 'react-router';
-import type { StartState } from '../../app/router';
-import { pathFor, stepScreen } from '../../app/routes';
-import { Button } from '../../components/Button';
-import { ChevronLeftIcon } from '../../components/icons';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
-import { useResume, useSessionState } from '../../ipc/hooks/useSessionState';
-import { useStepProgress } from '../step/useStepProgress';
-import { checklistText, progressLine } from './checklist';
+import { checklistText } from './checklist';
 import { CopyChecklist } from './CopyChecklist';
 import { KeptNote } from './KeptNote';
+import { SummaryHeader } from './SummaryHeader';
 import styles from './Summary.module.css';
 
 export interface SelfReviewSummaryProps {
@@ -21,40 +15,13 @@ export interface SelfReviewSummaryProps {
  * were made, and copies them as a checklist.
  */
 export function SelfReviewSummary({ sessionId }: SelfReviewSummaryProps) {
-  const navigate = useNavigate();
   const drafts = useDrafts(sessionId);
-  // Back to step review in the session's mode (F-08.1).
-  const mode = useSessionState(sessionId).data?.mode;
-  // Restored on start the plan isn't cached yet: the stored one, reviewed marks included, is put
-  // where the progress reads it, from stored data only, as S-03 does (F-30.4).
-  const restored = (useLocation().state as StartState | null)?.restored === true;
-  useResume(sessionId, restored);
-  // The plan the steps screen cached; this never starts a plan (F-30.4).
-  const { order, reviewed } = useStepProgress(sessionId);
-  const done = order.filter((id) => reviewed.includes(id)).length;
   const kept = drafts.data;
 
   return (
     <div className={styles.screen}>
       <div className={styles.page}>
-        <section className={styles.header}>
-          <div className={styles.heading}>
-            <h1 className={styles.title}>Summary</h1>
-            {order.length > 0 && (
-              <p className={styles.progress}>{progressLine(done, order.length)}</p>
-            )}
-          </div>
-          <Button
-            size={38}
-            className={styles.back}
-            onClick={() => {
-              void navigate(pathFor({ screen: stepScreen(mode), sessionId }));
-            }}
-          >
-            <ChevronLeftIcon size={14} strokeWidth={2.4} />
-            Back to steps
-          </Button>
-        </section>
+        <SummaryHeader sessionId={sessionId} />
 
         <section className={styles.list} aria-labelledby="to-fix">
           <div className={styles.listHead}>

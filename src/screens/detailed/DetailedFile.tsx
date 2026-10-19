@@ -4,16 +4,24 @@ import { lineKey } from '../../diff/rows';
 import { ignoreWhitespace } from '../../diff/whitespace';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { Finding } from '../../ipc/types/Finding';
+import type { Thread } from '../../ipc/types/Thread';
 import { useDetailedStore } from '../../state/detailed';
 import { pathOf } from '../step/diffPath';
 import { NoteMark } from '../step/GutterMarks';
 import type { LineCard } from '../step/useLineComments';
+import { FileThreads } from '../step/FileThreads';
+import { useThreadReveal } from '../step/threadReveal';
+import { useThreadRows } from '../step/useThreadRows';
 import { FileBar } from './FileBar';
 import { NoteCallout } from './NoteCallout';
 import styles from './NoteCallout.module.css';
 
+const NO_THREADS: readonly Thread[] = [];
+
 export interface DetailedFileProps {
   sessionId: string;
+  /** The step shown: its thread cards keep their state with the step's (F-11.2). */
+  stepId: string;
   file: FileDiff;
   /** S-04's main column, which scrolls the step and its files. */
   scrollRoot: RefObject<HTMLElement | null>;
@@ -34,6 +42,10 @@ export interface DetailedFileProps {
   current?: DiffCurrent;
   /** The step's line comments and the open composer (F-09.7), in any file. */
   comments?: readonly LineCard[];
+  /** The existing GitLab threads on this file's lines in the step (F-11.1). */
+  threads?: readonly Thread[];
+  /** The step's threads on this file's header, between the file bar and the diff (F-11.3). */
+  fileThreads?: readonly Thread[];
   /** The file is marked reviewed in the step (F-07.10). */
   reviewed?: boolean;
   /** The file bar's Reviewed toggle (F-07.10). */
@@ -43,10 +55,12 @@ export interface DetailedFileProps {
 /**
  * One file of the S-04 step (F-08.5): its sticky file bar, then the diff in the view's layout,
  * with whitespace-only changes shown as unchanged lines when Ignore whitespace is on. Each note
- * is a numbered mark on its line; the focused note's full callout sits under it (F-08.6).
+ * is a numbered mark on its line; the focused note's full callout sits under it (F-08.6). The
+ * existing threads sit under their lines with their gutter icon, as in S-03 (F-11.1).
  */
 export function DetailedFile({
   sessionId,
+  stepId,
   file,
   scrollRoot,
   findings = [],
@@ -57,10 +71,15 @@ export function DetailedFile({
   reveal,
   current,
   comments = [],
+  threads = NO_THREADS,
+  fileThreads = NO_THREADS,
   reviewed,
   onReviewed,
 }: DetailedFileProps) {
   const path = pathOf(file);
+  const scope = { sessionId, stepId };
+  const threadRows = useThreadRows(threads, scope);
+  const revealThread = useThreadReveal();
   const layout = useDetailedStore((s) => s.layout);
   const setLayout = useDetailedStore((s) => s.setLayout);
   const ignore = useDetailedStore((s) => s.ignoreWhitespace);
@@ -134,6 +153,21 @@ export function DetailedFile({
       latest = { at, nonce: card.reveal };
     }
   }
+  // Threads show under their lines as in S-03, with the gutter thread icon (M5 decision 3); a
+  // thread's line is never folded, the fold of a mechanical hunk is cut around it and 3 lines on
+  // each side (F-11.3).
+  const keep = new Set<string>();
+  for (const row of threadRows) {
+    markers.set(row.key, [...(markers.get(row.key) ?? []), row.mark]);
+    if (row.card) inserts.set(row.key, [...(inserts.get(row.key) ?? []), row.card]);
+    keep.add(row.key);
+  }
+  // Show in code on S-05 (M5 decision 13): the thread's card comes into view, unless a later
+  // request (a note picked, a comment opened) came after it.
+  const shown = threadRows.find((row) => row.id === revealThread?.thread);
+  if (shown && revealThread && revealThread.nonce > (latest?.nonce ?? 0)) {
+    latest = { at: shown.key, nonce: revealThread.nonce };
+  }
 
   return (
     <section ref={sectionRef} aria-label={path}>
@@ -148,6 +182,7 @@ export function DetailedFile({
         reviewed={reviewed}
         onReviewed={onReviewed}
       />
+      <FileThreads threads={fileThreads} path={path} scope={scope} />
       <DiffView
         path={path}
         diff={diff}
@@ -156,6 +191,7 @@ export function DetailedFile({
         markers={markers}
         inserts={inserts.size > 0 ? inserts : undefined}
         unfold={unfold}
+        keep={keep}
         reveal={latest}
         current={current}
         stickyTop={barHeight}

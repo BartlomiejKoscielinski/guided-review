@@ -159,10 +159,20 @@ export function createPlanBackend(
         const fallback = fallbacks.get(sessionId);
         const reviewed = data.marks[sessionId]?.includes(stepId) === true;
         const view = fallback
-          ? mockStepView(fallback.plan, fallback.order.order, stepId, reviewed, true)
-          : mockStepView(mockPlan(), orderOf(planned(sessionId)).order, stepId, reviewed, false);
+          ? mockStepView(fallback.plan, fallback.order.order, stepId, reviewed, true, data.threads)
+          : mockStepView(
+              mockPlan(),
+              orderOf(planned(sessionId)).order,
+              stepId,
+              reviewed,
+              false,
+              data.threads,
+            );
         if (!view) throw notInPlan();
-        if (isSelfReview(data, sessionId)) view.threads = [];
+        if (isSelfReview(data, sessionId)) {
+          view.threads = [];
+          view.fileThreads = [];
+        }
         return respond(view);
       } catch (e: unknown) {
         return Promise.reject(e instanceof Error ? e : new Error(String(e)));

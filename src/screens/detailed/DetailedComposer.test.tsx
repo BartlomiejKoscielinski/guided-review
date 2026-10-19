@@ -61,7 +61,9 @@ const textArea = (card: HTMLElement) => within(card).getByRole('textbox', { name
 const follows = (before: Node, after: Node) =>
   (before.compareDocumentPosition(after) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
 
-describe('S-04 line comment composer (F-09.7)', () => {
+// Typing re-renders the step's diff on each key (about 1.3 s alone); `npm run verify` runs the
+// suite beside cargo test, which made it four times slower and past the 5 s default.
+describe('S-04 line comment composer (F-09.7)', { timeout: 15_000 }, () => {
   beforeEach(() => {
     // A measured diff row (`data-index`) is one line high and the column is tall, so all of step
     // 4's lines render in jsdom.

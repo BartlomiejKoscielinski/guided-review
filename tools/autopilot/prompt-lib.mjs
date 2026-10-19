@@ -1,7 +1,7 @@
 // Autopilot role prompts (docs/process/AUTOPILOT.md §5): `_common.md` + the role file, every
 // `{{field}}` filled from the backlog, the run, the worktree and `.autopilot/items/<id>/`.
 // Pure functions; I/O in prompt.mjs.
-import { RESULTS } from './items-lib.mjs';
+import { RESULTS, disputeDecision } from './items-lib.mjs';
 import { existing, render } from './playbook-lib.mjs';
 import { AHEAD_PORT, AUTOPILOT_PORT, itemSlug } from './worktree-lib.mjs';
 
@@ -40,6 +40,25 @@ export function liveChecks(items) {
     .join('\n');
 }
 
+/**
+ * E12: what the core pass of a two-pass item must get green: the Rust steps and the locked tests of
+ * the IPC client and mock (the screen tests may still fail, so no typecheck or full Vitest run).
+ */
+export function coreVerifyCommand(tests) {
+  const ipc = (tests ?? []).map(slash).filter((t) => /^src\/ipc\/.+\.test\.tsx?$/.test(t));
+  const rust = 'node tools/verify.mjs --only rust:fmt,rust:clippy,rust:test';
+  return ipc.length ? `${rust} && npx vitest run ${ipc.join(' ')}` : rust;
+}
+
+/** What the implementer builds: the whole criterion, or one pass of a two-pass item (E12). */
+export function implementScope(part, tests, itemDir) {
+  if (part === 'core')
+    return `pass 1 of 2 (E12: the criterion adds an IPC command and a screen). Build only the core: the Rust module with its unit tests, the command, \`npm run gen:types\`, the client in src/ipc/client.ts and src/ipc/tauri.ts, and the mock in src/ipc/mock/; no screen code, a second implementer builds the screens on your commits. For this pass "Done when" means \`${coreVerifyCommand(tests)}\` is green; the locked screen tests may still fail. Skip the design-check and answer "complete": false with "partialReason": "core pass".`;
+  if (part === 'ui')
+    return `pass 2 of 2 (E12): the core, the command, the client and the mock are committed by pass 1 (its answer with its notes: ${slash(itemDir)}/impl-core.json). Build the screens on top of them; change the core only to fix a defect you find there, and say so in notes.`;
+  return 'the whole criterion in one pass.';
+}
+
 /** The exact verify command of an item: its locked e2e specs on the autopilot port, else plain. */
 export function verifyCommand(tests, port) {
   const specs = (tests ?? [])
@@ -65,17 +84,20 @@ export function fixProblems({ review, gates }) {
   const out = (review?.findings ?? [])
     .filter((f) => f.severity === 'severe' || f.severity === 'normal')
     .map((f) => `- [${f.severity}] ${f.file}${f.line ? `:${f.line}` : ''} ${f.text}`);
-  if (review?.testDispute === 'accept') out.push(`- ${disputeVerdict(review, null)}`);
+  if (disputeDecision(review) === 'accept') out.push(`- ${disputeVerdict(review, null)}`);
   return out.join('\n');
 }
 
 /** The implementer's dispute (for the reviewer) or the reviewer's verdict on it (for a fix round). */
 function disputeVerdict(review, impl) {
-  const detail = review?.testDisputeDetail;
+  const obj =
+    review?.testDispute && typeof review.testDispute === 'object' ? review.testDispute : null;
+  const detail =
+    review?.testDisputeDetail ?? (obj?.test ? { test: obj.test, reason: obj.why } : null);
   const what = detail ? `${detail.test}: ${detail.reason}` : (impl?.testDispute ?? 'see review');
-  if (review?.testDispute === 'accept')
-    return `accepted test dispute (change only this test): ${what}`;
-  if (review?.testDispute === 'reject') return 'rejected by the reviewer: keep the locked tests';
+  const decision = disputeDecision(review);
+  if (decision === 'accept') return `accepted test dispute (change only this test): ${what}`;
+  if (decision === 'reject') return 'rejected by the reviewer: keep the locked tests';
   return 'none';
 }
 
@@ -147,6 +169,7 @@ export function promptValues({
   playbook,
   extra,
   ahead,
+  part,
 }) {
   const port = ahead ? AHEAD_PORT : AUTOPILOT_PORT;
   const from = ahead ? `ap/${itemSlug(ahead)}` : base;
@@ -195,7 +218,8 @@ export function promptValues({
       context: files.context != null ? `${slash(itemDir)}/context.md` : undefined,
       rustPrefix: id.toLowerCase().replace(/-/g, '').replace(/\./g, '_'),
       tests: tests.length ? tests.join(', ') : undefined,
-      verify: verifyCommand(tests, port),
+      verify: part === 'core' ? coreVerifyCommand(tests) : verifyCommand(tests, port),
+      scope: role === 'implement' ? implementScope(part, tests, itemDir) : undefined,
       testDispute:
         role === 'review'
           ? (files.impl?.testDispute ?? 'none')

@@ -21,6 +21,7 @@ export interface DockProps {
 export function Dock({ active }: DockProps) {
   const navigate = useNavigate();
   const sessions = useUnfinishedSessions();
+  // The first session Pick up lists; a drafts-only one (F-12.7) resumes at its summary.
   const resume = sessions.data?.[0]?.resume;
   const settingsKeys = keysText(useShortcutKeys('settings'));
   const go = (route: Route) => () => {

@@ -3,19 +3,19 @@
   "title": "ThreadCheck",
   "type": "object",
   "additionalProperties": false,
-  "required": ["threads"],
+  "required": ["addressed"],
   "properties": {
-    "threads": {
+    "addressed": {
       "type": "array",
+      "description": "The open threads a later commit addressed; empty when none is.",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["discussion_id", "addressed", "commit", "hint"],
+        "required": ["discussion_id", "commit", "hint"],
         "properties": {
-          "discussion_id": { "type": "string" },
-          "addressed": { "type": "boolean" },
-          "commit": { "type": "string", "pattern": "^([0-9a-f]{7,40})?$" },
-          "hint": { "type": "string", "maxLength": 60, "description": "Shown as 'Claude: <hint>' on S-05 (F-13.3)." }
+          "discussion_id": { "type": "string", "description": "The thread's id from the threads file." },
+          "commit": { "type": "string", "description": "The full id of the later commit that addressed it, one of that thread's later commits." },
+          "hint": { "type": "string", "maxLength": 60, "description": "What the commit did, in 2-5 words; S-05 shows 'Claude: <hint> in <commit>'." }
         }
       }
     }
