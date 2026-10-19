@@ -16,7 +16,7 @@ use ts_rs::TS;
 
 use crate::gitlab::client::GitlabClient;
 use crate::gitlab::error::GitlabError;
-use crate::gitlab::jobs::{self, Job};
+use crate::gitlab::jobs::{self, Job, JobVariable};
 use crate::gitlab::mr;
 use crate::gitlab::mrs::PipelineState;
 use crate::gitlab::pipelines::{self, kind_of};
@@ -367,6 +367,19 @@ pub async fn cancel_job(
     job_id: u64,
 ) -> Result<JobRow, GitlabError> {
     Ok(row_of(&jobs::cancel_job(client, project, job_id).await?))
+}
+
+/// Plays manual job `job_id` with the variables for this run (F-20.6); the row as GitLab now has
+/// it. Only the manual-job form's Run `<job>` calls it (06 T7).
+pub async fn play_job(
+    client: &GitlabClient,
+    project: &str,
+    job_id: u64,
+    variables: &[JobVariable],
+) -> Result<JobRow, GitlabError> {
+    Ok(row_of(
+        &jobs::play_job(client, project, job_id, variables).await?,
+    ))
 }
 
 #[cfg(test)]

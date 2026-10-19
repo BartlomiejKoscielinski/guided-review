@@ -229,6 +229,8 @@ pub fn run() {
             commands::pipeline::pipeline_jobs,
             commands::pipeline::job_retry,
             commands::pipeline::job_cancel,
+            commands::pipeline::job_play,
+            commands::pipeline::job_variables_get,
             commands::pipeline::pipeline_mr_head,
             commands::pipeline::pipeline_run_mr,
             commands::pipeline::pipeline_retry,

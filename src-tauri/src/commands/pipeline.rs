@@ -5,13 +5,16 @@
 //! start (F-30.4). `pipeline_mr_head` and `pipeline_run_mr` (F-20.3): the SHA Run new pipeline
 //! names, and the one POST it sends after the user confirmed. `pipeline_retry` and
 //! `pipeline_cancel` (F-20.4): Retry failed jobs and Cancel pipeline, each at once on its click.
+//! `job_play` and `job_variables_get` (F-20.6): the manual-job form's Run `<job>` (the only play)
+//! and the variables that job name last ran with on this machine.
 
 use tauri::State;
 
 use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error, not_connected};
 use crate::error::AppResult;
+use crate::gitlab::jobs::JobVariable;
 use crate::review::pipeline_view::{self, JobRow, PipelineHead, PipelineTab, StageColumn};
-use crate::store::Store;
+use crate::store::{Store, job_variables};
 
 /// The MR's pipelines newest first.
 #[tauri::command]
@@ -91,6 +94,36 @@ pub async fn job_cancel(
     let result = pipeline_view::cancel_job(&client, &project, job).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     Ok(result?)
+}
+
+/// Plays manual job `job` of the MR's pipeline with `vars` (F-20.6, decision 11), only from the
+/// form's Run `<job>`; after GitLab accepted it, `vars` become that job name's last values.
+#[tauri::command]
+pub async fn job_play(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    job: u64,
+    vars: Vec<JobVariable>,
+) -> AppResult<JobRow> {
+    let _ = iid;
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::play_job(&client, &project, job, &vars).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    let row = result?;
+    store.with_conn(|c| job_variables::save(c, &project, &row.name, &vars))?;
+    Ok(row)
+}
+
+/// The variables job `job_name` of `project` last ran with on this machine (F-20.6); read only.
+#[tauri::command]
+pub async fn job_variables_get(
+    store: State<'_, Store>,
+    project: String,
+    job_name: String,
+) -> AppResult<Vec<JobVariable>> {
+    Ok(store.with_conn(|c| job_variables::get(c, &project, &job_name))?)
 }
 
 /// The full head SHA of the MR, read when Run new pipeline's confirmation opens (F-20.3).

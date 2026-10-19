@@ -2,10 +2,13 @@
 //! (`GET …/pipelines/:id/jobs`, paged, `per_page=100`, optionally with the retried attempts) and
 //! the two job actions that act at once, `retry_job` and `cancel_job`
 //! (`POST …/jobs/:id/retry` / `…/cancel`), each answering with the job it leaves; `job` and
-//! `trace` (F-20.5): one job (`GET …/jobs/:id`) and its log as text (`GET …/jobs/:id/trace`).
+//! `trace` (F-20.5): one job (`GET …/jobs/:id`) and its log as text (`GET …/jobs/:id/trace`);
+//! `play_job` (F-20.6): a manual job played with the variables for this run
+//! (`POST …/jobs/:id/play` with `job_variables_attributes`).
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+use ts_rs::TS;
 
 use super::client::{GitlabClient, project_id};
 use super::discussions::MAX_PAGES;
@@ -29,6 +32,14 @@ pub struct Job {
     /// The job's page in GitLab (Full log opens it).
     #[serde(default)]
     pub web_url: Option<String>,
+}
+
+/// One variable of a manual job's run (F-20.6, M6 decision 11): sent and stored as typed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct JobVariable {
+    pub key: String,
+    pub value: String,
 }
 
 fn decode<T: for<'de> Deserialize<'de>>(
@@ -88,4 +99,22 @@ pub async fn job(client: &GitlabClient, project: &str, job: u64) -> Result<Job, 
 pub async fn trace(client: &GitlabClient, project: &str, job: u64) -> Result<String, GitlabError> {
     let path = format!("/projects/{}/jobs/{job}/trace", project_id(project));
     client.get_text(&path).await
+}
+
+/// Plays manual job `job` with `variables` in the given order (none: no variable in the body);
+/// GitLab answers with the job as it now is.
+pub async fn play_job(
+    client: &GitlabClient,
+    project: &str,
+    job: u64,
+    variables: &[JobVariable],
+) -> Result<Job, GitlabError> {
+    let path = format!("/projects/{}/jobs/{job}/play", project_id(project));
+    let body = if variables.is_empty() {
+        json!({})
+    } else {
+        json!({ "job_variables_attributes": variables })
+    };
+    let response = client.post(&path, &body).await?;
+    decode(&path, response.body)
 }
