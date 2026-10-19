@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T12:55:14.084Z",
+  "updated": "2026-10-19T13:03:10.896Z",
   "items": [
     {
       "id": "F-11.1",
@@ -131,7 +131,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 2,
       "note": "Merged acb86e8. Live 2026-10-19: plain Publish in one batch works on the stand-in (MR !5). Still unchecked live: decision 10b re-map to a newer MR version (outdated drafts, GET versions, DELETE draft_notes/:id, git fetch origin <sha>), summary comment in the batch, restored-start foreign-drafts check. Needs a sandbox MR pushed after drafts were written.",
       "lockSha": "fdaf618",
