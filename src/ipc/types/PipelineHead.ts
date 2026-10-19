@@ -28,4 +28,8 @@ startedAt: string | null,
 /**
  * Seconds; `None` while it runs or when GitLab has none.
  */
-durationSecs: number | null, };
+durationSecs: number | null, 
+/**
+ * The pipeline's GitLab page (Open in GitLab, F-20.4); `None` when GitLab sends none.
+ */
+webUrl: string | null, };

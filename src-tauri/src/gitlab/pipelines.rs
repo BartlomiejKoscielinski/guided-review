@@ -1,8 +1,9 @@
 //! The pipelines of an MR over REST (F-20.1, docs/05 › GitLab REST API v4): `mr_pipelines`
 //! (`GET …/merge_requests/:iid/pipelines`, paged; no `user` or `duration` there), `pipeline`
 //! (`GET …/pipelines/:id`, the full object), and the one write, `create_mr_pipeline` (F-20.3,
-//! `POST …/merge_requests/:iid/pipelines`, only after the user confirmed). Its jobs are in
-//! `jobs.rs` (F-20.2).
+//! `POST …/merge_requests/:iid/pipelines`, only after the user confirmed), and the pipeline-level
+//! writes of F-20.4, `retry` and `cancel` (`POST …/pipelines/:id/retry` / `cancel`, each sent only
+//! by its own click). Its jobs are in `jobs.rs` (F-20.2).
 
 use serde::Deserialize;
 use serde_json::json;
@@ -131,6 +132,33 @@ pub async fn create_mr_pipeline(
         "/projects/{}/merge_requests/{iid}/pipelines",
         project_id(project)
     );
+    let response = client.post(&path, &json!({})).await?;
+    decode(&path, response.body)
+}
+
+/// Retries the failed and canceled jobs of pipeline `id` (F-20.4, Retry failed jobs); GitLab
+/// answers with the pipeline (`POST …/pipelines/:id/retry`).
+pub async fn retry(client: &GitlabClient, project: &str, id: u64) -> Result<Pipeline, GitlabError> {
+    write(client, project, id, "retry").await
+}
+
+/// Cancels the running and waiting jobs of pipeline `id` (F-20.4, Cancel pipeline); GitLab answers
+/// with the pipeline (`POST …/pipelines/:id/cancel`).
+pub async fn cancel(
+    client: &GitlabClient,
+    project: &str,
+    id: u64,
+) -> Result<Pipeline, GitlabError> {
+    write(client, project, id, "cancel").await
+}
+
+async fn write(
+    client: &GitlabClient,
+    project: &str,
+    id: u64,
+    verb: &str,
+) -> Result<Pipeline, GitlabError> {
+    let path = format!("/projects/{}/pipelines/{id}/{verb}", project_id(project));
     let response = client.post(&path, &json!({})).await?;
     decode(&path, response.body)
 }

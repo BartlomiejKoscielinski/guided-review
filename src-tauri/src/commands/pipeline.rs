@@ -3,7 +3,8 @@
 //! columns and the two row actions that act at once (`iid` names the MR the job belongs to; GitLab
 //! needs only the job id). The screen calls them when it opens by navigation, never on a restored
 //! start (F-30.4). `pipeline_mr_head` and `pipeline_run_mr` (F-20.3): the SHA Run new pipeline
-//! names, and the one POST it sends after the user confirmed.
+//! names, and the one POST it sends after the user confirmed. `pipeline_retry` and
+//! `pipeline_cancel` (F-20.4): Retry failed jobs and Cancel pipeline, each at once on its click.
 
 use tauri::State;
 
@@ -116,6 +117,42 @@ pub async fn pipeline_run_mr(
 ) -> AppResult<PipelineTab> {
     let (client, _) = connected_client(&gitlab, &store).await?;
     let result = pipeline_view::run_mr_pipeline(&client, &project, iid).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// Retry failed jobs of pipeline `id` of the MR at once (F-20.4); its head as it now is.
+#[tauri::command]
+pub async fn pipeline_retry(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    id: u64,
+) -> AppResult<PipelineHead> {
+    let (client, status) = connected_client(&gitlab, &store).await?;
+    let Some(user) = status.user.as_ref() else {
+        return Err(not_connected(&status));
+    };
+    let result = pipeline_view::retry_pipeline(&client, &project, iid, id, &user.username).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// Cancel pipeline `id` of the MR at once (F-20.4); its head as it now is.
+#[tauri::command]
+pub async fn pipeline_cancel(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    id: u64,
+) -> AppResult<PipelineHead> {
+    let (client, status) = connected_client(&gitlab, &store).await?;
+    let Some(user) = status.user.as_ref() else {
+        return Err(not_connected(&status));
+    };
+    let result = pipeline_view::cancel_pipeline(&client, &project, iid, id, &user.username).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     Ok(result?)
 }

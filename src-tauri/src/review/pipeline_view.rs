@@ -5,7 +5,9 @@
 //! (F-20.2, M6 decisions 5 and 6): the stages in the order GitLab created the jobs, one row per
 //! latest attempt with one of eight states and at most one action, plus the row-level Retry and
 //! Cancel, which act at once. And Run new pipeline (F-20.3): the MR's head SHA the confirmation
-//! names, and the one POST that starts a merge request pipeline, as the new latest tab.
+//! names, and the one POST that starts a merge request pipeline, as the new latest tab. And the
+//! pipeline-level Retry failed jobs and Cancel pipeline (F-20.4), which act at once and answer
+//! with the head as it now is; the head carries the `web_url` Open in GitLab opens.
 
 use std::collections::HashMap;
 
@@ -62,6 +64,8 @@ pub struct PipelineHead {
     /// Seconds; `None` while it runs or when GitLab has none.
     #[ts(type = "number | null")]
     pub duration_secs: Option<u64>,
+    /// The pipeline's GitLab page (Open in GitLab, F-20.4); `None` when GitLab sends none.
+    pub web_url: Option<String>,
 }
 
 /// The MR's pipelines newest first (highest id first, whatever order GitLab answers in).
@@ -148,7 +152,32 @@ pub async fn head(
         started_by_me: pipeline.user.as_ref().is_some_and(|u| u.username == me),
         started_at: pipeline.started_at.or(pipeline.created_at),
         duration_secs: pipeline.duration,
+        web_url: pipeline.web_url,
     })
+}
+
+/// Retry failed jobs of pipeline `pipeline_id` at once (F-20.4): one POST, then its head.
+pub async fn retry_pipeline(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+    pipeline_id: u64,
+    me: &str,
+) -> Result<PipelineHead, GitlabError> {
+    pipelines::retry(client, project, pipeline_id).await?;
+    head(client, project, iid, pipeline_id, me).await
+}
+
+/// Cancel pipeline `pipeline_id` at once (F-20.4): one POST, then its head.
+pub async fn cancel_pipeline(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+    pipeline_id: u64,
+    me: &str,
+) -> Result<PipelineHead, GitlabError> {
+    pipelines::cancel(client, project, pipeline_id).await?;
+    head(client, project, iid, pipeline_id, me).await
 }
 
 /// The failed jobs that were allowed to fail.
