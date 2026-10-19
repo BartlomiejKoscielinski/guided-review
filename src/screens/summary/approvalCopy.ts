@@ -16,3 +16,14 @@ export function approveBlockedReason(state: ApprovalState): string | null {
   if (!state.userCanApprove) return "GitLab doesn't let you approve this MR.";
   return null;
 }
+
+/** The tile's first note (F-14.3, SummaryDesk.dc.html › approveNote). */
+export const APPROVE_NOTE = 'Approving doesn’t publish comments.';
+/** Once approved while a draft of the session is unpublished, in place of APPROVE_NOTE. */
+export const APPROVED_WAITING_NOTE =
+  'Approved without comments. Your drafts are waiting, publish them whenever you like.';
+
+/** The tile's threads line (F-14.3, SummaryDesk.dc.html › threadsLine). */
+export function threadsLine(open: number): string {
+  return open === 0 ? 'All threads resolved.' : `Open threads: ${String(open)}.`;
+}
