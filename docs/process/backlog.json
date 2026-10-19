@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-19T17:08:14.802Z",
+  "updated": "2026-10-19T17:48:32.779Z",
   "items": [
     {
       "id": "F-20.1",
@@ -68,10 +68,10 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "295cd39",
+      "status": "live",
+      "attempts": 1,
+      "note": "Built and merged (f066624): Retry failed jobs, Cancel pipeline, Open in GitLab, 403 state. Live check in tauri dev: Open in GitLab opens the default browser (rundll32 url.dll) on the stand-in pipeline page; Retry failed jobs and Cancel pipeline against the stand-in runner; a real GitLab 403 disables the write actions with the tooltip.",
+      "lockSha": "fa98379",
       "tests": [
         "src-tauri/tests/pipeline_actions.rs",
         "src-tauri/tests/browser_open.rs",
@@ -80,7 +80,10 @@
         "src/screens/pipeline/PipelineActionsForbidden.test.tsx",
         "tests/e2e/pipeline-f20-4.spec.ts"
       ],
-      "forkSha": "fdc6e1c"
+      "disputes": [
+        "src-tauri/tests/pipeline_actions.rs@1a128ec",
+        "src/screens/pipeline/PipelineActionsForbidden.test.tsx@165cf8f"
+      ]
     },
     {
       "id": "F-20.5",
