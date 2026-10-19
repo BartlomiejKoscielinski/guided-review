@@ -8,6 +8,7 @@ pub mod drafts;
 pub mod git;
 pub mod gitlab;
 pub mod gitlab_threads;
+pub mod job_explain;
 pub mod job_trace;
 pub mod os;
 pub mod pipeline;

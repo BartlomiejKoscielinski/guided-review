@@ -396,6 +396,7 @@ mod tests {
             retried,
             duration: Some(1.4),
             web_url: None,
+            pipeline: None,
         }
     }
 

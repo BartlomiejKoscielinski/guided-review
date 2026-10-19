@@ -32,6 +32,17 @@ pub struct Job {
     /// The job's page in GitLab (Full log opens it).
     #[serde(default)]
     pub web_url: Option<String>,
+    /// The pipeline the job ran in (Explain failure, F-20.7).
+    #[serde(default)]
+    pub pipeline: Option<JobPipeline>,
+}
+
+/// The pipeline of a job as `GET …/jobs/:id` names it.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct JobPipeline {
+    pub id: u64,
+    #[serde(default)]
+    pub sha: String,
 }
 
 /// One variable of a manual job's run (F-20.6, M6 decision 11): sent and stored as typed.

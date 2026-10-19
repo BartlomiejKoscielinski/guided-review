@@ -180,9 +180,18 @@ pub async fn run(
             ("job_name", req.job_name),
             ("pipeline", &req.pipeline_number.to_string()),
             ("version", &inputs::version_text(version)),
-            ("log_file", &file("log.txt", &inputs::log_file(req.log_tail))?),
-            ("test_report_file", &file("test-report.txt", req.test_report)?),
-            ("diff_file", &file("diff.txt", &inputs::diff_file(req.diff))?),
+            (
+                "log_file",
+                &file("log.txt", &inputs::log_file(req.log_tail))?,
+            ),
+            (
+                "test_report_file",
+                &file("test-report.txt", req.test_report)?,
+            ),
+            (
+                "diff_file",
+                &file("diff.txt", &inputs::diff_file(req.diff))?,
+            ),
             (
                 "pipelines_file",
                 &file("pipelines.txt", &inputs::pipelines_file(req.pipelines))?,

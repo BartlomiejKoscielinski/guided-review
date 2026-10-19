@@ -11,6 +11,7 @@ mod file_place_tests;
 pub mod finding_model;
 pub mod findings;
 pub mod fingerprint;
+pub mod job_explain;
 pub mod job_log;
 pub mod layer;
 pub mod line_map;

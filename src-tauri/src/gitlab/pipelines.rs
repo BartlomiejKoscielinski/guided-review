@@ -13,6 +13,20 @@ use super::discussions::MAX_PAGES;
 use super::error::GitlabError;
 use super::mrs::PipelineState;
 
+/// The test report of pipeline `id` (`GET …/pipelines/:id/test_report`, F-20.7) as GitLab
+/// answers it; Explain failure reads the failed job's suite from it.
+pub async fn test_report(
+    client: &GitlabClient,
+    project: &str,
+    id: u64,
+) -> Result<serde_json::Value, GitlabError> {
+    let path = format!(
+        "/projects/{}/pipelines/{id}/test_report",
+        project_id(project)
+    );
+    Ok(client.get(&path, &[]).await?.body)
+}
+
 /// One entry of the MR's pipeline list.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct ListedPipeline {
