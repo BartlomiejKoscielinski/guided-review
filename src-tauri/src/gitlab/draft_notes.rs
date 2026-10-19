@@ -13,6 +13,7 @@ use serde_json::{Map, Value, json};
 use super::client::{GitlabClient, project_id};
 use super::discussions::MAX_PAGES;
 use super::error::GitlabError;
+use super::versions;
 
 /// `diff_refs` of an MR version.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -165,11 +166,7 @@ pub async fn version_refs(
     iid: u64,
     head_sha: &str,
 ) -> Result<Option<DiffRefs>, GitlabError> {
-    let path = format!(
-        "/projects/{}/merge_requests/{iid}/versions",
-        project_id(project)
-    );
-    let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
+    let versions = versions::list(client, project, iid).await?;
     Ok(pick_version(&versions, head_sha))
 }
 
@@ -181,11 +178,7 @@ pub async fn reviewed_and_latest_refs(
     iid: u64,
     head_sha: &str,
 ) -> Result<(Option<DiffRefs>, Option<DiffRefs>), GitlabError> {
-    let path = format!(
-        "/projects/{}/merge_requests/{iid}/versions",
-        project_id(project)
-    );
-    let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
+    let versions = versions::list(client, project, iid).await?;
     Ok((pick_version(&versions, head_sha), pick_latest(&versions)))
 }
 
@@ -195,11 +188,7 @@ pub async fn latest_refs(
     project: &str,
     iid: u64,
 ) -> Result<Option<DiffRefs>, GitlabError> {
-    let path = format!(
-        "/projects/{}/merge_requests/{iid}/versions",
-        project_id(project)
-    );
-    let (versions, _) = client.get_pages(&path, &[], MAX_PAGES).await?;
+    let versions = versions::list(client, project, iid).await?;
     Ok(pick_latest(&versions))
 }
 

@@ -222,6 +222,8 @@ pub fn run() {
             commands::approval::gitlab_unapprove,
             commands::gitlab_threads::gitlab_resolve,
             commands::gitlab_threads::gitlab_reply,
+            commands::pipeline::pipeline_list,
+            commands::pipeline::pipeline_get,
             commands::review_plan::review_plan,
             commands::review_plan::review_set_strategy,
             commands::review_plan::review_reorder_steps,

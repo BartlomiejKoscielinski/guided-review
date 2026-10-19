@@ -11,6 +11,8 @@ pub mod draft_notes;
 pub mod error;
 pub mod mr;
 pub mod mrs;
+pub mod pipelines;
 pub mod project;
 pub mod thread_actions;
 pub mod tls;
+pub mod versions;

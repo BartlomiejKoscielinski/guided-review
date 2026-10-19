@@ -18,6 +18,7 @@ pub mod model;
 pub mod mr_summary;
 pub mod note_position;
 pub mod open_mr;
+pub mod pipeline_view;
 pub mod plan;
 pub mod plan_cache;
 pub mod plan_fallback;

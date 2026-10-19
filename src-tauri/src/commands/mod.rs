@@ -9,6 +9,7 @@ pub mod git;
 pub mod gitlab;
 pub mod gitlab_threads;
 pub mod os;
+pub mod pipeline;
 pub mod publish;
 pub mod repo;
 pub mod review;

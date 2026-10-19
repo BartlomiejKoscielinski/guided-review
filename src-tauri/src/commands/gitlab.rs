@@ -180,7 +180,7 @@ fn add_token() -> AppError {
     )
 }
 
-fn not_connected(status: &GitlabStatus) -> AppError {
+pub(crate) fn not_connected(status: &GitlabStatus) -> AppError {
     match (&status.state, &status.problem) {
         (GitlabConnection::Failing, Some(problem)) => problem.clone(),
         _ => add_token(),
