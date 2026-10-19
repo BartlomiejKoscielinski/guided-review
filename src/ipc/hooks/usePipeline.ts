@@ -131,9 +131,9 @@ export function useJobActions(project: string, iid: number, pipeline: number): J
 
 export interface RunPipeline {
   /** Reads the MR's head SHA the confirmation names (F-20.3); read only, on each opening. */
-  head: UseMutationResult<string, IpcError>;
+  head: UseMutationResult<string, IpcError, undefined>;
   /** Starts a new merge request pipeline; sent only by the confirmation's Run pipeline. */
-  run: UseMutationResult<PipelineTab, IpcError>;
+  run: UseMutationResult<PipelineTab, IpcError, undefined>;
 }
 
 /**
@@ -143,10 +143,10 @@ export interface RunPipeline {
 export function useRunPipeline(project: string, iid: number): RunPipeline {
   const ipc = useIpc();
   const queryClient = useQueryClient();
-  const head = useMutation<string, IpcError>({
+  const head = useMutation<string, IpcError, undefined>({
     mutationFn: () => ipc.pipelineMrHead(project, iid),
   });
-  const run = useMutation<PipelineTab, IpcError>({
+  const run = useMutation<PipelineTab, IpcError, undefined>({
     mutationFn: () => ipc.pipelineRunMr(project, iid),
     onSuccess: (tab) => {
       queryClient.setQueryData<PipelineTab[]>(pipelineListKey(project, iid), (tabs) => [

@@ -269,6 +269,16 @@ mod tests {
     }
 
     #[test]
+    fn f20_3_a_4xx_refusal_without_a_message_names_the_status() {
+        let app = AppError::from(GitlabError::Status {
+            status: 422,
+            message: None,
+        });
+        assert_eq!(app.code, ErrorCode::InvalidInput);
+        assert_eq!(app.message, "GitLab refused the request (422).");
+    }
+
+    #[test]
     fn maps_to_app_error_codes() {
         let cases = [
             (GitlabError::Unauthorized, ErrorCode::GitlabUnauthorized),
