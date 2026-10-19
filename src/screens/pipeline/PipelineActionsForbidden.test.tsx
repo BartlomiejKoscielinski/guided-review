@@ -98,7 +98,10 @@ describe('after a refused write every write action is disabled (F-20.4)', () => 
 
   it('F-20.4 a 403 without GitLab’s own words uses the error’s message as the tooltip', async () => {
     const { user } = await openFailed(() => ({
-      pipelineRetry: () => Promise.reject(forbidden('403 Forbidden', undefined)),
+      pipelineRetry: () =>
+        Promise.reject(
+          new IpcError({ code: 'GITLAB_FORBIDDEN', message: '403 Forbidden', retryable: false }),
+        ),
     }));
 
     await user.click(need('Retry failed jobs'));
