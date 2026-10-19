@@ -514,6 +514,11 @@ describe("S-05 drafts already in GitLab's own review (F-12.5, M5 decision 8)", (
     expect(screen.queryByText(plural)).toBeNull();
     expect(calls.filter((name) => WORK.test(name))).toEqual([]);
 
+    // Decision 8 checks GitLab's own review right before publishing, on a restored start too:
+    // the first click is held and shows the banner, the second sends.
+    await userEvent.click(publishButton('Publish (5)'));
+    await screen.findByText(plural);
+    expect(calls).not.toContain('draftsPublish');
     await userEvent.click(publishButton('Publish (5)'));
     await screen.findByText(`Published 5 comments. ${SINGLE}`);
     expect(calls).toContain('draftsPublish');
