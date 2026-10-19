@@ -1,8 +1,11 @@
-//! The pipelines of an MR over REST (F-20.1, docs/05 › GitLab REST API v4), read only:
-//! `mr_pipelines` (`GET …/merge_requests/:iid/pipelines`, paged; no `user` or `duration` there),
-//! and `pipeline` (`GET …/pipelines/:id`, the full object). Its jobs are in `jobs.rs` (F-20.2).
+//! The pipelines of an MR over REST (F-20.1, docs/05 › GitLab REST API v4): `mr_pipelines`
+//! (`GET …/merge_requests/:iid/pipelines`, paged; no `user` or `duration` there), `pipeline`
+//! (`GET …/pipelines/:id`, the full object), and the one write, `create_mr_pipeline` (F-20.3,
+//! `POST …/merge_requests/:iid/pipelines`, only after the user confirmed). Its jobs are in
+//! `jobs.rs` (F-20.2).
 
 use serde::Deserialize;
+use serde_json::json;
 
 use super::client::{GitlabClient, project_id};
 use super::discussions::MAX_PAGES;
@@ -114,6 +117,21 @@ pub async fn pipeline(
 ) -> Result<Pipeline, GitlabError> {
     let path = format!("/projects/{}/pipelines/{id}", project_id(project));
     let response = client.get(&path, &[]).await?;
+    decode(&path, response.body)
+}
+
+/// Starts a new merge request pipeline on the MR's latest commit (F-20.3); GitLab answers with
+/// the new pipeline (`POST …/merge_requests/:iid/pipelines`, no body needed).
+pub async fn create_mr_pipeline(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+) -> Result<Pipeline, GitlabError> {
+    let path = format!(
+        "/projects/{}/merge_requests/{iid}/pipelines",
+        project_id(project)
+    );
+    let response = client.post(&path, &json!({})).await?;
     decode(&path, response.body)
 }
 

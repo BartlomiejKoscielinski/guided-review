@@ -2,7 +2,8 @@
 //! pipeline of an MR, read only; `pipeline_jobs`, `job_retry` and `job_cancel` (F-20.2): its stage
 //! columns and the two row actions that act at once (`iid` names the MR the job belongs to; GitLab
 //! needs only the job id). The screen calls them when it opens by navigation, never on a restored
-//! start (F-30.4).
+//! start (F-30.4). `pipeline_mr_head` and `pipeline_run_mr` (F-20.3): the SHA Run new pipeline
+//! names, and the one POST it sends after the user confirmed.
 
 use tauri::State;
 
@@ -87,6 +88,34 @@ pub async fn job_cancel(
     let _ = iid;
     let (client, _) = connected_client(&gitlab, &store).await?;
     let result = pipeline_view::cancel_job(&client, &project, job).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// The full head SHA of the MR, read when Run new pipeline's confirmation opens (F-20.3).
+#[tauri::command]
+pub async fn pipeline_mr_head(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+) -> AppResult<String> {
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::mr_head_sha(&client, &project, iid).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// Starts a new merge request pipeline after the user confirmed (F-20.3); the new latest tab.
+#[tauri::command]
+pub async fn pipeline_run_mr(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+) -> AppResult<PipelineTab> {
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::run_mr_pipeline(&client, &project, iid).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     Ok(result?)
 }

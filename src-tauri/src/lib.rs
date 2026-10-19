@@ -227,6 +227,8 @@ pub fn run() {
             commands::pipeline::pipeline_jobs,
             commands::pipeline::job_retry,
             commands::pipeline::job_cancel,
+            commands::pipeline::pipeline_mr_head,
+            commands::pipeline::pipeline_run_mr,
             commands::review_plan::review_plan,
             commands::review_plan::review_set_strategy,
             commands::review_plan::review_reorder_steps,

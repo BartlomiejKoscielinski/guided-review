@@ -4,7 +4,8 @@
 //! duration). The UI formats the age and the duration. And its jobs as S-08's stage columns
 //! (F-20.2, M6 decisions 5 and 6): the stages in the order GitLab created the jobs, one row per
 //! latest attempt with one of eight states and at most one action, plus the row-level Retry and
-//! Cancel, which act at once.
+//! Cancel, which act at once. And Run new pipeline (F-20.3): the MR's head SHA the confirmation
+//! names, and the one POST that starts a merge request pipeline, as the new latest tab.
 
 use std::collections::HashMap;
 
@@ -14,6 +15,7 @@ use ts_rs::TS;
 use crate::gitlab::client::GitlabClient;
 use crate::gitlab::error::GitlabError;
 use crate::gitlab::jobs::{self, Job};
+use crate::gitlab::mr;
 use crate::gitlab::mrs::PipelineState;
 use crate::gitlab::pipelines::{self, kind_of};
 use crate::gitlab::versions;
@@ -86,6 +88,37 @@ pub async fn tabs(
             status: PipelineState::from_rest(&p.status),
         })
         .collect())
+}
+
+/// The full head SHA of the MR (F-20.3's confirmation shows 7 chars). Read only.
+pub async fn mr_head_sha(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+) -> Result<String, GitlabError> {
+    mr::get(client, project, iid)
+        .await?
+        .sha
+        .ok_or_else(|| GitlabError::Decode("merge request: no head SHA".to_owned()))
+}
+
+/// Starts a merge request pipeline on the MR's latest commit (F-20.3): one POST, then the new
+/// pipeline as the latest tab with the MR version of its SHA.
+pub async fn run_mr_pipeline(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+) -> Result<PipelineTab, GitlabError> {
+    let created = pipelines::create_mr_pipeline(client, project, iid).await?;
+    let versions = versions::list(client, project, iid).await?;
+    Ok(PipelineTab {
+        id: created.id,
+        number: created.id,
+        version: versions::number_of(&versions, &created.sha),
+        status: PipelineState::from_rest(&created.status),
+        sha: created.sha,
+        latest: true,
+    })
 }
 
 /// The head of pipeline `pipeline_id` of the MR; `me` is the signed-in username.

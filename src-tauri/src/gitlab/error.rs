@@ -151,6 +151,14 @@ impl From<GitlabError> for AppError {
                 AppError::new(ErrorCode::GitlabUnreachable, "GitLab had a server error.")
                     .with_detail(detail)
             }
+            GitlabError::Status { status, message } if (400..500).contains(&status) => {
+                // A refusal of what the user asked (F-20.3: "No stages / jobs for this
+                // pipeline."): GitLab's own words are the message the screen shows.
+                AppError::new(
+                    ErrorCode::InvalidInput,
+                    message.unwrap_or_else(|| format!("GitLab refused the request ({status}).")),
+                )
+            }
             GitlabError::InvalidUrl => {
                 AppError::new(ErrorCode::InvalidInput, "The GitLab server URL is invalid.")
             }
