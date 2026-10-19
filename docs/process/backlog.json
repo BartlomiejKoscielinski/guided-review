@@ -1,6 +1,6 @@
 {
   "milestone": "M5",
-  "updated": "2026-10-19T07:48:23.732Z",
+  "updated": "2026-10-19T08:49:13.949Z",
   "items": [
     {
       "id": "F-11.1",
@@ -266,17 +266,20 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "25e7746",
+      "status": "live",
+      "attempts": 1,
+      "note": "Built: Approve MR / Revoke approval with reviewed head sha, CONFLICT on other sha or 409 -> MR-changed banner + disabled Approve, summary_status, no key approves (dce0661 bf00194 8e1ccd7 f25cdf4, merged 6178f76). Live check left: Approve and Revoke against the stand-in GitLab in tauri dev, and what GitLab answers to a stale sha.",
+      "lockSha": "b8613a8",
       "tests": [
         "src-tauri/tests/gitlab_approve.rs",
         "src/ipc/mock/approve.test.ts",
         "src/screens/summary/ApprovalTileActions.test.tsx",
         "tests/e2e/summary-f14-2.spec.ts"
       ],
-      "forkSha": "d1fc673"
+      "disputes": [
+        "tests/e2e/summary-f14-2.spec.ts@8e1ccd7",
+        "src/screens/summary/ApprovalTileActions.test.tsx@f25cdf4"
+      ]
     },
     {
       "id": "F-14.3",
@@ -284,9 +287,15 @@
       "title": "The tile states \"Approving doesn't publish comments.\" and the number of open threads (\"Open threads: 3.\"…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "d76f342",
+      "tests": [
+        "src/screens/summary/ApprovalTileNotes.test.tsx",
+        "tests/e2e/summary-f14-3.spec.ts"
+      ],
+      "forkSha": "bf00194"
     }
   ]
 }
