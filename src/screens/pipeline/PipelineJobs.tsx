@@ -52,7 +52,9 @@ export function PipelineJobs({ project, iid, pipeline, jobs }: PipelineJobsProps
     mutation
       .mutateAsync(row.id)
       .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : String(e));
+        const reason = e instanceof Error ? e.message : String(e);
+        const verb = action === 'retry' ? 'retry' : 'cancel';
+        setError(`Couldn't ${verb} the job. ${reason}`);
       })
       .finally(() => {
         setBusy((ids) => {
