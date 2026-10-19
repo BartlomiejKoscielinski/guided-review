@@ -154,6 +154,47 @@ mod tests {
     use std::time::Duration;
 
     #[tokio::test]
+    async fn f18_8_counts_running_and_waiting_and_return_to_zero() {
+        let queue = Queue::new(1);
+        assert_eq!(queue.activity(), (0, 0));
+        let first = queue
+            .acquire(Priority::Other, &Cancel::new())
+            .await
+            .unwrap();
+        assert_eq!(queue.activity(), (1, 0));
+        let waiter = {
+            let queue = queue.clone();
+            tokio::spawn(async move { queue.acquire(Priority::Other, &Cancel::new()).await })
+        };
+        tokio::time::sleep(Duration::from_millis(20)).await;
+        assert_eq!(queue.activity(), (1, 1));
+        drop(first);
+        let second = waiter.await.unwrap().unwrap();
+        assert_eq!(queue.activity(), (1, 0));
+        drop(second);
+        assert_eq!(queue.activity(), (0, 0));
+    }
+
+    #[tokio::test]
+    async fn f18_8_a_cancelled_waiting_task_is_no_longer_counted() {
+        let queue = Queue::new(1);
+        let _busy = queue
+            .acquire(Priority::Other, &Cancel::new())
+            .await
+            .unwrap();
+        let cancel = Cancel::new();
+        let waiter = {
+            let (queue, cancel) = (queue.clone(), cancel.clone());
+            tokio::spawn(async move { queue.acquire(Priority::Other, &cancel).await })
+        };
+        tokio::time::sleep(Duration::from_millis(20)).await;
+        assert_eq!(queue.activity(), (1, 1));
+        cancel.cancel();
+        assert!(waiter.await.unwrap().is_err());
+        assert_eq!(queue.activity(), (1, 0));
+    }
+
+    #[tokio::test]
     async fn f18_6_queue_runs_at_most_n_tasks() {
         let queue = Queue::new(2);
         let running = Arc::new(AtomicUsize::new(0));
