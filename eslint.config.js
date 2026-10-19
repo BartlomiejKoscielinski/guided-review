@@ -52,6 +52,14 @@ export default defineConfig(
     },
   },
   {
+    // The locked F-20.7 test was written before `jobExplain` existed; its two type assertions
+    // became unnecessary once the client typed the answer (autopilot test dispute, F-20.7).
+    files: ['src/screens/pipeline/ExplainFailure.test.tsx'],
+    rules: {
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
+  {
     files: ['tests/e2e/**/*.ts'],
     rules: {
       'no-restricted-properties': [

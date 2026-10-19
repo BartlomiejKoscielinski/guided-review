@@ -6,7 +6,7 @@ import { cx } from '../../components/cx';
 import { useClaudeStatus } from '../../ipc/hooks/useClaude';
 import type { JobExplain } from '../../ipc/hooks/useJobExplain';
 import { useUnfinishedSessions } from '../../ipc/hooks/useUnfinishedSessions';
-import type { JobExplanation } from '../../ipc/types/JobExplanation';
+import { verdictLabel } from './explainText';
 import styles from './ExplainFailure.module.css';
 
 export interface ExplainFailureProps {
@@ -15,24 +15,6 @@ export interface ExplainFailureProps {
   explain: JobExplain;
   /** A `pipeline #N` chip selects that pipeline's tab. */
   onSelectPipeline: (number: number) => void;
-}
-
-/** Decision 14's tag word. */
-export function verdictLabel(e: JobExplanation): string {
-  switch (e.verdict) {
-    case 'causedByMr':
-      return 'Caused by this MR';
-    case 'alreadyFixed':
-      return e.fixedInVersion === undefined
-        ? 'Already fixed'
-        : `Already fixed in version ${String(e.fixedInVersion)}`;
-    case 'unrelated':
-      return 'Unrelated';
-    case 'flaky':
-      return 'Flaky';
-    case 'unknown':
-      return 'Unknown';
-  }
 }
 
 const PIPELINE_CHIP = /^pipeline #(\d+)$/i;

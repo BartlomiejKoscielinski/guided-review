@@ -606,6 +606,23 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    // S08-pipeline-old-failed.png ({"pipe":"p321","job":"unit-tests","ex":{"p321:unit-tests":
+    // "done"}}): the older failed #18321 with unit-tests selected and Explain failure answered
+    // (F-20.7): Already fixed in version 3, its evidence chips and no suggested comment.
+    screen: 'S08',
+    state: 'pipeline-old-failed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('tab', { name: /#18321/ }).click();
+      await page.getByRole('button', { name: 'unit-tests, Failed', exact: true }).click();
+      await page.getByRole('button', { name: 'Explain failure', exact: true }).click();
+      await page.getByTestId('explain-verdict').waitFor({ timeout: 10_000 });
+    },
+  },
+  {
     // S08-pipeline-running.png: the new pipeline #18351 after Run pipeline (F-20.3), running,
     // started by you just now, its build stage running and the manual jobs still manual;
     // build:android selected with its first two log lines streaming (F-20.5).
