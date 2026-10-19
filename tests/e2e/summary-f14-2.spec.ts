@@ -95,7 +95,9 @@ test('F-14.2 See what changed leaves the summary for S-09', async ({ page }) => 
   await page.getByRole('button', { name: 'See what changed', exact: true }).click();
 
   await expect(page.getByRole('heading', { name: /^summary$/i })).toHaveCount(0);
-  await expect(page).toHaveURL(/since-last-review/);
+  await expect(
+    page.getByRole('heading', { name: 'Since your last review', exact: true }),
+  ).toHaveCount(1);
 });
 
 test('F-14.2 Enter does not approve: with the summary open the tile stays "Not approved yet"', async ({
