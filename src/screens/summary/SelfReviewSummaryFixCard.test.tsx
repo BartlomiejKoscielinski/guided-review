@@ -150,7 +150,9 @@ describe('S-05 self-review summary: the fix card (F-25.3)', () => {
     await act(() => run.fail('CLAUDE_LIMITED', 'Claude usage limit reached'));
     const alert = await screen.findByRole('alert');
     expect(within(alert).getByText('Claude usage limit reached')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Close' }));
+    // The card holding the alert; the title bar has its own Close caption button.
+    const card = alert.parentElement as HTMLElement;
+    await userEvent.click(within(card).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('alert')).toBeNull();
     expect(fixButton(await rowOf(COUNTER))).toBeEnabled();
   });
