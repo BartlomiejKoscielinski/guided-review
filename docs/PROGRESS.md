@@ -149,7 +149,7 @@ Rules for Claude Code:
 - [ ] F-20.4 Retry failed jobs (pipeline), Cancel pipeline (while running), Open in GitLab. — partial: autopilot (295cd39, 769b95b, b0773b5, 4c3bb94, 1a128ec, 165cf8f)
 - [ ] F-20.5 Selecting a job shows details: name, status, stage, duration, Retry/Cancel, Full log; the log tail with… — partial: autopilot (3a689a2, cb5dade, 855d619, 221c770, 6e96ece, 05c545a, afca83a, a104690)
 - [ ] F-20.6 Manual jobs show their description (when GitLab provides one) and editable variables ("Variables for this… — partial: autopilot (065a008, 04303f9, cabaf59, 28c09ed, 9f29f7f)
-- [ ] F-20.7 Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by…
+- [ ] F-20.7 Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by… — partial: autopilot (a9d5933, da916ae, 0b9bf6a, a278b0a, bc771a0, 5544354, 4684172, 7b16524, 688ab4b, bfdd25d)
 - [ ] F-20.8 Successful jobs list artifacts with Download.
 - [ ] F-20.9 A retry that fails the same way says "Retried: failed again on the same test."
 - [ ] F-20.10 Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08.
