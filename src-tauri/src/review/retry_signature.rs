@@ -1,7 +1,7 @@
 //! "Retried: failed again on the same test." on S-08 (F-20.9, M6 decision 15), read only. The
-//! failure signature of a job attempt is the sorted set of its failed test names: the cases of the
-//! pipeline test report's suite named like the job (the report describes the latest attempt only),
-//! else the `Failed <name>` lines of the attempt's log. A failed attempt "failed again on the same
+//! failure signature of a job attempt is the sorted set of its failed test names, the `Failed <name>`
+//! lines of the attempt's log (both attempts read the same way; the pipeline test report describes
+//! only the latest attempt, so it is not used). A failed attempt "failed again on the same
 //! test" when the previous attempt of the same name in the same pipeline (the retried one with the
 //! highest id below it) failed too and both signatures are equal and not empty; different tests,
 //! no known test names or a first attempt read false, since a wrong claim misleads more than
@@ -10,14 +10,12 @@
 use std::collections::BTreeSet;
 
 use serde::Serialize;
-use serde_json::Value;
 use ts_rs::TS;
 
 use super::job_log::parse_lines;
 use crate::gitlab::client::GitlabClient;
 use crate::gitlab::error::GitlabError;
 use crate::gitlab::jobs::{self, Job};
-use crate::gitlab::pipelines;
 
 /// What the job details panel adds to a failed job.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -31,44 +29,25 @@ pub struct JobDetailsView {
 /// A set of failed test names; empty when none are known.
 pub type Signature = BTreeSet<String>;
 
-/// The failed test names of `job_name`'s suite in a pipeline test report.
-pub fn from_report(report: &Value, job_name: &str) -> Signature {
-    report
-        .get("test_suites")
-        .and_then(Value::as_array)
-        .and_then(|suites| {
-            suites
-                .iter()
-                .find(|s| s.get("name").and_then(Value::as_str) == Some(job_name))
-        })
-        .and_then(|suite| suite.get("test_cases"))
-        .and_then(Value::as_array)
-        .map(|cases| {
-            cases
-                .iter()
-                .filter(|c| {
-                    matches!(
-                        c.get("status").and_then(Value::as_str),
-                        Some("failed" | "error")
-                    )
-                })
-                .filter_map(|c| c.get("name").and_then(Value::as_str))
-                .map(str::trim)
-                .filter(|n| !n.is_empty())
-                .map(str::to_owned)
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-/// The names of the `Failed <name>` lines of a raw job log (escapes and sections removed).
+/// The names of the `Failed <name>` lines of a raw job log (escapes and sections removed); a
+/// trailing duration like ` [3 ms]` is not part of the name, spaces inside a parameterized name
+/// (`Queue.B(x: 1)`) are.
 pub fn from_log(raw: &str) -> Signature {
     parse_lines(raw)
         .iter()
         .filter_map(|line| line.text.trim_start().strip_prefix("Failed "))
-        .filter_map(|rest| rest.split_whitespace().next())
+        .map(test_name)
+        .filter(|n| !n.is_empty())
         .map(str::to_owned)
         .collect()
+}
+
+fn test_name(rest: &str) -> &str {
+    let rest = rest.trim();
+    match rest.rfind(" [") {
+        Some(at) if rest.ends_with(']') => rest[..at].trim_end(),
+        _ => rest,
+    }
 }
 
 /// True when both attempts name failed tests and they are the same set.
@@ -115,16 +94,9 @@ pub async fn job_details(
     if previous.status != "failed" {
         return Ok(no);
     }
-    let mut current = Signature::new();
-    if !job.retried {
-        // A missing report (404) is no news: the log names the tests then.
-        if let Ok(report) = pipelines::test_report(client, project, pipeline.id).await {
-            current = from_report(&report, &job.name);
-        }
-    }
-    if current.is_empty() {
-        current = log_signature(client, project, job.id).await?;
-    }
+    // Both signatures come from the logs: the previous attempt has nothing else, and names
+    // read two different ways would never compare equal.
+    let current = log_signature(client, project, job.id).await?;
     if current.is_empty() {
         return Ok(no);
     }
@@ -137,7 +109,6 @@ pub async fn job_details(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
 
     fn set(names: &[&str]) -> Signature {
         names.iter().map(|n| (*n).to_owned()).collect()
@@ -150,20 +121,11 @@ mod tests {
     }
 
     #[test]
-    fn f20_9_the_report_signature_is_the_jobs_suite_failed_cases() {
-        let report = json!({ "test_suites": [
-            { "name": "lint", "test_cases": [{ "status": "failed", "name": "X" }] },
-            { "name": "unit-tests", "test_cases": [
-                { "status": "success", "name": "ok" },
-                { "status": "failed", "name": "Queue.B" },
-                { "status": "error", "name": "Queue.A" }
-            ] }
-        ] });
-        assert_eq!(
-            from_report(&report, "unit-tests"),
-            set(&["Queue.A", "Queue.B"])
-        );
-        assert!(from_report(&report, "ui-tests").is_empty());
+    fn f20_9_a_parameterized_test_keeps_its_whole_name() {
+        let raw = "  Failed Queue.B(x: 1) [3 ms]
+  Failed Queue.B(x: 2)
+";
+        assert_eq!(from_log(raw), set(&["Queue.B(x: 1)", "Queue.B(x: 2)"]));
     }
 
     #[test]
