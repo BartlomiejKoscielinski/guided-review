@@ -6,9 +6,14 @@ import { useStatusSummary } from '../../ipc/hooks/useSources';
 import type { StatusSummary } from '../../ipc/types/StatusSummary';
 import styles from './Summary.module.css';
 
-/** A branch with commits ahead of its target has something to describe in an MR. */
+/**
+ * A branch other than its target with commits ahead of it has something to describe in an MR.
+ * On the local target branch itself unpushed commits still count as ahead of origin/<target>, but
+ * an MR from the target into itself makes no sense.
+ */
 function hasMrToDescribe(summary: StatusSummary | undefined): boolean {
   if (!summary?.branch || !summary.target) return false;
+  if (summary.branch === summary.targetName) return false;
   return (summary.branchVsTarget?.commits ?? 0) > 0;
 }
 
