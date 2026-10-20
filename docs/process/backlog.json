@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T13:33:54.932Z",
+  "updated": "2026-10-20T13:42:49.198Z",
   "items": [
     {
       "id": "F-20.1",
@@ -134,7 +134,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 2,
       "note": "built: error cause logged (tracing) and shown in the panel, timeout 10 min; live check needed: (1) first Explain failure run on MR !5 pipeline #9 unit-tests, read the app log line 'explain failure failed: …' if it fails; (2) Add to drafts reaching S-05 with a real suggested comment",
       "lockSha": "a9d5933",
