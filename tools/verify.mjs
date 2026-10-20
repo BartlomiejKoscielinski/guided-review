@@ -96,28 +96,38 @@ function report({ name, ok, secs, output, log }) {
 
 mkdirSync(logDir, { recursive: true });
 const results = [];
-// Independent groups run in parallel (JS static checks, JS tests, Rust chain); steps inside a
-// group stay sequential. Output is printed in STEPS order once everything finished.
-// --serial restores the one-after-another run.
-const GROUPS = [
-  ['typecheck', 'lint', 'format:check'],
-  ['test', 'test:tools'],
-  ['rust:fmt', 'rust:clippy', 'rust:test'],
+// Phases run one after another; the groups of a phase run in parallel, the steps of a group one
+// after another. Output is printed in STEPS order once everything finished. E29: Vitest runs in a
+// phase of its own: its workers fill every core, and beside the Rust chain its tests hit the 5 s
+// timeout (5 to 30 failures per parallel run on 2026-10-20), while alone they pass. The Rust
+// chain runs beside the JS static checks instead. --serial restores the one-after-another run.
+const PHASES = [
+  [
+    ['rust:fmt', 'rust:clippy', 'rust:test'],
+    ['typecheck', 'lint', 'format:check', 'test:tools'],
+  ],
+  [['test']],
 ];
-const lanes = args.includes('--serial')
-  ? [steps]
-  : GROUPS.map((g) => g.filter((s) => steps.includes(s))).filter((g) => g.length);
-const done = await Promise.all(
-  lanes.map(async (lane) => {
-    const out = [];
-    for (const step of lane) {
-      if (step === 'lint' && fresh) await rm(eslintCache, { recursive: true, force: true });
-      out.push(await run(step, `npm run ${step}`));
-    }
-    return out;
-  }),
-);
-const byName = new Map(done.flat().map((r) => [r.name, r]));
+const phases = args.includes('--serial')
+  ? [[steps]]
+  : PHASES.map((groups) =>
+      groups.map((g) => g.filter((s) => steps.includes(s))).filter((g) => g.length),
+    ).filter((groups) => groups.length);
+const done = [];
+for (const groups of phases) {
+  const ran = await Promise.all(
+    groups.map(async (group) => {
+      const out = [];
+      for (const step of group) {
+        if (step === 'lint' && fresh) await rm(eslintCache, { recursive: true, force: true });
+        out.push(await run(step, `npm run ${step}`));
+      }
+      return out;
+    }),
+  );
+  done.push(...ran.flat());
+}
+const byName = new Map(done.map((r) => [r.name, r]));
 for (const step of steps) {
   const r = byName.get(step);
   report(r);

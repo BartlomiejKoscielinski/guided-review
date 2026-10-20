@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "lint": "eslint . --max-warnings 0 --cache --cache-strategy content --cache-location node_modules/.cache/eslint/",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --check . --cache --cache-strategy content --cache-location node_modules/.cache/prettier/.prettier-cache",
     "test": "vitest run",
     "test:tools": "node --test \"tools/*.test.mjs\"",
     "e2e": "playwright test",
