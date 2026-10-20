@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T08:47:50.264Z",
+  "updated": "2026-10-20T09:24:03.063Z",
   "items": [
     {
       "id": "F-20.1",
@@ -153,9 +153,16 @@
       "title": "Successful jobs list artifacts with Download.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "fbc942b",
+      "tests": [
+        "src-tauri/tests/pipeline_artifacts.rs",
+        "src/screens/pipeline/JobArtifacts.test.tsx",
+        "src/ipc/mock/pipelineArtifacts.test.ts",
+        "tests/e2e/pipeline-f20-8.spec.ts"
+      ]
     },
     {
       "id": "F-20.9",
