@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-20T16:04:23.300Z",
+  "updated": "2026-10-20T16:56:43.879Z",
   "items": [
     {
       "id": "F-17.3",
@@ -57,9 +57,24 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "7c92e8b",
+      "tests": [
+        "src-tauri/tests/fix_proposal.rs",
+        "src/ipc/mock/fix.test.ts",
+        "src/ipc/tauriFix.test.ts",
+        "src/screens/fix/FixCard.test.tsx",
+        "src/screens/step/NoteCardFixCard.test.tsx",
+        "src/screens/summary/SelfReviewSummaryFixCard.test.tsx",
+        "tests/e2e/step-f25-3.spec.ts",
+        "src/test/fixProposal.ts"
+      ],
+      "disputes": [
+        "src/screens/summary/SelfReviewSummaryFixCard.test.tsx@cbbd5b8",
+        "tests/e2e/step-f25-3.spec.ts@4358c7d"
+      ]
     },
     {
       "id": "F-25.4",

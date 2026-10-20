@@ -1,5 +1,5 @@
 {
-  "items": 67,
+  "items": 68,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 37,
+      "helpful": 38,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 28,
+      "helpful": 29,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 40,
+      "helpful": 41,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -1164,6 +1164,22 @@
       "created": "2026-10-20T16:04:22.654Z",
       "lastUsedItem": 66,
       "source": "F-25.2"
+    },
+    {
+      "id": "P-128",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**",
+        "tests/e2e/**"
+      ],
+      "text": "Write button locators in new component and e2e tests as exact: true (getByRole('button', { name: 'Cancel', exact: true })) or scope them with within(card), because the full-app render also has the title bar's 'Close' caption button and step 4's note marker contains 'cancellation', so F-25.3's unscoped 'Close' and 'Cancel' queries hit strict-mode violations, caused two test disputes and a fix round (44k tokens), and only found out after the implementer ran them.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T16:56:43.159Z",
+      "lastUsedItem": 67,
+      "source": "F-25.3"
     }
   ]
 }
