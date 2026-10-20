@@ -48,16 +48,15 @@ const row = (over: Partial<Row> & Pick<Row, 'id' | 'name'>): Row => ({
   ...over,
 });
 
-const explanation = (over: Partial<Explanation> = {}): Explanation =>
-  ({
-    verdict: 'causedByMr',
-    title: 'Queue returned items by Id instead of CreatedAt',
-    explanation: 'Both failing tests check the queue order.',
-    evidence: ['SqliteUploadQueue.cs:88', 'pipeline #18342'],
-    retryRecommended: false,
-    suggestedComment: COMMENT,
-    ...over,
-  }) as Explanation;
+const explanation = (over: Partial<Explanation> = {}): Explanation => ({
+  verdict: 'causedByMr',
+  title: 'Queue returned items by Id instead of CreatedAt',
+  explanation: 'Both failing tests check the queue order.',
+  evidence: ['SqliteUploadQueue.cs:88', 'pipeline #18342'],
+  retryRecommended: false,
+  suggestedComment: COMMENT,
+  ...over,
+});
 
 interface Opened {
   user: ReturnType<typeof userEvent.setup>;
@@ -83,7 +82,7 @@ async function openWith(
       const next = answers[Math.min(asked.length, answers.length - 1)];
       asked.push(job);
       if (next instanceof Error) return Promise.reject(next);
-      return Promise.resolve(next as Explanation);
+      return Promise.resolve(next);
     },
     draftsCreateForMr: (project: string, iid: number, draft: unknown) => {
       drafts.push({ project, iid, draft });
