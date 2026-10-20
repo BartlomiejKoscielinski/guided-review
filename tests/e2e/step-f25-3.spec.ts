@@ -50,7 +50,7 @@ test('F-25.3 Fix with Claude on a self-review note: busy line, then the proposed
   await openSelfReviewStep4(page);
   await chooseFix(page);
   await expect(page.getByText(BUSY)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toBeVisible();
 
   await expect(page.getByText('Proposed change', { exact: true })).toBeVisible({ timeout: 10000 });
   await expect(page.getByText(BUSY)).toHaveCount(0);
@@ -80,7 +80,7 @@ test('F-25.3 Cancel on the busy line stops the run: no card, no error, Fix with 
   await openSelfReviewStep4(page);
   await chooseFix(page);
   await expect(page.getByText(BUSY)).toBeVisible();
-  await page.getByRole('button', { name: 'Cancel' }).click();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(page.getByText(BUSY)).toHaveCount(0);
   await expect(page.getByRole('alert')).toHaveCount(0);
   // The run's answer never shows.
