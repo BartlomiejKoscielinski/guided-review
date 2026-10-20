@@ -17,6 +17,14 @@
   color: var(--text);
 }
 
+.failedAgain {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--orange-text);
+}
+
 .idle {
   display: flex;
   flex-direction: column;

@@ -17,6 +17,7 @@ import type { Draft } from './types/Draft';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { JobExplainEvent } from './types/JobExplainEvent';
 import type { JobArtifact } from './types/JobArtifact';
+import type { JobDetailsView } from './types/JobDetailsView';
 import type { JobExplanation } from './types/JobExplanation';
 import type { JobLogEvent } from './types/JobLogEvent';
 import type { JobRow } from './types/JobRow';
@@ -251,6 +252,7 @@ export function createTauriClient(): IpcClient {
     },
     jobArtifacts: (project, iid, job) =>
       call<JobArtifact[]>('job_artifacts', { project, iid, job }),
+    jobDetails: (project, iid, job) => call<JobDetailsView>('job_details', { project, iid, job }),
     osOpenGitlabUrl: (url) => call<undefined>('os_open_gitlab_url', { url }),
     ...createTauriWindowControls(),
   };

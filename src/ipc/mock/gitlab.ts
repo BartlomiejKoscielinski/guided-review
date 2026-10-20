@@ -44,6 +44,7 @@ type GitlabClient = Pick<
   | 'jobTrace'
   | 'jobExplain'
   | 'jobArtifacts'
+  | 'jobDetails'
   | 'osOpenGitlabUrl'
   | 'draftsPublish'
   | 'gitlabForeignDrafts'

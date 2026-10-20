@@ -1,4 +1,5 @@
 import { usePipelineActions } from '../../ipc/hooks/usePipelineActions';
+import { useJobDetails } from '../../ipc/hooks/useJobDetails';
 import { useJobExplain } from '../../ipc/hooks/useJobExplain';
 import { useJobLog } from '../../ipc/hooks/useJobLog';
 import type { JobRow } from '../../ipc/types/JobRow';
@@ -42,7 +43,8 @@ export interface JobDetailsProps {
  * browser); below, the streamed log on the left and, while the job runs, the running note on the
  * right. A job that never ran has no log; a manual job shows its form instead (F-20.6). A failed
  * job (an allowed failure too) shows "Why it failed" with Explain failure on the right (F-20.7);
- * a successful one its artifacts with Download (F-20.8).
+ * a successful one its artifacts with Download (F-20.8). A failed job whose retry failed on the
+ * same tests says so under "Why it failed" (F-20.9); while that read loads or fails it says nothing.
  */
 export function JobDetails({
   project,
@@ -66,6 +68,8 @@ export function JobDetails({
   // log that couldn't be read stays on screen as a status (F-20.7).
   const explained = explain.running || explain.failed || explain.result !== undefined;
   const running = row.state === 'running';
+  const failed = row.state === 'failed' || row.state === 'failedAllowed';
+  const details = useJobDetails(project, iid, failed ? row.id : null);
   const off = busy || refused !== null;
   const tip = refused ?? undefined;
 
@@ -135,8 +139,13 @@ export function JobDetails({
                 Running. The log streams on the left.
               </span>
             )}
-            {(row.state === 'failed' || row.state === 'failedAllowed') && (
-              <ExplainFailure iid={iid} explain={explain} onSelectPipeline={onSelectPipeline} />
+            {failed && (
+              <ExplainFailure
+                iid={iid}
+                explain={explain}
+                onSelectPipeline={onSelectPipeline}
+                failedAgain={details.data?.retriedSameFailure === true}
+              />
             )}
             {row.state === 'passed' && (
               <JobArtifacts project={project} iid={iid} job={row.id} onOpenError={onOpenError} />

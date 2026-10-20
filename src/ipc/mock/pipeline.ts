@@ -19,6 +19,7 @@ import {
   pipelineTabs,
 } from './fixtures/pipeline';
 import { jobArtifacts } from './fixtures/pipelineArtifacts';
+import { failedAgain } from './fixtures/pipelineRetried';
 import { jobPage } from './fixtures/pipelineLog';
 import { type FoundJob, traceJob } from './pipelineLog';
 import { createExplainBackend } from './pipelineExplain';
@@ -37,7 +38,8 @@ type PipelineCommands =
   | 'pipelineCancel'
   | 'jobTrace'
   | 'jobExplain'
-  | 'jobArtifacts';
+  | 'jobArtifacts'
+  | 'jobDetails';
 
 /** GitLab's 400 for a play of a job that is not manual, in its own words. */
 const unplayable = () =>
@@ -67,6 +69,8 @@ const FIRST_ATTEMPT_ID = 9_000_000;
  * the saved values (no GitLab call, so no account needed, like the core's store read).
  * `jobExplain` (F-20.7): `pipelineExplain.ts`. `jobArtifacts` (F-20.8): the files of
  * `fixtures/pipelineArtifacts.ts` by job name, none for the rest; an unknown job is GitLab's 404.
+ * `jobDetails` (F-20.9): a failed job of `failedAgain` failed again on the same test; the rest
+ * read false; an unknown job is GitLab's 404.
  */
 export function createPipelineBackend(
   user: () => GitlabUser | null,
@@ -259,6 +263,15 @@ ${name}`;
       const found = find(job);
       if (!found) return Promise.reject(notFound());
       return respond(jobArtifacts(found.row.id, found.row.name));
+    },
+    jobDetails: (_project, _iid, job) => {
+      if (!user()) return Promise.reject(unauthorized());
+      const found = find(job);
+      if (!found) return Promise.reject(notFound());
+      const failed = found.row.state === 'failed' || found.row.state === 'failedAllowed';
+      return respond({
+        retriedSameFailure: failed && failedAgain(found.pipeline, found.row.name),
+      });
     },
     pipelineMrHead: (_project, iid) => {
       if (!user()) return Promise.reject(unauthorized());

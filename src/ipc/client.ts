@@ -9,6 +9,7 @@ import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { JobArtifact } from './types/JobArtifact';
+import type { JobDetailsView } from './types/JobDetailsView';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
@@ -422,6 +423,12 @@ export interface IpcClient {
    * index: name, size label ("48 MB") and the download URL Download opens in the browser.
    */
   jobArtifacts(project: string, iid: number, job: number): Promise<JobArtifact[]>;
+  /**
+   * The details panel's facts about failed job `job` (F-20.9, M6 decision 15):
+   * `retriedSameFailure` when its previous attempt in the same pipeline failed on exactly the
+   * same tests.
+   */
+  jobDetails(project: string, iid: number, job: number): Promise<JobDetailsView>;
   /**
    * Opens a page of the configured GitLab in the default browser (Open in GitLab, F-20.4); the
    * core refuses anything that is not `https` on the GitLab host (INVALID_INPUT).

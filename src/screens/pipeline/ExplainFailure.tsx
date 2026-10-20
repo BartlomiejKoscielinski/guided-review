@@ -15,6 +15,8 @@ export interface ExplainFailureProps {
   explain: JobExplain;
   /** A `pipeline #N` chip selects that pipeline's tab. */
   onSelectPipeline: (number: number) => void;
+  /** The previous attempt failed on exactly the same tests (F-20.9, decision 15). */
+  failedAgain?: boolean;
 }
 
 const PIPELINE_CHIP = /^pipeline #(\d+)$/i;
@@ -27,9 +29,15 @@ const PIPELINE_CHIP = /^pipeline #(\d+)$/i;
  * may help." when Claude recommends one, the evidence chips (`pipeline #N` selects its tab; a
  * `file:line` opens the MR's latest review session when one exists, else plain text) and, with a
  * suggested comment, **Add to drafts**, which turns into the confirmation. A failed run shows
- * "Couldn't explain this failure." with **Retry**. Nothing is posted.
+ * "Couldn't explain this failure." with **Retry**. Nothing is posted. Under the heading, a job
+ * whose retry failed on the same tests says "Retried: failed again on the same test." (F-20.9).
  */
-export function ExplainFailure({ iid, explain: ex, onSelectPipeline }: ExplainFailureProps) {
+export function ExplainFailure({
+  iid,
+  explain: ex,
+  onSelectPipeline,
+  failedAgain = false,
+}: ExplainFailureProps) {
   const status = useClaudeStatus();
   const sessions = useUnfinishedSessions();
   const navigate = useNavigate();
@@ -82,6 +90,12 @@ export function ExplainFailure({ iid, explain: ex, onSelectPipeline }: ExplainFa
         <Square color="purple" size={14} />
         Why it failed
       </h3>
+      {failedAgain && (
+        <span role="status" className={styles.failedAgain}>
+          <Square color="orange" size={9} />
+          Retried: failed again on the same test.
+        </span>
+      )}
       {ex.running ? (
         <span role="status" className={styles.running}>
           <svg
