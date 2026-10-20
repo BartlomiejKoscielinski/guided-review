@@ -41,15 +41,17 @@ async function openWith(rows: Row[], override: Partial<IpcClient> = {}) {
   const base = createMockClient({ latencyMs: 0 });
   await base.repoPick();
   const asked: number[] = [];
+  const answer: IpcClient['jobDetails'] =
+    override.jobDetails ?? (() => Promise.resolve({ retriedSameFailure: true }));
   const rec = recordingClient({
     ...base,
     pipelineJobs: () => Promise.resolve([{ name: 'test', jobs: rows }]),
     jobTrace: () => new Promise<void>(() => undefined),
-    jobDetails: (_project, _iid, job) => {
-      asked.push(job);
-      return Promise.resolve({ retriedSameFailure: true });
-    },
     ...override,
+    jobDetails: (project, iid, job) => {
+      asked.push(job);
+      return answer(project, iid, job);
+    },
   });
   const app = renderApp({ screen: 'S-01' }, rec.client);
   await act(() => app.router.navigate(pathFor({ screen: 'S-08', iid: IID })));
