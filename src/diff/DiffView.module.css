@@ -18,6 +18,12 @@
   width: 100%;
 }
 
+/* Each row is its own stacking context (transform): a row with an open menu (a note card's More)
+   is lifted so the menu is not painted under the rows after it. */
+.row:has([role='menu']) {
+  z-index: 1;
+}
+
 /* The hunk J/K made current (F-30.6): the focus outline on its first row, inside the row. */
 .current {
   outline: 2px solid var(--focus);
