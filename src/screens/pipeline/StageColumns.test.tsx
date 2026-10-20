@@ -371,8 +371,14 @@ describe('S-08 selecting a job (F-20.2)', () => {
     expect(select('sonar')).toHaveAttribute('aria-pressed', 'true');
     expect(select('ui-tests:android')).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getAllByRole('button', { pressed: true })).toHaveLength(1);
-    // Only the picked job's log is read (F-20.5); no job action is sent.
-    expect(calls.slice(before).filter((c) => /^job/.test(c))).toEqual(['jobTrace']);
+    // Only the picked job's log (F-20.5) and, as it passed, its artifacts (F-20.8) are read; no
+    // job action is sent.
+    expect(
+      calls
+        .slice(before)
+        .filter((c) => /^job/.test(c))
+        .sort(),
+    ).toEqual(['jobArtifacts', 'jobTrace']);
   });
 
   it('F-20.2 Run on a manual job only selects it: no request, no change of its state, no confirmation', async () => {

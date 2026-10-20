@@ -6,6 +6,7 @@ import { Button } from '../../components/Button';
 import { cx } from '../../components/cx';
 import type { JobVariable } from '../../ipc/types/JobVariable';
 import { ExplainFailure } from './ExplainFailure';
+import { JobArtifacts } from './JobArtifacts';
 import { JobLog } from './JobLog';
 import { ManualJobForm } from './ManualJobForm';
 import { JobSquare } from './JobSquare';
@@ -40,7 +41,8 @@ export interface JobDetailsProps {
  * line, Retry job / Cancel job (the row's action, decision 6) and Full log (the job's page in the
  * browser); below, the streamed log on the left and, while the job runs, the running note on the
  * right. A job that never ran has no log; a manual job shows its form instead (F-20.6). A failed
- * job (an allowed failure too) shows "Why it failed" with Explain failure on the right (F-20.7).
+ * job (an allowed failure too) shows "Why it failed" with Explain failure on the right (F-20.7);
+ * a successful one its artifacts with Download (F-20.8).
  */
 export function JobDetails({
   project,
@@ -135,6 +137,9 @@ export function JobDetails({
             )}
             {(row.state === 'failed' || row.state === 'failedAllowed') && (
               <ExplainFailure iid={iid} explain={explain} onSelectPipeline={onSelectPipeline} />
+            )}
+            {row.state === 'passed' && (
+              <JobArtifacts project={project} iid={iid} job={row.id} onOpenError={onOpenError} />
             )}
           </div>
         </div>

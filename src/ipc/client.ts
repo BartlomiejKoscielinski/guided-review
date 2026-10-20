@@ -8,6 +8,7 @@ import type { AskAnswer } from './types/AskAnswer';
 import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
+import type { JobArtifact } from './types/JobArtifact';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
@@ -416,6 +417,11 @@ export interface IpcClient {
     onEvent: (event: JobLogEvent) => void,
     signal?: AbortSignal,
   ): Promise<void>;
+  /**
+   * The files of successful job `job` (F-20.8, M6 decision 13) without its log and GitLab's
+   * index: name, size label ("48 MB") and the download URL Download opens in the browser.
+   */
+  jobArtifacts(project: string, iid: number, job: number): Promise<JobArtifact[]>;
   /**
    * Opens a page of the configured GitLab in the default browser (Open in GitLab, F-20.4); the
    * core refuses anything that is not `https` on the GitLab host (INVALID_INPUT).
