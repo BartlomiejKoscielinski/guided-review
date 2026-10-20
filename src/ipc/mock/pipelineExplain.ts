@@ -49,8 +49,9 @@ const wait = (ms: number) =>
 
 /**
  * `jobExplain` (F-20.7) as `commands/job_explain.rs` answers it: no GitLab account first, an
- * unknown job GitLab's 404, a job that did not fail INVALID_INPUT; then `preparing`, `reading`
- * and `done` with the design mock's answer for the job (else Unknown).
+ * unknown job GitLab's 404, a job that did not fail INVALID_INPUT; then `preparing` (only the
+ * first time per MR: afterwards the worktree is at the latest head, decision 12), `reading` and
+ * `done` with the design mock's answer for the job (else Unknown).
  */
 export function createExplainBackend(
   user: () => unknown,
@@ -58,8 +59,9 @@ export function createExplainBackend(
   notFound: () => IpcError,
   find: (job: number) => FoundJob | null,
 ): Pick<IpcClient, 'jobExplain'> {
+  const prepared = new Set<string>();
   return {
-    jobExplain: async (_project, _iid, job, onEvent) => {
+    jobExplain: async (project, iid, job, onEvent) => {
       if (!user()) throw unauthorized();
       const found = find(job);
       if (!found) throw notFound();
@@ -70,8 +72,12 @@ export function createExplainBackend(
           retryable: false,
         });
       }
-      onEvent({ kind: 'preparing' });
-      await wait(MOCK_EXPLAIN_PREPARE_MS);
+      const mr = `${project}!${String(iid)}`;
+      if (!prepared.has(mr)) {
+        onEvent({ kind: 'preparing' });
+        await wait(MOCK_EXPLAIN_PREPARE_MS);
+        prepared.add(mr);
+      }
       onEvent({ kind: 'reading' });
       await wait(MOCK_EXPLAIN_READ_MS);
       const result = EXPLAINED[`${String(found.pipeline)}:${found.row.name}`] ?? UNKNOWN;

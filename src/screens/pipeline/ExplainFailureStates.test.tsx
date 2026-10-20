@@ -1,6 +1,6 @@
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { pathFor } from '../../app/routes';
 import type { IpcClient } from '../../ipc/client';
 import { IpcError } from '../../ipc/errors';
@@ -92,6 +92,32 @@ describe('S-08 Explain failure states (F-20.7)', () => {
     ).toBeInTheDocument();
     expect(panel.getByRole('button', { name: 'Add to drafts' })).toBeEnabled();
     expect(panel.queryByText('In drafts. Publish it with the rest from Summary.')).toBeNull();
+  });
+
+  it("F-20.7 a failed run says Couldn't explain this failure. with the reason, and Retry names why it is disabled", async () => {
+    let signedIn = true;
+    const { panel, user } = await open({
+      claudeStatus: () => Promise.resolve({ state: signedIn ? 'signedIn' : 'notSignedIn' }),
+      jobExplain: () => {
+        signedIn = false;
+        return Promise.reject(
+          new IpcError({
+            code: 'CLAUDE_SCHEMA',
+            message: "Claude's answer didn't fit the expected format.",
+            retryable: true,
+          }),
+        );
+      },
+    });
+    await user.click(await panel.findByRole('button', { name: 'Explain failure' }));
+    expect(await panel.findByRole('alert')).toHaveTextContent(
+      /^Couldn't explain this failure\. Claude's answer didn't fit the expected format\.$/,
+    );
+    const retry = panel.getByRole('button', { name: 'Retry' });
+    await vi.waitFor(() => {
+      expect(retry).toBeDisabled();
+    });
+    expect(retry).toHaveAttribute('title', "Claude isn't available");
   });
 
   it('F-20.7 with a review session of the MR a file:line chip opens it', async () => {

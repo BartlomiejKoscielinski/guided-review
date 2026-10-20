@@ -29,7 +29,7 @@ const PIPELINE_CHIP = /^pipeline #(\d+)$/i;
  * may help." when Claude recommends one, the evidence chips (`pipeline #N` selects its tab; a
  * `file:line` opens the MR's latest review session when one exists, else plain text) and, with a
  * suggested comment, **Add to drafts**, which turns into the confirmation. A failed run shows
- * "Couldn't explain this failure." with **Retry**. Nothing is posted. Under the heading, a job
+ * "Couldn't explain this failure. <reason>" with **Retry**. Nothing is posted. Under the heading, a job
  * whose retry failed on the same tests says "Retried: failed again on the same test." (F-20.9).
  */
 export function ExplainFailure({
@@ -158,9 +158,16 @@ export function ExplainFailure({
       ) : ex.failed ? (
         <div className={styles.idle}>
           <p role="alert" className={styles.error}>
-            Couldn&apos;t explain this failure.
+            {ex.error
+              ? `Couldn't explain this failure. ${ex.error}`
+              : "Couldn't explain this failure."}
           </p>
-          <Button size={34} disabled={unusable} onClick={ex.explain}>
+          <Button
+            size={34}
+            disabled={unusable}
+            title={unusable ? "Claude isn't available" : undefined}
+            onClick={ex.explain}
+          >
             Retry
           </Button>
         </div>

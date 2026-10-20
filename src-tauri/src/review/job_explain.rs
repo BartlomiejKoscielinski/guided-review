@@ -103,6 +103,27 @@ pub fn diff_text(mr_diff: &str, since: Option<(&str, &str)>) -> String {
     out
 }
 
+/// Whether the panel says "Preparing the code…" (decision 12): only when the MR's review worktree
+/// is missing or not registered at the MR's latest head (`latest_head` from GitLab; unknown counts
+/// as behind).
+pub fn needs_preparing(
+    exists: bool,
+    registered_head: Option<&str>,
+    latest_head: Option<&str>,
+) -> bool {
+    !(exists && registered_head.is_some() && registered_head == latest_head)
+}
+
+/// The log line of a failed run: code, message and detail (never a token: `AppError` carries
+/// none, docs/06).
+pub fn failure_line(error: &AppError) -> String {
+    let mut line = format!("{:?}: {}", error.code, error.message);
+    if let Some(detail) = error.detail.as_deref().filter(|d| !d.is_empty()) {
+        line.push_str(&format!(" ({detail})"));
+    }
+    line
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,6 +151,32 @@ mod tests {
     fn f20_7_the_log_is_the_panels_text() {
         let text = log_text("\u{1b}[31;1mERROR: Job failed\u{1b}[0;m\n$ dotnet test\n");
         assert_eq!(text, "ERROR: Job failed\n$ dotnet test\n");
+    }
+
+    #[test]
+    fn f20_7_preparing_shows_only_for_a_missing_or_behind_worktree() {
+        assert!(!needs_preparing(true, Some("h2"), Some("h2")));
+        assert!(needs_preparing(false, Some("h2"), Some("h2")));
+        assert!(needs_preparing(true, Some("h1"), Some("h2")));
+        assert!(needs_preparing(true, None, Some("h2")));
+        assert!(needs_preparing(true, None, None));
+        assert!(needs_preparing(true, Some("h2"), None));
+    }
+
+    #[test]
+    fn f20_7_a_failed_run_logs_its_code_message_and_detail() {
+        use crate::error::ErrorCode;
+        let e = AppError::new(ErrorCode::ClaudeSchema, "Claude's answer didn't fit.")
+            .with_detail("evidence Missing.cs:3 is not in the worktree");
+        let line = failure_line(&e);
+        assert!(line.contains("ClaudeSchema"), "{line}");
+        assert!(line.contains("Claude's answer didn't fit."), "{line}");
+        assert!(
+            line.ends_with("(evidence Missing.cs:3 is not in the worktree)"),
+            "{line}"
+        );
+        let plain = failure_line(&AppError::new(ErrorCode::ClaudeFailed, "Failed."));
+        assert!(plain.ends_with("Failed."), "{plain}");
     }
 
     #[test]

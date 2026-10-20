@@ -6,6 +6,7 @@
 //! (`reading`, then `done` or `failed`). Nothing is posted.
 
 use std::path::Path;
+use std::time::Instant;
 
 use tauri::State;
 use tauri::ipc::Channel;
@@ -27,7 +28,7 @@ use crate::os::process::Cancel;
 use crate::review::job_explain::{self, JobExplainEvent};
 use crate::review::pipeline_view::{self, JobState};
 use crate::review::prepare::{self, PrepareInput};
-use crate::store::{self, Store, repos};
+use crate::store::{self, Store, repos, worktrees};
 
 /// Pipelines whose jobs are read for the pipelines file (newest first); older ones say so.
 const PIPELINES_READ: usize = 10;
@@ -97,8 +98,19 @@ pub async fn job_explain(
             tracing::debug!(%error, "job explain event not delivered");
         }
     };
+    let started = Instant::now();
+    tracing::info!(%project, iid, job, "explain failure started");
     let result = explain(&gitlab, &claude, &store, &project, iid, job, &emit).await;
     if let Err(error) = &result {
+        // The cause stays in the app log; the panel only says it couldn't explain.
+        tracing::warn!(
+            %project,
+            iid,
+            job,
+            secs = started.elapsed().as_secs(),
+            "explain failure failed: {}",
+            job_explain::failure_line(error)
+        );
         emit(JobExplainEvent::Failed {
             error: error.clone(),
         });
@@ -157,7 +169,17 @@ async fn explain(
             )
         })?;
     let cancel = Cancel::new();
-    emit(JobExplainEvent::Preparing);
+    let path = prepare::worktree_path(&repo, iid);
+    let key = path.to_string_lossy().into_owned();
+    let registered = with_store(store, move |c| worktrees::get(c, &key)).await?;
+    if job_explain::needs_preparing(
+        path.exists(),
+        registered.as_ref().and_then(|w| w.head_sha.as_deref()),
+        merge_request.sha.as_deref(),
+    ) {
+        emit(JobExplainEvent::Preparing);
+    }
+    let phase = Instant::now();
     let git_program = settings.git.path.as_deref().map(Path::new);
     let repo_git = Git::new(git_program, &repo.path);
     let input = PrepareInput {
@@ -169,6 +191,10 @@ async fn explain(
         target_branch: &merge_request.target_branch,
     };
     let prepared = prepare::prepare(&input, store, &|_| {}, &cancel).await?;
+    tracing::info!(
+        secs = phase.elapsed().as_secs(),
+        "explain failure: worktree ready"
+    );
     let git = Git::new(git_program, &prepared.worktree);
     let mr_diff = diff(&git, &prepared.base_sha, &prepared.head_sha, &cancel).await?;
     let since = if pipeline.sha.is_empty() || pipeline.sha == prepared.head_sha {
@@ -209,8 +235,22 @@ async fn explain(
     };
     emit(JobExplainEvent::Reading);
     let ctx = plan_context(claude, store, &exe, &settings.claude);
-    let result = pipeline_explain::run(&ctx, &req, &|| {}, &cancel)
+    let phase = Instant::now();
+    let on_started = || {
+        tracing::info!(
+            queued_secs = phase.elapsed().as_secs(),
+            "explain failure: claude started"
+        );
+    };
+    let result = pipeline_explain::run(&ctx, &req, &on_started, &cancel)
         .await
+        .inspect(|outcome| {
+            tracing::info!(
+                cached = outcome.cached,
+                secs = phase.elapsed().as_secs(),
+                "explain failure answered"
+            );
+        })
         .map(|outcome| outcome.explanation);
     after_task(claude, store, result.as_ref().map(drop)).await;
     let explanation = result.map_err(AppError::from)?;

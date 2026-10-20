@@ -24,6 +24,12 @@ describe('mock jobExplain (F-20.7)', () => {
     );
     expect(events).toEqual(['preparing', 'reading', 'done']);
     expect(result.verdict).toBe('causedByMr');
+    // The worktree is at the latest head now: a second run only reads (decision 12).
+    events.length = 0;
+    await mock.jobExplain(PROJECT, 482, jobId(18342, 'ui-tests:android'), (e) =>
+      events.push(e.kind),
+    );
+    expect(events).toEqual(['reading', 'done']);
     expect(result.evidence).toEqual(['DeliveryPhotoPage.xaml:14', 'DeliveryPhotoPageTests.cs:41']);
     expect(result.suggestedComment).not.toBe('');
   });

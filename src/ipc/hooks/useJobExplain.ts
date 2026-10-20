@@ -19,6 +19,8 @@ export interface JobExplain {
   /** The worktree is being prepared ("Preparing the code…") before Claude reads. */
   preparing: boolean;
   failed: boolean;
+  /** Why the last run failed (the error's message), shown after "Couldn't explain this failure.". */
+  error: string | null;
   /** Explain failure and Retry: one run at a time. */
   explain: () => void;
   /** The suggested comment is in the drafts. */
@@ -83,6 +85,7 @@ export function useJobExplain(project: string, iid: number, job: number): JobExp
     running,
     preparing: running && preparing,
     failed: !running && query.status === 'error',
+    error: !running && query.error ? query.error.message : null,
     explain: () => {
       if (running) return;
       void query.refetch();
