@@ -306,25 +306,6 @@
       "promotedTo": "tests"
     },
     {
-      "id": "P-030",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/src/review/**",
-        "src-tauri/tests/**",
-        "ui",
-        "src/screens/**"
-      ],
-      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught. Pin the restored-after-restart state of a screen the same way, as a red test in the tests stage, because F-17.4 left it to the implementer and review raised the missing progress line after a restart.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 2,
-      "created": "2026-10-15T07:10:35.512Z",
-      "lastUsedItem": 15,
-      "source": "F-09.4",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
       "id": "P-032",
       "tags": [
         "core",
@@ -382,37 +363,6 @@
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
-      "id": "P-046",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/**"
-      ],
-      "text": "Read cached state after a restart through the existing resume hook (useResume, as S-03 does), not the TanStack plan query, because a disabled query never loads the stored plan.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T09:59:03.977Z",
-      "lastUsedItem": 15,
-      "source": "F-17.4",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-048",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/tests/**"
-      ],
-      "text": "When a golden or live test is #[ignore]d, add a non-ignored test in verify that builds its seed and loads it through the production loader with a placeholder executable, because F-09.5's eval seed used a layer name that plan::layer() rejects, so verify stayed green while the live run panicked with PlanNotReady and the item needed a second attempt.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T11:16:26.108Z",
-      "lastUsedItem": 16,
-      "source": "F-09.5"
-    },
-    {
       "id": "P-049",
       "tags": [
         "core",
@@ -451,143 +401,6 @@
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
-      "id": "P-051",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/tests/**"
-      ],
-      "text": "Put a test that installs a global tracing subscriber or log file in its own tests/*.rs binary (or use the thread-local set_default and match the line by a unique key), and run a new test binary several times before committing, because a 3-test binary sharing the global logger failed 6 of 7 runs in review.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T11:47:51.504Z",
-      "lastUsedItem": 17,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-052",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/review/**"
-      ],
-      "text": "When logging a failed Claude step, write only code and message for Claude-originated errors (ClaudeFailed, ClaudeNotSignedIn, ClaudeLimited) and log the detail only for app-written errors, because that detail carries Claude's stderr or result text and NFR-08 keeps Claude output out of logs; cover one Claude code with a canary test.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T11:47:51.551Z",
-      "lastUsedItem": 17,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-053",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/tests/eval*.rs"
-      ],
-      "text": "When relaxing an eval's text-matching check to remove a false positive, give the exemption only to the field that caused it (the note body) and add a verify-run unit case for every other field (title, suggested_comment) where the topic and the exempting phrase share one sentence, because F-09.5's first sentence-level fix exempted all three fields and review showed that a title like 'async void, already raised in the open thread' would pass the item's only check, which cost a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T15:03:45.339Z",
-      "lastUsedItem": 18,
-      "source": "F-09.5"
-    },
-    {
-      "id": "P-054",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "When a locked e2e assertion compares a region's text with toHaveText, check whether the region holds CSS text-transform uppercase buttons (Barlow Condensed) and lock it with { useInnerText: true }, because tests/e2e/detailed.spec.ts:78 compared textContent with a captured innerText, could never pass, and cost a test dispute plus a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T17:03:45.175Z",
-      "lastUsedItem": 19,
-      "source": "F-08.1"
-    },
-    {
-      "id": "P-056",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/detailed/**"
-      ],
-      "text": "Build an in-screen info header as a div with data-testid, not a <header> element, because a second banner landmark breaks the existing role=banner tests of the screen header (F-08.1); list that test id in the tests notes.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T17:36:56.620Z",
-      "lastUsedItem": 20,
-      "source": "F-08.2"
-    },
-    {
-      "id": "P-057",
-      "tags": [
-        "mixed",
-        "implement",
-        "src/screens/**/*.module.css"
-      ],
-      "text": "Do not override :focus-visible in a component CSS module (keep the global docs/03 outside ring), and check any var(--yellow) element (ring, badge, mark) on the yellow current-row fill, because --focus equals --yellow and the inset yellow ring on Rail's current row was invisible (review severity normal, WCAG 2.4.7, fix round 1) while the structure-only design-check came back clean.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T18:37:59.862Z",
-      "lastUsedItem": 21,
-      "source": "F-08.3"
-    },
-    {
-      "id": "P-059",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/**/*.test.tsx"
-      ],
-      "text": "Run npm run typecheck (not only vitest) on the new test files before the tests commit, because vitest strips types and a helper like screen.getAllByRole(...)[0] is HTMLElement | undefined under noUncheckedIndexedAccess, which cost a test dispute and a test-only fix round (F-08.4 helper next()); destructure the first match and throw when it is missing.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T19:08:46.107Z",
-      "lastUsedItem": 22,
-      "source": "F-08.4"
-    },
-    {
-      "id": "P-060",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "When an e2e guard counts or targets getByRole by name (for example radiogroup 'Layout' with toHaveCount(0)), pass exact: true, because Playwright matches names as case-insensitive substrings and the same screen's other required control ('Diff layout') was counted, so all 6 detailed e2e tests failed at the guard and cost a test dispute plus a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T19:52:39.906Z",
-      "lastUsedItem": 23,
-      "source": "F-08.5"
-    },
-    {
-      "id": "P-061",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/detailed/**"
-      ],
-      "text": "When a Vitest test needs a diff line past the first screenful (about L41) to render a note, mock offsetHeight per element in jsdom (it has no layout) and put that in the tests notes, so the implementer does not chase an empty line list.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T20:40:04.671Z",
-      "lastUsedItem": 24,
-      "source": "F-08.6"
-    },
-    {
       "id": "P-062",
       "tags": [
         "mixed",
@@ -604,68 +417,6 @@
       "created": "2026-10-16T07:25:08.741Z",
       "lastUsedItem": 35,
       "source": "F-08.7"
-    },
-    {
-      "id": "P-063",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**/*.test.tsx"
-      ],
-      "text": "Keep locked userEvent tests that type long text well under the 5000 ms vitest timeout (use paste, fireEvent or an explicit per-test timeout), because two locked AskBox cases timed out once when the test step took 94 s instead of 39-55 s, and the implementer could not change them.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T07:25:08.791Z",
-      "lastUsedItem": 25,
-      "source": "F-08.7"
-    },
-    {
-      "id": "P-064",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/detailed/**"
-      ],
-      "text": "Never key React lists by strings that come from Claude's output (read.file, checklist text) without the index, because the core does not dedupe files_read or checklist and duplicates give React key warnings and rows that tick together.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T07:25:08.837Z",
-      "lastUsedItem": 25,
-      "source": "F-08.7"
-    },
-    {
-      "id": "P-065",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/ipc/hooks/**",
-        "src-tauri/src/review/**"
-      ],
-      "text": "When a UI re-reads a status on a timer because a background run sends no events, define the poll condition as 'any run of the session is in flight, queued or starting included' (not 'the status shows a step running') and pin it with a test where the first read lands before the run reaches Running, because F-08.8's useAnalysisStatus only polled after a read that already had a running step, and review found that a read arriving before the prefetch leaves the queue ends polling and leaves the footer stale.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T08:00:09.903Z",
-      "lastUsedItem": 26,
-      "source": "F-08.8"
-    },
-    {
-      "id": "P-066",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/commands/**",
-        "src-tauri/src/review/**"
-      ],
-      "text": "A core command the UI calls on a timer must run its store reads and per-step cache validation loop inside with_store/spawn_blocking like the commands around it, because review flagged review_analysis_status calling step::cached_analysis (SQLite plus worktree file checks) for every step on the async command thread once a second.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T08:00:09.954Z",
-      "lastUsedItem": 26,
-      "source": "F-08.8"
     },
     {
       "id": "P-067",
@@ -848,15 +599,20 @@
         "fix",
         "src/**/*.test.tsx",
         "implement",
-        "src/screens/step/**"
+        "src/screens/step/**",
+        "src/**",
+        "package.json",
+        "tools/verify.mjs"
       ],
-      "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix.",
+      "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix. Run the full verify with nothing else running (no parallel cargo test or builds), since load made 4 and 34 unrelated tests time out in F-20.2; to recheck only Vitest use node tools/verify.mjs --only test.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 2,
+      "seen": 5,
       "created": "2026-10-16T19:09:32.193Z",
-      "lastUsedItem": 42,
-      "source": "F-11.2"
+      "lastUsedItem": 57,
+      "source": "F-11.2",
+      "promoted": true,
+      "promotedTo": "fix"
     },
     {
       "id": "P-086",
@@ -1099,21 +855,6 @@
       "source": "F-13.3"
     },
     {
-      "id": "P-103",
-      "tags": [
-        "ui",
-        "tests",
-        "src/**/*.test.tsx"
-      ],
-      "text": "In the tests stage run eslint on the new test files against the throwaway stubs and remove unused parameters from test doubles before locking, because F-13.3's locked ThreadCheck.test.tsx failed no-unused-vars (the tests notes blamed only missing types), and the implementer, unable to edit a locked test, had to add an eslint.config.js override in a separate commit (9e86162).",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-18T19:53:22.788Z",
-      "lastUsedItem": 47,
-      "source": "F-13.3"
-    },
-    {
       "id": "P-104",
       "tags": [
         "ui",
@@ -1129,22 +870,6 @@
       "source": "F-14.1"
     },
     {
-      "id": "P-105",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**",
-        "src/**/*.test.tsx"
-      ],
-      "text": "Run eslint (npx eslint on the new test files) before the tests commit, not only vitest/playwright, because F-14.2 locked tests carried `void session; void sha;` and a toHaveURL line that failed lint, which forced a test dispute and a fix round (48k tokens) over two one-line edits.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-19T08:49:12.941Z",
-      "lastUsedItem": 49,
-      "source": "F-14.2"
-    },
-    {
       "id": "P-106",
       "tags": [
         "core",
@@ -1157,22 +882,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-19T11:04:22.220Z",
-      "lastUsedItem": 51,
-      "source": "F-12.5"
-    },
-    {
-      "id": "P-107",
-      "tags": [
-        "mixed",
-        "implement",
-        "package.json",
-        "tools/verify.mjs"
-      ],
-      "text": "When verify is red only on a timeout in an unrelated Vitest file while rust:test runs in parallel (LineCommentKeep F-09.7 here, 2 of 3 runs), rerun only the test step (--only test) before debugging, and report it as unrelated flakiness.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-19T11:04:22.313Z",
       "lastUsedItem": 51,
       "source": "F-12.5"
     },
@@ -1253,21 +962,6 @@
       "source": "F-20.2"
     },
     {
-      "id": "P-113",
-      "tags": [
-        "mixed",
-        "implement",
-        "fix"
-      ],
-      "text": "Run the full verify with nothing else running (no parallel cargo test or other builds), because both the implement and the fix verify runs hit 4 and 34 unrelated vitest timeouts under load and needed a second full run.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-19T15:57:52.743Z",
-      "lastUsedItem": 54,
-      "source": "F-20.2"
-    },
-    {
       "id": "P-114",
       "tags": [
         "core",
@@ -1334,15 +1028,19 @@
         "mixed",
         "tests",
         "src/**/*.test.tsx",
-        "src/screens/**/*.test.tsx"
+        "src/screens/**/*.test.tsx",
+        "ui",
+        "tests/e2e/**"
       ],
-      "text": "Run typecheck and eslint on the new or changed test files before the tests commit (not only vitest), because F-20.5's locked JobDetails.test.tsx had an unused const and a nonexistent ErrorCode (GITLAB_NETWORK vs GITLAB_UNREACHABLE), which passed at runtime, turned verify red and forced a test dispute.",
+      "text": "Run typecheck and eslint on the new or changed test files before the tests commit (not only vitest), because F-20.5's locked JobDetails.test.tsx had an unused const and a nonexistent ErrorCode (GITLAB_NETWORK vs GITLAB_UNREACHABLE), which passed at runtime, turned verify red and forced a test dispute. Lint against the throwaway stubs and drop unused parameters from test doubles (F-13.3, F-14.2 void lines); under noUncheckedIndexedAccess getAllByRole(...)[0] is possibly undefined, so destructure and throw when missing (F-08.4).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 3,
+      "seen": 6,
       "created": "2026-10-19T19:36:31.369Z",
       "lastUsedItem": 57,
-      "source": "F-20.5"
+      "source": "F-20.5",
+      "promoted": true,
+      "promotedTo": "tests"
     },
     {
       "id": "P-119",
@@ -1356,21 +1054,6 @@
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-19T19:36:31.459Z",
-      "lastUsedItem": 57,
-      "source": "F-20.5"
-    },
-    {
-      "id": "P-120",
-      "tags": [
-        "mixed",
-        "fix",
-        "src/**"
-      ],
-      "text": "When verify fails only with 5000 ms Vitest timeouts, rerun the cited files alone and then full verify instead of changing code, as F-20.5 fix-2 did (the third run was green); the slow userEvent.type tests in LineComposer.test.tsx time out under parallel load.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-19T19:36:31.547Z",
       "lastUsedItem": 57,
       "source": "F-20.5"
     },

@@ -19,3 +19,4 @@ Output:
 ## Rules learned
 
 - For a state-bug fix, add a regression test and run it before the fix to see it fail on the old code, so the green gate proves the fix and not just the table. (P-032)
+- When verify is red only on 5000 ms Vitest timeouts in tests the item did not touch, change no item code: rerun those files alone, then full verify with nothing else running; if still slow, give that describe block an explicit timeout as Footer.test.tsx does. (P-085)
