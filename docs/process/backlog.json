@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T12:50:55.830Z",
+  "updated": "2026-10-20T13:33:54.932Z",
   "items": [
     {
       "id": "F-20.1",
@@ -134,9 +134,9 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 1,
-      "note": "live check failed: live check failed: (1) first Explain failure click on a failed job in the stand-in (MR !5, pipeline #9 unit-tests) ended after ~4 min in \"Couldn't explain this failure.\" with no app log entry and no error detail; a direct job_explain call and Retry then worked. Log the error cause (tracing) and find why the first run fails (worktree preparation or timeout). (2) Add to drafts reaching S-05 is unverified: both real runs returned no suggestedComment; recheck with a failure that yields a suggested comment. Also the S-08 title-bar chip showed Haiku 5.5 · low for pipeline_explain.",
+      "status": "live",
+      "attempts": 2,
+      "note": "built: error cause logged (tracing) and shown in the panel, timeout 10 min; live check needed: (1) first Explain failure run on MR !5 pipeline #9 unit-tests, read the app log line 'explain failure failed: …' if it fails; (2) Add to drafts reaching S-05 with a real suggested comment",
       "lockSha": "a9d5933",
       "tests": [
         "src-tauri/tests/pipeline_explain_task.rs",
