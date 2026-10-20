@@ -35,6 +35,41 @@ pub struct Job {
     /// The pipeline the job ran in (Explain failure, F-20.7).
     #[serde(default)]
     pub pipeline: Option<JobPipeline>,
+    /// The job's files as `GET …/jobs/:id` lists them (F-20.8); `null` or absent reads as none.
+    #[serde(default, deserialize_with = "null_as_empty")]
+    pub artifacts: Vec<JobArtifactEntry>,
+}
+
+/// One entry of a job's `artifacts` list (F-20.8): its kind (`archive`, `junit`, `trace`, …),
+/// file name and size in bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct JobArtifactEntry {
+    pub file_type: String,
+    #[serde(default)]
+    pub filename: String,
+    #[serde(default)]
+    pub size: Option<u64>,
+}
+
+fn null_as_empty<'de, D, T>(deserializer: D) -> Result<Vec<T>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    Ok(Option::<Vec<T>>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+/// The project as `GET …/projects/:id` names it; only its page (F-20.8 download URLs).
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+struct ProjectPage {
+    web_url: String,
+}
+
+/// The web URL of `project` (`https://gitlab.example/group/project`).
+pub async fn project_web_url(client: &GitlabClient, project: &str) -> Result<String, GitlabError> {
+    let path = format!("/projects/{}", project_id(project));
+    let response = client.get(&path, &[]).await?;
+    decode::<ProjectPage>(&path, response.body).map(|p| p.web_url)
 }
 
 /// The pipeline of a job as `GET …/jobs/:id` names it.

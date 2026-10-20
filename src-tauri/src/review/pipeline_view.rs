@@ -7,7 +7,8 @@
 //! Cancel, which act at once. And Run new pipeline (F-20.3): the MR's head SHA the confirmation
 //! names, and the one POST that starts a merge request pipeline, as the new latest tab. And the
 //! pipeline-level Retry failed jobs and Cancel pipeline (F-20.4), which act at once and answer
-//! with the head as it now is; the head carries the `web_url` Open in GitLab opens.
+//! with the head as it now is; the head carries the `web_url` Open in GitLab opens. The
+//! artifacts of a successful job (F-20.8) live in `pipeline_artifacts` and are re-exported here.
 
 use std::collections::HashMap;
 
@@ -21,6 +22,8 @@ use crate::gitlab::mr;
 use crate::gitlab::mrs::PipelineState;
 use crate::gitlab::pipelines::{self, kind_of};
 use crate::gitlab::versions;
+
+pub use super::pipeline_artifacts::{JobArtifact, artifacts, size_label};
 
 /// One tab of S-08's pipeline strip.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -397,6 +400,7 @@ mod tests {
             duration: Some(1.4),
             web_url: None,
             pipeline: None,
+            artifacts: Vec::new(),
         }
     }
 

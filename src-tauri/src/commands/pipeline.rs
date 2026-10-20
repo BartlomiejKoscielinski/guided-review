@@ -13,7 +13,9 @@ use tauri::State;
 use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error, not_connected};
 use crate::error::AppResult;
 use crate::gitlab::jobs::JobVariable;
-use crate::review::pipeline_view::{self, JobRow, PipelineHead, PipelineTab, StageColumn};
+use crate::review::pipeline_view::{
+    self, JobArtifact, JobRow, PipelineHead, PipelineTab, StageColumn,
+};
 use crate::store::{Store, job_variables};
 
 /// The MR's pipelines newest first.
@@ -92,6 +94,23 @@ pub async fn job_cancel(
     let _ = iid;
     let (client, _) = connected_client(&gitlab, &store).await?;
     let result = pipeline_view::cancel_job(&client, &project, job).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// The artifacts of successful job `job` (F-20.8, decision 13): name, size and the download URL
+/// Download opens in the browser. Read only.
+#[tauri::command]
+pub async fn job_artifacts(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    job: u64,
+) -> AppResult<Vec<JobArtifact>> {
+    let _ = iid;
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::artifacts(&client, &project, job).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     Ok(result?)
 }
