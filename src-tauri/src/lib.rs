@@ -4,6 +4,7 @@
 pub mod claude;
 pub mod commands;
 pub mod error;
+pub mod fix;
 pub mod git;
 pub mod gitlab;
 pub mod logging;
