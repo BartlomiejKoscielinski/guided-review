@@ -1,5 +1,5 @@
 {
-  "items": 62,
+  "items": 63,
   "entries": [
     {
       "id": "P-003",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 39,
+      "helpful": 40,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 35,
+      "helpful": 36,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -374,7 +374,7 @@
         "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 23,
+      "helpful": 24,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-15T11:16:26.158Z",
@@ -451,7 +451,7 @@
         "src/screens/pipeline/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 19,
+      "helpful": 20,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-16T10:39:05.255Z",
@@ -1117,6 +1117,21 @@
       "created": "2026-10-20T10:05:34.730Z",
       "lastUsedItem": 61,
       "source": "F-20.9"
+    },
+    {
+      "id": "P-125",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/start/**"
+      ],
+      "text": "When a link or button repeats in every list row with the same words (the per-row 'pipeline failed' link), lock in the tests stage that each instance has a distinct accessible name or an aria-describedby pointing at its row's !iid and title, because review flagged the identical names under WCAG 2.4.4 after the tests had locked only the shared name.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T10:45:08.268Z",
+      "lastUsedItem": 62,
+      "source": "F-20.10"
     }
   ]
 }

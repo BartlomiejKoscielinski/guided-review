@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T10:05:35.518Z",
+  "updated": "2026-10-20T10:45:08.851Z",
   "items": [
     {
       "id": "F-20.1",
@@ -190,17 +190,16 @@
       "title": "Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "c2c53e0",
+      "lockSha": "9945dd4",
       "tests": [
         "src/screens/start/MrRowPipelineLink.test.tsx",
         "src/app/titlebar/AuthorPipelineLink.test.tsx",
         "src/screens/plan/MrMetaPipelineLink.test.tsx",
         "tests/e2e/pipeline-f20-10.spec.ts"
-      ],
-      "forkSha": "43fce43"
+      ]
     }
   ]
 }
