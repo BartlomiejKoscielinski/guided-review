@@ -350,3 +350,13 @@ test('untouchedVitestFailures: only test failed on timeouts outside the diff (E2
   assert.equal(untouchedVitestFailures(out, log.replace('timed out', 'failed'), []), null);
   assert.equal(untouchedVitestFailures(`${out}\nFAIL  lint  3s`, log, []), null);
 });
+
+test('untouchedVitestFailures: a slow failed test outside the diff counts as load (E27)', () => {
+  const out = 'PASS  lint  30s\nFAIL  test  42s\nFAILED: test';
+  const slow =
+    '   × F-11.2 in Detailed mode a reply is sent at once 5497ms\n FAIL  src/screens/step/AnswerCard.test.tsx > F-11.2 x\n';
+  assert.deepEqual(untouchedVitestFailures(out, slow, ['src/screens/pipeline/A.tsx']), [
+    'src/screens/step/AnswerCard.test.tsx',
+  ]);
+  assert.equal(untouchedVitestFailures(out, slow.replace('5497ms', '120ms'), []), null);
+});
