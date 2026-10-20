@@ -37,6 +37,7 @@ pub mod publish_remap;
 pub mod publish_session;
 mod publish_store;
 pub mod resume;
+pub mod retry_signature;
 pub mod session_state;
 pub mod sessions;
 pub mod source_files;

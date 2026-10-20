@@ -92,7 +92,7 @@ pub fn parse_trace(raw: &str) -> ParsedLog {
 }
 
 /// Every line of `raw` (a trailing newline adds none).
-fn parse_lines(raw: &str) -> Vec<LogLine> {
+pub fn parse_lines(raw: &str) -> Vec<LogLine> {
     if raw.is_empty() {
         return Vec::new();
     }

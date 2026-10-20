@@ -6,7 +6,8 @@
 //! names, and the one POST it sends after the user confirmed. `pipeline_retry` and
 //! `pipeline_cancel` (F-20.4): Retry failed jobs and Cancel pipeline, each at once on its click.
 //! `job_play` and `job_variables_get` (F-20.6): the manual-job form's Run `<job>` (the only play)
-//! and the variables that job name last ran with on this machine.
+//! and the variables that job name last ran with on this machine. `job_details` (F-20.9): whether a
+//! failed job failed again on the same tests.
 
 use tauri::State;
 
@@ -14,7 +15,7 @@ use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error, no
 use crate::error::AppResult;
 use crate::gitlab::jobs::JobVariable;
 use crate::review::pipeline_view::{
-    self, JobArtifact, JobRow, PipelineHead, PipelineTab, StageColumn,
+    self, JobArtifact, JobDetailsView, JobRow, PipelineHead, PipelineTab, StageColumn,
 };
 use crate::store::{Store, job_variables};
 
@@ -111,6 +112,23 @@ pub async fn job_artifacts(
     let _ = iid;
     let (client, _) = connected_client(&gitlab, &store).await?;
     let result = pipeline_view::artifacts(&client, &project, job).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}
+
+/// The details panel's extra facts about failed job `job` (F-20.9, decision 15): whether it
+/// failed again on the same tests as its previous attempt. Read only.
+#[tauri::command]
+pub async fn job_details(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    job: u64,
+) -> AppResult<JobDetailsView> {
+    let _ = iid;
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::job_details(&client, &project, job).await;
     forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
     Ok(result?)
 }

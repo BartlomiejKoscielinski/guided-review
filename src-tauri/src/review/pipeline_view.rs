@@ -24,6 +24,7 @@ use crate::gitlab::pipelines::{self, kind_of};
 use crate::gitlab::versions;
 
 pub use super::pipeline_artifacts::{JobArtifact, artifacts, size_label};
+pub use super::retry_signature::{JobDetailsView, job_details};
 
 /// One tab of S-08's pipeline strip.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
