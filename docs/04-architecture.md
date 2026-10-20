@@ -100,7 +100,7 @@ type ErrorCode =
   | 'GIT_NOT_FOUND' | 'GIT_TOO_OLD' | 'GIT_FAILED' | 'WORKTREE_FAILED'
   | 'GITLAB_UNAUTHORIZED' | 'GITLAB_FORBIDDEN' | 'GITLAB_NOT_FOUND' | 'GITLAB_RATE_LIMITED' | 'GITLAB_UNREACHABLE'
   | 'CLAUDE_NOT_FOUND' | 'CLAUDE_NOT_SIGNED_IN' | 'CLAUDE_FAILED' | 'CLAUDE_SCHEMA' | 'CLAUDE_GUARD_VIOLATION' | 'CLAUDE_LIMITED'
-  | 'NAV_UNAVAILABLE' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
+  | 'NAV_UNAVAILABLE' | 'FIX_NOT_ALLOWED' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
 ```
 
 Window controls of the custom title bar (minimize, maximize/restore, close, start dragging, maximized state) are part of the same interface: `tauri.ts` uses the Tauri window API (capabilities `core:window:allow-minimize`, `-toggle-maximize`, `-close`, `-start-dragging`), the mock keeps the state in memory. Components never call Tauri directly.
