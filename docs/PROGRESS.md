@@ -155,7 +155,7 @@ Rules for Claude Code:
 - [x] F-20.10 Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08. (c2c53e0, 3c9690e)
 
 ## M7 · Own code: fix, author mode, new MR
-- [ ] F-17.3 At the end it offers a draft MR description (F-27.2) and Browse and commit.
+- [x] F-17.3 At the end it offers a draft MR description (F-27.2) and Browse and commit. (7d1adf2, 2a7d4c6, 8044c2a)
 - [ ] F-25.1 Available in self-review notes and author-mode threads. Never offered on a teammate's MR.
 - [ ] F-25.2 Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may…
 - [ ] F-25.3 The proposal shows as a diff card "Proposed change · Edited 1 file: <name>" with a one-sentence…
