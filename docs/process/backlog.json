@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-20T14:58:28.243Z",
+  "updated": "2026-10-20T15:29:42.019Z",
   "items": [
     {
       "id": "F-17.3",
@@ -24,17 +24,16 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "9c2439e",
+      "status": "partial",
+      "attempts": 1,
+      "note": "S-10 author-mode threads part waits for F-26.x (AuthorScreen is a stub); fix_allowed already covers own MR on its source branch; onFix not wired yet (F-25.2/F-25.3)",
+      "lockSha": "2d712cb",
       "tests": [
         "src-tauri/src/fix/eligibility_tests.rs",
         "src/screens/summary/SelfReviewSummaryFix.test.tsx",
         "src/screens/step/NoteCardFix.test.tsx",
         "tests/e2e/summary-f25-1.spec.ts"
-      ],
-      "forkSha": "2a7d4c6"
+      ]
     },
     {
       "id": "F-25.2",
@@ -42,9 +41,15 @@
       "title": "Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "7c05823",
+      "tests": [
+        "src-tauri/tests/fix_scratch.rs",
+        "src-tauri/tests/fix_task.rs"
+      ],
+      "forkSha": "16d7fc6"
     },
     {
       "id": "F-25.3",
