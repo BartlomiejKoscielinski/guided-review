@@ -577,6 +577,9 @@ const SHOTS: Shot[] = [
       await page.getByTestId('pipeline-meta').waitFor();
       await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
       await page.getByRole('log', { name: 'Job log' }).locator('[data-kind]').first().waitFor();
+      // The PNG shows ui-tests:android explained (F-20.7); Claude runs only on the click.
+      await page.getByRole('button', { name: 'Explain failure', exact: true }).click();
+      await page.getByTestId('explain-verdict').waitFor({ timeout: 10_000 });
     },
   },
   {
