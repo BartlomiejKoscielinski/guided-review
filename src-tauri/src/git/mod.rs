@@ -16,6 +16,7 @@ pub mod patch;
 pub mod patch_builder;
 pub mod refs;
 pub mod runner;
+pub mod scratch;
 pub mod staging;
 pub mod status;
 pub mod summary;

@@ -22,6 +22,8 @@ pub const SUMMARY_COMMENT_SCHEMA: &str =
 pub const THREAD_CHECK: &str = include_str!("../../resources/prompts/thread-check.md");
 pub const THREAD_CHECK_SCHEMA: &str =
     include_str!("../../resources/schemas/thread-check.schema.json");
+pub const FIX: &str = include_str!("../../resources/prompts/fix.md");
+pub const FIX_SCHEMA: &str = include_str!("../../resources/schemas/fix-result.schema.json");
 pub const PIPELINE_EXPLAIN: &str = include_str!("../../resources/prompts/pipeline-explain.md");
 pub const PIPELINE_EXPLAIN_SCHEMA: &str =
     include_str!("../../resources/schemas/pipeline-explain.schema.json");

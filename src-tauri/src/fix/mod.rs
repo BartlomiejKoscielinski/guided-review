@@ -3,3 +3,4 @@
 pub mod eligibility;
 #[cfg(test)]
 mod eligibility_tests;
+pub mod guard;
