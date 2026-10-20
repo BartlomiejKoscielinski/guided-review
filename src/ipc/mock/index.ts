@@ -3,6 +3,7 @@ import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
 import { createStepRuns } from './analysisStatus';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
+import { createFixBackend } from './fix';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
@@ -153,6 +154,14 @@ export function createMockClient({
     respond,
     data,
   );
+  const claude = createClaudeBackend(
+    loadJson(storage, MOCK_CLAUDE_KEY, claudeOption),
+    respond,
+    pause,
+    (sessionId) => data.data.plans[sessionId] !== undefined,
+    (sessionId) => gitlab.gitlabDiscussions(sessionId),
+  );
+  const fix = createFixBackend(data, sourceOf);
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -175,13 +184,13 @@ export function createMockClient({
       moveMrDrafts(data.data, sourceOf, mr, sessionId);
     }),
     ...createMrDraftsBackend(respond, data, sourceOf),
-    ...createClaudeBackend(
-      loadJson(storage, MOCK_CLAUDE_KEY, claudeOption),
-      respond,
-      pause,
-      (sessionId) => data.data.plans[sessionId] !== undefined,
-      (sessionId) => gitlab.gitlabDiscussions(sessionId),
-    ),
+    ...claude,
+    // F-25.3: a fix run ends on `claudeCancel(task)` like the other Claude tasks.
+    fixPropose: fix.fixPropose,
+    claudeCancel: (task) => {
+      fix.cancel(task);
+      return claude.claudeCancel(task);
+    },
     ...gitlab,
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),

@@ -1,6 +1,6 @@
 /** Moves focus between a menu's items with the arrow keys, Home and End. */
 export function moveMenuFocus(menu: HTMLElement, key: string): boolean {
-  const items = [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]')];
+  const items = [...menu.querySelectorAll<HTMLElement>('[role^="menuitem"]:not(:disabled)')];
   const at = items.indexOf(document.activeElement as HTMLElement);
   const last = items.length - 1;
   const next: Partial<Record<string, number>> = {

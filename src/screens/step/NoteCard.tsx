@@ -3,6 +3,8 @@ import { cx } from '../../components/cx';
 import { MenuButton, type MenuAction } from '../../components/MenuButton';
 import { Tag } from '../../components/Tag';
 import type { Finding } from '../../ipc/types/Finding';
+import { FixCard } from '../fix/FixCard';
+import { FINISH_FIRST, useFix } from '../fix/useFix';
 import { ClaudeLabel } from './ClaudeLabel';
 import { DISMISSED, SEVERITY_TAG, decisionCopy } from './noteCopy';
 import { useNoteDecision } from './useNoteDecision';
@@ -15,17 +17,16 @@ export interface NoteCardProps {
   selfReview?: boolean;
   /** More › Ask Claude: the screen opens the answer card on the note's line (F-10.1). */
   onAsk?: (finding: Finding) => void;
-  /** More › Fix with Claude, self-review only (F-25.1, M7 decision 1); the fix card is F-25.2. */
-  onFix?: (finding: Finding) => void;
 }
 
 /**
  * A Claude note in Focus mode (F-07.6, F-09.2, F-09.3): severity tag, title, Claude label, body,
  * Add to drafts, Dismiss and More (Edit and add, Ask Claude, Copy). In a self-review the More menu
- * also has Fix with Claude (F-25.1), never on a teammate's MR. A decided note shows its
+ * also has Fix with Claude (F-25.1), never on a teammate's MR; its fix card opens under the note
+ * card (F-25.3, M7 decision 1), one fix at a time (M7 decision 4). A decided note shows its
  * confirmation and Undo. Decisions stay on this PC.
  */
-export function NoteCard({ finding, sessionId, selfReview = false, onAsk, onFix }: NoteCardProps) {
+export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: NoteCardProps) {
   const {
     open,
     editing,
@@ -43,6 +44,7 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk, onFix 
     dismiss,
     undo,
   } = useNoteDecision(finding, sessionId);
+  const fix = useFix(sessionId, { findingId: finding.id }, finding.file);
   const copy = decisionCopy(selfReview);
   const tag = SEVERITY_TAG[finding.severity];
 
@@ -62,9 +64,9 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk, onFix 
       ? [
           {
             label: 'Fix with Claude',
-            onSelect: () => {
-              onFix?.(finding);
-            },
+            disabled: fix.blocked,
+            title: fix.blocked ? FINISH_FIRST : undefined,
+            onSelect: fix.start,
           },
         ]
       : []),
@@ -77,74 +79,88 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk, onFix 
   ];
 
   return (
-    <article className={styles.card} aria-label={`Claude note: ${finding.title}`}>
-      <div className={styles.head}>
-        <Tag color={tag.color}>{tag.label}</Tag>
-        <span
-          className={cx(styles.title, finding.decision === 'dismissed' && styles.titleDismissed)}
-        >
-          {finding.title}
-        </span>
-        <ClaudeLabel />
-      </div>
-      <p className={styles.body}>{finding.body}</p>
+    <>
+      <article className={styles.card} aria-label={`Claude note: ${finding.title}`}>
+        <div className={styles.head}>
+          <Tag color={tag.color}>{tag.label}</Tag>
+          <span
+            className={cx(styles.title, finding.decision === 'dismissed' && styles.titleDismissed)}
+          >
+            {finding.title}
+          </span>
+          <ClaudeLabel />
+        </div>
+        <p className={styles.body}>{finding.body}</p>
 
-      {open && editing && (
-        <form
-          className={styles.editor}
-          onSubmit={(event) => {
-            event.preventDefault();
-            addEdited();
-          }}
-        >
-          <textarea
-            ref={textareaRef}
-            className={styles.textarea}
-            aria-label="Suggested comment"
-            value={text}
-            onChange={(event) => {
-              setText(event.target.value);
+        {open && editing && (
+          <form
+            className={styles.editor}
+            onSubmit={(event) => {
+              event.preventDefault();
+              addEdited();
             }}
-          />
+          >
+            <textarea
+              ref={textareaRef}
+              className={styles.textarea}
+              aria-label="Suggested comment"
+              value={text}
+              onChange={(event) => {
+                setText(event.target.value);
+              }}
+            />
+            <div className={styles.actions}>
+              <Button type="submit" variant="primary" disabled={text.trim() === '' || pending}>
+                {copy.add}
+              </Button>
+              <Button variant="ghost" onClick={cancelEdit}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {open && !editing && (
           <div className={styles.actions}>
-            <Button type="submit" variant="primary" disabled={text.trim() === '' || pending}>
+            <Button ref={addRef} variant="primary" disabled={pending} onClick={add}>
               {copy.add}
             </Button>
-            <Button variant="ghost" onClick={cancelEdit}>
-              Cancel
+            <Button disabled={pending} onClick={dismiss}>
+              Dismiss
+            </Button>
+            <MenuButton label="More" menuLabel={`More for ${finding.title}`} actions={more} />
+          </div>
+        )}
+
+        {!open && (
+          <div
+            className={cx(
+              styles.status,
+              finding.decision === 'dismissed' && styles.statusDismissed,
+            )}
+          >
+            <span>{finding.decision === 'draft' ? copy.added : DISMISSED}</span>
+            <Button ref={undoRef} size={30} disabled={pending} onClick={undo}>
+              Undo
             </Button>
           </div>
-        </form>
-      )}
+        )}
 
-      {open && !editing && (
-        <div className={styles.actions}>
-          <Button ref={addRef} variant="primary" disabled={pending} onClick={add}>
-            {copy.add}
-          </Button>
-          <Button disabled={pending} onClick={dismiss}>
-            Dismiss
-          </Button>
-          <MenuButton label="More" menuLabel={`More for ${finding.title}`} actions={more} />
-        </div>
+        {error && (
+          <p className={styles.error} role="alert">
+            {error.message}
+          </p>
+        )}
+      </article>
+      {fix.state && (
+        <FixCard
+          state={fix.state}
+          onAccept={() => undefined}
+          onDiscard={fix.close}
+          onCancel={fix.cancel}
+          onClose={fix.close}
+        />
       )}
-
-      {!open && (
-        <div
-          className={cx(styles.status, finding.decision === 'dismissed' && styles.statusDismissed)}
-        >
-          <span>{finding.decision === 'draft' ? copy.added : DISMISSED}</span>
-          <Button ref={undoRef} size={30} disabled={pending} onClick={undo}>
-            Undo
-          </Button>
-        </div>
-      )}
-
-      {error && (
-        <p className={styles.error} role="alert">
-          {error.message}
-        </p>
-      )}
-    </article>
+    </>
   );
 }

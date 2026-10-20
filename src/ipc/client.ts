@@ -14,6 +14,8 @@ import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
+import type { FixProposal } from './types/FixProposal';
+import type { FixTarget } from './types/FixTarget';
 import type { Layout } from './types/Layout';
 import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
@@ -318,6 +320,16 @@ export interface IpcClient {
   claudePickExecutable(): Promise<ClaudeStatus | null>;
   /** Models and their effort levels (F-18.2, F-18.4). */
   claudeModels(): Promise<ModelInfo[]>;
+  /**
+   * **Fix with Claude** on a note of the user's own code (F-25.2, F-25.3): Claude edits the
+   * note's one file in a scratch copy; `started`, then `done` with the proposal (no hunks: no
+   * change). `target.task` names the run for `claudeCancel`. A teammate's MR is refused with
+   * FIX_NOT_ALLOWED (F-25.1). The click is the explicit action; nothing runs it on its own.
+   */
+  fixPropose(
+    target: FixTarget,
+    onEvent: (event: ClaudeTaskEvent<FixProposal>) => void,
+  ): Promise<FixProposal>;
   /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;

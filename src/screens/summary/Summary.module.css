@@ -116,6 +116,10 @@
 .rowFix {
   grid-template-columns: 12px minmax(0, 1fr) auto;
 }
+/* The fix card under the note, across the row (F-25.3). */
+.fixCard {
+  grid-column: 1 / -1;
+}
 
 .dot {
   margin-top: 5px;

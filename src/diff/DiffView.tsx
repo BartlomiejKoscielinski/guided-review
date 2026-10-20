@@ -51,6 +51,8 @@ export interface DiffViewProps {
   onPickLine?: (side: 'old' | 'new', no: number, extend: boolean) => void;
   /** Scroll with this element instead of an own scroller (S-03's main column). */
   scrollRoot?: RefObject<HTMLElement | null>;
+  /** False: every row in normal flow, no virtual list (a few lines in a card, F-25.3). */
+  virtual?: boolean;
   /** The +/− column; S-03 has none (Review.dc.html: 48px and 60px gutters, number then code). */
   signs?: boolean;
   /**
@@ -111,6 +113,7 @@ export function DiffView({
   selection,
   onPickLine,
   scrollRoot,
+  virtual = true,
   signs = true,
   reveal,
   current,
@@ -321,6 +324,12 @@ export function DiffView({
   const list =
     rows.length === 0 && empty ? (
       <div className={styles.emptyState}>{empty}</div>
+    ) : !virtual ? (
+      <div ref={listRef}>
+        {rows.map((row) => (
+          <div key={row.key}>{render(row)}</div>
+        ))}
+      </div>
     ) : (
       <div ref={listRef} className={styles.sizer} style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {

@@ -14,6 +14,7 @@ import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
+import type { FixProposal } from './types/FixProposal';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { JobExplainEvent } from './types/JobExplainEvent';
 import type { JobArtifact } from './types/JobArtifact';
@@ -198,6 +199,11 @@ export function createTauriClient(): IpcClient {
     claudePickExecutable: () => call<ClaudeStatus | null>('claude_pick_executable'),
     claudeModels: () => call<ModelInfo[]>('claude_models'),
     claudeCommitMessage: (task) => call<string>('claude_commit_message', { task }),
+    fixPropose: (target, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<FixProposal>>();
+      ch.onmessage = onEvent;
+      return call<FixProposal>('fix_propose', { target, ch });
+    },
     claudeCancel: (task) => call<undefined>('claude_cancel', { task }),
     gitlabStatus: (refresh) => call<GitlabStatus>('gitlab_status', { refresh }),
     gitlabAccountSave: (server, token) =>

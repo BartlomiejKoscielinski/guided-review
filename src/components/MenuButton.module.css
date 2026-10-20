@@ -34,6 +34,11 @@
   cursor: pointer;
 }
 
-.item:hover {
+.item:hover:not(:disabled) {
   background: var(--raised);
+}
+
+.item:disabled {
+  color: var(--text-muted);
+  cursor: default;
 }
