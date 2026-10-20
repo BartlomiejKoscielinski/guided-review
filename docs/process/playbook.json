@@ -1,5 +1,5 @@
 {
-  "items": 66,
+  "items": 67,
   "entries": [
     {
       "id": "P-003",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 39,
+      "helpful": 40,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -375,7 +375,7 @@
         "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 5,
       "created": "2026-10-15T11:16:26.158Z",
@@ -607,7 +607,7 @@
         "tools/verify.mjs"
       ],
       "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix. Run the full verify with nothing else running (no parallel cargo test or builds), since load made 4 and 34 unrelated tests time out in F-20.2; to recheck only Vitest use node tools/verify.mjs --only test.",
-      "helpful": 4,
+      "helpful": 5,
       "harmful": 0,
       "seen": 9,
       "created": "2026-10-16T19:09:32.193Z",
@@ -1148,6 +1148,22 @@
       "created": "2026-10-20T13:33:54.156Z",
       "lastUsedItem": 63,
       "source": "F-20.7"
+    },
+    {
+      "id": "P-127",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/git/**",
+        "src-tauri/src/fix/**"
+      ],
+      "text": "For a create-then-cleanup function and a post-run guard, make the tests stage lock two edge states the plan row does not name: a target path that already exists (the failure path must leave it untouched and unregistered) and a file Claude creates under a gitignored path (the guard must still report it). Both were left unlocked in F-25.2, and the review raised both as nits (scratch.rs:136 removes another run's scratch folder, guard.rs:30 runs status without --ignored).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T16:04:22.654Z",
+      "lastUsedItem": 66,
+      "source": "F-25.2"
     }
   ]
 }
