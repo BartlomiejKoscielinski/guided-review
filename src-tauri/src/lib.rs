@@ -155,6 +155,7 @@ pub fn run() {
             app.manage(commands::gitlab::GitlabApp::default());
             app.manage(commands::sessions::PrepareTasks::default());
             app.manage(commands::review::ReviewApp::default());
+            app.manage(fix::proposals::Proposals::default());
             app.manage(commands::job_trace::JobTraces::default());
             Ok(())
         })
@@ -210,6 +211,7 @@ pub fn run() {
             commands::claude::claude_models,
             commands::claude::claude_commit_message,
             commands::claude::claude_cancel,
+            commands::fix::fix_propose,
             commands::summary::claude_summary_comment,
             commands::summary::session_summary,
             commands::summary::session_set_summary,

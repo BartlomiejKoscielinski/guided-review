@@ -47,6 +47,20 @@ impl ClaudeApp {
             tmp_root,
         }
     }
+
+    /// Registers a task's `Cancel` under the UI's task ID for `claude_cancel`.
+    pub(super) fn track(&self, task: &str, cancel: &Cancel) {
+        if let Ok(mut tasks) = self.tasks.lock() {
+            tasks.insert(task.to_owned(), cancel.clone());
+        }
+    }
+
+    /// Forgets a finished task.
+    pub(super) fn untrack(&self, task: &str) {
+        if let Ok(mut tasks) = self.tasks.lock() {
+            tasks.remove(task);
+        }
+    }
 }
 
 /// Registers the state and starts the startup check in the background.

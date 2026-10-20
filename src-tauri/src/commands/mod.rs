@@ -5,6 +5,7 @@ pub mod app;
 pub mod approval;
 pub mod claude;
 pub mod drafts;
+pub mod fix;
 pub mod git;
 pub mod gitlab;
 pub mod gitlab_threads;

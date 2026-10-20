@@ -157,6 +157,12 @@ async fn populate(
             std::fs::create_dir_all(parent).map_err(ScratchError::Io)?;
         }
         std::fs::copy(user_copy, &target).map_err(ScratchError::Io)?;
+        // Staged in the scratch's own index: the baseline the proposal is diffed against
+        // (F-25.3), so it shows Claude's edit, not the whole file as added. The scratch's index
+        // is its own; the user's index is not touched.
+        git.at(&scratch.path)
+            .run(["add", "--force", "--", rel], cancel)
+            .await?;
     }
     Ok(())
 }

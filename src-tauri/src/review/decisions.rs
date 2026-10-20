@@ -146,7 +146,7 @@ fn load(conn: &Connection, id: &str) -> Result<(Finding, String), DecisionError>
 }
 
 /// The session's note with its decision.
-fn load_in(conn: &Connection, session_id: &str, id: &str) -> Result<Finding, DecisionError> {
+pub fn load_in(conn: &Connection, session_id: &str, id: &str) -> Result<Finding, DecisionError> {
     let row: Option<(String, String)> = conn
         .query_row(
             "SELECT json, decision FROM findings WHERE session_id = ?1 AND id = ?2",

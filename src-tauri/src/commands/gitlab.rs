@@ -29,6 +29,19 @@ pub struct GitlabApp {
     status: tokio::sync::Mutex<Option<GitlabStatus>>,
 }
 
+impl GitlabApp {
+    /// The signed-in username from the last status, without asking GitLab (`None` before a
+    /// status check or when not signed in).
+    pub(crate) async fn cached_username(&self) -> Option<String> {
+        self.status
+            .lock()
+            .await
+            .as_ref()
+            .and_then(|s| s.user.as_ref())
+            .map(|u| u.username.clone())
+    }
+}
+
 impl Default for GitlabApp {
     fn default() -> Self {
         Self {
