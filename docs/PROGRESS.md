@@ -152,7 +152,7 @@ Rules for Claude Code:
 - [ ] F-20.7 Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by… — partial: autopilot (a9d5933, da916ae, 0b9bf6a, a278b0a, bc771a0, 5544354, 4684172, 7b16524, 688ab4b, bfdd25d)
 - [x] F-20.8 Successful jobs list artifacts with Download. (fbc942b, 5d05246, 568d326)
 - [x] F-20.9 A retry that fails the same way says "Retried: failed again on the same test." (9ddef07, 730a5c7, 43fce43, c21150b, 9ad734c)
-- [ ] F-20.10 Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08.
+- [x] F-20.10 Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08. (c2c53e0, 3c9690e)
 
 ## M7 · Own code: fix, author mode, new MR
 - [ ] F-17.3 At the end it offers a draft MR description (F-27.2) and Browse and commit.
