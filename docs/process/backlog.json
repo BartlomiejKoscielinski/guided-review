@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-20T14:25:29.316Z",
+  "updated": "2026-10-20T14:58:28.243Z",
   "items": [
     {
       "id": "F-17.3",
@@ -8,9 +8,14 @@
       "title": "At the end it offers a draft MR description (F-27.2) and Browse and commit.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "7d1adf2",
+      "tests": [
+        "src/screens/summary/SelfReviewSummaryOffers.test.tsx",
+        "tests/e2e/summary-self-review-f17-3.spec.ts"
+      ]
     },
     {
       "id": "F-25.1",
@@ -19,9 +24,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "9c2439e",
+      "tests": [
+        "src-tauri/src/fix/eligibility_tests.rs",
+        "src/screens/summary/SelfReviewSummaryFix.test.tsx",
+        "src/screens/step/NoteCardFix.test.tsx",
+        "tests/e2e/summary-f25-1.spec.ts"
+      ],
+      "forkSha": "2a7d4c6"
     },
     {
       "id": "F-25.2",
