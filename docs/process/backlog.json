@@ -1,205 +1,208 @@
 {
-  "milestone": "M6",
-  "updated": "2026-10-20T13:42:49.198Z",
+  "milestone": "M7",
+  "updated": "2026-10-20T14:25:29.316Z",
   "items": [
     {
-      "id": "F-20.1",
-      "milestone": "M6",
-      "title": "Shows the MR's pipelines as tabs (newest first, \"version N · latest\"), the selected pipeline's status…",
+      "id": "F-17.3",
+      "milestone": "M7",
+      "title": "At the end it offers a draft MR description (F-27.2) and Browse and commit.",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-25.1",
+      "milestone": "M7",
+      "title": "Available in self-review notes and author-mode threads. Never offered on a teammate's MR.",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "d1c239f",
-      "tests": [
-        "src-tauri/tests/pipeline_view.rs",
-        "src/ipc/mock/pipeline.test.ts",
-        "src/ipc/tauriPipeline.test.ts",
-        "src/screens/pipeline/PipelineScreen.test.tsx",
-        "tests/e2e/pipeline-f20-1.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.2",
-      "milestone": "M6",
-      "title": "Stages as columns with job rows: status square (passed ✓, failed ✕, failed-allowed !, running spinner…",
+      "id": "F-25.2",
+      "milestone": "M7",
+      "title": "Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-25.3",
+      "milestone": "M7",
+      "title": "The proposal shows as a diff card \"Proposed change · Edited 1 file: <name>\" with a one-sentence…",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "da63776",
-      "tests": [
-        "src-tauri/tests/pipeline_jobs.rs",
-        "src/ipc/tauriPipelineJobs.test.ts",
-        "src/ipc/mock/pipelineJobs.test.ts",
-        "src/screens/pipeline/StageColumns.test.tsx",
-        "tests/e2e/pipeline-f20-2.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.3",
-      "milestone": "M6",
-      "title": "Run new pipeline asks for confirmation (\"Run a new merge request pipeline on <sha>? Uses the MR's latest…",
+      "id": "F-25.4",
+      "milestone": "M7",
+      "title": "Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run…",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "83f35ee",
-      "tests": [
-        "src-tauri/tests/pipeline_run.rs",
-        "src/ipc/mock/pipelineRun.test.ts",
-        "src/screens/pipeline/RunPipelineConfirm.test.tsx",
-        "tests/e2e/pipeline-f20-3.spec.ts"
-      ],
-      "disputes": [
-        "src-tauri/tests/pipeline_run.rs@f98002f"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.4",
-      "milestone": "M6",
-      "title": "Retry failed jobs (pipeline), Cancel pipeline (while running), Open in GitLab.",
+      "id": "F-26.1",
+      "milestone": "M7",
+      "title": "Title bar shows \"You're the author\" (blue) and pipeline status. Left panel: \"FEEDBACK ON YOUR MR\", \"N…",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (f066624): Retry failed jobs, Cancel pipeline, Open in GitLab, 403 state. Live check in tauri dev: Open in GitLab opens the default browser (rundll32 url.dll) on the stand-in pipeline page; Retry failed jobs and Cancel pipeline against the stand-in runner; a real GitLab 403 disables the write actions with the tooltip.",
-      "lockSha": "fa98379",
-      "tests": [
-        "src-tauri/tests/pipeline_actions.rs",
-        "src-tauri/tests/browser_open.rs",
-        "src/ipc/mock/pipelineActions.test.ts",
-        "src/screens/pipeline/PipelineActions.test.tsx",
-        "src/screens/pipeline/PipelineActionsForbidden.test.tsx",
-        "tests/e2e/pipeline-f20-4.spec.ts"
-      ],
-      "disputes": [
-        "src-tauri/tests/pipeline_actions.rs@1a128ec",
-        "src/screens/pipeline/PipelineActionsForbidden.test.tsx@165cf8f"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.5",
-      "milestone": "M6",
-      "title": "Selecting a job shows details: name, status, stage, duration, Retry/Cancel, Full log; the log tail with…",
+      "id": "F-26.2",
+      "milestone": "M7",
+      "title": "The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-26.3",
+      "milestone": "M7",
+      "title": "Fix in Rider opens the file at the line and watches the working tree; a detected change continues the flow…",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (e165ff8): job details panel, job_trace streaming, log classification. Live check left in tauri dev against the stand-in: 3 s re-read of a running job's trace, job_trace_stop on job switch, tail follow on scroll, Full log opens web_url in the browser.",
-      "lockSha": "3a689a2",
-      "tests": [
-        "src-tauri/tests/job_log.rs",
-        "src/ipc/mock/pipelineLog.test.ts",
-        "src/screens/pipeline/JobDetails.test.tsx",
-        "tests/e2e/pipeline-f20-5.spec.ts"
-      ],
-      "disputes": [
-        "src/screens/pipeline/JobDetails.test.tsx@afca83a"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.6",
-      "milestone": "M6",
-      "title": "Manual jobs show their description (when GitLab provides one) and editable variables (\"Variables for this…",
+      "id": "F-26.4",
+      "milestone": "M7",
+      "title": "After a fix: commit panel with a suggested message, \"As a fixup of <sha> \"<subject>\"\" (default on) with…",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (f53eb13): manual job form with variables, job_play and job_variables_get. Live check left in tauri dev against the stand-in: a real play with variables, remembered values on the next pipeline, a 403 disabling Run <job>.",
-      "lockSha": "082b14c",
-      "tests": [
-        "src-tauri/tests/job_play.rs",
-        "src/ipc/mock/pipelinePlay.test.ts",
-        "src/screens/pipeline/ManualJobForm.test.tsx",
-        "tests/e2e/pipeline-f20-6.spec.ts"
-      ],
-      "disputes": [
-        "src/screens/pipeline/ManualJobForm.test.tsx@28c09ed"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.7",
-      "milestone": "M6",
-      "title": "Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by…",
+      "id": "F-26.5",
+      "milestone": "M7",
+      "title": "After commit: \"Committed <sha> · not pushed yet\", the reply to be sent (\"Fixed in <sha>. <one…",
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 2,
-      "note": "built: error cause logged (tracing) and shown in the panel, timeout 10 min; live check needed: (1) first Explain failure run on MR !5 pipeline #9 unit-tests, read the app log line 'explain failure failed: …' if it fails; (2) Add to drafts reaching S-05 with a real suggested comment",
-      "lockSha": "a9d5933",
-      "tests": [
-        "src-tauri/tests/pipeline_explain_task.rs",
-        "src/screens/pipeline/ExplainFailure.test.tsx",
-        "tests/e2e/pipeline-f20-7.spec.ts"
-      ],
-      "disputes": [
-        "src/screens/pipeline/ExplainFailure.test.tsx@688ab4b"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.8",
-      "milestone": "M6",
-      "title": "Successful jobs list artifacts with Download.",
+      "id": "F-26.6",
+      "milestone": "M7",
+      "title": "After push: \"Pushed · Replied to <name> and resolved the thread.\" and a link to the new pipeline.",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "fbc942b",
-      "tests": [
-        "src-tauri/tests/pipeline_artifacts.rs",
-        "src/screens/pipeline/JobArtifacts.test.tsx",
-        "src/ipc/mock/pipelineArtifacts.test.ts",
-        "tests/e2e/pipeline-f20-8.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.9",
-      "milestone": "M6",
-      "title": "A retry that fails the same way says \"Retried: failed again on the same test.\"",
+      "id": "F-26.7",
+      "milestone": "M7",
+      "title": "Question threads: reply text area, Draft with Claude (fills a proposed answer), Send reply (immediate).…",
       "kind": "mixed",
+      "split": true,
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "6c0e767",
-      "tests": [
-        "src-tauri/tests/pipeline_retry.rs",
-        "src/ipc/mock/pipelineRetried.test.ts",
-        "src/screens/pipeline/JobRetried.test.tsx",
-        "tests/e2e/pipeline-f20-9.spec.ts"
-      ],
-      "disputes": [
-        "src/screens/pipeline/JobRetried.test.tsx@c21150b"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     },
     {
-      "id": "F-20.10",
-      "milestone": "M6",
-      "title": "Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08.",
+      "id": "F-26.8",
+      "milestone": "M7",
+      "title": "If the user's checkout isn't on the MR's source branch, author mode is read-only with \"Check out <branch>…",
       "kind": "mixed",
       "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "9945dd4",
-      "tests": [
-        "src/screens/start/MrRowPipelineLink.test.tsx",
-        "src/app/titlebar/AuthorPipelineLink.test.tsx",
-        "src/screens/plan/MrMetaPipelineLink.test.tsx",
-        "tests/e2e/pipeline-f20-10.spec.ts"
-      ]
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-27.1",
+      "milestone": "M7",
+      "title": "Opened from \"Push and create MR\" (S-06), self-review end, or Rider. Branch block source → target (target…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-27.2",
+      "milestone": "M7",
+      "title": "Title and description prefilled by Claude from commits and diff; description sections What, Why, How to…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-27.3",
+      "milestone": "M7",
+      "title": "Reviewers suggested with reasons: code owner (CODEOWNERS), \"Wrote N% of the changed lines\" (git blame)…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-27.4",
+      "milestone": "M7",
+      "title": "Options: Mark as draft, Delete branch after merge (default on), Squash commits.",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-27.5",
+      "milestone": "M7",
+      "title": "Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
+    },
+    {
+      "id": "F-27.6",
+      "milestone": "M7",
+      "title": "Create merge request / Create draft MR; note who gets notified. Success screen: \"!483\" big green block…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "todo",
+      "attempts": 0,
+      "note": ""
     }
   ]
 }
