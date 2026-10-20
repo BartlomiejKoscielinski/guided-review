@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T10:45:08.851Z",
+  "updated": "2026-10-20T11:11:16.308Z",
   "items": [
     {
       "id": "F-20.1",
@@ -68,7 +68,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 1,
       "note": "Built and merged (f066624): Retry failed jobs, Cancel pipeline, Open in GitLab, 403 state. Live check in tauri dev: Open in GitLab opens the default browser (rundll32 url.dll) on the stand-in pipeline page; Retry failed jobs and Cancel pipeline against the stand-in runner; a real GitLab 403 disables the write actions with the tooltip.",
       "lockSha": "fa98379",
@@ -92,7 +92,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 1,
       "note": "Built and merged (e165ff8): job details panel, job_trace streaming, log classification. Live check left in tauri dev against the stand-in: 3 s re-read of a running job's trace, job_trace_stop on job switch, tail follow on scroll, Full log opens web_url in the browser.",
       "lockSha": "3a689a2",
@@ -113,7 +113,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 1,
       "note": "Built and merged (f53eb13): manual job form with variables, job_play and job_variables_get. Live check left in tauri dev against the stand-in: a real play with variables, remembered values on the next pipeline, a 403 disabling Run <job>.",
       "lockSha": "082b14c",
@@ -134,9 +134,9 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "todo",
       "attempts": 1,
-      "note": "Built and merged (5f296cb): Explain failure with pipeline_explain task, job_explain command, ExplainFailure panel. Live check left in tauri dev against the stand-in: a real claude run on a failed job (worktree preparation, test_report endpoint, verdict and chips), Add to drafts reaching S-05.",
+      "note": "live check failed: live check failed: (1) first Explain failure click on a failed job in the stand-in (MR !5, pipeline #9 unit-tests) ended after ~4 min in \"Couldn't explain this failure.\" with no app log entry and no error detail; a direct job_explain call and Retry then worked. Log the error cause (tracing) and find why the first run fails (worktree preparation or timeout). (2) Add to drafts reaching S-05 is unverified: both real runs returned no suggestedComment; recheck with a failure that yields a suggested comment. Also the S-08 title-bar chip showed Haiku 5.5 · low for pipeline_explain.",
       "lockSha": "a9d5933",
       "tests": [
         "src-tauri/tests/pipeline_explain_task.rs",
