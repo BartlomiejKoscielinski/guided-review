@@ -5,6 +5,7 @@ import { pathFor } from '../../app/routes';
 import type { IpcClient } from '../../ipc/client';
 import { IpcError } from '../../ipc/errors';
 import { createMockClient } from '../../ipc/mock';
+import type { Draft } from '../../ipc/types/Draft';
 import type { JobExplainEvent } from '../../ipc/types/JobExplainEvent';
 import type { JobExplanation } from '../../ipc/types/JobExplanation';
 import type { JobRow } from '../../ipc/types/JobRow';
@@ -118,6 +119,29 @@ describe('S-08 Explain failure states (F-20.7)', () => {
       expect(retry).toBeDisabled();
     });
     expect(retry).toHaveAttribute('title', "Claude isn't available");
+  });
+
+  it('F-20.7 Add to drafts puts the suggested comment unchanged into the drafts S-05 lists', async () => {
+    let created: Draft | null = null;
+    const mock = createMockClient({ latencyMs: 0 });
+    const { app, panel, user } = await open({
+      jobExplain: () => Promise.resolve(ANSWER),
+      draftsCreateForMr: async (project, iid, draft) => {
+        created = await mock.draftsCreateForMr(project, iid, draft);
+        return created;
+      },
+      draftsList: (sessionId) => mock.draftsList(sessionId),
+    });
+    await user.click(await panel.findByRole('button', { name: 'Explain failure' }));
+    await user.click(await panel.findByRole('button', { name: 'Add to drafts' }));
+    await panel.findByText('In drafts. Publish it with the rest from Summary.');
+    const draft = created as Draft | null;
+    expect(draft?.body).toBe('Please sort by CreatedAt.');
+    if (!draft) return;
+    const listed = await mock.draftsList(draft.sessionId);
+    expect(listed.map((d) => d.body)).toContain('Please sort by CreatedAt.');
+    await act(() => app.router.navigate(pathFor({ screen: 'S-05', sessionId: draft.sessionId })));
+    expect(await screen.findByText('Please sort by CreatedAt.')).toBeInTheDocument();
   });
 
   it('F-20.7 with a review session of the MR a file:line chip opens it', async () => {
