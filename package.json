@@ -27,7 +27,7 @@
     "build:portable": "tauri build --no-bundle",
     "build:probe": "cargo build --manifest-path src-tauri/Cargo.toml --release --bin gr-probe --features field-probe",
     "audit:ac": "node tools/audit.mjs",
-    "eval:claude": "cargo test --manifest-path src-tauri/Cargo.toml --test eval_claude -- --ignored --nocapture --test-threads=1"
+    "eval:claude": "cargo test --manifest-path src-tauri/Cargo.toml --test it eval_claude:: -- --ignored --nocapture --test-threads=1"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

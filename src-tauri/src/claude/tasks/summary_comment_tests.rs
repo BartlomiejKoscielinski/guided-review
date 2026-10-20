@@ -1,5 +1,5 @@
 //! Unit tests of the summary comment's inputs and result (F-12.4); the run against the fake
-//! `claude` is in `tests/summary_task.rs`. Synthetic data only (ADR-019).
+//! `claude` is in `tests/it/summary_task.rs`. Synthetic data only (ADR-019).
 
 use serde_json::json;
 
