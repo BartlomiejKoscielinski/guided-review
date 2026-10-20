@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T09:24:03.063Z",
+  "updated": "2026-10-20T10:05:35.518Z",
   "items": [
     {
       "id": "F-20.1",
@@ -170,9 +170,19 @@
       "title": "A retry that fails the same way says \"Retried: failed again on the same test.\"",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "6c0e767",
+      "tests": [
+        "src-tauri/tests/pipeline_retry.rs",
+        "src/ipc/mock/pipelineRetried.test.ts",
+        "src/screens/pipeline/JobRetried.test.tsx",
+        "tests/e2e/pipeline-f20-9.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/pipeline/JobRetried.test.tsx@c21150b"
+      ]
     },
     {
       "id": "F-20.10",
@@ -180,9 +190,17 @@
       "title": "Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "c2c53e0",
+      "tests": [
+        "src/screens/start/MrRowPipelineLink.test.tsx",
+        "src/app/titlebar/AuthorPipelineLink.test.tsx",
+        "src/screens/plan/MrMetaPipelineLink.test.tsx",
+        "tests/e2e/pipeline-f20-10.spec.ts"
+      ],
+      "forkSha": "43fce43"
     }
   ]
 }

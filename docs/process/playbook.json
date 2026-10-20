@@ -1,5 +1,5 @@
 {
-  "items": 61,
+  "items": 62,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 23,
+      "helpful": 24,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 23,
+      "helpful": 24,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 12,
+      "helpful": 13,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -261,7 +261,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 34,
+      "helpful": 35,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -354,7 +354,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
@@ -606,9 +606,9 @@
         "tools/verify.mjs"
       ],
       "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix. Run the full verify with nothing else running (no parallel cargo test or builds), since load made 4 and 34 unrelated tests time out in F-20.2; to recheck only Vitest use node tools/verify.mjs --only test.",
-      "helpful": 0,
+      "helpful": 1,
       "harmful": 0,
-      "seen": 6,
+      "seen": 7,
       "created": "2026-10-16T19:09:32.193Z",
       "lastUsedItem": 57,
       "source": "F-11.2",
@@ -1087,6 +1087,36 @@
       "created": "2026-10-20T06:57:57.598Z",
       "lastUsedItem": 59,
       "source": "F-20.7"
+    },
+    {
+      "id": "P-123",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/pipeline/**"
+      ],
+      "text": "When a test helper takes an override for a mocked command and also records calls (openWith's asked list), make the recording wrap the override, and run each override-using test once against a stub implementation before the tests commit, because 2 of 13 locked tests in F-20.9 could never go green and cost a dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T10:05:34.675Z",
+      "lastUsedItem": 61,
+      "source": "F-20.9"
+    },
+    {
+      "id": "P-124",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a rule compares two values that come from different sources (the report for the current attempt, the log for the previous one), add a red test where both sources are present and the names are realistic (parameterized 'Queue.B(x: 1)'), because the F-20.9 tests only covered one shape, so the pairing that silently never matched reached review as its only normal finding.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T10:05:34.730Z",
+      "lastUsedItem": 61,
+      "source": "F-20.9"
     }
   ]
 }
