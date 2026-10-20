@@ -15,14 +15,17 @@ export interface NoteCardProps {
   selfReview?: boolean;
   /** More › Ask Claude: the screen opens the answer card on the note's line (F-10.1). */
   onAsk?: (finding: Finding) => void;
+  /** More › Fix with Claude, self-review only (F-25.1, M7 decision 1); the fix card is F-25.2. */
+  onFix?: (finding: Finding) => void;
 }
 
 /**
  * A Claude note in Focus mode (F-07.6, F-09.2, F-09.3): severity tag, title, Claude label, body,
- * Add to drafts, Dismiss and More (Edit and add, Ask Claude, Copy). A decided note shows its
+ * Add to drafts, Dismiss and More (Edit and add, Ask Claude, Copy). In a self-review the More menu
+ * also has Fix with Claude (F-25.1), never on a teammate's MR. A decided note shows its
  * confirmation and Undo. Decisions stay on this PC.
  */
-export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: NoteCardProps) {
+export function NoteCard({ finding, sessionId, selfReview = false, onAsk, onFix }: NoteCardProps) {
   const {
     open,
     editing,
@@ -51,6 +54,16 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
             label: 'Ask Claude',
             onSelect: () => {
               onAsk(finding);
+            },
+          },
+        ]
+      : []),
+    ...(selfReview
+      ? [
+          {
+            label: 'Fix with Claude',
+            onSelect: () => {
+              onFix?.(finding);
             },
           },
         ]
