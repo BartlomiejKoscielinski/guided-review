@@ -1,5 +1,5 @@
 {
-  "items": 59,
+  "items": 60,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 22,
+      "helpful": 23,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 21,
+      "helpful": 22,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 24,
+      "helpful": 25,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -243,7 +243,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 14,
+      "helpful": 15,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -261,7 +261,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 32,
+      "helpful": 33,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -1333,12 +1333,13 @@
       "tags": [
         "mixed",
         "tests",
-        "src/**/*.test.tsx"
+        "src/**/*.test.tsx",
+        "src/screens/**/*.test.tsx"
       ],
       "text": "Run typecheck and eslint on the new or changed test files before the tests commit (not only vitest), because F-20.5's locked JobDetails.test.tsx had an unused const and a nonexistent ErrorCode (GITLAB_NETWORK vs GITLAB_UNREACHABLE), which passed at runtime, turned verify red and forced a test dispute.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 2,
+      "seen": 3,
       "created": "2026-10-19T19:36:31.369Z",
       "lastUsedItem": 57,
       "source": "F-20.5"
@@ -1387,6 +1388,21 @@
       "created": "2026-10-19T20:15:12.536Z",
       "lastUsedItem": 58,
       "source": "F-20.6"
+    },
+    {
+      "id": "P-122",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Assert a Claude action button's look (variant=\"claude\", purple fill) against the design mock, not only the plan-row wording; F-20.7 locked a purple square inside a neutral button, so review found a mismatch with the mock and the fix could not remove the square without disputing the locked test.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T06:57:57.598Z",
+      "lastUsedItem": 59,
+      "source": "F-20.7"
     }
   ]
 }

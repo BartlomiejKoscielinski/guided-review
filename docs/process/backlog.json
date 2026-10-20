@@ -1,6 +1,6 @@
 {
   "milestone": "M6",
-  "updated": "2026-10-20T06:29:18.525Z",
+  "updated": "2026-10-20T06:57:58.532Z",
   "items": [
     {
       "id": "F-20.1",
@@ -134,14 +134,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "impl",
+      "status": "live",
       "attempts": 1,
-      "note": "",
-      "lockSha": "1cfdbde",
+      "note": "Built and merged (5f296cb): Explain failure with pipeline_explain task, job_explain command, ExplainFailure panel. Live check left in tauri dev against the stand-in: a real claude run on a failed job (worktree preparation, test_report endpoint, verdict and chips), Add to drafts reaching S-05.",
+      "lockSha": "a9d5933",
       "tests": [
         "src-tauri/tests/pipeline_explain_task.rs",
         "src/screens/pipeline/ExplainFailure.test.tsx",
         "tests/e2e/pipeline-f20-7.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/pipeline/ExplainFailure.test.tsx@688ab4b"
       ]
     },
     {
