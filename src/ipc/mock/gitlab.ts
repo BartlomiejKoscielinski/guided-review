@@ -42,6 +42,7 @@ type GitlabClient = Pick<
   | 'pipelineRetry'
   | 'pipelineCancel'
   | 'jobTrace'
+  | 'jobExplain'
   | 'osOpenGitlabUrl'
   | 'draftsPublish'
   | 'gitlabForeignDrafts'
