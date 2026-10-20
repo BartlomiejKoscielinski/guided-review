@@ -30,7 +30,9 @@ use crate::review::plan_cache::{self, CacheKey, TaskSettings};
 
 /// `claude_cache.task` of failure explanations.
 pub const TASK: &str = "pipeline-explain";
-const TIMEOUT: Duration = Duration::from_secs(5 * 60);
+/// Like a step or an answer (it reads the worktree for evidence): the first live run in a freshly
+/// prepared worktree ran out of the earlier 5 minutes.
+const TIMEOUT: Duration = Duration::from_secs(10 * 60);
 
 /// One pipeline of the MR as the pipelines file lists it.
 #[derive(Debug, Clone, PartialEq, Eq)]
