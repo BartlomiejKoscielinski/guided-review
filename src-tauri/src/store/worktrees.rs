@@ -41,6 +41,29 @@ pub fn get(conn: &Connection, path: &str) -> Result<Option<WorktreeRow>, StoreEr
         .optional()?)
 }
 
+/// The registered worktrees of one kind (the janitor's `scratch` sweep, F-25.4).
+pub fn of_kind(conn: &Connection, kind: &str) -> Result<Vec<WorktreeRow>, StoreError> {
+    let mut stmt = conn.prepare(
+        "SELECT path, repo_id, kind, project, iid, head_sha FROM worktrees
+         WHERE kind = ?1 ORDER BY path",
+    )?;
+    let rows = stmt
+        .query_map([kind], |row| {
+            Ok(WorktreeRow {
+                path: row.get(0)?,
+                repo_id: row.get(1)?,
+                kind: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                project: row.get(3)?,
+                iid: row
+                    .get::<_, Option<i64>>(4)?
+                    .and_then(|i| u64::try_from(i).ok()),
+                head_sha: row.get(5)?,
+            })
+        })?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
 /// Registers (or re-registers) a worktree; called before git creates it, so a half-made one
 /// can be removed.
 pub fn register(conn: &Connection, row: &WorktreeRow) -> Result<(), StoreError> {

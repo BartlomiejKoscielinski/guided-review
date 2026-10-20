@@ -29,6 +29,11 @@ impl Proposals {
         }
     }
 
+    /// A copy of proposal `id` without taking it (a stale Accept leaves it open, F-25.4).
+    pub fn get(&self, id: &str) -> Option<Pending> {
+        self.open.lock().ok().and_then(|open| open.get(id).cloned())
+    }
+
     /// Takes proposal `id` out (Accept, Discard); `None` when it isn't open.
     pub fn take(&self, id: &str) -> Option<Pending> {
         self.open.lock().ok().and_then(|mut open| open.remove(id))
@@ -52,7 +57,10 @@ mod tests {
             },
         };
         proposals.keep("fix-1", pending.clone());
+        // F-25.4: looking at a proposal leaves it open.
+        assert_eq!(proposals.get("fix-1"), Some(pending.clone()));
         assert_eq!(proposals.take("fix-1"), Some(pending));
+        assert_eq!(proposals.get("fix-1"), None);
         assert_eq!(proposals.take("fix-1"), None);
     }
 }

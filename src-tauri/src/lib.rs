@@ -149,6 +149,8 @@ pub fn run() {
             }
             let store = open_store()?;
             let app_data = os::paths::app_data_dir()?;
+            // Before the tmp folder sweep, so git removes its own worktrees (F-25.4).
+            commands::fix::sweep_scratches(&store);
             commands::claude::manage(app.handle(), &app_data, &store);
             app.manage(store);
             commands::repo::manage(app.handle());
@@ -212,6 +214,8 @@ pub fn run() {
             commands::claude::claude_commit_message,
             commands::claude::claude_cancel,
             commands::fix::fix_propose,
+            commands::fix::fix_accept,
+            commands::fix::fix_discard,
             commands::summary::claude_summary_comment,
             commands::summary::session_summary,
             commands::summary::session_set_summary,

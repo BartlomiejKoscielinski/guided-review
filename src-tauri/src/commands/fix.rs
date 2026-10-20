@@ -21,6 +21,7 @@ use crate::fix::eligibility::{FixContext, fix_allowed};
 use crate::fix::guard;
 use crate::fix::proposal::{self, FixProposal};
 use crate::fix::proposals::{Pending, Proposals};
+use crate::fix::{accept, janitor};
 use crate::git::Git;
 use crate::git::scratch::{self, Scratch};
 use crate::os::process::Cancel;
@@ -154,6 +155,50 @@ async fn keep_or_remove(
         }
         _ => scratch::remove(git, store, &scratch).await,
     }
+}
+
+/// Accept (F-25.4): writes the proposal into the working copy, unstaged, if the file is
+/// unchanged since the run started; otherwise `FIX_STALE` and the proposal stays open.
+#[tauri::command]
+pub async fn fix_accept(
+    store: State<'_, Store>,
+    proposals: State<'_, Proposals>,
+    id: String,
+) -> AppResult<()> {
+    let Some(pending) = proposals.get(&id) else {
+        return Err(accept::not_open());
+    };
+    let git = user_git(&store, &pending.repo).await?;
+    accept::accept(&git, &store, &proposals, &id).await
+}
+
+/// Discard (F-25.4): drops the proposal and its scratch; the checkout is never touched.
+#[tauri::command]
+pub async fn fix_discard(
+    store: State<'_, Store>,
+    proposals: State<'_, Proposals>,
+    id: String,
+) -> AppResult<()> {
+    let Some(pending) = proposals.get(&id) else {
+        return Ok(());
+    };
+    let git = user_git(&store, &pending.repo).await?;
+    accept::discard(&git, &store, &proposals, &id).await
+}
+
+/// git in the user's repository, with the git program from Settings.
+async fn user_git(store: &Store, repo: &Path) -> AppResult<Git> {
+    let settings = with_store(store, |c| store::settings::load(c)).await?;
+    Ok(Git::new(settings.git.path.as_deref().map(Path::new), repo))
+}
+
+/// At app start (F-25.4): removes the scratch worktrees the last run left behind.
+pub fn sweep_scratches(store: &Store) {
+    let program = store
+        .with_conn(|c| store::settings::load(c))
+        .ok()
+        .and_then(|s| s.git.path);
+    tauri::async_runtime::block_on(janitor::sweep(store, program.as_deref().map(Path::new)));
 }
 
 fn unknown_session() -> AppError {
