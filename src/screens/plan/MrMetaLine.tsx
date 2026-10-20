@@ -1,6 +1,5 @@
-import { Link } from 'react-router';
-import { pathFor } from '../../app/routes';
 import { cx } from '../../components/cx';
+import { PipelineLink } from '../../components/PipelineLink';
 import { formatAge } from '../../format/age';
 import type { SessionMr } from '../../ipc/types/SessionMr';
 import { pipelineText } from '../start/mrRow';
@@ -31,13 +30,13 @@ export function MrMetaLine({ session }: MrMetaLineProps) {
         <span className={styles.del}>−{session.deletions}</span> · {commits}
       </span>
       {mr.pipeline && (
-        <Link className={styles.pipeline} to={pathFor({ screen: 'S-08', iid: mr.iid })}>
+        <PipelineLink className={styles.pipeline} iid={mr.iid}>
           <span
             className={cx(styles.pipeSquare, styles[`pipe-${mr.pipeline}`])}
             aria-hidden="true"
           />
           {pipelineText(mr.pipeline)}
-        </Link>
+        </PipelineLink>
       )}
     </>
   );

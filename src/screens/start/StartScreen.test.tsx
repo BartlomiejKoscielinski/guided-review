@@ -41,9 +41,9 @@ function withRows(patch: Record<number, Partial<MrRow>>): Partial<IpcClient> {
   };
 }
 
-/** The row (button) of the MR with this title in the Merge requests column. */
-function rowButton(title: string): HTMLElement {
-  const row = column().getByText(title).closest('button');
+/** The row of the MR with this title in the Merge requests column (its open button and pipeline link). */
+function mrRow(title: string): HTMLElement {
+  const row = column().getByText(title).closest<HTMLElement>('[data-mr-row]');
   if (!row) throw new Error(`No row for “${title}”`);
   return row;
 }
@@ -217,7 +217,7 @@ describe('S-01 Merge requests', () => {
   it('F-02.2 a row shows iid, title, author · age, size, pipeline and note', async () => {
     renderStart();
     const title = await column().findByText('Migrate to .NET 10');
-    const row = within(title.closest('button') ?? document.body);
+    const row = within(title.closest<HTMLElement>('[data-mr-row]') ?? document.body);
     expect(row.getByText('!475')).toBeInTheDocument();
     expect(row.getByText('Kuba W. · 1 d')).toBeInTheDocument();
     expect(row.getByText('+1204')).toBeInTheDocument();
@@ -226,7 +226,9 @@ describe('S-01 Merge requests', () => {
     const pipeline = row.getByText('pipeline failed');
     expect(pipeline.querySelector('[aria-hidden="true"]')).not.toBeNull();
     expect(row.getByText('Large: the plan splits it by layer')).toBeInTheDocument();
-    const offline = column().getByText('Offline queue for delivery photos').closest('button');
+    const offline = column()
+      .getByText('Offline queue for delivery photos')
+      .closest<HTMLElement>('[data-mr-row]');
     const fresh = within(offline ?? document.body);
     expect(fresh.getByText('Marta K. · 2 h')).toBeInTheDocument();
     expect(fresh.getByText('pipeline passed')).toBeInTheDocument();
@@ -248,10 +250,10 @@ describe('S-01 Merge requests', () => {
       }),
     );
     await column().findByText('Offline queue for delivery photos');
-    expect(rowButton('Offline queue for delivery photos')).toHaveTextContent(
+    expect(mrRow('Offline queue for delivery photos')).toHaveTextContent(
       'You’re a reviewer · plan is ready',
     );
-    expect(rowButton('Migrate to .NET 10')).toHaveTextContent(
+    expect(mrRow('Migrate to .NET 10')).toHaveTextContent(
       'Large: the plan splits it by layer · plan is ready',
     );
   });
@@ -259,7 +261,7 @@ describe('S-01 Merge requests', () => {
   it('F-02.5 a row with a cached plan and no other note says just "plan is ready"', async () => {
     renderStart(withRows({ 479: { note: null, planReady: true } }));
     await column().findByText('Crash when rotating the signature screen');
-    const row = within(rowButton('Crash when rotating the signature screen'));
+    const row = within(mrRow('Crash when rotating the signature screen'));
     expect(row.getByText('plan is ready')).toBeInTheDocument();
   });
 
@@ -273,11 +275,11 @@ describe('S-01 Merge requests', () => {
     );
     await column().findByText('Offline queue for delivery photos');
     expect(column().getAllByText(/plan is ready/)).toHaveLength(1);
-    expect(rowButton('Offline queue for delivery photos')).toHaveTextContent(/plan is ready/);
-    expect(rowButton('Crash when rotating the signature screen')).not.toHaveTextContent(
+    expect(mrRow('Offline queue for delivery photos')).toHaveTextContent(/plan is ready/);
+    expect(mrRow('Crash when rotating the signature screen')).not.toHaveTextContent(
       /plan is ready/,
     );
-    const large = within(rowButton('Migrate to .NET 10'));
+    const large = within(mrRow('Migrate to .NET 10'));
     expect(large.queryByText(/plan is ready/)).toBeNull();
     expect(large.getByText('Large: the plan splits it by layer')).toBeInTheDocument();
   });

@@ -58,7 +58,11 @@ test('F-02.1 F-02.3 tabs with counts; my own MR opens author mode', async ({ pag
 });
 
 test('F-02.5 the row of an MR with a cached plan says "plan is ready", once', async ({ page }) => {
-  const row = (title: RegExp) => mrs(page).getByRole('button', { name: title });
+  // A row is its open button and, beside it, the pipeline link (F-20.10, M6 decision 16).
+  const row = (title: RegExp) =>
+    mrs(page)
+      .locator('[data-mr-row]')
+      .filter({ has: page.getByRole('button', { name: title }) });
   const offline = row(/Offline queue for delivery photos/);
   await expect(offline).toContainText('You’re a reviewer · plan is ready');
   const said = ((await offline.textContent()) ?? '').match(/plan is ready/g);

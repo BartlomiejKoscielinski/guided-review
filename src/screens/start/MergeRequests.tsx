@@ -1,3 +1,4 @@
+import { useIsMutating } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { GITLAB_SETTINGS_ROUTE, pathFor } from '../../app/routes';
@@ -6,9 +7,10 @@ import { cx } from '../../components/cx';
 import { MergeRequestIcon } from '../../components/icons';
 import { useGitlabStatus, useMrList } from '../../ipc/hooks/useGitlab';
 import { useSettings } from '../../ipc/hooks/useSettings';
-import { useOpenSource } from '../../ipc/hooks/useSources';
+import { OPEN_REVIEW_KEY, useOpenSource } from '../../ipc/hooks/useSources';
 import type { MrRow } from '../../ipc/types/MrRow';
 import type { MrTab } from '../../ipc/types/MrTab';
+import { useStartStore } from '../../state/start';
 import { Column } from './Column';
 import columnStyles from './Column.module.css';
 import { MrRowItem } from './MrRowItem';
@@ -67,6 +69,10 @@ export function MergeRequests() {
   const list = useMrList(tab, state === 'connected', pollMs);
   const clock = useNow(AGE_TICK_MS);
   const open = useOpenSource();
+  // A review being prepared from anywhere on S-01 keeps the rows and their pipeline links inert.
+  const openingHere = useStartStore((s) => s.opening > 0);
+  const openingElsewhere = useIsMutating({ mutationKey: OPEN_REVIEW_KEY }) > 0;
+  const opening = openingHere || openingElsewhere;
   const listTokenProblem = list.error !== null && TOKEN_CODES.has(list.error.code);
   const counts = list.data?.counts;
   // Ages as of the fetch: the list is as old as its data (F-02.4).
@@ -109,7 +115,7 @@ export function MergeRequests() {
     return (
       <div className={styles.rows}>
         {list.data.rows.map((row) => (
-          <MrRowItem key={row.iid} row={row} now={now} disabled={open.isPending} onOpen={onOpen} />
+          <MrRowItem key={row.iid} row={row} now={now} disabled={opening} onOpen={onOpen} />
         ))}
       </div>
     );

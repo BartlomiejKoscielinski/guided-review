@@ -1,6 +1,5 @@
-import { Link } from 'react-router';
-import { pathFor } from '../../app/routes';
 import { cx } from '../../components/cx';
+import { PipelineLink } from '../../components/PipelineLink';
 import { formatAge } from '../../format/age';
 import { useDrafts } from '../../ipc/hooks/useDrafts';
 import { usePlan } from '../../ipc/hooks/usePlan';
@@ -39,10 +38,10 @@ function Counts({ totals }: { totals: Totals }) {
 function Pipeline({ mr }: { mr: SessionMr['mr'] }) {
   if (!mr.pipeline) return null;
   return (
-    <Link className={styles.pipeline} to={pathFor({ screen: 'S-08', iid: mr.iid })}>
+    <PipelineLink className={styles.pipeline} iid={mr.iid}>
       <span className={cx(styles.pipeSquare, styles[`square-${mr.pipeline}`])} aria-hidden="true" />
       Pipeline <b className={cx(styles.pipeState, styles[`state-${mr.pipeline}`])}>{mr.pipeline}</b>
-    </Link>
+    </PipelineLink>
   );
 }
 

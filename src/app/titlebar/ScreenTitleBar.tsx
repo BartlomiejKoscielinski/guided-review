@@ -1,7 +1,7 @@
-import { StatusChip } from '../../components/StatusChip';
 import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
 import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
+import { AuthorPipelineChip } from './AuthorPipelineChip';
 import { BranchBlock } from './BranchBlock';
 import { ClaudeActivity } from './ClaudeActivity';
 import { ClaudeStatusChip } from './ClaudeStatusChip';
@@ -87,7 +87,7 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
           }
           controls={
             <>
-              <StatusChip color="green" label={P.pipelineStatus} />
+              <AuthorPipelineChip />
               {<TaskModelChip group="fix" />}
             </>
           }
