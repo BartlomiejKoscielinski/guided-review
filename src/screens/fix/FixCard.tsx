@@ -3,6 +3,7 @@ import { LockIcon, SpinnerIcon } from '../../components/icons';
 import { DiffView } from '../../diff/DiffView';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { FixProposal } from '../../ipc/types/FixProposal';
+import { FixApplied } from './FixApplied';
 import { fileName, type FixCardState } from './fixState';
 import styles from './FixCard.module.css';
 
@@ -38,6 +39,8 @@ function diffOf(proposal: FixProposal): FileDiff {
  * line "Claude is editing <name>…" with Cancel; the proposal "Proposed change · Edited 1 file:
  * <name>" with the diff of that file, Claude's sentence, Accept (green) and Discard; "Claude made
  * no change." with the sentence and Close (M7 decision 3); a failed run's message with Close.
+ * While Accept writes both buttons are disabled; a refused Accept shows its message as an alert
+ * above them (F-25.4); an accepted change is the applied line (M7 decision 2).
  */
 export function FixCard({ state, onAccept, onDiscard, onCancel, onClose }: FixCardProps) {
   if (state.phase === 'running') {
@@ -53,6 +56,7 @@ export function FixCard({ state, onAccept, onDiscard, onCancel, onClose }: FixCa
       </div>
     );
   }
+  if (state.phase === 'applied') return <FixApplied />;
   if (state.phase === 'failed') {
     return (
       <div className={styles.card}>
@@ -67,7 +71,7 @@ export function FixCard({ state, onAccept, onDiscard, onCancel, onClose }: FixCa
       </div>
     );
   }
-  const { proposal } = state;
+  const { proposal, accepting = false, error } = state;
   if (proposal.hunks.length === 0) {
     return (
       <div className={styles.card}>
@@ -104,11 +108,16 @@ export function FixCard({ state, onAccept, onDiscard, onCancel, onClose }: FixCa
         />
       </div>
       <p className={styles.sentence}>{proposal.explanation}</p>
+      {error !== undefined && (
+        <p role="alert" className={styles.error}>
+          <span>{error}</span>
+        </p>
+      )}
       <div className={styles.actions}>
-        <Button variant="approve" size={36} onClick={onAccept}>
+        <Button variant="approve" size={36} disabled={accepting} onClick={onAccept}>
           Accept
         </Button>
-        <Button size={36} onClick={onDiscard}>
+        <Button size={36} disabled={accepting} onClick={onDiscard}>
           Discard
         </Button>
       </div>

@@ -204,6 +204,8 @@ export function createTauriClient(): IpcClient {
       ch.onmessage = onEvent;
       return call<FixProposal>('fix_propose', { target, ch });
     },
+    fixAccept: (id) => call<undefined>('fix_accept', { id }),
+    fixDiscard: (id) => call<undefined>('fix_discard', { id }),
     claudeCancel: (task) => call<undefined>('claude_cancel', { task }),
     gitlabStatus: (refresh) => call<GitlabStatus>('gitlab_status', { refresh }),
     gitlabAccountSave: (server, token) =>

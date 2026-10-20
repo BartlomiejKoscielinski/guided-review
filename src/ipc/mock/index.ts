@@ -187,6 +187,8 @@ export function createMockClient({
     ...claude,
     // F-25.3: a fix run ends on `claudeCancel(task)` like the other Claude tasks.
     fixPropose: fix.fixPropose,
+    fixAccept: fix.fixAccept,
+    fixDiscard: fix.fixDiscard,
     claudeCancel: (task) => {
       fix.cancel(task);
       return claude.claudeCancel(task);

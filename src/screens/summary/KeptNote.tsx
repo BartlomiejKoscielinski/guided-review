@@ -45,8 +45,8 @@ export function KeptNote({ draft }: KeptNoteProps) {
         <div className={styles.fixCard}>
           <FixCard
             state={fix.state}
-            onAccept={() => undefined}
-            onDiscard={fix.close}
+            onAccept={fix.accept}
+            onDiscard={fix.discard}
             onCancel={fix.cancel}
             onClose={fix.close}
           />

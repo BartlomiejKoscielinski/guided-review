@@ -330,6 +330,15 @@ export interface IpcClient {
     target: FixTarget,
     onEvent: (event: ClaudeTaskEvent<FixProposal>) => void,
   ): Promise<FixProposal>;
+  /**
+   * **Accept** of a fix proposal (F-25.4): writes Claude's edit into the working copy, unstaged,
+   * only if the file is unchanged since the run started; otherwise FIX_STALE "The file changed
+   * while Claude worked. Run it again." and the proposal stays open. A proposal that is no longer
+   * open is INVALID_INPUT.
+   */
+  fixAccept(id: string): Promise<void>;
+  /** **Discard** of a fix proposal (F-25.4): drops it; the working copy is never touched. */
+  fixDiscard(id: string): Promise<void>;
   /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;

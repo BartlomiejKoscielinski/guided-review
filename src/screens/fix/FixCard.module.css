@@ -97,3 +97,26 @@
   line-height: 1.5;
   color: var(--orange-text);
 }
+
+/* After Accept (Author.dc.html `fApplied`): a green mark and line, Browse and commit beside it. */
+.appliedRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.applied {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--green-text);
+}
+
+.appliedMark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  background: var(--green);
+}

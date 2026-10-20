@@ -155,8 +155,8 @@ export function NoteCard({ finding, sessionId, selfReview = false, onAsk }: Note
       {fix.state && (
         <FixCard
           state={fix.state}
-          onAccept={() => undefined}
-          onDiscard={fix.close}
+          onAccept={fix.accept}
+          onDiscard={fix.discard}
           onCancel={fix.cancel}
           onClose={fix.close}
         />

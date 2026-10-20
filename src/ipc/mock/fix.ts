@@ -13,7 +13,10 @@ export const MOCK_FIX_MS = 1300;
 /** The core's refusal on a teammate's MR (`fix/eligibility.rs`). */
 const NOT_ALLOWED = 'Fix with Claude is only available on your own code.';
 
-type FixClient = Pick<IpcClient, 'fixPropose'>;
+/** Accept of a proposal that was accepted, discarded or never made (`fix/accept.rs`). */
+const NOT_OPEN = 'This fix is no longer open.';
+
+type FixClient = Pick<IpcClient, 'fixPropose' | 'fixAccept' | 'fixDiscard'>;
 
 /** One edit at the note's line: a line taken out and a line put in, with context around. */
 function hunkAt(file: string, line: number): Hunk {
@@ -53,13 +56,16 @@ const sentenceFor = (file: string) =>
 /**
  * Fix with Claude in the mock (F-25.3), as `fix_propose`: a teammate's MR is refused before any
  * event (F-25.1; the mock's MRs are teammates'), then `started`, about 1.3 s, and `done` with a
- * proposal for the note's one file. `cancel(task)` ends a run with CANCELLED.
+ * proposal for the note's one file. `cancel(task)` ends a run with CANCELLED. The proposal stays
+ * open until `fixAccept` or `fixDiscard` (F-25.4).
  */
 export function createFixBackend(
   data: { data: SessionData },
   sourceOf: (sessionId: string) => Source | undefined,
 ): FixClient & { cancel: (task: string) => boolean } {
   const running = new Map<string, () => void>();
+  /** The proposals with an edit, waiting for Accept or Discard (`fix/proposals.rs`). */
+  const open = new Set<string>();
   let next = 1;
 
   const noteOf = (target: FixTarget): { file: string; line: number } => {
@@ -106,8 +112,19 @@ export function createFixBackend(
         hunks: [hunkAt(note.file, note.line)],
         explanation: sentenceFor(note.file),
       };
+      open.add(result.id);
       onEvent({ kind: 'done', result });
       return structuredClone(result);
+    },
+    // F-25.4: the mock has no file to change behind the app's back, so Accept never goes stale.
+    fixAccept: async (id) => {
+      await Promise.resolve();
+      if (!open.delete(id))
+        throw new IpcError({ code: 'INVALID_INPUT', message: NOT_OPEN, retryable: false });
+    },
+    fixDiscard: async (id) => {
+      await Promise.resolve();
+      open.delete(id);
     },
     cancel: (task) => {
       const stop = running.get(task);
