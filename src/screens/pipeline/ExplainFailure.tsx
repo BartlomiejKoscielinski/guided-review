@@ -156,6 +156,7 @@ export function ExplainFailure({ iid, explain: ex, onSelectPipeline }: ExplainFa
             Claude reads this log and the MR diff. Nothing is posted.
           </span>
           <Button
+            variant="claude"
             size={38}
             disabled={unusable}
             title={unusable ? "Claude isn't available" : undefined}
