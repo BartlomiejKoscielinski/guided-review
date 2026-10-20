@@ -382,3 +382,10 @@
   line-height: 1.55;
   resize: vertical;
 }
+
+/* The end of a self-review (F-17.3): Draft MR description and Browse and commit under the list. */
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
