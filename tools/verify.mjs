@@ -8,8 +8,10 @@
 //   node tools/verify.mjs --only rust:clippy,test re-run selected steps
 //   node tools/verify.mjs --e2e [spec ...]        verify steps + Playwright (all specs or the given ones)
 //   node tools/verify.mjs --only e2e changes      Playwright only, one spec
+//   node tools/verify.mjs --fresh                 lint without its cache (E29: the gate and the Closing)
 import { spawn } from 'node:child_process';
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { laneConfig } from './lanes-lib.mjs';
@@ -36,6 +38,10 @@ const args = process.argv.slice(2);
 const onlyIdx = args.indexOf('--only');
 const only = onlyIdx >= 0 ? args[onlyIdx + 1].split(',') : null;
 const wantE2e = args.includes('--e2e') || (only?.includes('e2e') ?? false);
+// E29: `npm run lint` keeps an ESLint cache and re-lints only changed files, but the type-aware
+// rules can fail an unchanged file after a type change elsewhere: --fresh drops the cache first.
+const fresh = args.includes('--fresh');
+const eslintCache = join(root, 'node_modules', '.cache', 'eslint');
 const specs = args.filter((a, i) => !a.startsWith('--') && i !== onlyIdx + 1);
 // A lane worktree whose --owns has no src-tauri/ does not build Rust (tools/lanes.mjs).
 const lane = laneConfig(root);
@@ -104,7 +110,10 @@ const lanes = args.includes('--serial')
 const done = await Promise.all(
   lanes.map(async (lane) => {
     const out = [];
-    for (const step of lane) out.push(await run(step, `npm run ${step}`));
+    for (const step of lane) {
+      if (step === 'lint' && fresh) await rm(eslintCache, { recursive: true, force: true });
+      out.push(await run(step, `npm run ${step}`));
+    }
     return out;
   }),
 );

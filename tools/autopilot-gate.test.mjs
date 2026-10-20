@@ -64,7 +64,13 @@ function repo() {
   mkdirSync(join(main, 'tools'), { recursive: true });
   mkdirSync(join(main, 'docs'), { recursive: true });
   mkdirSync(join(main, 'src'), { recursive: true });
-  writeFileSync(join(main, 'tools', 'verify.mjs'), 'process.exit(0);\n');
+  // The fake verify records its arguments outside the repo (E29 test below).
+  const verifyArgs = join(dir, 'verify-args.txt');
+  writeFileSync(
+    join(main, 'tools', 'verify.mjs'),
+    `import { appendFileSync } from 'node:fs';\n` +
+      `appendFileSync(${JSON.stringify(verifyArgs)}, process.argv.slice(2).join(' ') + '\\n');\n`,
+  );
   writeFileSync(join(main, 'tools', 'audit.mjs'), 'process.exit(0);\n');
   writeFileSync(join(main, 'docs', 'PROGRESS.md'), '## M3 · Test\n- [ ] F-01.1 Something.\n');
   writeFileSync(join(main, 'src', 'a.ts'), 'export const a = 1;\n');
@@ -101,7 +107,7 @@ function repo() {
     );
     return { code: r.status, verdict: JSON.parse(r.stdout) };
   };
-  return { dir, main, wt, git, commit, gate };
+  return { dir, main, wt, git, commit, gate, verifyArgs };
 }
 
 test('E15 autopilot gate: verify runs only the steps the diff affects', () => {
@@ -133,6 +139,12 @@ test('E15 autopilot gate: the verdict names the verify steps; --full runs all', 
     ]);
     assert.equal(typeof first.verdict.verifySecs, 'number');
     assert.equal(r.gate('--no-merge', '--full').verdict.verifySteps, 'all');
+    const calls = readFileSync(r.verifyArgs, 'utf8').trim().split(/\r?\n/);
+    assert.deepEqual(
+      calls.map((c) => c.split(' ')[0]),
+      ['--fresh', '--fresh'],
+      'E29: the gate lints without the ESLint cache',
+    );
   } finally {
     await rm(r.dir, { recursive: true, force: true });
   }

@@ -139,8 +139,10 @@ if (!checks.every((c) => c.ok)) finish();
 // diff affects (E15), every step with --full.
 const steps = verifySteps(files, { full: has('full') });
 verdict.verifySteps = steps ?? 'all';
+// --fresh: lint without the ESLint cache, which misses a type change's effect on unchanged files (E29).
 const verifyArgs = [
   'tools/verify.mjs',
+  '--fresh',
   ...(steps ? ['--only', steps.join(',')] : []),
   ...(e2e ? ['--e2e', ...e2e.split(',')] : []),
 ];
