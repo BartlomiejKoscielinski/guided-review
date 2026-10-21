@@ -1,5 +1,5 @@
 //! A throwaway test PKI and a local HTTPS server answering `GET /api/v4/version`, shared by
-//! `tests/tls.rs` and the S6 spike (`examples/s6_tls_server.rs`). The CA's private key lives
+//! `tests/it/tls.rs` and the S6 spike (`examples/s6_tls_server.rs`). The CA's private key lives
 //! only in memory: a CA imported into a certificate store can't sign anything once the process
 //! ends.
 #![allow(

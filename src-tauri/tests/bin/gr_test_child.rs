@@ -1,4 +1,4 @@
-//! Test helper for `tests/process.rs`: a child process with scripted behaviour.
+//! Test helper for `tests/it/process.rs`: a child process with scripted behaviour.
 //!
 //! Modes (first argument):
 //! - `echo-stdin`: copies stdin to stdout.

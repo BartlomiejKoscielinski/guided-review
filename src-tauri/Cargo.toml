@@ -22,7 +22,7 @@ name = "gr-probe"
 path = "src/bin/gr-probe/main.rs"
 required-features = ["field-probe"]
 
-# Scripted child process for tests/process.rs (not bundled; Tauri bundles GuidedReview only).
+# Scripted child process for tests/it/process.rs (not bundled; Tauri bundles GuidedReview only).
 [[bin]]
 name = "gr-test-child"
 path = "tests/bin/gr_test_child.rs"

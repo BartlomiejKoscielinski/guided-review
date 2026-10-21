@@ -8,7 +8,7 @@ Item history (the backlog note and earlier attempts; their verdicts are in the f
 On a repeat attempt (a failed live check or gate), first write a test that reproduces what failed.
 
 Write:
-- Rust core: unit tests named `{{rustPrefix}}_…` in the module's test file (or `#[cfg(test)] mod tests`).
+- Rust core: unit tests named `{{rustPrefix}}_…` in the module's test file (or `#[cfg(test)] mod tests`). An integration test goes into `src-tauri/tests/it/<name>.rs` with a `mod <name>;` line in `it/main.rs` (one test binary, E29; helpers through `use crate::fixture_repo;`); never a new file directly in `src-tauri/tests/`.
 - TypeScript: Vitest tests named `'{{item}} …'` next to the component or in `src/ipc/mock/*.test.ts`; mock data must match the mocks.
 - A user flow on a screen: a Playwright test `'{{item}} …'` in a spec of this criterion's own, `tests/e2e/<screen>-{{slug}}.spec.ts` (new helpers in it too; never add to a spec or helper file another criterion wrote, so a criterion whose tests are written ahead does not conflict), against the mock backend (GR_PORT={{port}}).
 - One test per observable behavior of the criterion text; assert the exact English copy from the spec/mock. No snapshot tests, no tests of private helpers.

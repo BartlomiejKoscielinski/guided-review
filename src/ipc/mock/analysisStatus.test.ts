@@ -5,7 +5,7 @@ import type { ClaudeTaskEvent } from '../types/ClaudeTaskEvent';
 import type { StepAnalysis } from '../types/StepAnalysis';
 
 // F-08.8: `reviewAnalysisStatus` of the mock backend, as the core's `review_analysis_status`
-// (src-tauri/tests/analysis_status.rs): the session's steps whose analysis is ready, running now
+// (src-tauri/tests/it/analysis_status.rs): the session's steps whose analysis is ready, running now
 // or failed, and the code Claude reads. The MR session's worktree is at a3f9c12, the sha the
 // footer of Main.dc.html shows ("worktree @ a3f9c12").
 

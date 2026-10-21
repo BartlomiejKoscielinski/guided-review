@@ -81,7 +81,7 @@ guided-review/
 │  │  ├─ route.rs                Route and start-route rules (F-30.4)
 │  │  └─ error.rs                AppError
 │  ├─ resources/prompts/*.md, resources/schemas/*.json   (copied from docs/claude/)
-│  └─ tests/                     integration tests with fixture repos; bin/ test helpers
+│  └─ tests/                     integration tests with fixture repos, one binary in it/ (E29); bin/ test helpers
 │                                (gr-test-child, fake-claude)
 ├─ tests/e2e/                    Playwright specs against the mock backend
 ├─ tools/mock-preview/           mock renderer for design checks
