@@ -6,6 +6,7 @@
 pub mod commit;
 pub mod diff;
 pub mod error;
+pub mod fixup_target;
 pub mod hunk_id;
 pub mod intraline;
 pub mod line_state;

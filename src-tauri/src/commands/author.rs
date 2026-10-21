@@ -1,7 +1,8 @@
 //! `author_mr` (F-26.1): S-10 Your MR reads my merge request (title, branches, head pipeline and
 //! the thread list), read only. Called when the screen opens by navigation, never on a restored
 //! start (F-30.4); it runs no Claude, so it needs no Claude Code lookup. `author_file_diff`
-//! (F-26.2) reads the selected thread's file from the user's own checkout, read only.
+//! (F-26.2) reads the selected thread's file from the user's own checkout, read only;
+//! `author_fixup_target` (F-26.4) names the commit a fix of a thread is a fixup of, read only.
 
 use tauri::State;
 
@@ -9,6 +10,7 @@ use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error, no
 use super::repo::active_git;
 use crate::error::AppResult;
 use crate::git::diff;
+use crate::git::fixup_target::{self, FixupTarget};
 use crate::git::model::FileDiff;
 use crate::os::process::Cancel;
 use crate::review::author_mr::{self, AuthorMr, AuthorMrError};
@@ -43,4 +45,18 @@ pub async fn author_file_diff(
 ) -> AppResult<FileDiff> {
     let git = active_git(&store).await?;
     Ok(diff::author_file_diff(&git, &target, &path, &Cancel::new()).await?)
+}
+
+/// The commit a fix of the thread on `line` of `path` is a fixup of (F-26.4, M7 decision 8):
+/// the blame of the line in my MR's range, else the newest range commit touching the file, else
+/// HEAD. Reads git only; no Claude, no GitLab.
+#[tauri::command]
+pub async fn author_fixup_target(
+    store: State<'_, Store>,
+    target: String,
+    path: String,
+    line: Option<u32>,
+) -> AppResult<FixupTarget> {
+    let git = active_git(&store).await?;
+    Ok(fixup_target::find(&git, &target, &path, line, &Cancel::new()).await?)
 }

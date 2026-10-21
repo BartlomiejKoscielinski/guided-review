@@ -1,7 +1,7 @@
 //! Commit, amend and push (F-16.4, F-16.5) and the commit-mode details of S-06 (F-15.6).
 //! The message goes to `git commit -F -` on stdin (T6); the user's hooks run and their output
-//! is returned on failure. Push is `git push origin HEAD` (`-u` without an upstream) and never
-//! forces (T8).
+//! is returned on failure. S-10 commits one fixed file, optionally as a fixup (F-26.4). Push is
+//! `git push origin HEAD` (`-u` without an upstream) and never forces (T8).
 
 use std::time::Duration;
 
@@ -43,22 +43,95 @@ pub async fn commit(
     amend: bool,
     cancel: &Cancel,
 ) -> Result<CommitResult, GitError> {
+    require_message(message)?;
+    let mut args = vec!["commit", "-F", "-"];
+    if amend {
+        args.push("--amend");
+    }
+    run_commit(git, args, message, cancel).await
+}
+
+/// S-10's commit of a fix (F-26.4, M7 decision 10): only the files of `only`, from the working
+/// tree with their staged and unstaged edits alike (`git commit -- <paths>`); other staged and
+/// unstaged changes stay where they are. With `fixup` (a commit SHA, never an option or a branch)
+/// the commit reads `fixup! <subject of fixup>` with `message` as its body, which
+/// `git rebase --autosquash` folds into that commit; git refuses `--fixup` with `-F`, so the
+/// message is composed here. Never amends.
+pub async fn commit_only(
+    git: &Git,
+    message: &str,
+    fixup: Option<&str>,
+    only: &[String],
+    cancel: &Cancel,
+) -> Result<CommitResult, GitError> {
+    require_message(message)?;
+    if only.is_empty() {
+        return Err(GitError::Invalid("Pick the file to commit.".to_owned()));
+    }
+    let text = match fixup {
+        Some(sha) => format!(
+            "fixup! {}
+
+{}",
+            subject_of(git, sha, cancel).await?,
+            message.trim()
+        ),
+        None => message.to_owned(),
+    };
+    let mut changed = vec!["diff", "--quiet", "HEAD", "--"];
+    changed.extend(only.iter().map(String::as_str));
+    let output = git.run_spec(git.spec(changed), cancel, &[0, 1]).await?;
+    if output.code == Some(0) {
+        return Err(GitError::Invalid(
+            "The file has no changes to commit.".to_owned(),
+        ));
+    }
+    let mut args = vec!["commit", "-F", "-", "--"];
+    args.extend(only.iter().map(String::as_str));
+    run_commit(git, args, &text, cancel).await
+}
+
+fn require_message(message: &str) -> Result<(), GitError> {
     if message.trim().is_empty() {
         return Err(GitError::Invalid(
             "Write a commit message first.".to_owned(),
         ));
     }
-    let mut args = vec!["commit", "-F", "-"];
-    if amend {
-        args.push("--amend");
+    Ok(())
+}
+
+/// The subject of the fixup target; anything but a SHA of an existing commit is refused (T5).
+async fn subject_of(git: &Git, sha: &str, cancel: &Cancel) -> Result<String, GitError> {
+    validate_rev(sha)?;
+    let rev = format!("{sha}^{{commit}}");
+    let spec = git.spec(["log", "-1", "--format=%s", rev.as_str()]);
+    let output = git.run_spec(spec, cancel, &[0, 128]).await?;
+    let subject = output.stdout.trim();
+    if output.code != Some(0) || subject.is_empty() {
+        return Err(GitError::Invalid("That isn't a commit SHA.".to_owned()));
     }
+    Ok(subject.to_owned())
+}
+
+/// Runs `git commit` with the message on stdin; a hook's rejection returns its output.
+async fn run_commit(
+    git: &Git,
+    args: Vec<&str>,
+    message: &str,
+    cancel: &Cancel,
+) -> Result<CommitResult, GitError> {
     let spec = git
         .spec(args)
         .stdin(message.as_bytes().to_vec())
         .timeout(COMMIT_TIMEOUT);
     let output = crate::os::process::run(&spec, cancel).await?;
     if !output.success() {
-        let text = format!("{}\n{}", output.stdout.trim(), output.stderr.trim());
+        let text = format!(
+            "{}
+{}",
+            output.stdout.trim(),
+            output.stderr.trim()
+        );
         let text = text.trim().to_owned();
         if text.contains("nothing to commit") || text.contains("no changes added to commit") {
             return Err(GitError::Invalid(

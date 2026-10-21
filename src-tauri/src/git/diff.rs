@@ -128,25 +128,7 @@ pub async fn author_file_diff(
     path: &str,
     cancel: &Cancel,
 ) -> Result<FileDiff, GitError> {
-    let remote = refs::target_commit(git, &format!("origin/{target}"), cancel).await?;
-    let target_sha = match remote {
-        Some(sha) => sha,
-        None => refs::target_commit(git, target, cancel)
-            .await?
-            .ok_or_else(|| {
-                GitError::Invalid(format!(
-                    "The target branch {target} isn't in this checkout."
-                ))
-            })?,
-    };
-    let spec = git.spec(["merge-base", target_sha.as_str(), "HEAD"]);
-    let output = git.run_spec(spec, cancel, &[0, 1]).await?;
-    let base = output.stdout.trim();
-    if output.code != Some(0) || base.is_empty() {
-        return Err(GitError::Invalid(format!(
-            "Your branch and {target} have no common history."
-        )));
-    }
+    let base = author_base(git, target, cancel).await?;
     let mut args: Vec<OsString> = PATCH_ARGS.iter().map(OsString::from).collect();
     args.extend([base.into(), "--".into(), path.into()]);
     let output = git.run(args, cancel).await?;
@@ -168,6 +150,31 @@ pub async fn author_file_diff(
             line_staging: false,
         },
     })
+}
+
+/// merge-base(`origin/<target>`, HEAD) of my MR's branch (a local `<target>` without the remote
+/// one), where S-10's diff and the fixup range start (F-26.2, F-26.4).
+pub async fn author_base(git: &Git, target: &str, cancel: &Cancel) -> Result<String, GitError> {
+    let remote = refs::target_commit(git, &format!("origin/{target}"), cancel).await?;
+    let target_sha = match remote {
+        Some(sha) => sha,
+        None => refs::target_commit(git, target, cancel)
+            .await?
+            .ok_or_else(|| {
+                GitError::Invalid(format!(
+                    "The target branch {target} isn't in this checkout."
+                ))
+            })?,
+    };
+    let spec = git.spec(["merge-base", target_sha.as_str(), "HEAD"]);
+    let output = git.run_spec(spec, cancel, &[0, 1]).await?;
+    let base = output.stdout.trim();
+    if output.code != Some(0) || base.is_empty() {
+        return Err(GitError::Invalid(format!(
+            "Your branch and {target} have no common history."
+        )));
+    }
+    Ok(base.to_owned())
 }
 
 pub fn parse_patches(text: &str) -> Result<Vec<PatchFile>, GitError> {

@@ -55,6 +55,8 @@ impl FixtureRepo {
             ("core.autocrlf", "false"),
             ("commit.gpgsign", "false"),
             ("core.hooksPath", ".no-hooks"),
+            // Paths with Polish characters read as written in `git show --name-only` and alike.
+            ("core.quotePath", "false"),
         ] {
             repo.git(&["config", key, value]);
         }
