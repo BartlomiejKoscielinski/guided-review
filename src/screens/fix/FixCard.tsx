@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { LockIcon, SpinnerIcon } from '../../components/icons';
 import { DiffView } from '../../diff/DiffView';
@@ -43,6 +44,8 @@ function diffOf(proposal: FixProposal): FileDiff {
  * above them (F-25.4); an accepted change is the applied line (M7 decision 2).
  */
 export function FixCard({ state, onAccept, onDiscard, onCancel, onClose }: FixCardProps) {
+  // The change was accepted while this card was on screen (not a card shown again later).
+  const [acceptedHere] = useState(state.phase !== 'applied');
   if (state.phase === 'running') {
     return (
       <div className={styles.busyRow}>
@@ -56,7 +59,7 @@ export function FixCard({ state, onAccept, onDiscard, onCancel, onClose }: FixCa
       </div>
     );
   }
-  if (state.phase === 'applied') return <FixApplied />;
+  if (state.phase === 'applied') return <FixApplied focus={acceptedHere} />;
   if (state.phase === 'failed') {
     return (
       <div className={styles.card}>
