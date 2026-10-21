@@ -397,3 +397,42 @@ fn f26_1_the_result_reaches_the_screen_in_camel_case() {
     assert_eq!(first["avatar"], json!("MK"));
     assert_eq!(first["author"], json!("Marta K."));
 }
+
+#[test]
+fn f26_2_a_thread_on_a_removed_line_keeps_its_old_line_for_the_card() {
+    let lines = |position: Option<ThreadPosition>, outdated: bool, placed: Option<u32>| {
+        let mut t = thread("t", &[(false, "Why remove this?")]);
+        t.position = position;
+        t.outdated = outdated;
+        t.placed_line = placed;
+        let row = author_threads::of(&[t], ME, &none(), &none())
+            .threads
+            .remove(0);
+        (row.line, row.old_line)
+    };
+    assert_eq!(
+        lines(Some(position(None, Some(36))), false, None),
+        (None, Some(36))
+    );
+    assert_eq!(
+        lines(Some(position(Some(46), None)), false, None),
+        (Some(46), None)
+    );
+    assert_eq!(
+        lines(Some(position(Some(46), Some(40))), false, None),
+        (Some(46), None)
+    );
+    assert_eq!(
+        lines(Some(position(None, Some(36))), true, Some(38)),
+        (None, Some(38))
+    );
+    assert_eq!(
+        lines(Some(position(None, Some(36))), true, None),
+        (None, Some(36))
+    );
+    assert_eq!(
+        lines(Some(position(Some(46), None)), true, Some(52)),
+        (Some(52), None)
+    );
+    assert_eq!(lines(None, false, None), (None, None));
+}

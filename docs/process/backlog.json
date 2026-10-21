@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-21T09:40:03.194Z",
+  "updated": "2026-10-21T10:19:27.174Z",
   "items": [
     {
       "id": "F-17.3",
@@ -129,9 +129,20 @@
       "title": "The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "b1afb2b",
+      "tests": [
+        "src-tauri/tests/it/author_thread_view.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorThreadView.test.ts",
+        "src/screens/author/AuthorThreadView.test.tsx",
+        "tests/e2e/author-f26-2.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/author/AuthorThreadView.test.tsx@a5191ae"
+      ]
     },
     {
       "id": "F-26.3",
@@ -140,9 +151,19 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "2e0f706",
+      "tests": [
+        "src-tauri/tests/it/fix_watch.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/tauriFixWatch.test.ts",
+        "src/ipc/mock/fixWatch.test.ts",
+        "src/screens/author/AuthorFixInRider.test.tsx",
+        "tests/e2e/author-f26-3.spec.ts"
+      ],
+      "forkSha": "a33a4a4"
     },
     {
       "id": "F-26.4",

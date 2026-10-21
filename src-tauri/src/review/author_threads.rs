@@ -55,6 +55,9 @@ pub struct AuthorThread {
     /// Its line in the working tree's file to open at; `None` on a General thread or a comment on
     /// a removed line (GitLab sends only `old_line`), which has no line there.
     pub line: Option<u32>,
+    /// The removed line a thread on a removed line sits on, in the merge-base's file (the old side
+    /// of S-10's unified diff, where its card goes); `None` when `line` is set or there is no line.
+    pub old_line: Option<u32>,
     /// The first note on one line, cut to `EXCERPT_MAX`.
     pub excerpt: String,
     pub kind: ThreadKind,
@@ -145,6 +148,7 @@ pub fn of(
             place: place_of(thread),
             path: thread.position.as_ref().map(|p| p.new_path.clone()),
             line: line_of(thread),
+            old_line: old_line_of(thread),
             excerpt,
             kind,
             status: status_of(thread, kind, last_mine, proposals, queued),
@@ -267,10 +271,25 @@ fn place_of(thread: &Thread) -> String {
 /// new line; a comment on a removed line has none.
 fn line_of(thread: &Thread) -> Option<u32> {
     let position = thread.position.as_ref()?;
+    position.new_line?;
     if thread.outdated {
         thread.placed_line.or(position.new_line)
     } else {
         position.new_line
+    }
+}
+
+/// The old-side line of a comment on a removed line (GitLab sends only `old_line`): the placed
+/// line of an outdated thread (`thread_place` maps it into the base), else its old line.
+fn old_line_of(thread: &Thread) -> Option<u32> {
+    let position = thread.position.as_ref()?;
+    if position.new_line.is_some() {
+        return None;
+    }
+    if thread.outdated {
+        thread.placed_line.or(position.old_line)
+    } else {
+        position.old_line
     }
 }
 

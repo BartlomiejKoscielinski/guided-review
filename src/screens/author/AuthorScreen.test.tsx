@@ -68,6 +68,7 @@ const thread = (over: Partial<Thread>): Thread => ({
   place: 'UploadWorker.cs:46',
   path: 'src/App/Workers/UploadWorker.cs',
   line: 46,
+  oldLine: null,
   excerpt: 'Rename this.',
   kind: 'change',
   status: 'changeRequested',

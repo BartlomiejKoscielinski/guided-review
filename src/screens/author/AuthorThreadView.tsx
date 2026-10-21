@@ -28,15 +28,25 @@ const BAR = 50;
  */
 const PATIENCE_MS = 250;
 
-/** Whether the diff has a row of new line `line` (the card goes under it). */
-const hasLine = (diff: FileDiff, line: number) =>
-  diff.hunks.some((h) => h.lines.some((l) => l.kind !== 'del' && l.newNo === line));
+/** Where the card goes: the thread's working-tree line, or the removed line of the old side. */
+interface Anchor {
+  side: 'old' | 'new';
+  no: number;
+}
+
+/** Whether the diff has a row of `anchor`'s line on its side (the card goes under it). */
+const hasLine = (diff: FileDiff, { side, no }: Anchor) =>
+  diff.hunks.some((h) =>
+    h.lines.some((l) =>
+      side === 'new' ? l.kind !== 'del' && l.newNo === no : l.kind !== 'add' && l.oldNo === no,
+    ),
+  );
 
 /**
  * S-10's main column (F-26.2, M7 decision 6): the selected thread opens in the code at its line.
  * A sticky file bar (path, **Open in Rider · line N**), the file's unified diff from
  * merge-base(origin/<target>, HEAD) to the working tree scrolled to the line, and the thread card
- * under that line. While the diff is read (after a short wait), when it failed, when the file shows no change or the
+ * under that line (a thread on a removed line: under that removed row). While the diff is read (after a short wait), when it failed, when the file shows no change or the
  * line is outside the diff, the card stands above the code. A General thread has no file: its
  * conversation only.
  */
@@ -71,8 +81,14 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
 
   const file = diff.data;
   const showCode = file !== undefined && (file.binary || file.hunks.length > 0);
-  const anchored = file !== undefined && line !== null && !file.binary && hasLine(file, line);
-  const at = line !== null ? lineKey('new', line) : '';
+  const anchor: Anchor | null =
+    line !== null
+      ? { side: 'new', no: line }
+      : thread.oldLine !== null
+        ? { side: 'old', no: thread.oldLine }
+        : null;
+  const anchored = file !== undefined && anchor !== null && !file.binary && hasLine(file, anchor);
+  const at = anchor !== null ? lineKey(anchor.side, anchor.no) : '';
   const inserts = new Map<string, ReactNode>();
   if (anchored) inserts.set(at, <div className={styles.insert}>{card}</div>);
   const { dir, name } = splitPath(path);
@@ -102,7 +118,7 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
             layout="unified"
             inserts={inserts}
             keep={anchored ? new Set([at]) : undefined}
-            selection={anchored ? { side: 'new', start: line, end: line } : null}
+            selection={anchored ? { side: anchor.side, start: anchor.no, end: anchor.no } : null}
             scrollRoot={scrollRoot}
             stickyTop={BAR}
             reveal={anchored ? { at, nonce: 1 } : undefined}

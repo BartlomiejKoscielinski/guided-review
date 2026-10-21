@@ -33,6 +33,11 @@ path: string | null,
  */
 line: number | null, 
 /**
+ * The removed line a thread on a removed line sits on, in the merge-base's file (the old side
+ * of S-10's unified diff, where its card goes); `None` when `line` is set or there is no line.
+ */
+oldLine: number | null, 
+/**
  * The first note on one line, cut to `EXCERPT_MAX`.
  */
 excerpt: string, kind: ThreadKind, status: ThreadStatus, 
