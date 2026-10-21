@@ -100,7 +100,9 @@ const results = [];
 // after another. Output is printed in STEPS order once everything finished. E29: Vitest runs in a
 // phase of its own: its workers fill every core, and beside the Rust chain its tests hit the 5 s
 // timeout (5 to 30 failures per parallel run on 2026-10-20), while alone they pass. The Rust
-// chain runs beside the JS static checks instead. --serial restores the one-after-another run.
+// chain runs beside the JS static checks instead. E31 tried it again in the vmThreads pool: beside
+// rust:test it saves ~15 s, but the slowest tests reach ~80% of the timeout and one run timed out
+// (docs/process/IMPROVEMENTS.md). --serial restores the one-after-another run.
 const PHASES = [
   [
     ['rust:fmt', 'rust:clippy', 'rust:test'],
