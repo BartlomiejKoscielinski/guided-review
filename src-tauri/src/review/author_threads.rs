@@ -50,10 +50,34 @@ pub struct AuthorThread {
     pub avatar: String,
     /// "UploadWorker.cs:46", the file name alone, or "General".
     pub place: String,
+    /// The thread's file, repository-relative with "/"; `None` on a General thread (F-26.2).
+    pub path: Option<String>,
+    /// Its line in the working tree's file to open at; `None` on a General thread or a comment on
+    /// a removed line (GitLab sends only `old_line`), which has no line there.
+    pub line: Option<u32>,
     /// The first note on one line, cut to `EXCERPT_MAX`.
     pub excerpt: String,
     pub kind: ThreadKind,
     pub status: ThreadStatus,
+    /// The conversation in order, full text (F-26.2).
+    pub notes: Vec<AuthorNote>,
+}
+
+/// One note of a thread's conversation in S-10's thread card (F-26.2).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+pub struct AuthorNote {
+    /// Display name of who wrote it.
+    pub author: String,
+    /// Their initials ("MK").
+    pub avatar: String,
+    /// The whole text, not cut like the excerpt.
+    pub body: String,
+    /// ISO 8601 as GitLab sends it.
+    pub created_at: String,
+    /// Written by the signed-in user (the card reads "You").
+    pub mine: bool,
 }
 
 /// "N resolved earlier · <first excerpt>".
@@ -119,9 +143,22 @@ pub fn of(
             author: first.author.name.clone(),
             avatar: initials(&first.author.name),
             place: place_of(thread),
+            path: thread.position.as_ref().map(|p| p.new_path.clone()),
+            line: line_of(thread),
             excerpt,
             kind,
             status: status_of(thread, kind, last_mine, proposals, queued),
+            notes: thread
+                .notes
+                .iter()
+                .map(|n| AuthorNote {
+                    author: n.author.name.clone(),
+                    avatar: initials(&n.author.name),
+                    body: n.body.clone(),
+                    created_at: n.created_at.clone(),
+                    mine: n.author.username == me,
+                })
+                .collect(),
         });
     }
     AuthorThreads {
@@ -223,6 +260,17 @@ fn place_of(thread: &Thread) -> String {
     match line {
         Some(line) => format!("{name}:{line}"),
         None => name,
+    }
+}
+
+/// The working tree's line to open the thread at: the placed line of an outdated thread, else its
+/// new line; a comment on a removed line has none.
+fn line_of(thread: &Thread) -> Option<u32> {
+    let position = thread.position.as_ref()?;
+    if thread.outdated {
+        thread.placed_line.or(position.new_line)
+    } else {
+        position.new_line
     }
 }
 

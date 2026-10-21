@@ -227,6 +227,7 @@ pub fn run() {
             commands::gitlab::gitlab_list_mrs,
             commands::gitlab_threads::gitlab_discussions,
             commands::author::author_mr,
+            commands::author::author_file_diff,
             commands::gitlab_threads::gitlab_approval_state,
             commands::approval::summary_status,
             commands::approval::gitlab_approve,
