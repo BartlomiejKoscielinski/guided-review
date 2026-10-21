@@ -1,5 +1,5 @@
 {
-  "items": 72,
+  "items": 73,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 41,
+      "helpful": 42,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 27,
+      "helpful": 28,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 31,
+      "helpful": 32,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -136,7 +136,7 @@
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
       "helpful": 32,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-14T14:47:55.168Z",
       "lastUsedItem": 14,
       "source": "F-06.5",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 45,
+      "helpful": 46,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -262,7 +262,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 40,
+      "helpful": 41,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -355,7 +355,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 31,
+      "helpful": 32,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
@@ -1287,6 +1287,52 @@
       "created": "2026-10-21T10:45:41.104Z",
       "lastUsedItem": 71,
       "source": "F-26.3"
+    },
+    {
+      "id": "P-136",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Run cargo clippy --all-targets -D warnings (node tools/verify.mjs --only rust:clippy) on a new Rust test file before the tests commit and never add a speculative #![expect(lint)], because the unfulfilled expect in fixup_commit.rs made rust:clippy fail whatever the implementation did. The accepted dispute commit that only deleted those lines was then blocked by the auto-mode classifier ('Security Test Removal'), so gate 1 stayed red and the item ended blocked.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T11:19:11.162Z",
+      "lastUsedItem": 72,
+      "source": "F-26.4"
+    },
+    {
+      "id": "P-137",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**",
+        "src-tauri/src/claude/**"
+      ],
+      "text": "When a screen reuses an existing core or Claude command (Suggest from S-06 on S-10), read what input that command takes (staged diff, S-06 only) in the tests stage and lock a red test that it works on the new screen's data (an unstaged fixed file), because Suggest on S-10 was rated severe and cost fix-1 87k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T11:19:11.242Z",
+      "lastUsedItem": 72,
+      "source": "F-26.4"
+    },
+    {
+      "id": "P-138",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Fix a gap you found yourself in the same item when it makes a shipped button wrong (Suggest on S-10 answering 'Stage something first…'); do not leave it as an 'OPEN GAP for a backlog entry' in notes, because review rated exactly that gap severe and it needed a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T11:19:11.321Z",
+      "lastUsedItem": 72,
+      "source": "F-26.4"
     }
   ]
 }
