@@ -234,6 +234,66 @@ async fn f16_4_nothing_staged_asks_to_stage_first() {
     assert!(fake.calls().is_empty(), "claude never runs");
 }
 
+/// S-10's Suggest describes the fixed file as the fix commit takes it (`git diff HEAD -- <file>`):
+/// its unstaged edit is in, another file that is staged stays out (M7 decision 10).
+#[tokio::test]
+async fn f26_4_suggest_on_s10_describes_the_fixed_file_not_the_staged_changes() {
+    let repo = FixtureRepo::new("commit-msg-only");
+    repo.write(
+        "src/Zażółć/Upload Worker.cs",
+        "class W { int delay = 1; }\n",
+    );
+    repo.write("src/Other.cs", "class O {}\n");
+    repo.commit_all("Add worker");
+    repo.write("src/Other.cs", "class O { int staged; }\n");
+    repo.git(&["add", "src/Other.cs"]);
+    repo.write(
+        "src/Zażółć/Upload Worker.cs",
+        "class W { int delay = 60; }\n",
+    );
+    let fake = fake();
+    fake.set_scenario(&json!({ "responses": [result(json!({
+        "structured_output": { "summary": "UploadWorker: cap the delay", "body": "" }
+    }))] }));
+    let tmp = tempfile::tempdir().unwrap();
+    let settings = ClaudeSettings::default();
+    let git = Git::new(None, &repo.path);
+    let queue = Queue::new(1);
+    let exe = ClaudeExecutable::Native(fake.exe.clone());
+    let ctx = Context {
+        exe: &exe,
+        settings: &settings,
+        git: &git,
+        tmp_root: tmp.path(),
+        queue: &queue,
+    };
+    let only = vec!["src/Zażółć/Upload Worker.cs".to_owned()];
+    let message = commit_message::run_for(&ctx, &only, &Cancel::new())
+        .await
+        .unwrap();
+    assert_eq!(message, "UploadWorker: cap the delay");
+    let diff = fake.calls()[0]["addDirFiles"]["staged.diff"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert!(diff.contains("+class W { int delay = 60; }"), "{diff}");
+    assert!(!diff.contains("Other.cs"), "{diff}");
+    // Nothing moved: the other file is still staged, the fixed file still unstaged.
+    assert!(repo.staged().contains("+class O { int staged; }"));
+    assert!(!repo.staged().contains("delay = 60"));
+
+    // The fixed file without changes: nothing to describe, and claude never runs.
+    repo.git(&["checkout", "--", "src/Zażółć/Upload Worker.cs"]);
+    let err = commit_message::run_for(&ctx, &only, &Cancel::new())
+        .await
+        .unwrap_err();
+    assert!(
+        matches!(&err, ClaudeError::Invalid(m) if m == "The file has no changes to describe."),
+        "{err:?}"
+    );
+    assert_eq!(fake.calls().len(), 1);
+}
+
 /// Layer 2 (docs/09 › Environments): the real Claude Code on a synthetic fixture repository.
 /// Uses the developer's own login; run by hand:
 /// `cargo test --test it claude_tasks::real_claude -- --ignored --nocapture`.

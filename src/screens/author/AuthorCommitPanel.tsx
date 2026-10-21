@@ -33,9 +33,13 @@ export function AuthorCommitPanel({ threadId, path, line, target, diff }: Author
   const shown = draft !== undefined && draft.committed === null;
   const fixupTarget = useAuthorFixupTarget(target, path, line, shown);
   const commit = useAuthorCommit();
-  const suggest = useSuggest((message) => {
-    update(threadId, { message });
-  });
+  // Suggest describes the fixed file as Commit takes it, never what else is staged (decision 10).
+  const suggest = useSuggest(
+    (message) => {
+      update(threadId, { message });
+    },
+    [path],
+  );
   if (!draft) return null;
 
   if (draft.committed) {

@@ -216,13 +216,15 @@ pub fn claude_models() -> Vec<ModelInfo> {
     models::models()
 }
 
-/// Suggest (F-16.4): a commit message for the staged changes of the active repository.
-/// `task` is the UI's ID for `claude_cancel`.
+/// Suggest (F-16.4): a commit message for the staged changes of the active repository; with
+/// `only` (S-10, F-26.4) for those files' changes against HEAD, what `git_commit` with the same
+/// `only` takes. `task` is the UI's ID for `claude_cancel`.
 #[tauri::command]
 pub async fn claude_commit_message(
     claude: State<'_, ClaudeApp>,
     store: State<'_, Store>,
     task: String,
+    only: Option<Vec<String>>,
 ) -> AppResult<String> {
     let git = active_git(&store).await?;
     let settings = with_store(&store, |c| store::settings::load(c)).await?;
@@ -238,7 +240,7 @@ pub async fn claude_commit_message(
         tmp_root: &claude.tmp_root,
         queue: &claude.queue,
     };
-    let result = commit_message::run(&ctx, &cancel).await;
+    let result = commit_message::run_for(&ctx, only.as_deref().unwrap_or_default(), &cancel).await;
     if let Ok(mut tasks) = claude.tasks.lock() {
         tasks.remove(&task);
     }

@@ -207,7 +207,8 @@ export function createTauriClient(): IpcClient {
     claudeSignIn: () => call<undefined>('claude_sign_in'),
     claudePickExecutable: () => call<ClaudeStatus | null>('claude_pick_executable'),
     claudeModels: () => call<ModelInfo[]>('claude_models'),
-    claudeCommitMessage: (task) => call<string>('claude_commit_message', { task }),
+    claudeCommitMessage: (task, only) =>
+      call<string>('claude_commit_message', { task, only: only ?? null }),
     fixPropose: (target, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<FixProposal>>();
       ch.onmessage = onEvent;

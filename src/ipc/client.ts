@@ -357,8 +357,12 @@ export interface IpcClient {
    * own checkout; `{ kind: 'changed' }` arrives once. Resolves to the function that ends the watch.
    */
   fixWatch(file: string, onEvent: (event: FixWatchEvent) => void): Promise<() => void>;
-  /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
-  claudeCommitMessage(task: string): Promise<string>;
+  /**
+   * Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. With
+   * `only` (S-10, F-26.4) from those files' changes against HEAD instead, what `gitCommit` with
+   * the same `only` commits, so other staged changes never reach the message.
+   */
+  claudeCommitMessage(task: string, only?: string[]): Promise<string>;
   claudeCancel(task: string): Promise<void>;
 
   // GitLab (F-01.6, F-02.1, F-02.2, F-11.2, F-19.2, F-19.5).

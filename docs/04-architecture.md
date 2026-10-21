@@ -123,7 +123,7 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
 | fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |
-| claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
+| claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task, only?)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
 | rules | `rules_list`, `rules_suggestions`, `rules_propose_mr(id)`, `rules_dismiss(id, kind)` |
 | os | `rider_open(file, line, session?)` (with a session, the root follows `rider.openFrom`, F-24.1), `rider_install_tools`, `tray_state`, `notifications_set_paused(until)` |
 
