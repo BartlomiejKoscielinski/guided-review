@@ -170,7 +170,7 @@ fn f26_1_a_proposal_or_queued_reply_of_another_thread_changes_nothing() {
 fn f26_1_a_queued_reply_makes_fixed_locally_and_wins_over_a_proposal() {
     let t = thread("t1", &[(false, "Make it exponential.")]);
     assert_eq!(
-        status_of(&[t.clone()], &none(), &ids(&["t1"])),
+        status_of(std::slice::from_ref(&t), &none(), &ids(&["t1"])),
         ThreadStatus::FixedLocally
     );
     assert_eq!(
