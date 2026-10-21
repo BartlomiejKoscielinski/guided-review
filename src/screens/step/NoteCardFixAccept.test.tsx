@@ -23,7 +23,6 @@ import { renderApp } from '../../test/renderApp';
 // and a button named exactly "Browse and commit", the card after the note's article.
 
 const PENDING = 'PendingCount won’t refresh after upload';
-const CAMERA = 'catch (Exception) also catches camera cancellation';
 const BUSY = `Claude is editing ${VM_NAME}…`;
 const WRITE_FAILED = 'The change could not be written.';
 
@@ -115,7 +114,7 @@ describe('S-03 note card: Accept and Discard (F-25.4)', () => {
     await act(() => accept.succeed());
     await screen.findByText(APPLIED);
 
-    const item = await fixItem(CAMERA);
+    const item = await fixItem(PENDING);
     expect(item).toBeEnabled();
     await userEvent.click(item);
     expect(await screen.findByText(BUSY)).toBeInTheDocument();
