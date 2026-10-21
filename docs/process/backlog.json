@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-21T11:26:04.119Z",
+  "updated": "2026-10-21T11:41:46.025Z",
   "items": [
     {
       "id": "F-17.3",
@@ -174,9 +174,9 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "blocked",
+      "status": "partial",
       "attempts": 1,
-      "note": "gate-1 red only on rust:clippy: 'this lint expectation is unfulfilled' at src-tauri/tests/it/fixup_commit.rs:9. The reviewer accepted the test dispute (delete the unfulfilled #![expect(clippy::disallowed_methods)] lines 8-11, its own commit), but the auto mode permission classifier blocked that edit ('Security Test Removal'), so it was not worked around. Everything else is built on ap/f26-4 (commits c173f38 67dd3f4 1037ffa 82f5ca8; Suggest on S-10 uses the fixed file's diff). Next run: land the one-file dispute commit with the owner's allow, then gate. Also open: after-Accept prefill (Fix with Claude not wired on S-10) and the real-app check.",
+      "note": "Merged c432b9a after the owner allowed the accepted test-dispute commit 96ff530. Left: the after-Accept prefill (message from Claude's explanation after Fix with Claude, decision 9) once Fix with Claude is wired on S-10 (F-25.1 partial), and the real-app check: Fix in Rider on a real checkout, Commit with the fixup switch on and off, git log 'fixup! <subject>' with the message as body, other staged files stay staged, a rejecting hook shows its output.",
       "lockSha": "0776829",
       "tests": [
         "src-tauri/tests/it/fixup_commit.rs",
@@ -185,6 +185,9 @@
         "src/ipc/mock/gitCommitFixup.test.ts",
         "src/ipc/tauriGitCommit.test.ts",
         "tests/e2e/author-f26-4.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/fixup_commit.rs@96ff530"
       ]
     },
     {
