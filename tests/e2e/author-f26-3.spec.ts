@@ -50,6 +50,8 @@ test('F-26.3 Fix in Rider shows the busy line, then “Change detected from Ride
 test('F-26.3 Stop waiting brings the actions back and no change is reported afterwards', async ({
   page,
 }) => {
+  // page.clock drives the mock's setTimeout, so the wait past its 2.2 s is fast and exact.
+  await page.clock.install();
   await openAuthor(page);
   await card(page).getByRole('button', { name: 'Fix in Rider' }).click();
   await expect(card(page).getByText(BUSY)).toBeVisible();
@@ -61,7 +63,7 @@ test('F-26.3 Stop waiting brings the actions back and no change is reported afte
   await expect(card(page).getByRole('button', { name: 'Fix in Rider' })).toBeVisible();
   await expect(card(page).getByRole('button', { name: 'Reply' })).toBeVisible();
   // Past the mock's 2.2 s the file would have changed: the stopped watch says nothing.
-  await page.waitForTimeout(3000);
+  await page.clock.runFor(3000);
   await expect(card(page).getByText(DETECTED)).toHaveCount(0);
   await expect(card(page).getByRole('button', { name: 'Fix in Rider' })).toBeVisible();
 });
@@ -69,6 +71,8 @@ test('F-26.3 Stop waiting brings the actions back and no change is reported afte
 test('F-26.3 picking another thread ends the waiting; coming back shows the actions, not the change', async ({
   page,
 }) => {
+  // page.clock drives the mock's setTimeout, so the wait past its 2.2 s is fast and exact.
+  await page.clock.install();
   await openAuthor(page);
   await card(page).getByRole('button', { name: 'Fix in Rider' }).click();
   await expect(card(page).getByText(BUSY)).toBeVisible();
@@ -77,7 +81,7 @@ test('F-26.3 picking another thread ends the waiting; coming back shows the acti
     .getByRole('option', { name: /Piotr S\./ })
     .click();
   await expect(page.getByRole('button', { name: 'Open in Rider · line 36' })).toBeVisible();
-  await page.waitForTimeout(3000);
+  await page.clock.runFor(3000);
   await expect(page.getByText(DETECTED)).toHaveCount(0);
 
   await threads(page)
