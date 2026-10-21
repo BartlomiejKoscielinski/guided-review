@@ -1,5 +1,5 @@
 {
-  "items": 68,
+  "items": 69,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 38,
+      "helpful": 39,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 27,
+      "helpful": 28,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 29,
+      "helpful": 30,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 41,
+      "helpful": 42,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -171,7 +171,7 @@
         "src/screens/summary/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
-      "helpful": 34,
+      "helpful": 35,
       "harmful": 0,
       "seen": 7,
       "created": "2026-10-14T15:13:07.675Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 41,
+      "helpful": 42,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -375,7 +375,7 @@
         "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 27,
+      "helpful": 28,
       "harmful": 0,
       "seen": 5,
       "created": "2026-10-15T11:16:26.158Z",
@@ -1180,6 +1180,38 @@
       "created": "2026-10-20T16:56:43.159Z",
       "lastUsedItem": 67,
       "source": "F-25.3"
+    },
+    {
+      "id": "P-129",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**",
+        "src/test/**"
+      ],
+      "text": "When a test drives a note or card on S-05 by its title, check how the layout renders it: layout A (GuidePanel) renders only the focused note as a NoteCard and the others as 'Note N: ...' buttons, so make the test focus that note first or use the focused one. F-25.4's fixItem(CAMERA) test could never find its article, which cost a test dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T08:06:20.635Z",
+      "lastUsedItem": 68,
+      "source": "F-25.4"
+    },
+    {
+      "id": "P-130",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/fix/**",
+        "src/screens/step/**"
+      ],
+      "text": "When an action unmounts the control that was pressed (Accept and Discard replaced by a result line), give the result line role=\"status\" and move focus to the next action in the same commit, and have the tests stage lock both. F-25.4 shipped without either and the review's only normal finding was this (WCAG 4.1.3 and 2.4.3).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T08:06:20.687Z",
+      "lastUsedItem": 68,
+      "source": "F-25.4"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-20T18:41:37.884Z",
+  "updated": "2026-10-21T08:06:28.209Z",
   "items": [
     {
       "id": "F-17.3",
@@ -83,9 +83,22 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "c912e79",
+      "tests": [
+        "src-tauri/tests/fix_accept.rs",
+        "src/ipc/mock/fixAccept.test.ts",
+        "src/ipc/tauriFixAccept.test.ts",
+        "src/screens/step/NoteCardFixAccept.test.tsx",
+        "src/screens/summary/SelfReviewSummaryFixAccept.test.tsx",
+        "src/test/fixAccept.ts",
+        "tests/e2e/step-f25-4.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/step/NoteCardFixAccept.test.tsx@4d2b101"
+      ]
     },
     {
       "id": "F-26.1",
