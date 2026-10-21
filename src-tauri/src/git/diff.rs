@@ -134,7 +134,9 @@ pub async fn author_file_diff(
         None => refs::target_commit(git, target, cancel)
             .await?
             .ok_or_else(|| {
-                GitError::Invalid(format!("The target branch {target} isn't in this checkout."))
+                GitError::Invalid(format!(
+                    "The target branch {target} isn't in this checkout."
+                ))
             })?,
     };
     let spec = git.spec(["merge-base", target_sha.as_str(), "HEAD"]);
