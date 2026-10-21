@@ -50,7 +50,7 @@ export function AuthorScreen() {
             {resolved !== null && (
               <div className={styles.resolved}>
                 <Square color="green" size={10} />
-                <span>{resolved}</span>
+                {resolved}
               </div>
             )}
           </div>
