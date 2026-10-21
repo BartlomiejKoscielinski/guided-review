@@ -396,6 +396,11 @@ export interface IpcClient {
    * someone else's MR is INVALID_INPUT.
    */
   authorMr(project: string, iid: number): Promise<AuthorMr>;
+  /**
+   * The unified diff of `path` in the active repository from merge-base(origin/`target`, HEAD) to
+   * the working tree (F-26.2); no hunks for a file the author didn't change. Read only.
+   */
+  authorFileDiff(target: string, path: string): Promise<FileDiff>;
 
   // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
   /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */

@@ -50,6 +50,7 @@ type GitlabClient = Pick<
   | 'draftsPublish'
   | 'gitlabForeignDrafts'
   | 'authorMr'
+  | 'authorFileDiff'
 >;
 
 const HOUR = 3_600_000;

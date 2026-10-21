@@ -226,6 +226,7 @@ export function createTauriClient(): IpcClient {
     pipelineList: (project, iid) => call<PipelineTab[]>('pipeline_list', { project, iid }),
     pipelineGet: (project, iid, id) => call<PipelineHead>('pipeline_get', { project, iid, id }),
     authorMr: (project, iid) => call<AuthorMr>('author_mr', { project, iid }),
+    authorFileDiff: (target, path) => call<FileDiff>('author_file_diff', { target, path }),
     pipelineJobs: (project, iid, pipeline) =>
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),

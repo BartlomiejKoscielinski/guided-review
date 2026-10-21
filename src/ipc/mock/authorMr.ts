@@ -2,7 +2,9 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { MrRow } from '../types/MrRow';
-import { AUTHOR_MR, authorMr } from './fixtures/authorMr';
+import { toFileDiff } from './diff';
+import { AUTHOR_MR, authorMr, UPLOAD_WORKER_DIFF } from './fixtures/authorMr';
+import { layerOf } from './layer';
 
 const notMine = () =>
   new IpcError({
@@ -17,14 +19,15 @@ const notFound = () =>
 /**
  * `authorMr` (F-26.1) as `commands/author.rs` answers it: no GitLab account first, then an MR of
  * the lists that someone else wrote is INVALID_INPUT, my !480 is `fixtures/authorMr.ts`, any other
- * is GitLab's 404.
+ * is GitLab's 404. `authorFileDiff` (F-26.2) reads the checkout, not GitLab: UploadWorker.cs is
+ * the fixture's diff, any other file is one the author didn't change (no hunks).
  */
 export function createAuthorBackend(
   user: () => GitlabUser | null,
   unauthorized: () => IpcError,
   respond: <T>(value: T) => Promise<T>,
   listed: (iid: number) => MrRow | undefined,
-): Pick<IpcClient, 'authorMr'> {
+): Pick<IpcClient, 'authorMr' | 'authorFileDiff'> {
   const loadedAt = new Date();
   return {
     authorMr: (_project, iid) => {
@@ -35,5 +38,20 @@ export function createAuthorBackend(
       if (iid !== AUTHOR_MR) return Promise.reject(notFound());
       return respond(authorMr(loadedAt));
     },
+    authorFileDiff: (_target, path) =>
+      respond(
+        path === UPLOAD_WORKER_DIFF.path
+          ? toFileDiff(UPLOAD_WORKER_DIFF)
+          : {
+              newPath: path,
+              status: 'modified',
+              binary: false,
+              additions: 0,
+              deletions: 0,
+              layer: layerOf(path),
+              lineStaging: false,
+              hunks: [],
+            },
+      ),
   };
 }
