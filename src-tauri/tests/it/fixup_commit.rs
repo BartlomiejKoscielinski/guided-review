@@ -5,10 +5,6 @@
 //! unstaged changes stay where they are, and as a fixup it reads `fixup! <subject>` with the
 //! message as its body. Paths carry spaces and Polish characters. Synthetic data only (ADR-019).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
-#![expect(
-    clippy::disallowed_methods,
-    reason = "tests read the fixture repositories with git directly, never through the app"
-)]
 
 use crate::fixture_repo;
 
