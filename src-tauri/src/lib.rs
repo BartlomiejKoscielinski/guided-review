@@ -159,6 +159,7 @@ pub fn run() {
             app.manage(commands::review::ReviewApp::default());
             app.manage(fix::proposals::Proposals::default());
             app.manage(commands::job_trace::JobTraces::default());
+            app.manage(commands::fix_watch::FixWatches::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -215,6 +216,8 @@ pub fn run() {
             commands::claude::claude_cancel,
             commands::fix::fix_propose,
             commands::fix::fix_accept,
+            commands::fix_watch::fix_watch,
+            commands::fix_watch::fix_watch_stop,
             commands::fix::fix_discard,
             commands::summary::claude_summary_comment,
             commands::summary::session_summary,

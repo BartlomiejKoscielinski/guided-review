@@ -7,6 +7,7 @@ pub mod author;
 pub mod claude;
 pub mod drafts;
 pub mod fix;
+pub mod fix_watch;
 pub mod git;
 pub mod gitlab;
 pub mod gitlab_threads;
