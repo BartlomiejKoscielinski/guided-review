@@ -1,5 +1,5 @@
 {
-  "items": 70,
+  "items": 71,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 25,
+      "helpful": 26,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 29,
+      "helpful": 30,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 13,
+      "helpful": 14,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 43,
+      "helpful": 44,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 43,
+      "helpful": 44,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -262,7 +262,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 38,
+      "helpful": 39,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -355,7 +355,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 30,
+      "helpful": 31,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
@@ -375,7 +375,7 @@
         "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 28,
+      "helpful": 29,
       "harmful": 0,
       "seen": 5,
       "created": "2026-10-15T11:16:26.158Z",
@@ -452,7 +452,7 @@
         "src/screens/pipeline/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 22,
+      "helpful": 23,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-16T10:39:05.255Z",
@@ -1242,6 +1242,36 @@
       "created": "2026-10-21T09:39:58.126Z",
       "lastUsedItem": 69,
       "source": "F-26.1"
+    },
+    {
+      "id": "P-133",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Before a tests-stage decision makes an edge case drop part of the criterion (here 'opens at its line' became 'no anchor' for a thread on a removed line), check whether the data already holds the missing value (old_line, and the removed line is a del row in the diff). Keep the criterion working through that value, because review rated the drop 'normal' and the fix cost a round of 75k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T10:19:25.996Z",
+      "lastUsedItem": 70,
+      "source": "F-26.2"
+    },
+    {
+      "id": "P-134",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When a new region repeats text the same screen already shows elsewhere (here a note that was both the list excerpt and the card body), write every query for it with within(<that region>) and never screen-wide findByText. A passing scratch run with a reference implementation can still miss it, and a locked test with 'Found multiple elements' cost a test dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T10:19:26.073Z",
+      "lastUsedItem": 70,
+      "source": "F-26.2"
     }
   ]
 }
