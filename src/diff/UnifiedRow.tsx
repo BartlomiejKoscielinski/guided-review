@@ -19,12 +19,22 @@ export interface UnifiedRowProps {
    * on the new one; `undefined` when the diff has none.
    */
   markerOf?: (side: 'old' | 'new', line: Line) => ReactNode;
+  /** Inside `selection` (S-10's thread line, F-26.2): the yellow wash and number. */
+  selected?: boolean;
 }
 
 const SIGN = { add: '+', del: '−', ctx: '' } as const;
 
 /** One line of the unified diff: old and new numbers, sign, code. */
-export function UnifiedRow({ line, tokens, dim, last, staging, markerOf }: UnifiedRowProps) {
+export function UnifiedRow({
+  line,
+  tokens,
+  dim,
+  last,
+  staging,
+  markerOf,
+  selected = false,
+}: UnifiedRowProps) {
   const side = line.kind === 'del' ? tokens?.old : tokens?.new;
   const no = line.kind === 'del' ? line.oldNo : line.newNo;
   const toggle = staging
@@ -34,7 +44,13 @@ export function UnifiedRow({ line, tokens, dim, last, staging, markerOf }: Unifi
     : undefined;
   return (
     <div
-      className={cx(styles.unified, styles[line.kind], dim && styles.dim, last && styles.last)}
+      className={cx(
+        styles.unified,
+        styles[line.kind],
+        dim && styles.dim,
+        last && styles.last,
+        selected && styles.selected,
+      )}
       data-kind={line.kind}
       data-staged={line.staged === undefined ? undefined : String(line.staged)}
     >

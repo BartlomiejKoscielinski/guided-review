@@ -257,10 +257,12 @@
 }
 
 /* S-03 selected lines (F-10.1): a yellow wash over the line, the number in yellow. */
-.half.selected {
+.half.selected,
+.unified.selected {
   position: relative;
 }
-.half.selected::after {
+.half.selected::after,
+.unified.selected::after {
   content: '';
   position: absolute;
   inset: 0;

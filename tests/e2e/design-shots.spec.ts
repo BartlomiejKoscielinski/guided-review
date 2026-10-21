@@ -648,7 +648,8 @@ const SHOTS: Shot[] = [
   },
   {
     // S10-author.png: my !480 opened from S-01's Mine tab (F-26.1): "2 threads to answer", Marta
-    // K.'s change request selected, Piotr S.'s question, "1 resolved earlier" and the safety note.
+    // K.'s change request selected, Piotr S.'s question, "1 resolved earlier" and the safety note;
+    // the main column opens Marta's thread in UploadWorker.cs at line 46 (F-26.2).
     screen: 'S10',
     state: 'author',
     lastRoute: { screen: 'S-01' },
@@ -658,6 +659,8 @@ const SHOTS: Shot[] = [
       await mrs.getByText('Retry in UploadWorker after network loss').click();
       await page.getByRole('heading', { level: 1, name: '2 threads to answer' }).waitFor();
       await page.getByTestId('title-bar').getByRole('link', { name: 'Pipeline passed' }).waitFor();
+      await page.getByRole('region', { name: 'Thread' }).getByText('Fix with Claude').waitFor();
+      await page.locator('[data-kind="add"]:has([data-line-no="46"])').waitFor();
     },
   },
 ];

@@ -45,7 +45,7 @@ export interface DiffViewProps {
   unfold?: ReadonlySet<string>;
   /** Line keys never folded: the fold is cut around them and 3 lines each side (threads, F-11.3). */
   keep?: ReadonlySet<string>;
-  /** Selected lines of one side, highlighted (F-10.1; split layout). */
+  /** Selected lines of one side, highlighted (F-10.1 split; S-10's thread line, unified). */
   selection?: { side: 'old' | 'new'; start: number; end: number } | null;
   /** A click on a line number: select it, Shift+click extends (F-10.1; split layout). */
   onPickLine?: (side: 'old' | 'new', no: number, extend: boolean) => void;
@@ -289,6 +289,7 @@ export function DiffView({
             dim={isDim(row.hunk)(row.line)}
             last={row.last}
             staging={staging}
+            selected={isSelected(row.line.kind === 'del' ? 'old' : 'new', row.line)}
           />
         );
       case 'pair':
