@@ -160,7 +160,7 @@ Rules for Claude Code:
 - [x] F-25.2 Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may… (7c05823, e535bc6)
 - [x] F-25.3 The proposal shows as a diff card "Proposed change · Edited 1 file: <name>" with a one-sentence… (28d52fe, 0d4f6c1, 99f4de8, 9c26ecd, cbbd5b8, 4358c7d)
 - [x] F-25.4 Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run… (c912e79, 2198de2, 805ba7a, 3af40c0, 4d2b101, ad0ca98)
-- [ ] F-26.1 Title bar shows "You're the author" (blue) and pipeline status. Left panel: "FEEDBACK ON YOUR MR", "N… — partial: autopilot (df958fb, 33ae45f, 3e07e25, b25ea38)
+- [x] F-26.1 Title bar shows "You're the author" (blue) and pipeline status. Left panel: "FEEDBACK ON YOUR MR", "N… (df958fb, 33ae45f, 3e07e25, b25ea38)
 - [x] F-26.2 The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix… (4fc0587, 584d043, 8888bfa, 40829dc, c62718e, 1a2e534, a33a4a4, a5191ae, c703b3d)
 - [x] F-26.3 Fix in Rider opens the file at the line and watches the working tree; a detected change continues the flow… (2e0f706, d5086d8, a3fa217, 4226bca)
 - [ ] F-26.4 After a fix: commit panel with a suggested message, "As a fixup of <sha> "<subject>"" (default on) with…

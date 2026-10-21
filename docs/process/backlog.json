@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-21T11:19:12.436Z",
+  "updated": "2026-10-21T11:26:04.119Z",
   "items": [
     {
       "id": "F-17.3",
@@ -107,7 +107,7 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "live",
+      "status": "done",
       "attempts": 1,
       "note": "S-10 thread list, title bar 'You’re the author' and pipeline chip built on the mock (author_mr core + command); left: check author_mr against the stand-in GitLab in tauri dev (own MR list, someone else's MR refusal, restored start shows 'Open the MR again to load it.', chip in the real title bar). Commits 33ae45f 3e07e25 b25ea38.",
       "lockSha": "df958fb",
