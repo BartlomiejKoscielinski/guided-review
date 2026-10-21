@@ -1,6 +1,6 @@
-import { Tag } from '../../components/Tag';
 import type { ScreenId } from '../routes';
 import { ActiveRepoSwitcher } from './ActiveRepoSwitcher';
+import { AuthorContext } from './AuthorContext';
 import { AuthorPipelineChip } from './AuthorPipelineChip';
 import { BranchBlock } from './BranchBlock';
 import { ClaudeActivity } from './ClaudeActivity';
@@ -75,20 +75,11 @@ export function ScreenTitleBar({ screen }: ScreenTitleBarProps) {
     case 'S-10':
       return (
         <TitleBar
-          context={
-            <>
-              <ContextText kind="repo">{P.repo.name}</ContextText>
-              <ContextText kind="iid" mine>
-                {P.authorMr.iid}
-              </ContextText>
-              <ContextText kind="title">{P.authorMr.title}</ContextText>
-              <Tag color="blue">You’re the author</Tag>
-            </>
-          }
+          context={<AuthorContext />}
           controls={
             <>
               <AuthorPipelineChip />
-              {<TaskModelChip group="fix" />}
+              <TaskModelChip group="fix" />
             </>
           }
         />

@@ -646,6 +646,20 @@ const SHOTS: Shot[] = [
       await page.getByRole('log', { name: 'Job log' }).locator('[data-kind]').nth(1).waitFor();
     },
   },
+  {
+    // S10-author.png: my !480 opened from S-01's Mine tab (F-26.1): "2 threads to answer", Marta
+    // K.'s change request selected, Piotr S.'s question, "1 resolved earlier" and the safety note.
+    screen: 'S10',
+    state: 'author',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      await page.getByRole('heading', { level: 1, name: '2 threads to answer' }).waitFor();
+      await page.getByTestId('title-bar').getByRole('link', { name: 'Pipeline passed' }).waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

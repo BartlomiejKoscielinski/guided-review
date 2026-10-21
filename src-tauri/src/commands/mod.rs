@@ -3,6 +3,7 @@
 
 pub mod app;
 pub mod approval;
+pub mod author;
 pub mod claude;
 pub mod drafts;
 pub mod fix;

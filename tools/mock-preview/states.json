@@ -41,5 +41,6 @@
   "S08-pipeline-running": {
     "mock": "Pipeline.dc.html",
     "state": { "hasNew": true, "pipe": "p351", "job": "build:android", "tick": 1 }
-  }
+  },
+  "S10-author": { "mock": "Author.dc.html", "state": {} }
 }

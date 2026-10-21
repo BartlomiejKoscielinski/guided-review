@@ -1,6 +1,8 @@
 //! Review sessions: plan model, coverage invariant (`coverage.rs`), steps, decisions, drafts.
 
 pub mod analysis_status;
+pub mod author_mr;
+pub mod author_threads;
 pub mod config_risk;
 pub mod coverage;
 pub mod decisions;

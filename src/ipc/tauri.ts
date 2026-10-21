@@ -9,6 +9,7 @@ import type { ActiveRepo } from './types/ActiveRepo';
 import type { AnalysisStatus } from './types/AnalysisStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { AuthorMr } from './types/AuthorMr';
 import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
@@ -224,6 +225,7 @@ export function createTauriClient(): IpcClient {
     gitlabForeignDrafts: (session) => call<number>('gitlab_foreign_drafts', { session }),
     pipelineList: (project, iid) => call<PipelineTab[]>('pipeline_list', { project, iid }),
     pipelineGet: (project, iid, id) => call<PipelineHead>('pipeline_get', { project, iid, id }),
+    authorMr: (project, iid) => call<AuthorMr>('author_mr', { project, iid }),
     pipelineJobs: (project, iid, pipeline) =>
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),

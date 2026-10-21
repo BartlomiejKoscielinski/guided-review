@@ -5,6 +5,7 @@ import type { ApprovalState } from './types/ApprovalState';
 import type { SummaryStatus } from './types/SummaryStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { AuthorMr } from './types/AuthorMr';
 import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
@@ -388,6 +389,13 @@ export interface IpcClient {
    * too (F-12.5, M5 decision 8); read only. Never called on a restored start (F-30.4).
    */
   gitlabForeignDrafts(sessionId: string): Promise<number>;
+
+  // S-10 Your MR (F-26). Never called on a restored start (F-30.4).
+  /**
+   * My MR `iid` of `project` (F-26.1): title, branches, head pipeline and the thread list;
+   * someone else's MR is INVALID_INPUT.
+   */
+  authorMr(project: string, iid: number): Promise<AuthorMr>;
 
   // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
   /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */

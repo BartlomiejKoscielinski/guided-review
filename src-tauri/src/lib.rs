@@ -226,6 +226,7 @@ pub fn run() {
             commands::gitlab::gitlab_account_remove,
             commands::gitlab::gitlab_list_mrs,
             commands::gitlab_threads::gitlab_discussions,
+            commands::author::author_mr,
             commands::gitlab_threads::gitlab_approval_state,
             commands::approval::summary_status,
             commands::approval::gitlab_approve,

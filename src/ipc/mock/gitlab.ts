@@ -5,6 +5,7 @@ import type { MrList } from '../types/MrList';
 import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
 import { createApprovalActions, type ApprovalScenario } from './approvals';
+import { createAuthorBackend } from './authorMr';
 import type { MockSessionData } from './session-data';
 import { createBrowserBackend } from './browser';
 import { createPipelineBackend } from './pipeline';
@@ -48,6 +49,7 @@ type GitlabClient = Pick<
   | 'osOpenGitlabUrl'
   | 'draftsPublish'
   | 'gitlabForeignDrafts'
+  | 'authorMr'
 >;
 
 const HOUR = 3_600_000;
@@ -271,5 +273,10 @@ export function createGitlabBackend(
     ...createPublishActions(store, scenario, signedIn, addToken, respond),
     ...createPipelineBackend(signedIn, addToken, respond),
     ...createBrowserBackend(() => status.server, respond),
+    ...createAuthorBackend(signedIn, addToken, respond, (iid) =>
+      Object.values(lists())
+        .flat()
+        .find((r) => r.iid === iid),
+    ),
   };
 }
