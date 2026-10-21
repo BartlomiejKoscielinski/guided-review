@@ -42,5 +42,9 @@
     "mock": "Pipeline.dc.html",
     "state": { "hasNew": true, "pipe": "p351", "job": "build:android", "tick": 1 }
   },
-  "S10-author": { "mock": "Author.dc.html", "state": {} }
+  "S10-author": { "mock": "Author.dc.html", "state": {} },
+  "S10-author-fix-applied": {
+    "mock": "Author.dc.html",
+    "state": { "fix": "applied", "via": "rider", "msg": "Address review on UploadWorker.cs:46" }
+  }
 }

@@ -663,6 +663,28 @@ const SHOTS: Shot[] = [
       await page.locator('[data-kind="add"]:has([data-line-no="46"])').waitFor();
     },
   },
+  {
+    // Author.dc.html {"fix":"applied","via":"rider"} (no PNG yet): Fix in Rider on Marta's thread,
+    // the mock's Rider changes UploadWorker.cs, and the commit panel (F-26.4) shows "Commit the
+    // fix", the prefilled message, the fixup switch on with its note and Commit.
+    screen: 'S10',
+    state: 'author-fix-applied',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix in Rider' }).click();
+      await card
+        .getByText('Change detected from Rider. Commit it below.')
+        .waitFor({ timeout: 8000 });
+      await page
+        .getByRole('region', { name: 'Commit and push' })
+        .getByRole('checkbox', { name: /^As a fixup of b71e3a0/ })
+        .waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

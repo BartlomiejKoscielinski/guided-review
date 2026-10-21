@@ -6,6 +6,8 @@ import { useRiderOpen } from '../../ipc/hooks/useChanges';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import { noteAvatarColor, splitPath } from './authorText';
+import { useAuthorCommitStore } from '../../state/authorCommit';
+import { AuthorCommitPanel } from './AuthorCommitPanel';
 import { AuthorThreadCard } from './AuthorThreadCard';
 import styles from './AuthorThreadView.module.css';
 import { useFixInRider } from './useFixInRider';
@@ -49,7 +51,7 @@ const hasLine = (diff: FileDiff, { side, no }: Anchor) =>
  * merge-base(origin/<target>, HEAD) to the working tree scrolled to the line, and the thread card
  * under that line (a thread on a removed line: under that removed row). While the diff is read (after a short wait), when it failed, when the file shows no change or the
  * line is outside the diff, the card stands above the code. A General thread has no file: its
- * conversation only.
+ * conversation only. A fix of the file brings the commit panel under the code (F-26.4).
  */
 export function AuthorThreadView({ thread, threads, target, scrollRoot }: AuthorThreadViewProps) {
   const diff = useAuthorFileDiff(target, thread.path);
@@ -66,6 +68,14 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
   const path = thread.path;
   const line = thread.line;
   const fixInRider = useFixInRider(path, line ?? 1, target);
+  const openCommit = useAuthorCommitStore((s) => s.open);
+  const changed = fixInRider.phase === 'changed';
+  useEffect(() => {
+    // F-26.4, M7 decision 9: the message is prefilled without Claude after a Rider change.
+    if (changed && path !== null) {
+      openCommit(thread.id, `Address review on ${splitPath(path).name}:${String(line ?? 1)}`);
+    }
+  }, [changed, line, openCommit, path, thread.id]);
   const openRider = () => {
     if (path !== null) rider.mutate({ file: path, line: line ?? 1 });
   };
@@ -135,6 +145,7 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
           />
         </div>
       )}
+      <AuthorCommitPanel threadId={thread.id} path={path} line={line} target={target} diff={file} />
     </>
   );
 }

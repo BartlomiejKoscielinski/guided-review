@@ -180,7 +180,12 @@ export function createTauriClient(): IpcClient {
     gitStage: (selection) => call<undefined>('git_stage', { selection }),
     gitUnstage: (selection) => call<undefined>('git_unstage', { selection }),
     gitCommit: (message, amend, fixup, only) =>
-      call<CommitResult>('git_commit', { message, amend, fixup: fixup ?? null, only: only ?? null }),
+      call<CommitResult>('git_commit', {
+        message,
+        amend,
+        fixup: fixup ?? null,
+        only: only ?? null,
+      }),
     gitLastMessage: () => call<string | null>('git_last_message'),
     gitPush: () => call<PushResult>('git_push'),
     riderOpen: (file, line, session) =>

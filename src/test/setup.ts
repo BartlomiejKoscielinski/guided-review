@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach } from 'vitest';
+import { useAuthorCommitStore } from '../state/authorCommit';
 import { useFixStore } from '../state/fix';
 import { useReviewStore } from '../state/review';
 
@@ -13,6 +14,8 @@ afterEach(() => {
   useReviewStore.getState().reset();
   // The open fix outlives a screen too (F-25.3).
   useFixStore.getState().reset();
+  // S-10's commit panels outlive the thread view (F-26.4).
+  useAuthorCommitStore.getState().reset();
 });
 
 // jsdom has no ResizeObserver; TanStack Virtual only needs it to exist (sizes stay 0 there).
