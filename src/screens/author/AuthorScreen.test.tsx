@@ -66,9 +66,12 @@ const thread = (over: Partial<Thread>): Thread => ({
   author: 'Marta K.',
   avatar: 'MK',
   place: 'UploadWorker.cs:46',
+  path: 'src/App/Workers/UploadWorker.cs',
+  line: 46,
   excerpt: 'Rename this.',
   kind: 'change',
   status: 'changeRequested',
+  notes: [],
   ...over,
 });
 

@@ -146,7 +146,9 @@ export function useRiderOpen(): UseMutationResult<null, IpcError, RiderTarget> {
   const ipc = useIpc();
   return useMutation<null, IpcError, RiderTarget>({
     mutationFn: async ({ file, line, session }) => {
-      await ipc.riderOpen(file, line, session);
+      // Without a session the active repository's checkout opens (no third argument).
+      if (session === undefined) await ipc.riderOpen(file, line);
+      else await ipc.riderOpen(file, line, session);
       return null;
     },
   });

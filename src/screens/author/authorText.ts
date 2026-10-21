@@ -1,4 +1,5 @@
 import type { BlockColor } from '../../components/colors';
+import type { AuthorNote } from '../../ipc/types/AuthorNote';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import type { ResolvedSummary } from '../../ipc/types/ResolvedSummary';
 import type { ThreadStatus } from '../../ipc/types/ThreadStatus';
@@ -36,4 +37,21 @@ export function avatarColors(threads: AuthorThread[]): BlockColor[] {
     if (!authors.includes(t.author)) authors.push(t.author);
     return AVATAR[authors.indexOf(t.author) % AVATAR.length] ?? 'green';
   });
+}
+
+/**
+ * The avatar colour of a note in the thread card (F-26.2): its author's colour in the list, a
+ * reviewer who opened no thread the next one, my own note yellow (Author.dc.html: BK).
+ */
+export function noteAvatarColor(threads: AuthorThread[], note: AuthorNote): BlockColor {
+  if (note.mine) return 'yellow';
+  const authors = [...new Set(threads.map((t) => t.author))];
+  const at = authors.indexOf(note.author);
+  return AVATAR[(at < 0 ? authors.length : at) % AVATAR.length] ?? 'green';
+}
+
+/** The file bar's path split into the folder ("src/App/Workers/") and the file name. */
+export function splitPath(path: string): { dir: string; name: string } {
+  const cut = path.lastIndexOf('/') + 1;
+  return { dir: path.slice(0, cut), name: path.slice(cut) };
 }

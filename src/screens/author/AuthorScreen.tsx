@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Square } from '../../components/Square';
 import { headingText, resolvedText } from './authorText';
+import { AuthorThreadView } from './AuthorThreadView';
 import { ThreadList } from './ThreadList';
 import { useRouteAuthorMr } from './useRouteAuthorMr';
 import styles from './Author.module.css';
@@ -8,14 +9,16 @@ import styles from './Author.module.css';
 /**
  * S-10 Your MR (F-26.1), left panel: "Feedback on your MR", how many threads wait for an answer,
  * the branch, the thread list (first thread selected), the threads resolved earlier and the
- * safety note. Read from the active repository's GitLab project when opened by navigation; a
+ * safety note; the main column opens the selected thread in the code (F-26.2). Read from the active repository's GitLab project when opened by navigation; a
  * restored start reads nothing (F-30.4) and asks to open the MR again.
  */
 export function AuthorScreen() {
   const { restored, noProject, mr } = useRouteAuthorMr();
   const [picked, setPicked] = useState<string | null>(null);
   const threads = mr.data?.threads ?? [];
-  const selected = threads.find((t) => t.id === picked)?.id ?? threads[0]?.id ?? null;
+  const thread = threads.find((t) => t.id === picked) ?? threads[0];
+  const selected = thread?.id ?? null;
+  const mainRef = useRef<HTMLDivElement>(null);
   const resolved = mr.data ? resolvedText(mr.data.resolved) : null;
 
   return (
@@ -66,7 +69,17 @@ export function AuthorScreen() {
           </span>
         </div>
       </aside>
-      <div className={styles.main} />
+      <div ref={mainRef} className={styles.main}>
+        {mr.data && thread && (
+          <AuthorThreadView
+            key={thread.id}
+            thread={thread}
+            threads={threads}
+            target={mr.data.targetBranch}
+            scrollRoot={mainRef}
+          />
+        )}
+      </div>
     </div>
   );
 }
