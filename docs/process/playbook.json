@@ -1,5 +1,5 @@
 {
-  "items": 71,
+  "items": 72,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 40,
+      "helpful": 41,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 26,
+      "helpful": 27,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 30,
+      "helpful": 31,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 31,
+      "helpful": 32,
       "harmful": 0,
       "seen": 3,
       "created": "2026-10-14T14:47:55.168Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 44,
+      "helpful": 45,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -262,7 +262,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 39,
+      "helpful": 40,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -429,7 +429,7 @@
         "src/screens/settings/**"
       ],
       "text": "A red e2e never runs the lines after its first failing assertion, so before the tests commit prove the rest can pass: run a scratch copy without the red assertions, run its setup and return path at baseline or in a throwaway variant without the new control, and run a new row or layout locator helper against throwaway markup shaped like the mock (delete the scratch files afterwards). F-08.9's toHaveURL lines behind a red check cost a test dispute and a fix round, F-19.1's broken mock return path pushed out-of-item work onto the implementer (153k tokens), while F-19.3 did this and passed with no dispute and no fix round.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-16T08:24:28.933Z",
@@ -1037,7 +1037,7 @@
       "text": "Run typecheck and eslint on the new or changed test files before the tests commit (not only vitest), because F-20.5's locked JobDetails.test.tsx had an unused const and a nonexistent ErrorCode (GITLAB_NETWORK vs GITLAB_UNREACHABLE), which passed at runtime, turned verify red and forced a test dispute. Lint against the throwaway stubs and drop unused parameters from test doubles (F-13.3, F-14.2 void lines); under noUncheckedIndexedAccess getAllByRole(...)[0] is possibly undefined, so destructure and throw when missing (F-08.4).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 6,
+      "seen": 7,
       "created": "2026-10-19T19:36:31.369Z",
       "lastUsedItem": 57,
       "source": "F-20.5",
@@ -1272,6 +1272,21 @@
       "created": "2026-10-21T10:19:26.073Z",
       "lastUsedItem": 70,
       "source": "F-26.2"
+    },
+    {
+      "id": "P-135",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/author/**"
+      ],
+      "text": "When the core contract takes its baseline 'at the click' (file hash for a watch) but the UI must first await another call (riderOpen), lock the call order in the tests stage so the watch starts first and is stopped if the open fails, because F-26.3 locked 'riderOpen, then fixWatch' and review flagged that a save between the click and the watch start is never detected.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T10:45:41.104Z",
+      "lastUsedItem": 71,
+      "source": "F-26.3"
     }
   ]
 }
