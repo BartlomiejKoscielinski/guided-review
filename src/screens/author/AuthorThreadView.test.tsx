@@ -173,7 +173,9 @@ describe('S-10 thread in the code (F-26.2)', () => {
     expect(
       await screen.findByRole('button', { name: 'Open in Rider · line 36' }),
     ).toBeInTheDocument();
-    const thread = await screen.findByText(new RegExp(PIOTR));
+    const thread = await within(screen.getByRole('region', { name: 'Thread' })).findByText(
+      new RegExp(PIOTR),
+    );
     const region = screen.getByRole('region', { name: 'Thread' });
     expect(region).toContainElement(thread);
     expect(within(region).queryByText(new RegExp(MARTA))).toBeNull();
