@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-21T08:49:53.280Z",
+  "updated": "2026-10-21T09:40:03.194Z",
   "items": [
     {
       "id": "F-17.3",
@@ -107,9 +107,21 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "live",
+      "attempts": 1,
+      "note": "S-10 thread list, title bar 'You’re the author' and pipeline chip built on the mock (author_mr core + command); left: check author_mr against the stand-in GitLab in tauri dev (own MR list, someone else's MR refusal, restored start shows 'Open the MR again to load it.', chip in the real title bar). Commits 33ae45f 3e07e25 b25ea38.",
+      "lockSha": "df958fb",
+      "tests": [
+        "src-tauri/tests/it/author_threads.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorMr.test.ts",
+        "src/screens/author/AuthorScreen.test.tsx",
+        "src/app/titlebar/AuthorTitleBar.test.tsx",
+        "tests/e2e/author-f26-1.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/author_threads.rs@b25ea38"
+      ]
     },
     {
       "id": "F-26.2",
