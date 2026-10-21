@@ -60,6 +60,7 @@ import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
 import type { FileDiff } from './types/FileDiff';
+import type { FixupTarget } from './types/FixupTarget';
 import type { FileRef } from './types/FileRef';
 import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
@@ -293,7 +294,17 @@ export interface IpcClient {
   /** Writes the selection into the git index (F-16.1). */
   gitStage(selection: Selection): Promise<void>;
   gitUnstage(selection: Selection): Promise<void>;
-  gitCommit(message: string, amend: boolean): Promise<CommitResult>;
+  /**
+   * Commits what is staged, or amends HEAD (F-16.4). With `only` (S-10, F-26.4) just those files
+   * go in, from the working tree, and other staged changes stay staged; `fixup` (a full SHA) makes
+   * it "fixup! <subject>" with the message as its body. Never amends with `only`.
+   */
+  gitCommit(
+    message: string,
+    amend: boolean,
+    fixup?: string | null,
+    only?: string[] | null,
+  ): Promise<CommitResult>;
   /** HEAD's message, for Amend previous commit. */
   gitLastMessage(): Promise<string | null>;
   gitPush(): Promise<PushResult>;
@@ -407,6 +418,12 @@ export interface IpcClient {
    * the working tree (F-26.2); no hunks for a file the author didn't change. Read only.
    */
   authorFileDiff(target: string, path: string): Promise<FileDiff>;
+  /**
+   * The commit a fix of the thread on `line` of `path` is a fixup of (F-26.4, M7 decision 8): the
+   * blame of the line in my MR's range, else the newest range commit touching the file, else HEAD.
+   * Reads git only.
+   */
+  authorFixupTarget(target: string, path: string, line: number | null): Promise<FixupTarget>;
 
   // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
   /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */

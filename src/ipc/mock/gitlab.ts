@@ -51,6 +51,7 @@ type GitlabClient = Pick<
   | 'gitlabForeignDrafts'
   | 'authorMr'
   | 'authorFileDiff'
+  | 'authorFixupTarget'
 >;
 
 const HOUR = 3_600_000;

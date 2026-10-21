@@ -1,4 +1,6 @@
 import type { AuthorMr } from '../../types/AuthorMr';
+import type { CommitResult } from '../../types/CommitResult';
+import type { FixupTarget } from '../../types/FixupTarget';
 import type { MockFile } from './changes';
 
 /** My MR in the mock backend (Author.dc.html). */
@@ -9,6 +11,19 @@ const HOUR = 60 * MINUTE;
 
 /** The file both threads of !480 sit in. */
 export const UPLOAD_WORKER = 'src/App/Workers/UploadWorker.cs';
+
+/** The commit a fix on !480 is a fixup of (Author.dc.html: b71e3a0 “Retry in UploadWorker”). */
+export const FIXUP_TARGET: FixupTarget = {
+  sha: 'b71e3a0c4d5e6f708192a3b4c5d6e7f8091a2b3c',
+  shortSha: 'b71e3a0',
+  subject: 'Retry in UploadWorker',
+};
+
+/** The commit of a fix on S-10 (Author.dc.html `cPush`: "Committed 9e1d4b7"). */
+export const FIX_COMMIT: CommitResult = {
+  sha: '9e1d4b7c2a5f8e0d3b6a9c1e4f7a0d2b5c8e1f40',
+  shortSha: '9e1d4b7',
+};
 
 const MARTA =
   'The delay grows linearly. Can we make it exponential with a cap? With MaxAttempts raised later we’d hammer the API.';

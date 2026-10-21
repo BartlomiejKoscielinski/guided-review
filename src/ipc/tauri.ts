@@ -51,6 +51,7 @@ import type { Source } from './types/Source';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
+import type { FixupTarget } from './types/FixupTarget';
 import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
@@ -178,7 +179,8 @@ export function createTauriClient(): IpcClient {
     gitFileDiff: (source, file) => call<FileDiff>('git_file_diff', { source, file }),
     gitStage: (selection) => call<undefined>('git_stage', { selection }),
     gitUnstage: (selection) => call<undefined>('git_unstage', { selection }),
-    gitCommit: (message, amend) => call<CommitResult>('git_commit', { message, amend }),
+    gitCommit: (message, amend, fixup, only) =>
+      call<CommitResult>('git_commit', { message, amend, fixup: fixup ?? null, only: only ?? null }),
     gitLastMessage: () => call<string | null>('git_last_message'),
     gitPush: () => call<PushResult>('git_push'),
     riderOpen: (file, line, session) =>
@@ -236,6 +238,8 @@ export function createTauriClient(): IpcClient {
     pipelineGet: (project, iid, id) => call<PipelineHead>('pipeline_get', { project, iid, id }),
     authorMr: (project, iid) => call<AuthorMr>('author_mr', { project, iid }),
     authorFileDiff: (target, path) => call<FileDiff>('author_file_diff', { target, path }),
+    authorFixupTarget: (target, path, line) =>
+      call<FixupTarget>('author_fixup_target', { target, path, line }),
     pipelineJobs: (project, iid, pipeline) =>
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),

@@ -80,7 +80,7 @@ describe('Tauri IPC client', () => {
       ['git_file_diff', { source: { kind: 'local' }, file }],
       ['git_stage', { selection }],
       ['git_unstage', { selection }],
-      ['git_commit', { message: 'Subject', amend: true }],
+      ['git_commit', { message: 'Subject', amend: true, fixup: null, only: null }],
       ['git_last_message', undefined],
       ['git_push', undefined],
       ['rider_open', { file: 'a b/ż.cs', line: 12, session: null }],

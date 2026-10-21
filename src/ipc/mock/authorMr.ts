@@ -3,7 +3,7 @@ import { IpcError } from '../errors';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { MrRow } from '../types/MrRow';
 import { toFileDiff } from './diff';
-import { AUTHOR_MR, authorMr, UPLOAD_WORKER_DIFF } from './fixtures/authorMr';
+import { AUTHOR_MR, authorMr, FIXUP_TARGET, UPLOAD_WORKER_DIFF } from './fixtures/authorMr';
 import { layerOf } from './layer';
 
 const notMine = () =>
@@ -21,13 +21,14 @@ const notFound = () =>
  * the lists that someone else wrote is INVALID_INPUT, my !480 is `fixtures/authorMr.ts`, any other
  * is GitLab's 404. `authorFileDiff` (F-26.2) reads the checkout, not GitLab: UploadWorker.cs is
  * the fixture's diff, any other file is one the author didn't change (no hunks).
+ * `authorFixupTarget` (F-26.4) reads git: any thread's fix is a fixup of b71e3a0 (Author.dc.html).
  */
 export function createAuthorBackend(
   user: () => GitlabUser | null,
   unauthorized: () => IpcError,
   respond: <T>(value: T) => Promise<T>,
   listed: (iid: number) => MrRow | undefined,
-): Pick<IpcClient, 'authorMr' | 'authorFileDiff'> {
+): Pick<IpcClient, 'authorMr' | 'authorFileDiff' | 'authorFixupTarget'> {
   const loadedAt = new Date();
   return {
     authorMr: (_project, iid) => {
@@ -53,5 +54,6 @@ export function createAuthorBackend(
               hunks: [],
             },
       ),
+    authorFixupTarget: () => respond({ ...FIXUP_TARGET }),
   };
 }

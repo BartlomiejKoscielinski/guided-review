@@ -19,6 +19,7 @@ import {
   stagedAtStart,
   type MockFile,
 } from './fixtures/changes';
+import { FIX_COMMIT } from './fixtures/authorMr';
 import { mrFiles } from './fixtures/mr';
 
 /** Variations of the S-06 data for e2e tests and design shots (`MOCK_CHANGES_KEY`). */
@@ -228,15 +229,26 @@ export function createChangesBackend(
       }
       return respond(undefined);
     },
-    gitCommit: async (message, amend) => {
+    gitCommit: async (message, amend, fixup, only) => {
       requireRepo();
       if (!message.trim()) throw fail('INVALID_INPUT', 'Write a commit message first.');
+      // F-26.4: a fixup target is a SHA, never an option or a branch, as the core's T5 check.
+      if (fixup != null && !/^[0-9a-f]{4,64}$/i.test(fixup)) {
+        throw fail('INVALID_INPUT', "That isn't a commit SHA.");
+      }
       if (scenario.commitFails === 'hook') {
         throw fail(
           'GIT_FAILED',
           'Commit failed. A hook rejected it.',
           'dotnet format --verify-no-changes\nsrc/App/MauiProgram.cs(24,1): error WHITESPACE: Fix whitespace formatting.',
         );
+      }
+      // S-10's commit of the fixed file alone (M7 decision 10): from the working tree, the
+      // staged changes of the mock repository stay staged.
+      if (only != null) {
+        if (amend) throw fail('INVALID_INPUT', 'A fix is a new commit, never an amend.');
+        lastMessage = message;
+        return respond({ ...FIX_COMMIT });
       }
       const anything = [...staged.values()].some((s) => s.size > 0);
       if (!anything && !amend) throw fail('INVALID_INPUT', 'Nothing is staged for this commit.');
