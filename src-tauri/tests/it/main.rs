@@ -26,6 +26,7 @@ mod drafts_of_the_mr;
 mod drafts_of_the_mr_pick_up;
 mod drafts_of_the_mr_review;
 mod eval_claude;
+mod fix_accept;
 mod fix_proposal;
 mod fix_scratch;
 mod fix_task;

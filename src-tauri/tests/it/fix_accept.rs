@@ -22,8 +22,7 @@
 //!   and nothing else (T8: other kinds and unregistered folders stay).
 #![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
 
-#[path = "support/fixture_repo.rs"]
-mod fixture_repo;
+use crate::fixture_repo;
 
 use std::path::{Path, PathBuf};
 
