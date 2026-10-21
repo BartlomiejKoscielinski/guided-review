@@ -118,3 +118,51 @@
   background: var(--raised-2);
   color: var(--text);
 }
+
+/* Fix in Rider (F-26.3): the busy line with Stop waiting, then the detected change. */
+.busyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.spinner {
+  flex: none;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.applied {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--green-text);
+}
+
+.appliedMark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  background: var(--green);
+}

@@ -7,7 +7,10 @@ export interface RiderScenario {
   notFound?: boolean;
 }
 
-type RiderClient = Pick<IpcClient, 'riderStatus' | 'riderPickExecutable'>;
+type RiderClient = Pick<IpcClient, 'riderStatus' | 'riderPickExecutable' | 'fixWatch'>;
+
+/** How long the mock's Rider takes to change the file (Author.dc.html's `fixRider` timer). */
+export const MOCK_RIDER_EDIT_MS = 2200;
 
 /** Settings.dc.html › Integrations. */
 export const MOCK_RIDER: RiderStatus = {
@@ -28,6 +31,15 @@ export function createRiderBackend(
       status = MOCK_RIDER;
       savePath(MOCK_RIDER.path ?? '');
       return respond(status);
+    },
+    // F-26.3: "Rider" changes the watched file once, then the watch is over; not scaled by latency.
+    fixWatch: (_file, onEvent) => {
+      const timer = setTimeout(() => {
+        onEvent({ kind: 'changed' });
+      }, MOCK_RIDER_EDIT_MS);
+      return Promise.resolve(() => {
+        clearTimeout(timer);
+      });
     },
   };
 }

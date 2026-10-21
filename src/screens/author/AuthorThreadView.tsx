@@ -8,6 +8,7 @@ import type { FileDiff } from '../../ipc/types/FileDiff';
 import { noteAvatarColor, splitPath } from './authorText';
 import { AuthorThreadCard } from './AuthorThreadCard';
 import styles from './AuthorThreadView.module.css';
+import { useFixInRider } from './useFixInRider';
 
 export interface AuthorThreadViewProps {
   thread: AuthorThread;
@@ -64,6 +65,7 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
   }, []);
   const path = thread.path;
   const line = thread.line;
+  const fixInRider = useFixInRider(path, line ?? 1, target);
   const openRider = () => {
     if (path !== null) rider.mutate({ file: path, line: line ?? 1 });
   };
@@ -71,7 +73,14 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
     <AuthorThreadCard
       thread={thread}
       colors={thread.notes.map((n) => noteAvatarColor(threads, n))}
-      onFixInRider={openRider}
+      onFixInRider={fixInRider.start}
+      riderPhase={fixInRider.phase}
+      riderBusyText={
+        path !== null
+          ? `Opened ${splitPath(path).name}:${String(line ?? 1)} in Rider. Waiting for your change…`
+          : ''
+      }
+      onStopWaiting={fixInRider.stop}
     />
   );
 
@@ -104,9 +113,9 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
           {line !== null ? `Open in Rider · line ${String(line)}` : 'Open in Rider'}
         </button>
       </div>
-      {(diff.isError || rider.isError) && (
+      {(diff.isError || rider.isError || fixInRider.error !== null) && (
         <p role="alert" className={styles.error}>
-          {diff.error?.message ?? rider.error?.message}
+          {diff.error?.message ?? rider.error?.message ?? fixInRider.error?.message}
         </p>
       )}
       {!anchored && (!diff.isPending || waited) && <div className={styles.loose}>{card}</div>}

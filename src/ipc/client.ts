@@ -17,6 +17,7 @@ import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
 import type { FixProposal } from './types/FixProposal';
 import type { FixTarget } from './types/FixTarget';
+import type { FixWatchEvent } from './types/FixWatchEvent';
 import type { Layout } from './types/Layout';
 import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
@@ -340,6 +341,11 @@ export interface IpcClient {
   fixAccept(id: string): Promise<void>;
   /** **Discard** of a fix proposal (F-25.4): drops it; the working copy is never touched. */
   fixDiscard(id: string): Promise<void>;
+  /**
+   * **Fix in Rider** (F-26.3): waits for a content change of `file` (repository-relative) in the
+   * own checkout; `{ kind: 'changed' }` arrives once. Resolves to the function that ends the watch.
+   */
+  fixWatch(file: string, onEvent: (event: FixWatchEvent) => void): Promise<() => void>;
   /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
   claudeCommitMessage(task: string): Promise<string>;
   claudeCancel(task: string): Promise<void>;

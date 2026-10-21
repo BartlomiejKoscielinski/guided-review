@@ -16,6 +16,7 @@ import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { FixProposal } from './types/FixProposal';
+import type { FixWatchEvent } from './types/FixWatchEvent';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { JobExplainEvent } from './types/JobExplainEvent';
 import type { JobArtifact } from './types/JobArtifact';
@@ -207,6 +208,14 @@ export function createTauriClient(): IpcClient {
     },
     fixAccept: (id) => call<undefined>('fix_accept', { id }),
     fixDiscard: (id) => call<undefined>('fix_discard', { id }),
+    fixWatch: async (file, onEvent) => {
+      const ch = new Channel<FixWatchEvent>();
+      ch.onmessage = onEvent;
+      const id = await call<string>('fix_watch', { file, ch });
+      return () => {
+        call<undefined>('fix_watch_stop', { id }).catch(() => undefined);
+      };
+    },
     claudeCancel: (task) => call<undefined>('claude_cancel', { task }),
     gitlabStatus: (refresh) => call<GitlabStatus>('gitlab_status', { refresh }),
     gitlabAccountSave: (server, token) =>
