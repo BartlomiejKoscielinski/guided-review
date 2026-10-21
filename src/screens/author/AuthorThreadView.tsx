@@ -102,7 +102,7 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
             layout="unified"
             inserts={inserts}
             keep={anchored ? new Set([at]) : undefined}
-            selection={anchored && line !== null ? { side: 'new', start: line, end: line } : null}
+            selection={anchored ? { side: 'new', start: line, end: line } : null}
             scrollRoot={scrollRoot}
             stickyTop={BAR}
             reveal={anchored ? { at, nonce: 1 } : undefined}
