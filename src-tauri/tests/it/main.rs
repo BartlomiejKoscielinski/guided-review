@@ -32,6 +32,7 @@ mod fix_accept;
 mod fix_proposal;
 mod fix_scratch;
 mod fix_task;
+mod fix_watch;
 mod git_diff;
 mod git_local;
 mod git_watch;
