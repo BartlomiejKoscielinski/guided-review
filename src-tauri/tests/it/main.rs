@@ -28,6 +28,7 @@ mod author_threads;
 mod branch_info;
 mod browser_open;
 mod claude_tasks;
+mod create_mr;
 mod drafts_of_the_mr;
 mod drafts_of_the_mr_pick_up;
 mod drafts_of_the_mr_review;
