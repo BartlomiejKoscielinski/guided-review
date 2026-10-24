@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T19:46:47.001Z",
+  "updated": "2026-10-24T20:31:45.335Z",
   "items": [
     {
       "id": "F-17.3",
@@ -357,9 +357,23 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "0c5e39d",
+      "tests": [
+        "src-tauri/tests/it/merge_check.rs",
+        "src-tauri/tests/it/merge_check_gitlab.rs",
+        "src-tauri/tests/it/merge_check_self_review.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/screens/create-mr/CreateMrChecks.test.tsx",
+        "src/ipc/mock/mergeCheck.test.ts",
+        "src/ipc/tauriMergeCheck.test.ts",
+        "tests/e2e/create-mr-f27-5.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/merge_check.rs@d4b92b3"
+      ]
     },
     {
       "id": "F-27.6",
@@ -367,9 +381,20 @@
       "title": "Create merge request / Create draft MR; note who gets notified. Success screen: \"!483\" big green block…",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "4aeb3cf",
+      "tests": [
+        "src-tauri/tests/it/create_mr.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/tauriCreateMr.test.ts",
+        "src/ipc/mock/createMr.test.ts",
+        "src/screens/create-mr/CreateMrCreate.test.tsx",
+        "src/screens/create-mr/CreateMrCreated.test.tsx",
+        "tests/e2e/create-mr-f27-6.spec.ts"
+      ],
+      "forkSha": "fbc7dcb"
     }
   ]
 }

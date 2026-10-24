@@ -1,5 +1,5 @@
 {
-  "items": 81,
+  "items": 82,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 46,
+      "helpful": 47,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 34,
+      "helpful": 35,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 36,
+      "helpful": 37,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 39,
+      "helpful": 40,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T14:47:55.168Z",
@@ -190,7 +190,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 52,
+      "helpful": 53,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -264,7 +264,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 48,
+      "helpful": 49,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -357,7 +357,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 36,
+      "helpful": 37,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
@@ -1441,12 +1441,13 @@
       "tags": [
         "core",
         "tests",
-        "src-tauri/tests/**"
+        "src-tauri/tests/**",
+        "mixed"
       ],
       "text": "Run cargo clippy -- -D warnings (verify --only rust:clippy) on new Rust test files before the tests commit, because a needless borrow in author_checkout.rs turned verify red and cost a test dispute plus a fix-round commit although the test logic was right.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-24T11:00:42.070Z",
       "lastUsedItem": 76,
       "source": "F-26.8"
@@ -1525,6 +1526,21 @@
       "created": "2026-10-24T19:31:09.880Z",
       "lastUsedItem": 79,
       "source": "F-27.3"
+    },
+    {
+      "id": "P-151",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "When a green check's label says it concerns 'this branch' (self-review done, pushed), lock a negative test that state belonging to another branch or session leaves it not-ok and key the lookup by head_sha being an ancestor of HEAD, because F-27.5's tests chose 'newest local session of the repository', review found the false green and it cost a fix round of about 79k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T20:31:44.271Z",
+      "lastUsedItem": 81,
+      "source": "F-27.5"
     }
   ]
 }
