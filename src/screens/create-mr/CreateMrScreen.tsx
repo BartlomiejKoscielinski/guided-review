@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router';
 import type { NewMrState } from '../../app/router';
+import { Button } from '../../components/Button';
 import { useBranchInfo } from '../../ipc/hooks/useBranchInfo';
 import { BranchRow } from './BranchRow';
+import { MrOptions } from './MrOptions';
+import { DEFAULT_MR_OPTIONS, type MrOptionValues } from './mrOptionValues';
 import { MrTextFields } from './MrTextFields';
 import { type AddedReviewer, Reviewers } from './Reviewers';
 import reviewerStyles from './Reviewers.module.css';
@@ -15,7 +18,8 @@ const draftedEntries = new Set<string>();
 /**
  * S-11 New merge request (F-27): opened from Push and create MR (S-06), the self-review's Draft
  * MR description (F-17.3) and, from M10, Rider. F-27.1: the heading and the branch block;
- * F-27.2: Title and Description; F-27.3: the Reviewers in the aside.
+ * F-27.2: Title and Description; F-27.3: the Reviewers in the aside; F-27.4: the options and the
+ * Create button's label (its action is F-27.6).
  */
 export function CreateMrScreen() {
   const location = useLocation();
@@ -29,6 +33,7 @@ export function CreateMrScreen() {
   );
   const [chosen, setChosen] = useState<string | undefined>(undefined);
   const [reviewers, setReviewers] = useState<AddedReviewer[]>([]);
+  const [options, setOptions] = useState<MrOptionValues>(DEFAULT_MR_OPTIONS);
   // The default target gives the branch and the select's options; a chosen one only the numbers.
   const base = useBranchInfo(undefined);
   const picked = useBranchInfo(chosen, chosen !== undefined);
@@ -78,13 +83,21 @@ export function CreateMrScreen() {
             )}
           </section>
           {info?.branch !== undefined && info.targets.length > 0 && (
-            <MrTextFields text={text} commits={counted.data?.commits} />
+            <>
+              <MrTextFields text={text} commits={counted.data?.commits} />
+              <MrOptions values={options} onChange={setOptions} />
+            </>
           )}
         </div>
       </div>
       {ready && (
         <aside aria-label="Reviewers and checks" className={reviewerStyles.aside}>
           <Reviewers target={target} added={reviewers} onAdded={setReviewers} />
+          <div className={reviewerStyles.createBlock}>
+            <Button variant="primary" size={50}>
+              {options.draft ? 'Create draft MR' : 'Create merge request'}
+            </Button>
+          </div>
         </aside>
       )}
     </div>

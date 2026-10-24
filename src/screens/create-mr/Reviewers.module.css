@@ -147,3 +147,11 @@
   height: 56px;
   background: var(--panel-2);
 }
+
+/* The Create button at the foot of the aside (F-27.4 label, F-27.6 action). */
+.createBlock {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

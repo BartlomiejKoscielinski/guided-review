@@ -259,3 +259,20 @@
   font-weight: 700;
   box-shadow: inset 0 0 0 2px var(--ink);
 }
+
+/* Options under the Description (F-27.4): checkbox chips on the panel fill; scoped under
+   .options so they win over Checkbox .control whatever order the CSS loads in. */
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.options .option {
+  height: 40px;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 14px;
+}

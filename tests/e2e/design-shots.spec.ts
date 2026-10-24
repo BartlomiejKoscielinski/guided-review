@@ -770,7 +770,9 @@ const SHOTS: Shot[] = [
     // 12 files · +84 −40. F-27.2: Write with Claude once, so Title and Description hold the
     // mock's text with "Drafted by Claude from 3 commits and the diff" and Shorter version.
     // F-27.3: Marta K. and Ola M. added, as the mock's default state shows them (nobody is
-    // added at the start). Options and the rest of the aside come with F-27.4 to F-27.6.
+    // added at the start). F-27.4: the options at their defaults (Delete branch after merge on)
+    // and Create merge request, as in the mock; the checks and the notify note come with F-27.5
+    // and F-27.6.
     screen: 'S11',
     state: 'create-mr',
     lastRoute: { screen: 'S-06' },
