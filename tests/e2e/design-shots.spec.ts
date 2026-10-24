@@ -769,7 +769,8 @@ const SHOTS: Shot[] = [
     // is not restored on start), the branch block chore/compiled-bindings → develop, 3 commits ·
     // 12 files · +84 −40. F-27.2: Write with Claude once, so Title and Description hold the
     // mock's text with "Drafted by Claude from 3 commits and the diff" and Shorter version.
-    // Options and the aside come with F-27.3 to F-27.6.
+    // F-27.3: Marta K. and Ola M. added, as the mock's default state shows them (nobody is
+    // added at the start). Options and the rest of the aside come with F-27.4 to F-27.6.
     screen: 'S11',
     state: 'create-mr',
     lastRoute: { screen: 'S-06' },
@@ -780,6 +781,10 @@ const SHOTS: Shot[] = [
       await page.getByTestId('mr-branch-stats').getByText('+84').waitFor();
       await page.getByRole('button', { name: 'Write with Claude' }).click();
       await page.getByRole('button', { name: 'Shorter version' }).waitFor({ timeout: 10000 });
+      const reviewers = page.getByRole('region', { name: 'Reviewers' });
+      await reviewers.getByRole('button', { name: 'Add Marta K.' }).click();
+      await reviewers.getByRole('button', { name: 'Add Ola M.' }).click();
+      await reviewers.getByRole('button', { name: 'Remove Ola M.' }).waitFor();
     },
   },
 ];

@@ -4,6 +4,8 @@ import type { NewMrState } from '../../app/router';
 import { useBranchInfo } from '../../ipc/hooks/useBranchInfo';
 import { BranchRow } from './BranchRow';
 import { MrTextFields } from './MrTextFields';
+import { type AddedReviewer, Reviewers } from './Reviewers';
+import reviewerStyles from './Reviewers.module.css';
 import { useMrText } from './useMrText';
 import styles from './CreateMr.module.css';
 
@@ -13,7 +15,7 @@ const draftedEntries = new Set<string>();
 /**
  * S-11 New merge request (F-27): opened from Push and create MR (S-06), the self-review's Draft
  * MR description (F-17.3) and, from M10, Rider. F-27.1: the heading and the branch block;
- * F-27.2: Title and Description.
+ * F-27.2: Title and Description; F-27.3: the Reviewers in the aside.
  */
 export function CreateMrScreen() {
   const location = useLocation();
@@ -26,6 +28,7 @@ export function CreateMrScreen() {
       : null,
   );
   const [chosen, setChosen] = useState<string | undefined>(undefined);
+  const [reviewers, setReviewers] = useState<AddedReviewer[]>([]);
   // The default target gives the branch and the select's options; a chosen one only the numbers.
   const base = useBranchInfo(undefined);
   const picked = useBranchInfo(chosen, chosen !== undefined);
@@ -37,40 +40,52 @@ export function CreateMrScreen() {
     return true;
   });
 
+  const target = chosen ?? info?.target ?? info?.targets[0];
+  const ready = info?.branch !== undefined && target !== undefined;
+
   return (
-    <div className={styles.screen}>
-      <section className={styles.head}>
-        <h1 className={styles.heading}>New merge request</h1>
-        {info === undefined ? (
-          base.isError ? (
-            <p className={styles.alert} role="alert">
-              {base.error.message}
-            </p>
-          ) : (
-            <div className={styles.loading} aria-busy="true" aria-label="Loading branch" />
-          )
-        ) : info.branch === undefined ? (
-          <p className={styles.alert} role="alert">
-            Check out a branch to create a merge request.
-          </p>
-        ) : info.targets.length === 0 ? (
-          <div className={styles.branchRow} data-testid="mr-branch">
-            <span className={styles.source}>{info.branch}</span>
-            <span className={styles.note}>No branch on origin to merge into.</span>
-          </div>
-        ) : (
-          <BranchRow
-            branch={info.branch}
-            targets={info.targets}
-            target={chosen ?? info.target ?? info.targets[0] ?? ''}
-            counts={counted.data}
-            error={counted.isError ? counted.error.message : undefined}
-            onTarget={setChosen}
-          />
-        )}
-      </section>
-      {info?.branch !== undefined && info.targets.length > 0 && (
-        <MrTextFields text={text} commits={counted.data?.commits} />
+    <div className={styles.layout}>
+      <div className={styles.main}>
+        <div className={styles.screen}>
+          <section className={styles.head}>
+            <h1 className={styles.heading}>New merge request</h1>
+            {info === undefined ? (
+              base.isError ? (
+                <p className={styles.alert} role="alert">
+                  {base.error.message}
+                </p>
+              ) : (
+                <div className={styles.loading} aria-busy="true" aria-label="Loading branch" />
+              )
+            ) : info.branch === undefined ? (
+              <p className={styles.alert} role="alert">
+                Check out a branch to create a merge request.
+              </p>
+            ) : info.targets.length === 0 ? (
+              <div className={styles.branchRow} data-testid="mr-branch">
+                <span className={styles.source}>{info.branch}</span>
+                <span className={styles.note}>No branch on origin to merge into.</span>
+              </div>
+            ) : (
+              <BranchRow
+                branch={info.branch}
+                targets={info.targets}
+                target={chosen ?? info.target ?? info.targets[0] ?? ''}
+                counts={counted.data}
+                error={counted.isError ? counted.error.message : undefined}
+                onTarget={setChosen}
+              />
+            )}
+          </section>
+          {info?.branch !== undefined && info.targets.length > 0 && (
+            <MrTextFields text={text} commits={counted.data?.commits} />
+          )}
+        </div>
+      </div>
+      {ready && (
+        <aside aria-label="Reviewers and checks" className={reviewerStyles.aside}>
+          <Reviewers target={target} added={reviewers} onAdded={setReviewers} />
+        </aside>
       )}
     </div>
   );

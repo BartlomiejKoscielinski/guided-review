@@ -58,10 +58,12 @@ import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
 import type { MrDescription } from './types/MrDescription';
 import type { MrList } from './types/MrList';
+import type { ProjectMember } from './types/ProjectMember';
 import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
 import type { QueuedReply } from './types/QueuedReply';
 import type { ReplyDraft } from './types/ReplyDraft';
+import type { ReviewerSuggestion } from './types/ReviewerSuggestion';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
 import type { UnfinishedSession } from './types/UnfinishedSession';
@@ -97,6 +99,9 @@ export function createTauriClient(): IpcClient {
     gitStatusSummary: () => call<StatusSummary>('git_status_summary'),
     gitBranchInfo: (target) => call<BranchInfo>('git_branch_info', { target: target ?? null }),
     gitMrTitle: (target) => call<string>('git_mr_title', { target: target ?? null }),
+    reviewersSuggest: (target) =>
+      call<ReviewerSuggestion[]>('reviewers_suggest', { target: target ?? null }),
+    gitlabUsersSearch: (query) => call<ProjectMember[]>('gitlab_users_search', { query }),
     sessionOpenCommit: (range) => call<OpenedSession>('session_open_commit', { range }),
     sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
     sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),

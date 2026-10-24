@@ -1,5 +1,19 @@
 /* S-11 New merge request (CreateMR.dc.html). */
 
+/* main and the aside side by side; the aside wraps below on a narrow window. */
+.layout {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.main {
+  flex: 999 1 620px;
+  min-width: 0;
+  overflow: auto;
+}
+
 .screen {
   max-width: 900px;
   padding: 34px 48px 40px;
