@@ -20,6 +20,7 @@ mod untracked_session;
 
 mod analysis_status;
 mod ask_task;
+mod author_checkout;
 mod author_push_pipeline;
 mod author_push_reply;
 mod author_thread_view;
