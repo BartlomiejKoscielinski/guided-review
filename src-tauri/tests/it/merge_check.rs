@@ -85,11 +85,7 @@ async fn f27_5_pushed_is_read_from_origin_not_from_the_stale_tracking_ref() {
     let repo = repo_on_feature("f27-5-stale-ref");
     repo.git(&["push", "-q", "-u", "origin", BRANCH]);
     let bare = repo.git(&["remote", "get-url", "origin"]);
-    let status = std::process::Command::new("git")
-        .args(["-C", bare.trim(), "branch", "-q", "-D", BRANCH])
-        .status()
-        .unwrap();
-    assert!(status.success());
+    repo.git(&["-C", bare.trim(), "branch", "-q", "-D", BRANCH]);
     assert_eq!(
         check(&repo, Some("main")).await.pushed,
         PushState::NotPushed
