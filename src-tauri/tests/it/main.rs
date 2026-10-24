@@ -51,6 +51,8 @@ mod gitlab_thread_actions;
 mod job_log;
 mod job_play;
 mod mechanical;
+mod mr_description_task;
+mod mr_title;
 mod open_mr;
 mod pipeline_actions;
 mod pipeline_artifacts;
