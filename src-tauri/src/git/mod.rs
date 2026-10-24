@@ -14,6 +14,7 @@ pub mod line_state;
 pub mod local;
 pub mod log;
 pub mod model;
+pub mod mr_title;
 pub mod patch;
 pub mod patch_builder;
 pub mod refs;

@@ -4,6 +4,7 @@
 pub mod ask;
 pub mod events;
 pub mod fix;
+pub mod mr_description;
 pub mod pipeline_explain;
 pub mod pipeline_explain_inputs;
 pub mod plan;

@@ -52,11 +52,52 @@ pub async fn branch_info(
         Some(name) => upstream(git, name, cancel).await?,
         None => None,
     };
+    let (targets, target) = targets_and_target(git, branch.as_deref(), target, cancel).await?;
+    let mut info = BranchInfo {
+        branch,
+        upstream,
+        targets,
+        target,
+        ..BranchInfo::default()
+    };
+    if let (Some(target), Some(head)) = (info.target.clone(), refs::head(git, cancel).await?)
+        && let Some(base) = merge_base(git, &target, &head, cancel).await?
+    {
+        count(git, &base, &head, &mut info, cancel).await?;
+    }
+    Ok(info)
+}
+
+/// What an MR of the current branch into `target` (as for [`branch_info`]) contains:
+/// `merge-base(origin/<target>, HEAD)` and `HEAD`. `None` without a target, a `HEAD` or a common
+/// history; a target that is no branch on `origin` is refused.
+pub async fn branch_range(
+    git: &Git,
+    target: Option<&str>,
+    cancel: &Cancel,
+) -> Result<Option<(String, String)>, GitError> {
+    let branch = refs::current_branch(git, cancel).await?;
+    let (_, target) = targets_and_target(git, branch.as_deref(), target, cancel).await?;
+    let (Some(target), Some(head)) = (target, refs::head(git, cancel).await?) else {
+        return Ok(None);
+    };
+    Ok(merge_base(git, &target, &head, cancel)
+        .await?
+        .map(|base| (base, head)))
+}
+
+/// The `origin` targets and the one asked for (checked against them) or the default.
+async fn targets_and_target(
+    git: &Git,
+    branch: Option<&str>,
+    asked: Option<&str>,
+    cancel: &Cancel,
+) -> Result<(Vec<String>, Option<String>), GitError> {
     let default = refs::default_target(git, cancel)
         .await?
         .map(|t| t.strip_prefix("origin/").unwrap_or(&t).to_owned());
-    let targets = origin_branches(git, branch.as_deref(), default.as_deref(), cancel).await?;
-    let target = match target {
+    let targets = origin_branches(git, branch, default.as_deref(), cancel).await?;
+    let target = match asked {
         Some(asked) => {
             let name = asked.strip_prefix("origin/").unwrap_or(asked);
             if !refs::is_branch_name(name) || !targets.iter().any(|t| t == name) {
@@ -68,17 +109,7 @@ pub async fn branch_info(
             .filter(|d| targets.contains(d))
             .or_else(|| targets.first().cloned()),
     };
-    let mut info = BranchInfo {
-        branch,
-        upstream,
-        targets,
-        target,
-        ..BranchInfo::default()
-    };
-    if let (Some(target), Some(head)) = (info.target.clone(), refs::head(git, cancel).await?) {
-        count(git, &target, &head, &mut info, cancel).await?;
-    }
-    Ok(info)
+    Ok((targets, target))
 }
 
 /// `origin/<branch>` when `branch` tracks it; `None` before the first push.
@@ -137,26 +168,33 @@ fn order_targets(stdout: &str, current: Option<&str>, default: Option<&str>) -> 
     names
 }
 
-/// Commits, files and lines of `merge-base(origin/<target>, head)..head`.
-async fn count(
+/// `merge-base(origin/<target>, head)`; `None` for a target gone from `origin` or unrelated
+/// histories.
+async fn merge_base(
     git: &Git,
     target: &str,
     head: &str,
-    info: &mut BranchInfo,
     cancel: &Cancel,
-) -> Result<(), GitError> {
+) -> Result<Option<String>, GitError> {
     let Some(target_sha) =
         refs::verify_commit(git, &format!("{REMOTE_PREFIX}{target}"), cancel).await?
     else {
-        return Ok(());
+        return Ok(None);
     };
     let spec = git.spec(["merge-base", &target_sha, head]);
     let output = git.run_spec(spec, cancel, &[0, 1]).await?;
     let base = output.stdout.trim();
-    if output.code != Some(0) || base.is_empty() {
-        // Unrelated histories: nothing to count.
-        return Ok(());
-    }
+    Ok((output.code == Some(0) && !base.is_empty()).then(|| base.to_owned()))
+}
+
+/// Commits, files and lines of `base..head`.
+async fn count(
+    git: &Git,
+    base: &str,
+    head: &str,
+    info: &mut BranchInfo,
+    cancel: &Cancel,
+) -> Result<(), GitError> {
     let commits = git
         .run(["rev-list", "--count", &format!("{base}..{head}")], cancel)
         .await?;

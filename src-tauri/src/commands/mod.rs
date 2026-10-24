@@ -6,6 +6,7 @@ pub mod approval;
 pub mod author;
 pub mod author_reply;
 pub mod claude;
+pub mod create_mr;
 pub mod drafts;
 pub mod fix;
 pub mod fix_watch;
