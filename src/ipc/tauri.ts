@@ -249,6 +249,7 @@ export function createTauriClient(): IpcClient {
     authorFileDiff: (target, path) => call<FileDiff>('author_file_diff', { target, path }),
     authorFixupTarget: (target, path, line) =>
       call<FixupTarget>('author_fixup_target', { target, path, line }),
+    authorUncommittedFiles: () => call<string[]>('author_uncommitted_files'),
     authorQueueReply: (project, iid, discussion, body, resolve, afterSha) =>
       call<QueuedReply>('author_queue_reply', {
         project,

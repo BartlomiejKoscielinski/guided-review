@@ -12,6 +12,11 @@
 //!   never `None`.
 #![allow(clippy::unwrap_used, reason = "tests")]
 
+// F-26.8 the checkout's uncommitted files (M7 decision 10); `tests/it/main.rs` is locked for
+// F-26.8, so the file hangs off this one.
+#[path = "author_uncommitted.rs"]
+mod author_uncommitted;
+
 use guided_review_lib::gitlab::client::GitlabClient;
 use guided_review_lib::gitlab::mrs::PipelineState;
 use guided_review_lib::gitlab::tls::TlsBackend;

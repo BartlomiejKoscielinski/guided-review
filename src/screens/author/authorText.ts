@@ -107,3 +107,10 @@ export function isAnswered(thread: AuthorThread): boolean {
 export function readOnlyText(branch: string): string {
   return `Check out ${branch} to fix here. The app never switches your branch.`;
 }
+
+/**
+ * M7 decision 10: the warning above the fix actions when other files of the checkout have
+ * uncommitted changes; the commit takes only the thread's file, so they stay out of it.
+ */
+export const OTHER_CHANGES_TEXT =
+  "You have other uncommitted changes. They won't be part of this commit.";

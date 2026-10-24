@@ -12,7 +12,8 @@ use super::author_threads::{self, AuthorThread, ResolvedSummary};
 use super::pipeline_view::{self, PipelineHead};
 use crate::error::{AppError, ErrorCode};
 use crate::git::Git;
-use crate::git::refs;
+use crate::git::error::GitError;
+use crate::git::{local, refs};
 use crate::gitlab::client::GitlabClient;
 use crate::gitlab::discussions;
 use crate::gitlab::error::GitlabError;
@@ -118,6 +119,18 @@ pub async fn on_source_branch(git: &Git, source_branch: &str, cancel: &Cancel) -
             false
         }
     }
+}
+
+/// The files of the checkout of `git` with uncommitted changes (HEAD → working tree, staged and
+/// untracked included), repository-relative with `/`, sorted. S-10 warns before Fix when any is
+/// not the thread's file: the commit takes only that file (M7 decision 10). Read only; takes no
+/// index lock.
+pub async fn uncommitted_files(git: &Git, cancel: &Cancel) -> Result<Vec<String>, GitError> {
+    let status = local::read_status(git, cancel).await?;
+    let mut paths: Vec<String> = status.entries.into_iter().map(|e| e.path).collect();
+    paths.sort();
+    paths.dedup();
+    Ok(paths)
 }
 
 #[cfg(test)]

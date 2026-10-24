@@ -432,6 +432,12 @@ export interface IpcClient {
    */
   authorFixupTarget(target: string, path: string, line: number | null): Promise<FixupTarget>;
   /**
+   * The active checkout's uncommitted files (M7 decision 10): HEAD → working tree, staged and
+   * untracked included, repository-relative with `/`. S-10 warns before Fix when any is not the
+   * thread's file. Reads git only.
+   */
+  authorUncommittedFiles(): Promise<string[]>;
+  /**
    * Queues the reply **Commit** made for `discussion` (F-26.5): `body` "Fixed in <sha>. <one
    * sentence>." sent after the push of `afterSha` (the full SHA), then Resolve when `resolve`.
    * Queueing the thread again replaces it and keeps its ID. Sends nothing. (A property, not a

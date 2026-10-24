@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { Square } from '../../components/Square';
+import { useAuthorRefreshOnFocus } from '../../ipc/hooks/useAuthorMr';
 import { useGitlabStatus } from '../../ipc/hooks/useGitlab';
 import type { AuthorMr } from '../../ipc/types/AuthorMr';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
@@ -20,6 +21,8 @@ import styles from './Author.module.css';
  */
 export function AuthorScreen() {
   const { iid, project, restored, noProject, mr } = useRouteAuthorMr();
+  // F-26.8: the checkout may change outside the app; coming back reads it again.
+  useAuthorRefreshOnFocus(project, iid);
   const drafts = useAuthorCommitStore((s) => s.drafts);
   const [picked, setPicked] = useState<string | null>(null);
   // A thread resolved by a push in this visit stays listed when GitLab's list is read again.
@@ -64,7 +67,7 @@ export function AuthorScreen() {
           <p role="alert" className={styles.error}>
             The active repository has no GitLab project.
           </p>
-        ) : mr.isError ? (
+        ) : mr.isError && !mr.data ? (
           <p role="alert" className={styles.error}>
             {mr.error.message}
           </p>
