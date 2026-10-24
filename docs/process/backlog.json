@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T20:31:45.335Z",
+  "updated": "2026-10-24T20:50:24.967Z",
   "items": [
     {
       "id": "F-17.3",
@@ -381,10 +381,10 @@
       "title": "Create merge request / Create draft MR; note who gets notified. Success screen: \"!483\" big green block…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
-      "note": "",
-      "lockSha": "4aeb3cf",
+      "status": "review",
+      "attempts": 1,
+      "note": "implemented on ap/f27-6 (cbf1aa0), verify green; review and gate not run: the owner stopped the run",
+      "lockSha": "c655543",
       "tests": [
         "src-tauri/tests/it/create_mr.rs",
         "src-tauri/tests/it/main.rs",
@@ -393,8 +393,7 @@
         "src/screens/create-mr/CreateMrCreate.test.tsx",
         "src/screens/create-mr/CreateMrCreated.test.tsx",
         "tests/e2e/create-mr-f27-6.spec.ts"
-      ],
-      "forkSha": "fbc7dcb"
+      ]
     }
   ]
 }
