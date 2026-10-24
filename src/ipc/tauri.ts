@@ -49,6 +49,7 @@ import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
 import type { Source } from './types/Source';
 import type { BranchInfo } from './types/BranchInfo';
+import type { MergeCheck } from './types/MergeCheck';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
@@ -99,6 +100,7 @@ export function createTauriClient(): IpcClient {
     gitStatusSummary: () => call<StatusSummary>('git_status_summary'),
     gitBranchInfo: (target) => call<BranchInfo>('git_branch_info', { target: target ?? null }),
     gitMrTitle: (target) => call<string>('git_mr_title', { target: target ?? null }),
+    gitMergeCheck: (target) => call<MergeCheck>('git_merge_check', { target: target ?? null }),
     reviewersSuggest: (target) =>
       call<ReviewerSuggestion[]>('reviewers_suggest', { target: target ?? null }),
     gitlabUsersSearch: (query) => call<ProjectMember[]>('gitlab_users_search', { query }),

@@ -57,6 +57,7 @@ import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
 import type { Source } from './types/Source';
 import type { BranchInfo } from './types/BranchInfo';
+import type { MergeCheck } from './types/MergeCheck';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
@@ -124,6 +125,12 @@ export interface IpcClient {
    * commit's subject, or the branch name in words for several; empty with nothing to name it after.
    */
   gitMrTitle(target?: string): Promise<string>;
+  /**
+   * S-11's "Before you create" for an MR into `target` (F-27.5; the default when missing): the
+   * branch on origin at HEAD, the files conflicting with the target (`git merge-tree`), the newest
+   * self-review and an open MR of the branch. Reads only.
+   */
+  gitMergeCheck(target?: string): Promise<MergeCheck>;
   /**
    * S-11's suggested reviewers for an MR into `target` (F-27.3; the default when missing): at most
    * three project members with one reason each (code owner, blame share, review history).

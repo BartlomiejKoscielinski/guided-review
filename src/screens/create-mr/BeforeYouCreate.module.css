@@ -1,0 +1,108 @@
+/* S-11 "Before you create" (CreateMR.dc.html, F-27.5) and the open-MR banner. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heading {
+  margin: 0 0 2px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+}
+
+.square {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  background: var(--green);
+}
+
+.check[data-state='warn'] .square {
+  background: var(--orange);
+}
+
+.text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.label {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.note {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.alert {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--orange-text);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loading > span {
+  height: 52px;
+  background: var(--panel-2);
+}
+
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+  padding: 12px 14px;
+  background: var(--panel-2);
+  font-size: 13.5px;
+  color: var(--text-body);
+}
+
+.bannerText {
+  color: var(--orange-text);
+}
+
+.bannerLink {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bannerTitle {
+  min-width: 0;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}

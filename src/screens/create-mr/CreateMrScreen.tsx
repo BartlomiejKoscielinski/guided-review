@@ -3,7 +3,11 @@ import { useLocation } from 'react-router';
 import type { NewMrState } from '../../app/router';
 import { Button } from '../../components/Button';
 import { useBranchInfo } from '../../ipc/hooks/useBranchInfo';
+import { useMergeCheck } from '../../ipc/hooks/useMergeCheck';
+import { BeforeYouCreate } from './BeforeYouCreate';
 import { BranchRow } from './BranchRow';
+import { ExistingMrBanner } from './ExistingMrBanner';
+import { blocksCreate } from './mergeChecks';
 import { MrOptions } from './MrOptions';
 import { DEFAULT_MR_OPTIONS, type MrOptionValues } from './mrOptionValues';
 import { MrTextFields } from './MrTextFields';
@@ -19,7 +23,7 @@ const draftedEntries = new Set<string>();
  * S-11 New merge request (F-27): opened from Push and create MR (S-06), the self-review's Draft
  * MR description (F-17.3) and, from M10, Rider. F-27.1: the heading and the branch block;
  * F-27.2: Title and Description; F-27.3: the Reviewers in the aside; F-27.4: the options and the
- * Create button's label (its action is F-27.6).
+ * Create button's label (its action is F-27.6); F-27.5: Before you create and the open-MR banner.
  */
 export function CreateMrScreen() {
   const location = useLocation();
@@ -47,6 +51,11 @@ export function CreateMrScreen() {
 
   const target = chosen ?? info?.target ?? info?.targets[0];
   const ready = info?.branch !== undefined && target !== undefined;
+  const checks = useMergeCheck(chosen, ready);
+  const check = checks.data;
+  // M7 decision 19: not pushed or an open MR block Create; while the checks load it waits, and a
+  // failed check (unknown) does not block.
+  const blocked = check === undefined ? checks.isPending : blocksCreate(check);
 
   return (
     <div className={styles.layout}>
@@ -81,6 +90,7 @@ export function CreateMrScreen() {
                 onTarget={setChosen}
               />
             )}
+            {ready && check?.existingMr !== undefined && <ExistingMrBanner mr={check.existingMr} />}
           </section>
           {info?.branch !== undefined && info.targets.length > 0 && (
             <>
@@ -93,8 +103,13 @@ export function CreateMrScreen() {
       {ready && (
         <aside aria-label="Reviewers and checks" className={reviewerStyles.aside}>
           <Reviewers target={target} added={reviewers} onAdded={setReviewers} />
+          <BeforeYouCreate
+            check={check}
+            loading={check === undefined && checks.isPending}
+            error={checks.error}
+          />
           <div className={reviewerStyles.createBlock}>
-            <Button variant="primary" size={50}>
+            <Button variant="primary" size={50} disabled={blocked}>
               {options.draft ? 'Create draft MR' : 'Create merge request'}
             </Button>
           </div>

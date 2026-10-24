@@ -15,6 +15,7 @@ import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
 import { createBranchInfoBackend, mockTarget } from './branchInfo';
+import { createMergeCheckBackend, MOCK_MR_CHECKS_KEY, type MergeCheckScenario } from './mergeCheck';
 import { createReviewersBackend } from './reviewers';
 import { createSourcesBackend, mockSessionSource } from './sources';
 import { createStateBackend } from './state';
@@ -176,6 +177,8 @@ export function createMockClient({
   );
   const fix = createFixBackend(data, sourceOf);
   const authorScenario = loadJson(storage, MOCK_AUTHOR_KEY, authorOption);
+  const mrChecks = loadJson<MergeCheckScenario>(storage, MOCK_MR_CHECKS_KEY, {});
+  const changesBackend = createChangesBackend(changes, respond, repos);
   const authorPush = createAuthorPushBackend(() => changes.pushFails === 'rejected', respond);
   return {
     appHealth: () => respond(health),
@@ -193,7 +196,9 @@ export function createMockClient({
         }),
         ...sessions,
       ]),
-    ...createChangesBackend(changes, respond, repos),
+    ...changesBackend,
+    // F-27.5: Push now on S-11 turns "Branch pushed" green.
+    ...createMergeCheckBackend(respond, repos, mrChecks, changesBackend.gitPush),
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
     ...createBranchInfoBackend(respond, repos),
     ...createReviewersBackend(respond, repos, () => gitlab.gitlabStatus(false)),
