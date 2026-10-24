@@ -60,7 +60,6 @@ import type { ModelInfo } from './types/ModelInfo';
 import type { MrDescription } from './types/MrDescription';
 import type { MrList } from './types/MrList';
 import type { CreatedMr } from './types/CreatedMr';
-import type { CreateMrRequest } from './types/CreateMrRequest';
 import type { ProjectMember } from './types/ProjectMember';
 import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';

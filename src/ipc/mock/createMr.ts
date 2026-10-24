@@ -15,6 +15,8 @@ export const CREATED_IID = 483;
 /** Its head pipeline, running right away. */
 const CREATED_PIPELINE = 18361;
 const DRAFT = 'Draft: ';
+/** The GitLab project of the mock repository (mobile-app) that holds the branch. */
+const PROJECT = 'mobile/mobile-app';
 
 const conflict = (iid: number) =>
   new IpcError({
@@ -27,7 +29,6 @@ const conflict = (iid: number) =>
 interface Made {
   created: CreatedMr;
   target: string;
-  project: string;
 }
 
 /**
@@ -56,7 +57,6 @@ export function createCreateMrBackend(
         retryable: false,
       });
     }
-    const project = repos.active()?.gitlabProject ?? 'mobile/mobile-app';
     const title =
       request.draft && !request.title.startsWith(DRAFT)
         ? `${DRAFT}${request.title}`
@@ -64,10 +64,10 @@ export function createCreateMrBackend(
     const created: CreatedMr = {
       iid: CREATED_IID,
       title,
-      webUrl: `${MOCK_SERVER}/${project}/-/merge_requests/${String(CREATED_IID)}`,
+      webUrl: `${MOCK_SERVER}/${PROJECT}/-/merge_requests/${String(CREATED_IID)}`,
       pipeline: { id: CREATED_PIPELINE, status: 'running' },
     };
-    made = { created, target, project };
+    made = { created, target };
     return respond({ ...created });
   };
   return {
@@ -97,7 +97,7 @@ export function createCreateMrBackend(
           startedByMe: true,
           startedAt: now,
           durationSecs: null,
-          webUrl: `${MOCK_SERVER}/${made.project}/-/pipelines/${String(CREATED_PIPELINE)}`,
+          webUrl: `${MOCK_SERVER}/${PROJECT}/-/pipelines/${String(CREATED_PIPELINE)}`,
         },
         threads: [],
         toAnswer: 0,
