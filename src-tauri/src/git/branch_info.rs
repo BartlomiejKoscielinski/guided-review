@@ -87,7 +87,7 @@ pub async fn branch_range(
 }
 
 /// The `origin` targets and the one asked for (checked against them) or the default.
-async fn targets_and_target(
+pub(crate) async fn targets_and_target(
     git: &Git,
     branch: Option<&str>,
     asked: Option<&str>,

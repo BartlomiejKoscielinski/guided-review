@@ -5,6 +5,7 @@
 
 pub mod account;
 pub mod approvals;
+pub mod branch_mr;
 pub mod client;
 pub mod discussions;
 pub mod draft_notes;

@@ -6,7 +6,7 @@
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 
-use super::{StoreError, steps_state};
+use super::{StoreError, sessions, steps_state};
 
 /// The numbers of a card's progress line.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -58,6 +58,15 @@ pub fn of(conn: &Connection, session: &str) -> Result<Progress, StoreError> {
         total: steps.len(),
         drafts: usize::try_from(drafts).unwrap_or(0),
     })
+}
+
+/// "Self-review done" of S-11's "Before you create" (F-27.5): the progress of the repository's
+/// newest self-review (a local-changes session, `sessions::latest_self_review`). Sessions keep no
+/// branch, so it is per repository; `None` while the repository has no self-review.
+pub fn latest_self_review(conn: &Connection, repo_id: i64) -> Result<Option<Progress>, StoreError> {
+    sessions::latest_self_review(conn, repo_id)?
+        .map(|id| of(conn, &id))
+        .transpose()
 }
 
 #[cfg(test)]

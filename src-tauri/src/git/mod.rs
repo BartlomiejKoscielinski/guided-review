@@ -13,6 +13,7 @@ pub mod intraline;
 pub mod line_state;
 pub mod local;
 pub mod log;
+pub mod merge_check;
 pub mod model;
 pub mod mr_title;
 pub mod patch;
