@@ -32,6 +32,8 @@ export function createMergeCheckBackend(
   repos: MockRepos,
   scenario: MergeCheckScenario,
   push: IpcClient['gitPush'],
+  /** The open MR of the branch (F-27.6: the one Create made); the scenario's when missing. */
+  openMr: () => ExistingMr | undefined = () => scenario.existingMr,
 ): Pick<IpcClient, 'gitMergeCheck' | 'gitPush'> {
   let pushed: PushState = scenario.pushed ?? 'pushed';
   const selfReview = scenario.selfReview === undefined ? MOCK_SELF_REVIEW : scenario.selfReview;
@@ -44,8 +46,9 @@ export function createMergeCheckBackend(
         pushed,
         conflicts: [...(CONFLICTS[target] ?? [])],
         ...(selfReview === null ? {} : { selfReview: { ...selfReview } }),
-        ...(scenario.existingMr === undefined ? {} : { existingMr: { ...scenario.existingMr } }),
       };
+      const existing = openMr();
+      if (existing !== undefined) check.existingMr = { ...existing };
       return respond(check);
     },
     gitPush: async () => {

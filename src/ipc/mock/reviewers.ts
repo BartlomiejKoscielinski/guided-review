@@ -31,7 +31,7 @@ const fold = (text: string) =>
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '');
 
-function notConnected(status: GitlabStatus): IpcError {
+export function notConnected(status: GitlabStatus): IpcError {
   return new IpcError(
     status.problem ?? {
       code: 'GITLAB_UNAUTHORIZED',

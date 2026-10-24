@@ -71,6 +71,8 @@ import type { MrDescription } from './types/MrDescription';
 import type { MrDescriptionVariant } from './types/MrDescriptionVariant';
 import type { MrList } from './types/MrList';
 import type { MrTab } from './types/MrTab';
+import type { CreatedMr } from './types/CreatedMr';
+import type { CreateMrRequest } from './types/CreateMrRequest';
 import type { ProjectMember } from './types/ProjectMember';
 import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
@@ -138,6 +140,12 @@ export interface IpcClient {
   reviewersSuggest(target?: string): Promise<ReviewerSuggestion[]>;
   /** Project members matching the typed text, never the signed-in user (F-27.3). */
   gitlabUsersSearch(query: string): Promise<ProjectMember[]>;
+  /**
+   * **Create merge request** / **Create draft MR** of S-11 (F-27.6): an MR of the checked-out
+   * branch with the title as typed (the core adds `Draft: ` when `draft`), sent only by the click.
+   * GitLab's words for a refusal are the error's message (CONFLICT: an open MR of the branch).
+   */
+  gitlabCreateMr(request: CreateMrRequest): Promise<CreatedMr>;
   /** Step review of a commit or a range `from..to`, `from` excluded (F-01.3, F-03.2). */
   sessionOpenCommit(range: CommitRange): Promise<OpenedSession>;
   /** Self-review of local changes in one scope (F-03.4). */

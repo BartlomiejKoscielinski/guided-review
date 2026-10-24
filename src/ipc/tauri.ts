@@ -59,6 +59,8 @@ import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
 import type { MrDescription } from './types/MrDescription';
 import type { MrList } from './types/MrList';
+import type { CreatedMr } from './types/CreatedMr';
+import type { CreateMrRequest } from './types/CreateMrRequest';
 import type { ProjectMember } from './types/ProjectMember';
 import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
@@ -104,6 +106,7 @@ export function createTauriClient(): IpcClient {
     reviewersSuggest: (target) =>
       call<ReviewerSuggestion[]>('reviewers_suggest', { target: target ?? null }),
     gitlabUsersSearch: (query) => call<ProjectMember[]>('gitlab_users_search', { query }),
+    gitlabCreateMr: (request) => call<CreatedMr>('gitlab_create_mr', { request }),
     sessionOpenCommit: (range) => call<OpenedSession>('session_open_commit', { range }),
     sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
     sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),

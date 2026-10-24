@@ -15,6 +15,7 @@ import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
 import { createBranchInfoBackend, mockTarget } from './branchInfo';
+import { createCreateMrBackend } from './createMr';
 import { createMergeCheckBackend, MOCK_MR_CHECKS_KEY, type MergeCheckScenario } from './mergeCheck';
 import { createReviewersBackend } from './reviewers';
 import { createSourcesBackend, mockSessionSource } from './sources';
@@ -179,6 +180,12 @@ export function createMockClient({
   const authorScenario = loadJson(storage, MOCK_AUTHOR_KEY, authorOption);
   const mrChecks = loadJson<MergeCheckScenario>(storage, MOCK_MR_CHECKS_KEY, {});
   const changesBackend = createChangesBackend(changes, respond, repos);
+  const createMr = createCreateMrBackend(
+    respond,
+    repos,
+    () => gitlab.gitlabStatus(false),
+    mrChecks.existingMr,
+  );
   const authorPush = createAuthorPushBackend(() => changes.pushFails === 'rejected', respond);
   return {
     appHealth: () => respond(health),
@@ -198,7 +205,15 @@ export function createMockClient({
       ]),
     ...changesBackend,
     // F-27.5: Push now on S-11 turns "Branch pushed" green.
-    ...createMergeCheckBackend(respond, repos, mrChecks, changesBackend.gitPush),
+    ...createMergeCheckBackend(
+      respond,
+      repos,
+      mrChecks,
+      changesBackend.gitPush,
+      createMr.existingMr,
+    ),
+    // F-27.6: Create merge request makes !483, the branch's open MR from then on.
+    gitlabCreateMr: createMr.gitlabCreateMr,
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
     ...createBranchInfoBackend(respond, repos),
     ...createReviewersBackend(respond, repos, () => gitlab.gitlabStatus(false)),
@@ -219,7 +234,11 @@ export function createMockClient({
     // F-26.5: a queued reply tags its thread "Fixed locally · not pushed" until it is sent.
     // F-26.8: the scenario can put the checkout on another branch (read-only author mode).
     authorMr: async (project, iid) => ({
-      ...authorPush.withQueued(project, await gitlab.authorMr(project, iid)),
+      ...authorPush.withQueued(
+        project,
+        // F-27.6: Go to your MR opens the MR Create made (!483).
+        (await createMr.authorMr(iid)) ?? (await gitlab.authorMr(project, iid)),
+      ),
       ...(authorScenario.onSourceBranch === undefined
         ? {}
         : { onSourceBranch: authorScenario.onSourceBranch }),
