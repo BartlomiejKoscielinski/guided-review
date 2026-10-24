@@ -144,9 +144,19 @@ impl From<GitlabError> for AppError {
                 AppError::new(ErrorCode::GitlabUnreachable, unreachable_message(problem))
                     .with_detail(detail)
             }
-            GitlabError::Status { status: 409, .. } => {
-                AppError::new(ErrorCode::Conflict, "GitLab reports a conflict.").with_detail(detail)
-            }
+            // A conflict with GitLab's words when it gives them (F-27.6: "Another open merge
+            // request already exists for this source branch: !482").
+            GitlabError::Status {
+                status: 409,
+                message,
+            } => AppError::new(
+                ErrorCode::Conflict,
+                message.map_or_else(
+                    || "GitLab reports a conflict.".to_owned(),
+                    |message| plain_words(&message),
+                ),
+            )
+            .with_detail(detail),
             GitlabError::Status { status, .. } if status >= 500 => {
                 AppError::new(ErrorCode::GitlabUnreachable, "GitLab had a server error.")
                     .with_detail(detail)

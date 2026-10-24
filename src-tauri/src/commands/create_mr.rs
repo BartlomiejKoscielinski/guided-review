@@ -3,7 +3,8 @@
 //! runs only on a click (**Write with Claude**, **Shorter version**, **Longer version**, or the
 //! self-review's **Draft MR description**) and only fills the fields. Nothing reaches GitLab.
 //! `git_merge_check` gives "Before you create" (F-27.5): pushed, conflicts, the self-review and an
-//! open MR of the branch; it only reads.
+//! open MR of the branch; it only reads. `gitlab_create_mr` (F-27.6) is the one write: sent only
+//! by the click on **Create merge request** / **Create draft MR**.
 
 use tauri::State;
 
@@ -18,6 +19,7 @@ use crate::git::branch_info;
 use crate::git::merge_check::{self, ExistingMr, MergeCheck, SelfReviewProgress};
 use crate::git::{Git, mr_title};
 use crate::gitlab::branch_mr;
+use crate::gitlab::create_mr::{self, CreateMrRequest, CreatedMr, NewMr};
 use crate::os::process::Cancel;
 use crate::review::{branch_self_review, drafts};
 use crate::store::{self, Store};
@@ -137,4 +139,46 @@ pub async fn claude_mr_description(
     claude.untrack(&task);
     after_task(&claude, &store, result.as_ref().map(drop)).await;
     result.map_err(AppError::from)
+}
+
+/// **Create merge request** / **Create draft MR** (F-27.6): an MR of the checked-out branch into
+/// `request.target` (a branch on origin) in the active repository's GitLab project. One POST on
+/// the user's click, never retried; GitLab's words for a refusal are the error's message. Never
+/// looks for Claude Code.
+#[tauri::command]
+pub async fn gitlab_create_mr(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    request: CreateMrRequest,
+) -> AppResult<CreatedMr> {
+    let (client, status) = connected_client(&gitlab, &store).await?;
+    let git = active_git(&store).await?;
+    // A target that is no branch on origin is INVALID_INPUT here, like the other S-11 commands.
+    let info = branch_info::branch_info(&git, Some(&request.target), &Cancel::new()).await?;
+    let Some(branch) = info.branch else {
+        return Err(AppError::new(
+            ErrorCode::InvalidInput,
+            "Check out a branch to create a merge request.",
+        ));
+    };
+    let server = status.server.as_deref().unwrap_or_default();
+    let project = active_project(&store, server).await?;
+    let source_branch = info
+        .upstream
+        .as_deref()
+        .and_then(|upstream| upstream.strip_prefix("origin/"))
+        .map_or_else(|| branch.clone(), str::to_owned);
+    let mr = NewMr {
+        source_branch,
+        target_branch: request.target,
+        title: request.title,
+        description: request.description,
+        reviewer_ids: request.reviewer_ids,
+        draft: request.draft,
+        remove_source_branch: request.remove_source_branch,
+        squash: request.squash,
+    };
+    let result = create_mr::create(&client, &project, &mr).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
 }
