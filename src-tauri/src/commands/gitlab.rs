@@ -201,7 +201,7 @@ pub(crate) fn not_connected(status: &GitlabStatus) -> AppError {
 }
 
 /// The GitLab project of the active repository, from its `origin` remote.
-async fn active_project(store: &Store, server: &str) -> AppResult<String> {
+pub(crate) async fn active_project(store: &Store, server: &str) -> AppResult<String> {
     let git = active_git(store).await?;
     let output = git
         .run(["remote", "get-url", "origin"], &Cancel::new())

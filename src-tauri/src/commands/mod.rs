@@ -22,6 +22,7 @@ pub mod repo;
 pub mod review;
 pub mod review_plan;
 pub mod review_status;
+pub mod reviewers;
 pub mod session_state;
 pub mod sessions;
 pub mod source;

@@ -11,6 +11,7 @@ pub mod logging;
 pub mod nav;
 pub mod os;
 pub mod review;
+pub mod reviewers;
 pub mod route;
 pub mod settings;
 pub mod source;
@@ -241,6 +242,8 @@ pub fn run() {
             commands::author_reply::claude_reply_draft,
             commands::create_mr::git_mr_title,
             commands::create_mr::claude_mr_description,
+            commands::reviewers::reviewers_suggest,
+            commands::reviewers::gitlab_users_search,
             commands::gitlab_threads::gitlab_approval_state,
             commands::approval::summary_status,
             commands::approval::gitlab_approve,
