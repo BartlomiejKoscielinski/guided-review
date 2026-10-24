@@ -14,6 +14,7 @@ import { authorUncommittedFiles, type AuthorScenario } from './authorMr';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
+import { createBranchInfoBackend } from './branchInfo';
 import { createSourcesBackend, mockSessionSource } from './sources';
 import { createStateBackend } from './state';
 import type { Settings } from '../types/Settings';
@@ -190,6 +191,7 @@ export function createMockClient({
       ]),
     ...createChangesBackend(changes, respond, repos),
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
+    ...createBranchInfoBackend(respond, repos),
     ...createPrepareBackend(repos, pause, data, focusLayout, startIn, (sessionId, mr) => {
       moveMrDrafts(data.data, sourceOf, mr, sessionId);
     }),

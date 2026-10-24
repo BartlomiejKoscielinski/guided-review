@@ -8,6 +8,7 @@ use ts_rs::TS;
 use super::repo::{RepoState, active_git};
 use super::sessions::mr_session;
 use crate::error::{AppError, AppResult, ErrorCode};
+use crate::git::branch_info::{self, BranchInfo};
 use crate::git::commit::{self, CommitInfo, CommitResult, PushResult};
 use crate::git::diff::{self, ChangedFile};
 use crate::git::local::{self, FileRef, LocalChanges};
@@ -56,6 +57,17 @@ pub async fn git_log(
 pub async fn git_status_summary(store: State<'_, Store>) -> AppResult<StatusSummary> {
     let git = active_git(&store).await?;
     Ok(summary::status_summary(&git, &Cancel::new()).await?)
+}
+
+/// The branch block of S-11 (F-27.1): source, upstream, the `origin` targets and the numbers
+/// against `target` (the default from `origin/HEAD` when missing).
+#[tauri::command]
+pub async fn git_branch_info(
+    store: State<'_, Store>,
+    target: Option<String>,
+) -> AppResult<BranchInfo> {
+    let git = active_git(&store).await?;
+    Ok(branch_info::branch_info(&git, target.as_deref(), &Cancel::new()).await?)
 }
 
 /// Details and files of a commit; HEAD when `sha` is missing (F-15.6).

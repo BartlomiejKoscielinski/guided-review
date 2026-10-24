@@ -195,6 +195,7 @@ pub fn run() {
             commands::git::git_status,
             commands::git::git_log,
             commands::git::git_status_summary,
+            commands::git::git_branch_info,
             commands::git::git_commit_info,
             commands::git::git_file_diff,
             commands::git::git_stage,

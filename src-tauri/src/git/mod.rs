@@ -3,6 +3,7 @@
 //! the working-tree watcher and review worktrees (`worktree.rs`). Range-diff and moved code
 //! follow in later milestones.
 
+pub mod branch_info;
 pub mod commit;
 pub mod diff;
 pub mod error;

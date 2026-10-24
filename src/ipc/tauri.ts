@@ -48,6 +48,7 @@ import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
 import type { Source } from './types/Source';
+import type { BranchInfo } from './types/BranchInfo';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { FileDiff } from './types/FileDiff';
@@ -93,6 +94,7 @@ export function createTauriClient(): IpcClient {
     gitLog: (branch, query) =>
       call<CommitList>('git_log', { branch: branch ?? null, query: query ?? null }),
     gitStatusSummary: () => call<StatusSummary>('git_status_summary'),
+    gitBranchInfo: (target) => call<BranchInfo>('git_branch_info', { target: target ?? null }),
     sessionOpenCommit: (range) => call<OpenedSession>('session_open_commit', { range }),
     sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
     sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),

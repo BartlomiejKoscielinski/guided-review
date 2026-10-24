@@ -56,6 +56,7 @@ import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
 import type { Source } from './types/Source';
+import type { BranchInfo } from './types/BranchInfo';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
@@ -112,6 +113,8 @@ export interface IpcClient {
   gitLog(branch?: string, query?: string): Promise<CommitList>;
   /** Counts of the three My changes scopes (F-03.3). */
   gitStatusSummary(): Promise<StatusSummary>;
+  /** The S-11 branch block against `target` (a branch on origin; the default when missing). */
+  gitBranchInfo(target?: string): Promise<BranchInfo>;
   /** Step review of a commit or a range `from..to`, `from` excluded (F-01.3, F-03.2). */
   sessionOpenCommit(range: CommitRange): Promise<OpenedSession>;
   /** Self-review of local changes in one scope (F-03.4). */
