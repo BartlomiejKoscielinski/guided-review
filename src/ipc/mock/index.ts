@@ -14,7 +14,7 @@ import { authorUncommittedFiles, type AuthorScenario } from './authorMr';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
-import { createBranchInfoBackend } from './branchInfo';
+import { createBranchInfoBackend, mockTarget } from './branchInfo';
 import { createSourcesBackend, mockSessionSource } from './sources';
 import { createStateBackend } from './state';
 import type { Settings } from '../types/Settings';
@@ -169,6 +169,9 @@ export function createMockClient({
     pause,
     (sessionId) => data.data.plans[sessionId] !== undefined,
     (sessionId) => gitlab.gitlabDiscussions(sessionId),
+    (asked) => {
+      mockTarget(repos, asked);
+    },
   );
   const fix = createFixBackend(data, sourceOf);
   const authorScenario = loadJson(storage, MOCK_AUTHOR_KEY, authorOption);

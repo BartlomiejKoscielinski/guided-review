@@ -7,6 +7,7 @@ import type { ModelInfo } from '../types/ModelInfo';
 import type { SummaryComment } from '../types/SummaryComment';
 import type { Thread } from '../types/Thread';
 import type { ThreadCheck } from '../types/ThreadCheck';
+import { MOCK_MR_DESCRIPTION_MS, mockMrDescription } from './mrDescription';
 import { isThreadCheckCandidate, MOCK_THREAD_CHECK_MS, mockThreadHints } from './threadCheck';
 
 /** Variations of the Claude part of the mock (`MOCK_CLAUDE_KEY`). */
@@ -28,6 +29,7 @@ type ClaudeClient = Pick<
   | 'claudePickExecutable'
   | 'claudeModels'
   | 'claudeCommitMessage'
+  | 'claudeMrDescription'
   | 'claudeSummaryComment'
   | 'claudeThreadCheck'
   | 'claudeCancel'
@@ -77,6 +79,9 @@ export type PlanReady = (sessionId: string) => boolean;
 /** The MR's threads as the core reads them from GitLab, with its guards (`gitlab_discussions`). */
 export type MrThreads = (sessionId: string) => Promise<Thread[]>;
 
+/** The S-11 guards of an MR description run (a repository, a target on origin); throws. */
+export type MrTarget = (asked: string | undefined) => void;
+
 /** The Claude part of the mock backend (Settings.dc.html: signed in, native install). */
 export function createClaudeBackend(
   scenario: ClaudeScenario,
@@ -84,6 +89,7 @@ export function createClaudeBackend(
   wait: (ms: number) => Promise<void>,
   planReady: PlanReady = () => true,
   mrThreads: MrThreads = () => Promise.resolve([]),
+  mrTarget: MrTarget = () => undefined,
 ): ClaudeClient {
   let status: ClaudeStatus = {
     state: scenario.state ?? 'signedIn',
@@ -135,6 +141,15 @@ export function createClaudeBackend(
       const failed = suggestFailure();
       if (failed) throw failed;
       return respond(SUGGESTION);
+    },
+    // F-27.2: as `claude_mr_description`: the target first, then the run; nothing is cached.
+    claudeMrDescription: async (task, variant, target) => {
+      mrTarget(target);
+      await busy(MOCK_MR_DESCRIPTION_MS);
+      if (cancelled.has(task)) throw failure('CANCELLED', 'Cancelled.');
+      const failed = suggestFailure();
+      if (failed) throw failed;
+      return respond(mockMrDescription(variant));
     },
     // F-12.4: as `claude_summary_comment`: the plan first, then queued, started, done or failed.
     claudeSummaryComment: async (sessionId, onEvent) => {

@@ -66,6 +66,8 @@ import type { FileRef } from './types/FileRef';
 import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrDescription } from './types/MrDescription';
+import type { MrDescriptionVariant } from './types/MrDescriptionVariant';
 import type { MrList } from './types/MrList';
 import type { MrTab } from './types/MrTab';
 import type { PushOutcome } from './types/PushOutcome';
@@ -115,6 +117,11 @@ export interface IpcClient {
   gitStatusSummary(): Promise<StatusSummary>;
   /** The S-11 branch block against `target` (a branch on origin; the default when missing). */
   gitBranchInfo(target?: string): Promise<BranchInfo>;
+  /**
+   * The title S-11 opens with for an MR into `target` (F-27.2, read without Claude): a single
+   * commit's subject, or the branch name in words for several; empty with nothing to name it after.
+   */
+  gitMrTitle(target?: string): Promise<string>;
   /** Step review of a commit or a range `from..to`, `from` excluded (F-01.3, F-03.2). */
   sessionOpenCommit(range: CommitRange): Promise<OpenedSession>;
   /** Self-review of local changes in one scope (F-03.4). */
@@ -369,6 +376,16 @@ export interface IpcClient {
    * the same `only` commits, so other staged changes never reach the message.
    */
   claudeCommitMessage(task: string, only?: string[]): Promise<string>;
+  /**
+   * S-11 (F-27.2): Write with Claude (`normal`), Shorter version (`short`), Longer version (`long`):
+   * the title and the What / Why / How to test description of the current branch into `target`
+   * (the default when missing); `task` names it for `claudeCancel`. Runs only on a click.
+   */
+  claudeMrDescription(
+    task: string,
+    variant: MrDescriptionVariant,
+    target?: string,
+  ): Promise<MrDescription>;
   claudeCancel(task: string): Promise<void>;
 
   // GitLab (F-01.6, F-02.1, F-02.2, F-11.2, F-19.2, F-19.5).

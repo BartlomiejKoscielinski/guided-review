@@ -767,7 +767,9 @@ const SHOTS: Shot[] = [
   {
     // S11-create-mr.png, CreateMR.dc.html {} (F-27.1): S-06 › Commit › Push and create MR (S-11
     // is not restored on start), the branch block chore/compiled-bindings → develop, 3 commits ·
-    // 12 files · +84 −40. Title, Description, options and the aside come with F-27.2 to F-27.6.
+    // 12 files · +84 −40. F-27.2: Write with Claude once, so Title and Description hold the
+    // mock's text with "Drafted by Claude from 3 commits and the diff" and Shorter version.
+    // Options and the aside come with F-27.3 to F-27.6.
     screen: 'S11',
     state: 'create-mr',
     lastRoute: { screen: 'S-06' },
@@ -776,6 +778,8 @@ const SHOTS: Shot[] = [
       await page.getByRole('button', { name: /^Commit · / }).click();
       await page.getByRole('status').getByRole('button', { name: 'Push and create MR' }).click();
       await page.getByTestId('mr-branch-stats').getByText('+84').waitFor();
+      await page.getByRole('button', { name: 'Write with Claude' }).click();
+      await page.getByRole('button', { name: 'Shorter version' }).waitFor({ timeout: 10000 });
     },
   },
 ];

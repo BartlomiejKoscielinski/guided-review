@@ -56,6 +56,7 @@ import type { FixupTarget } from './types/FixupTarget';
 import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrDescription } from './types/MrDescription';
 import type { MrList } from './types/MrList';
 import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
@@ -95,6 +96,7 @@ export function createTauriClient(): IpcClient {
       call<CommitList>('git_log', { branch: branch ?? null, query: query ?? null }),
     gitStatusSummary: () => call<StatusSummary>('git_status_summary'),
     gitBranchInfo: (target) => call<BranchInfo>('git_branch_info', { target: target ?? null }),
+    gitMrTitle: (target) => call<string>('git_mr_title', { target: target ?? null }),
     sessionOpenCommit: (range) => call<OpenedSession>('session_open_commit', { range }),
     sessionOpenLocal: (scope) => call<OpenedSession>('session_open_local', { scope }),
     sessionOpenBranch: (branch) => call<OpenedSession>('session_open_branch', { branch }),
@@ -214,6 +216,8 @@ export function createTauriClient(): IpcClient {
     claudeModels: () => call<ModelInfo[]>('claude_models'),
     claudeCommitMessage: (task, only) =>
       call<string>('claude_commit_message', { task, only: only ?? null }),
+    claudeMrDescription: (task, variant, target) =>
+      call<MrDescription>('claude_mr_description', { task, variant, target: target ?? null }),
     fixPropose: (target, onEvent) => {
       const ch = new Channel<ClaudeTaskEvent<FixProposal>>();
       ch.onmessage = onEvent;
