@@ -48,5 +48,6 @@
     "state": { "fix": "applied", "via": "rider", "msg": "Address review on UploadWorker.cs:46" }
   },
   "S10-author-committed": { "mock": "Author.dc.html", "state": { "fix": "committed" } },
-  "S10-author-pushed": { "mock": "Author.dc.html", "state": { "fix": "pushed" } }
+  "S10-author-pushed": { "mock": "Author.dc.html", "state": { "fix": "pushed" } },
+  "S10-author-question": { "mock": "Author.dc.html", "state": { "sel": "t2" } }
 }

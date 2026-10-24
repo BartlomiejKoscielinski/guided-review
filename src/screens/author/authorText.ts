@@ -97,3 +97,8 @@ export function pushedPipelineText(tab: PipelineTab | null): string {
 export function answeredText(author: string): string {
   return `Answered. The thread stays open until ${firstName(author)} resolves it.`;
 }
+
+/** A question is answered once its last note is mine (GitLab lists my reply) or it reads so. */
+export function isAnswered(thread: AuthorThread): boolean {
+  return thread.status === 'answered' || thread.notes.at(-1)?.mine === true;
+}

@@ -744,6 +744,26 @@ const SHOTS: Shot[] = [
       await page.getByRole('heading', { level: 1, name: '1 thread to answer' }).waitFor();
     },
   },
+  {
+    // S10-author-question.png, Author.dc.html {"sel":"t2"} (F-26.7): Piotr S.'s question selected;
+    // its card holds the reply composer: "Your reply" (empty), Draft with Claude, Send reply and
+    // "Replies on your MR go out right away.".
+    screen: 'S10',
+    state: 'author-question',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      await page
+        .getByRole('listbox', { name: 'Threads' })
+        .getByRole('option', { name: /Piotr S\./ })
+        .click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Draft with Claude' }).waitFor();
+      await card.getByRole('textbox', { name: 'Your reply' }).waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

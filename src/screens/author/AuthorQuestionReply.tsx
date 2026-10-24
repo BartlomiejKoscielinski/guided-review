@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
-import { answeredText } from './authorText';
+import { answeredText, isAnswered } from './authorText';
 import styles from './AuthorQuestionReply.module.css';
 import { useQuestionReply } from './useQuestionReply';
 
@@ -9,10 +9,6 @@ export interface AuthorQuestionReplyProps {
   project: string;
   iid: number;
 }
-
-/** A question is answered once its last note is mine (GitLab lists my reply) or it reads so. */
-export const isAnswered = (thread: AuthorThread) =>
-  thread.status === 'answered' || thread.notes.at(-1)?.mine === true;
 
 /**
  * The answer of a question thread on S-10 (F-26.7, Author.dc.html `isQuestion`): the text area
