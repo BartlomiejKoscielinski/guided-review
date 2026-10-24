@@ -49,7 +49,12 @@ export function AuthorPushPanel({
       update(
         threadId,
         outcome.kind === 'done'
-          ? { push: 'done', resolve: outcome.resolved, pushedAt: Date.now() }
+          ? {
+              push: 'done',
+              resolve: outcome.resolved,
+              pushedAt: Date.now(),
+              pushedSha: outcome.pushedSha ?? null,
+            }
           : { push: 'pullFirst' },
       );
     },
@@ -66,7 +71,7 @@ export function AuthorPushPanel({
         <AuthorPushedPipeline
           project={project}
           iid={iid}
-          sha={committed.sha}
+          sha={draft.pushedSha ?? committed.sha}
           pushedAt={draft.pushedAt}
         />
       </div>

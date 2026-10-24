@@ -308,7 +308,8 @@ async fn f26_5_the_reply_is_sent_after_the_push_and_then_the_thread_is_resolved(
         outcome,
         PushOutcome::Done {
             remote_branch: format!("origin/{BRANCH}"),
-            resolved: true
+            resolved: true,
+            pushed_sha: Some(c.fix.clone()),
         }
     );
     assert_eq!(
@@ -333,7 +334,8 @@ async fn f26_5_with_resolve_off_the_reply_is_sent_and_the_thread_stays_open() {
         outcome,
         PushOutcome::Done {
             remote_branch: format!("origin/{BRANCH}"),
-            resolved: false
+            resolved: false,
+            pushed_sha: Some(c.fix.clone()),
         }
     );
     assert_eq!(
@@ -485,6 +487,56 @@ async fn f26_5_a_reply_already_on_the_remote_is_sent_without_a_second_push() {
     assert_eq!(
         sent(&server).await,
         ["reply Fixed in 9e1d4b7. Backoff doubles."]
+    );
+}
+
+/// The pipeline lookup after the push (F-26.6, M7 decision 13) asks for the sha GitLab runs the
+/// MR pipeline for: the pushed tip, which is a later commit when one sits on top of the fix.
+#[tokio::test]
+async fn f26_6_a_later_commit_on_top_of_the_fix_is_the_pushed_sha() {
+    let c = author_checkout("f26-6-later-commit");
+    c.repo.write(
+        "notes.txt",
+        "another thread's fixup
+",
+    );
+    let later = c.repo.commit_all("fixup! Add retry loop (another thread)");
+    let server = gitlab(0, 0).await;
+    let id = queue(&c, "Fixed in 9e1d4b7. Backoff doubles.", true);
+
+    let outcome = run(&c, &server, &id).await.unwrap();
+
+    assert_eq!(remote_tip(&c), later, "HEAD reached origin");
+    assert_eq!(
+        outcome,
+        PushOutcome::Done {
+            remote_branch: format!("origin/{BRANCH}"),
+            resolved: true,
+            pushed_sha: Some(later),
+        },
+        "the pushed tip, not the thread's own commit"
+    );
+}
+
+#[tokio::test]
+async fn f26_6_a_remote_tip_already_past_the_fix_is_the_pushed_sha_without_a_push() {
+    let c = author_checkout("f26-6-already-past");
+    c.repo.write(
+        "notes.txt",
+        "another thread's fixup
+",
+    );
+    let later = c.repo.commit_all("fixup! Add retry loop (another thread)");
+    c.repo.git(&["push", "-q", "origin", BRANCH]);
+    let server = gitlab(0, 0).await;
+    let id = queue(&c, "Fixed in 9e1d4b7. Backoff doubles.", false);
+
+    let outcome = run(&c, &server, &id).await.unwrap();
+
+    assert_ne!(later, c.fix);
+    assert!(
+        matches!(&outcome, PushOutcome::Done { pushed_sha: Some(sha), .. } if *sha == later),
+        "{outcome:?}"
     );
 }
 

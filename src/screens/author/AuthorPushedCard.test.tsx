@@ -18,7 +18,11 @@ const REPLY = 'Fixed in 9e1d4b7. Address review on UploadWorker.cs:46.';
 type FixWatch = IpcClient['fixWatch'];
 type FixWatchEvent = Parameters<Parameters<FixWatch>[1]>[0];
 
-async function pushedApp(resolve: boolean, lookup?: IpcClient['authorPushPipeline']) {
+async function pushedApp(
+  resolve: boolean,
+  lookup?: IpcClient['authorPushPipeline'],
+  push?: IpcClient['authorPushAndReply'],
+) {
   const base = createMockClient({ latencyMs: 0 });
   await base.repoPick();
   const emits: ((event: FixWatchEvent) => void)[] = [];
@@ -30,6 +34,7 @@ async function pushedApp(resolve: boolean, lookup?: IpcClient['authorPushPipelin
     },
     gitCommit: () => Promise.resolve(COMMITTED),
     authorPushPipeline: lookup ?? base.authorPushPipeline,
+    authorPushAndReply: push ?? base.authorPushAndReply,
   };
   const app = renderApp({ screen: 'S-01' }, client);
   await act(() => app.router.navigate(pathFor({ screen: 'S-10', iid: IID })));
@@ -98,6 +103,24 @@ describe('S-10 thread card after Push and reply (F-26.6)', () => {
     );
   }, 20_000);
 
+  it('F-26.6 the pipeline is looked up for the pushed remote tip, a later commit on top of the fix', async () => {
+    const later = 'c6349f001bd5b8a43e2e53df6b1a2dd67fc5b851';
+    const lookup = vi.fn<IpcClient['authorPushPipeline']>().mockResolvedValue(null);
+    await pushedApp(true, lookup, () =>
+      Promise.resolve({
+        kind: 'done',
+        remoteBranch: 'origin/feature/upload-retry',
+        resolved: true,
+        pushedSha: later,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(lookup).toHaveBeenCalledWith(expect.any(String), IID, later);
+    });
+    expect(lookup).not.toHaveBeenCalledWith(expect.any(String), IID, COMMITTED.sha);
+  });
+
   it('F-26.6 my reply note carries my initials', () => {
     expect(initialsOf('Bartek K.')).toBe('BK');
     expect(initialsOf('')).toBe('');
@@ -126,6 +149,7 @@ describe('S-10 thread card after Push and reply (F-26.6)', () => {
       replyId: null,
       push,
       pushedAt: null,
+      pushedSha: null,
       pushError: null,
     });
     const before = [t('a'), t('b'), t('c')];

@@ -6,7 +6,7 @@ import styles from './AuthorCommitPanel.module.css';
 export interface AuthorPushedPipelineProps {
   project: string;
   iid: number;
-  /** The full SHA of the pushed commit. */
+  /** The full SHA of the pushed remote tip (the thread's commit or a later one on top). */
   sha: string;
   /** When the push went through (ms since the epoch). */
   pushedAt: number | null;

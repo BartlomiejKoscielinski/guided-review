@@ -3,4 +3,10 @@
 /**
  * How **Push and reply** ended.
  */
-export type PushOutcome = { "kind": "done", remoteBranch: string, resolved: boolean, } | { "kind": "pullFirst" };
+export type PushOutcome = { "kind": "done", remoteBranch: string, resolved: boolean, 
+/**
+ * The remote tip the push reached (or already held): the commit GitLab runs the MR
+ * pipeline for, `after_sha` or a later commit on top of it (F-26.6, M7 decision 13).
+ * None only when the reply was already sent and the remote branch is gone.
+ */
+pushedSha?: string, } | { "kind": "pullFirst" };

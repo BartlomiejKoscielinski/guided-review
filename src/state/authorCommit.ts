@@ -20,6 +20,12 @@ export interface AuthorCommitDraft {
   push: AuthorPushPhase;
   /** When the push and the reply went through (ms since the epoch): S-10 polls the new pipeline. */
   pushedAt: number | null;
+  /**
+   * The remote tip the push reached (full SHA): the commit GitLab runs the MR pipeline for, the
+   * thread's own commit or a later one on top of it (F-26.6). Null until pushed, or when the core
+   * didn't say; the pipeline lookup then asks for the thread's commit.
+   */
+  pushedSha: string | null;
   /** Why the last push or reply failed (the Retry state). */
   pushError: string | null;
 }
@@ -42,6 +48,7 @@ const FRESH_PUSH = {
   replyId: null,
   push: 'idle',
   pushedAt: null,
+  pushedSha: null,
   pushError: null,
 } as const satisfies Partial<AuthorCommitDraft>;
 
