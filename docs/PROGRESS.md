@@ -172,7 +172,7 @@ Rules for Claude Code:
 - [x] F-27.2 Title and description prefilled by Claude from commits and diff; description sections What, Why, How to… (104a121, 8c94a16, 3a64a08, 5435e24)
 - [x] F-27.3 Reviewers suggested with reasons: code owner (CODEOWNERS), "Wrote N% of the changed lines" (git blame)… (f15b239, d5d8d14, 2facbaa, 1187d44)
 - [x] F-27.4 Options: Mark as draft, Delete branch after merge (default on), Squash commits. (cf92ff5, 78adeaa)
-- [ ] F-27.5 Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done…
+- [x] F-27.5 Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done… (1e5cf26, 3ffcc4b, fbc7dcb, d4b92b3, d10066b)
 - [ ] F-27.6 Create merge request / Create draft MR; note who gets notified. Success screen: "!483" big green block…
 
 ## M8 · Re-review and moved code
