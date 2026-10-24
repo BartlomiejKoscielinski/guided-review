@@ -218,6 +218,24 @@ pub async fn push(git: &Git, cancel: &Cancel) -> Result<PushResult, GitError> {
     })
 }
 
+/// The tip of `refs/heads/<branch>` on `origin` (`git ls-remote`, M7 decision 11), `None` when the
+/// remote has no such branch. Read only: it changes no local ref.
+pub async fn remote_tip(
+    git: &Git,
+    branch: &str,
+    cancel: &Cancel,
+) -> Result<Option<String>, GitError> {
+    let reference = format!("refs/heads/{branch}");
+    let spec = git
+        .spec(["ls-remote", "origin", reference.as_str()])
+        .timeout(PUSH_TIMEOUT);
+    let output = git.run_spec(spec, cancel, &[0]).await?;
+    Ok(output.stdout.lines().find_map(|line| {
+        let (sha, name) = line.split_once('\t')?;
+        (name.trim() == reference).then(|| sha.trim().to_owned())
+    }))
+}
+
 /// S-06 commit mode: details panel and file tree (F-15.6).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

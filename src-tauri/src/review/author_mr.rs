@@ -61,13 +61,15 @@ pub fn is_mine(info: &MrInfo, me: &str) -> bool {
         .is_some_and(|username| username == me)
 }
 
-/// Reads MR `iid` of `project` for S-10; `me` is the signed-in username. No proposals or queued
-/// replies exist yet when the screen opens (they come from F-25.3 and F-26.5).
+/// Reads MR `iid` of `project` for S-10; `me` is the signed-in username, `queued` the discussions
+/// with a reply queued for the next push (F-26.5). No proposals exist yet when the screen opens
+/// (they come from F-25.3).
 pub async fn load(
     client: &GitlabClient,
     project: &str,
     iid: u64,
     me: &str,
+    queued: &HashSet<String>,
 ) -> Result<AuthorMr, AuthorMrError> {
     let info = mr::get(client, project, iid).await?;
     if !is_mine(&info, me) {
@@ -78,7 +80,7 @@ pub async fn load(
         Some(id) => Some(pipeline_view::head(client, project, iid, id, me).await?),
         None => None,
     };
-    let list = author_threads::of(&threads, me, &HashSet::new(), &HashSet::new());
+    let list = author_threads::of(&threads, me, &HashSet::new(), queued);
     Ok(AuthorMr {
         iid: info.iid,
         title: info.title,

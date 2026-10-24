@@ -15,6 +15,7 @@ pub fn migrations() -> Migrations<'static> {
         M::up(include_str!("migrations/008_publish.sql")),
         M::up(include_str!("migrations/009_publish_note_text.sql")),
         M::up(include_str!("migrations/010_publish_note_refs.sql")),
+        M::up(include_str!("migrations/011_queued_reply_sent_parts.sql")),
     ])
 }
 

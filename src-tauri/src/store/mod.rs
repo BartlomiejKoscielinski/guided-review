@@ -9,6 +9,7 @@ pub mod job_variables;
 pub mod migrations;
 pub mod mr_sessions;
 pub mod plans;
+pub mod queued_replies;
 pub mod repos;
 pub mod session_progress;
 pub mod sessions;
