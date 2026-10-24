@@ -10,7 +10,7 @@ import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
 import { createPlanBackend } from './plan';
-import type { AuthorScenario } from './authorMr';
+import { authorUncommittedFiles, type AuthorScenario } from './authorMr';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
@@ -212,6 +212,9 @@ export function createMockClient({
         ? {}
         : { onSourceBranch: authorScenario.onSourceBranch }),
     }),
+    // M7 decision 10: S-10 warns before Fix when other files have uncommitted changes.
+    authorUncommittedFiles: () =>
+      authorUncommittedFiles(authorScenario, () => repos.active() !== null, respond),
     authorQueueReply: authorPush.authorQueueReply,
     authorPushAndReply: authorPush.authorPushAndReply,
     // F-26.7: Send reply on a question goes out at once; Draft with Claude only proposes the text.

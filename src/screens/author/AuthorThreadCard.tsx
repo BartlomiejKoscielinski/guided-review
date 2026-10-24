@@ -2,9 +2,11 @@ import type { ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import type { BlockColor } from '../../components/colors';
 import { SpinnerIcon } from '../../components/icons';
+import { Square } from '../../components/Square';
 import { Tag } from '../../components/Tag';
 import { formatAge } from '../../format/age';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
+import { OTHER_CHANGES_TEXT } from './authorText';
 import styles from './AuthorThreadCard.module.css';
 import type { RiderFixPhase } from './useFixInRider';
 
@@ -33,6 +35,11 @@ export interface AuthorThreadCardProps {
   pushed?: 'resolved' | 'replied';
   /** Read-only author mode (F-26.8): no Fix with Claude, no Fix in Rider; Reply stays. */
   readOnly?: boolean;
+  /**
+   * Other files of the checkout have uncommitted changes (M7 decision 10): a warning above the fix
+   * actions that they won't be part of the commit (the commit takes only the thread's file).
+   */
+  otherChanges?: boolean;
 }
 
 /**
@@ -57,6 +64,7 @@ export function AuthorThreadCard({
   onStopWaiting,
   pushed,
   readOnly = false,
+  otherChanges = false,
 }: AuthorThreadCardProps) {
   const fixable = !readOnly && thread.kind === 'change' && thread.path !== null;
   const phase = pushed ? 'pushed' : riderPhase;
@@ -78,6 +86,12 @@ export function AuthorThreadCard({
         </div>
       ))}
       {phase === 'idle' && question && answer}
+      {phase === 'idle' && fixable && otherChanges && (
+        <p role="note" className={styles.otherChanges}>
+          <Square color="orange" size={9} />
+          <span>{OTHER_CHANGES_TEXT}</span>
+        </p>
+      )}
       {phase === 'idle' && !question && (
         <div className={styles.actions}>
           {fixable && (

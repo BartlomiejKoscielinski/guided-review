@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode, type RefObject } from 'react';
 import { DiffView } from '../../diff/DiffView';
 import { lineKey } from '../../diff/rows';
-import { useAuthorFileDiff } from '../../ipc/hooks/useAuthorMr';
+import { useAuthorFileDiff, useAuthorUncommitted } from '../../ipc/hooks/useAuthorMr';
 import { useRiderOpen } from '../../ipc/hooks/useChanges';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import type { FileDiff } from '../../ipc/types/FileDiff';
@@ -92,6 +92,9 @@ export function AuthorThreadView({
   }, []);
   const path = thread.path;
   const line = thread.line;
+  // M7 decision 10: other uncommitted files are warned about before Fix; a fixable thread only.
+  const uncommitted = useAuthorUncommitted(!readOnly && thread.kind === 'change' && path !== null);
+  const otherChanges = uncommitted.data?.some((p) => p !== path) ?? false;
   const fixInRider = useFixInRider(path, line ?? 1, target);
   const openCommit = useAuthorCommitStore((s) => s.open);
   const draft = useAuthorCommitStore((s) => s.drafts[thread.id]);
@@ -118,6 +121,7 @@ export function AuthorThreadView({
       }
       onStopWaiting={fixInRider.stop}
       readOnly={readOnly}
+      otherChanges={otherChanges}
       pushed={draft?.push === 'done' ? (draft.resolve ? 'resolved' : 'replied') : undefined}
       answer={
         thread.kind === 'question' ? (

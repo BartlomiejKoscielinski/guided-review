@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   useMutation,
   useQuery,
@@ -33,6 +34,44 @@ export function useAuthorMr(
     queryFn: () => ipc.authorMr(project ?? '', iid),
     enabled: enabled && project !== undefined && project !== '' && Number.isFinite(iid),
   });
+}
+
+/** The checkout's uncommitted files (M7 decision 10); under `git`, so a commit reads them again. */
+export const AUTHOR_UNCOMMITTED_KEY = ['git', 'author-uncommitted'] as const;
+
+/**
+ * The active checkout's uncommitted files (M7 decision 10): S-10 warns before Fix when any is not
+ * the thread's file. `enabled` only for a thread that can be fixed.
+ */
+export function useAuthorUncommitted(enabled: boolean): UseQueryResult<string[], IpcError> {
+  const ipc = useIpc();
+  return useQuery<string[], IpcError>({
+    queryKey: AUTHOR_UNCOMMITTED_KEY,
+    queryFn: () => ipc.authorUncommittedFiles(),
+    enabled,
+  });
+}
+
+/**
+ * S-10 reads the checkout state again when the app window gets focus (F-26.8, M7 decision 10):
+ * after the user checks out the branch, or another one, in Rider or a terminal, the read-only
+ * notice, Fix and Commit, and the other-changes warning follow without reopening the screen. The
+ * window's `focus` event, not TanStack's visibility check, because switching apps leaves the
+ * WebView visible. Only active queries are read, so a restored start still reads nothing (F-30.4).
+ */
+export function useAuthorRefreshOnFocus(project: string | undefined, iid: number): void {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (project === undefined || project === '') return;
+    const onFocus = () => {
+      void queryClient.invalidateQueries({ queryKey: authorMrKey(project, iid) });
+      void queryClient.invalidateQueries({ queryKey: AUTHOR_UNCOMMITTED_KEY });
+    };
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [queryClient, project, iid]);
 }
 
 export const authorFileDiffKey = (target: string, path: string) =>

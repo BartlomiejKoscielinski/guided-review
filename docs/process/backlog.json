@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T10:29:53.712Z",
+  "updated": "2026-10-24T11:00:53.749Z",
   "items": [
     {
       "id": "F-17.3",
@@ -258,10 +258,10 @@
       "title": "If the user's checkout isn't on the MR's source branch, author mode is read-only with \"Check out <branch>…",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "3185ac8",
+      "lockSha": "ff5cc88",
       "tests": [
         "src-tauri/tests/it/author_checkout.rs",
         "src-tauri/tests/it/main.rs",
@@ -269,7 +269,9 @@
         "src/ipc/mock/authorCheckout.test.ts",
         "tests/e2e/author-f26-8.spec.ts"
       ],
-      "forkSha": "39d8eea"
+      "disputes": [
+        "src-tauri/tests/it/author_checkout.rs@ea3d0b2"
+      ]
     },
     {
       "id": "F-27.1",
@@ -278,9 +280,18 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "2ce28a0",
+      "tests": [
+        "src-tauri/tests/it/branch_info.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/branchInfo.test.ts",
+        "src/screens/create-mr/CreateMrBranch.test.tsx",
+        "tests/e2e/create-mr-f27-1.spec.ts"
+      ],
+      "forkSha": "3ebce08"
     },
     {
       "id": "F-27.2",

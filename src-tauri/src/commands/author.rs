@@ -3,7 +3,8 @@
 //! start (F-30.4); it runs no Claude, so it needs no Claude Code lookup, and adds the replies still
 //! queued with whether their commit is on the local `origin/<source>` ref (M7 decision 12). `author_file_diff`
 //! (F-26.2) reads the selected thread's file from the user's own checkout, read only;
-//! `author_fixup_target` (F-26.4) names the commit a fix of a thread is a fixup of, read only.
+//! `author_fixup_target` (F-26.4) names the commit a fix of a thread is a fixup of, read only;
+//! `author_uncommitted_files` (M7 decision 10) lists the checkout's uncommitted files, read only.
 //! `author_queue_reply` (F-26.5) stores the reply **Commit** queues, sending nothing;
 //! `author_push_and_reply` runs only on the click on **Push and reply** or **Retry**;
 //! `author_push_pipeline` (F-26.6) then looks up the pipeline of the pushed commit, read only.
@@ -138,6 +139,15 @@ pub async fn author_fixup_target(
 ) -> AppResult<FixupTarget> {
     let git = active_git(&store).await?;
     Ok(fixup_target::find(&git, &target, &path, line, &Cancel::new()).await?)
+}
+
+/// The files of the active checkout with uncommitted changes (M7 decision 10): S-10 shows "You
+/// have other uncommitted changes." above the fix actions when any is not the thread's file.
+/// Read only; read again when the window gets focus.
+#[tauri::command]
+pub async fn author_uncommitted_files(store: State<'_, Store>) -> AppResult<Vec<String>> {
+    let git = active_git(&store).await?;
+    Ok(author_mr::uncommitted_files(&git, &Cancel::new()).await?)
 }
 
 /// Queues the reply **Commit** made for `discussion` of my MR (F-26.5): "Fixed in <sha>. <one

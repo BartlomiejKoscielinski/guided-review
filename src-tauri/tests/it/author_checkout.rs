@@ -76,7 +76,7 @@ async fn f26_8_a_detached_head_on_the_source_branch_commit_is_read_only() {
 #[tokio::test]
 async fn f26_8_a_checkout_git_cannot_read_is_read_only() {
     let repo = on_the_mr_branch("f26-8-unreadable");
-    let missing = Git::new(None, &repo.path.join("nie ma tego folderu"));
+    let missing = Git::new(None, repo.path.join("nie ma tego folderu"));
 
     assert!(!author_mr::on_source_branch(&missing, BRANCH, &Cancel::new()).await);
 }

@@ -119,6 +119,18 @@
   color: var(--text);
 }
 
+/* M7 decision 10: other uncommitted files stay out of the commit; the warning sits above Fix. */
+.otherChanges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  font-size: 14px;
+  color: var(--text);
+}
+
 /* Fix in Rider (F-26.3): the busy line with Stop waiting, then the detected change. */
 .busyRow {
   display: flex;

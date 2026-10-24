@@ -13,6 +13,32 @@ import { layerOf } from './layer';
  */
 export interface AuthorScenario {
   onSourceBranch?: boolean;
+  /**
+   * The checkout's uncommitted files (M7 decision 10); none by default, so S-10 shows no "You have
+   * other uncommitted changes." warning unless a test or dev:mock asks for it.
+   */
+  uncommitted?: string[];
+}
+
+/**
+ * `authorUncommittedFiles` as `commands/author.rs` answers it: the active repository's
+ * uncommitted files, from the scenario; no active repository is INVALID_INPUT.
+ */
+export function authorUncommittedFiles(
+  scenario: AuthorScenario,
+  hasRepo: () => boolean,
+  respond: <T>(value: T) => Promise<T>,
+): Promise<string[]> {
+  if (!hasRepo()) {
+    return Promise.reject(
+      new IpcError({
+        code: 'INVALID_INPUT',
+        message: 'Pick a repository first.',
+        retryable: false,
+      }),
+    );
+  }
+  return respond([...(scenario.uncommitted ?? [])]);
 }
 
 const notMine = () =>
