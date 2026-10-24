@@ -171,7 +171,7 @@ Rules for Claude Code:
 - [x] F-27.1 Opened from "Push and create MR" (S-06), self-review end, or Rider. Branch block source → target (target… (2ce28a0, 42d33c4, 7bc9f7d, b625ff3, 2732a68)
 - [x] F-27.2 Title and description prefilled by Claude from commits and diff; description sections What, Why, How to… (104a121, 8c94a16, 3a64a08, 5435e24)
 - [x] F-27.3 Reviewers suggested with reasons: code owner (CODEOWNERS), "Wrote N% of the changed lines" (git blame)… (f15b239, d5d8d14, 2facbaa, 1187d44)
-- [ ] F-27.4 Options: Mark as draft, Delete branch after merge (default on), Squash commits.
+- [x] F-27.4 Options: Mark as draft, Delete branch after merge (default on), Squash commits. (cf92ff5, 78adeaa)
 - [ ] F-27.5 Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done…
 - [ ] F-27.6 Create merge request / Create draft MR; note who gets notified. Success screen: "!483" big green block…
 

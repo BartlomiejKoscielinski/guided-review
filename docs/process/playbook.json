@@ -1,5 +1,5 @@
 {
-  "items": 80,
+  "items": 81,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 45,
+      "helpful": 46,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -151,7 +151,7 @@
         "mixed"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 52,
+      "helpful": 53,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:47:55.295Z",
@@ -173,7 +173,7 @@
         "src/screens/author/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
-      "helpful": 36,
+      "helpful": 37,
       "harmful": 0,
       "seen": 8,
       "created": "2026-10-14T15:13:07.675Z",
@@ -190,7 +190,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 51,
+      "helpful": 52,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -264,7 +264,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 47,
+      "helpful": 48,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -454,7 +454,7 @@
         "src/screens/pipeline/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 23,
+      "helpful": 24,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-16T10:39:05.255Z",
@@ -924,12 +924,14 @@
       "tags": [
         "ui",
         "implement",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed",
+        "src/screens/create-mr/**"
       ],
       "text": "When a tabs component sets aria-controls, render the matching role=tabpanel element in the same commit, and give a not-yet-wired control (e.g. a no-op Run new pipeline button) a disabled state or an explicit note instead of an inert onClick, because review raised both as nits on F-20.1.",
       "helpful": 0,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-19T15:02:24.181Z",
       "lastUsedItem": 53,
       "source": "F-20.1"

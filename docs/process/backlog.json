@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T19:31:18.301Z",
+  "updated": "2026-10-24T19:46:47.001Z",
   "items": [
     {
       "id": "F-17.3",
@@ -341,15 +341,14 @@
       "title": "Options: Mark as draft, Delete branch after merge (default on), Squash commits.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "cf92ff5",
+      "lockSha": "0635328",
       "tests": [
         "src/screens/create-mr/CreateMrOptions.test.tsx",
         "tests/e2e/create-mr-f27-4.spec.ts"
-      ],
-      "forkSha": "2facbaa"
+      ]
     },
     {
       "id": "F-27.5",
