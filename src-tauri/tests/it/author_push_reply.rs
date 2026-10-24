@@ -19,7 +19,12 @@
 //!   -> Result<PushOutcome, _>`, `PushOutcome::Done { remote_branch, resolved }` or
 //!   `PushOutcome::PullFirst`. A failure of the push, of the reply, of the resolve, or an `after_sha`
 //!   that never reached the remote branch is an `Err`; the reply stays `"queued"` with `error` set.
-#![allow(clippy::unwrap_used, clippy::expect_used, reason = "tests")]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::disallowed_methods,
+    reason = "tests"
+)]
 
 use std::process::Command;
 use std::sync::atomic::{AtomicUsize, Ordering};

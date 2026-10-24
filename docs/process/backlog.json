@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T06:17:26.512Z",
+  "updated": "2026-10-24T07:24:11.713Z",
   "items": [
     {
       "id": "F-17.3",
@@ -197,9 +197,22 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "conductor split the dispute commit 3908520 into ffac200 cf191d4 94df086 (gate: one file per dispute commit; roles may not rebase)",
+      "lockSha": "54c8066",
+      "tests": [
+        "src-tauri/tests/it/author_push_reply.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/screens/author/AuthorPushReply.test.tsx",
+        "src/ipc/mock/authorPushReply.test.ts",
+        "tests/e2e/author-f26-5.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/author_push_reply.rs@ffac200",
+        "src/ipc/mock/authorPushReply.test.ts@cf191d4",
+        "src/screens/author/AuthorPushReply.test.tsx@94df086"
+      ]
     },
     {
       "id": "F-26.6",
@@ -207,9 +220,18 @@
       "title": "After push: \"Pushed · Replied to <name> and resolved the thread.\" and a link to the new pipeline.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "42874c9",
+      "tests": [
+        "src-tauri/tests/it/author_push_pipeline.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorPushPipeline.test.ts",
+        "src/screens/author/AuthorPushed.test.tsx",
+        "tests/e2e/author-f26-6.spec.ts"
+      ],
+      "forkSha": "e94623d"
     },
     {
       "id": "F-26.7",

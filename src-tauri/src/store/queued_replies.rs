@@ -146,6 +146,19 @@ pub fn get(conn: &Connection, id: &str) -> Result<Option<QueuedReply>, StoreErro
         .optional()?)
 }
 
+/// The replies of MR `iid` of `project` not sent yet, oldest first (S-10 on reopen, M7 decision
+/// 12).
+pub fn pending(conn: &Connection, project: &str, iid: u64) -> Result<Vec<QueuedReply>, StoreError> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {COLUMNS} FROM queued_replies WHERE project = ?1 AND iid = ?2 AND state = ?3 \
+         ORDER BY rowid"
+    ))?;
+    let rows = stmt
+        .query_map(params![project, iid_param(iid), QUEUED], read)?
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(rows)
+}
+
 /// The discussions of MR `iid` of `project` with a reply not sent yet (S-10's "Fixed locally ·
 /// not pushed" tag).
 pub fn pending_discussions(

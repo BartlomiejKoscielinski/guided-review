@@ -6,10 +6,12 @@ import {
   useAuthorQueueReply,
 } from '../../ipc/hooks/useAuthorMr';
 import type { FileDiff } from '../../ipc/types/FileDiff';
+import type { WaitingReply } from '../../ipc/types/WaitingReply';
 import { useAuthorCommitStore } from '../../state/authorCommit';
 import { CommitFailure } from '../changes/CommitFailure';
 import { useSuggest } from '../changes/useSuggest';
 import { AuthorPushPanel } from './AuthorPushPanel';
+import { AuthorWaitingReply } from './AuthorWaitingReply';
 import { fixedReply, splitPath } from './authorText';
 import styles from './AuthorCommitPanel.module.css';
 
@@ -28,6 +30,8 @@ export interface AuthorCommitPanelProps {
   /** The thread's author, the MR's source branch and Open in Rider, for the push panel. */
   author: string;
   branch: string;
+  /** A reply still queued for the thread on reopen: shown when no draft is open (decision 12). */
+  waiting?: WaitingReply;
   onOpenRider: () => void;
 }
 
@@ -50,6 +54,7 @@ export function AuthorCommitPanel({
   iid,
   author,
   branch,
+  waiting,
   onOpenRider,
 }: AuthorCommitPanelProps) {
   const draft = useAuthorCommitStore((s) => s.drafts[threadId]);
@@ -72,7 +77,25 @@ export function AuthorCommitPanel({
     },
     [path],
   );
-  if (!draft) return null;
+  if (!draft) {
+    if (!waiting) return null;
+    return (
+      <div className={styles.dock}>
+        <section aria-label="Commit and push" className={styles.panel}>
+          <AuthorWaitingReply
+            key={waiting.reply.id}
+            threadId={threadId}
+            project={project}
+            iid={iid}
+            author={author}
+            branch={branch}
+            waiting={waiting}
+            onOpenRider={onOpenRider}
+          />
+        </section>
+      </div>
+    );
+  }
 
   if (draft.committed) {
     return (

@@ -228,7 +228,7 @@ describe('S-10 Push and reply after a commit (F-26.5)', () => {
       false,
       COMMITTED.sha,
     ]);
-    const queued = await ctx.authorQueueReply.mock.results.at(-1)?.value;
+    const queued = (await ctx.authorQueueReply.mock.results.at(-1)?.value) as unknown;
     expect(push[2]).toBe((queued as { id: string }).id);
     expect(Math.max(...ctx.authorQueueReply.mock.invocationCallOrder)).toBeLessThan(
       Math.min(...ctx.authorPushAndReply.mock.invocationCallOrder),

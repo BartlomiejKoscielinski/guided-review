@@ -18,7 +18,8 @@ const notQueued = () =>
  * `authorPushAndReply` is `pullFirst` under the scenario `pushFails: 'rejected'` (the remote has
  * commits you don't have, as `gitPush` there), else the push and the reply go through: done on
  * origin/<source branch>. `withQueued` gives `authorMr`'s threads with a reply not sent yet the
- * status `fixedLocally`, as the core reads `queued_replies`.
+ * status `fixedLocally` and lists them in `waiting`, as the core reads `queued_replies`; the
+ * mock remote never holds a commit whose reply waits, so each is `pushed: false`.
  */
 export function createAuthorPushBackend(
   pushFails: () => boolean,
@@ -87,8 +88,12 @@ export function createAuthorPushBackend(
           .filter((r) => r.project === project && r.iid === mr.iid && r.state === 'queued')
           .map((r) => r.discussion),
       );
+      const waiting = [...rows.values()]
+        .filter((r) => r.project === project && r.iid === mr.iid && r.state === 'queued')
+        .map((r) => ({ reply: view(r), pushed: false }));
       return {
         ...mr,
+        waiting,
         threads: mr.threads.map((t) =>
           queued.has(t.id) ? { ...t, status: 'fixedLocally' as const } : t,
         ),

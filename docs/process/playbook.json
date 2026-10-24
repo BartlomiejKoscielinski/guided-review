@@ -1,5 +1,5 @@
 {
-  "items": 73,
+  "items": 74,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 42,
+      "helpful": 43,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 28,
+      "helpful": 29,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 32,
+      "helpful": 33,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 14,
+      "helpful": 15,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 32,
+      "helpful": 33,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T14:47:55.168Z",
@@ -150,7 +150,7 @@
         "src/screens/**"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 46,
+      "helpful": 47,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:47:55.295Z",
@@ -188,7 +188,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 44,
+      "helpful": 45,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -262,7 +262,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 41,
+      "helpful": 42,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -375,7 +375,7 @@
         "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 29,
+      "helpful": 30,
       "harmful": 0,
       "seen": 5,
       "created": "2026-10-15T11:16:26.158Z",
@@ -1032,12 +1032,14 @@
         "src/**/*.test.tsx",
         "src/screens/**/*.test.tsx",
         "ui",
-        "tests/e2e/**"
+        "tests/e2e/**",
+        "src-tauri/tests/**",
+        "src/**/*.test.ts*"
       ],
       "text": "Run typecheck and eslint on the new or changed test files before the tests commit (not only vitest), because F-20.5's locked JobDetails.test.tsx had an unused const and a nonexistent ErrorCode (GITLAB_NETWORK vs GITLAB_UNREACHABLE), which passed at runtime, turned verify red and forced a test dispute. Lint against the throwaway stubs and drop unused parameters from test doubles (F-13.3, F-14.2 void lines); under noUncheckedIndexedAccess getAllByRole(...)[0] is possibly undefined, so destructure and throw when missing (F-08.4).",
       "helpful": 0,
       "harmful": 0,
-      "seen": 7,
+      "seen": 8,
       "created": "2026-10-19T19:36:31.369Z",
       "lastUsedItem": 57,
       "source": "F-20.5",
@@ -1333,6 +1335,39 @@
       "created": "2026-10-21T11:19:11.321Z",
       "lastUsedItem": 72,
       "source": "F-26.4"
+    },
+    {
+      "id": "P-139",
+      "tags": [
+        "mixed",
+        "fix",
+        "tests/**",
+        "src-tauri/tests/**",
+        "src/**/*.test.ts*"
+      ],
+      "text": "When a test dispute is accepted, commit the lint-only change to each locked test file in its own separate commit, because gate-1 failed its locked-tests check when one fix commit (3908520) touched three locked files, and the conductor had to split it before gate-2 passed.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T07:24:00.829Z",
+      "lastUsedItem": 73,
+      "source": "F-26.5"
+    },
+    {
+      "id": "P-140",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/author/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a milestone decision in the plan row names a screen or state (M7 decision 12 'Pushed. Reply not sent yet.' with Send reply), lock it with a red test and define the minimal IPC shape in the tests stage rather than deferring it for a missing IPC shape, and add a red core test that a GitLab-writing command refuses to act on the wrong branch (not the MR source branch), because both were review findings of normal severity that cost fix-1 (113k tokens) and the tests stage had left them out.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T07:24:00.887Z",
+      "lastUsedItem": 73,
+      "source": "F-26.5"
     }
   ]
 }

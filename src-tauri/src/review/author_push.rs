@@ -1,6 +1,8 @@
 //! **Push and reply** on S-10 (F-26.5, docs/plans/M7.md decisions 11 and 12). The queued reply
 //! "Fixed in <sha>. <one sentence>." reaches GitLab only after its commit is on the remote branch:
 //!
+//! 0. S-10 pushes only the MR's source branch: a checkout on another branch is "Check out <branch>
+//!    to push." and nothing happens (F-26.8 hides Push there later; this is the guard meanwhile);
 //! 1. the commit `after_sha` must be on the checked-out branch, else nothing happens;
 //! 2. `git ls-remote origin refs/heads/<branch>`: a remote tip that already holds the commit skips
 //!    the push (a restart after a push, decision 12); a tip that isn't an ancestor of HEAD is
@@ -72,14 +74,73 @@ fn not_on_remote(sha: &str, remote_branch: &str) -> AppError {
     )
 }
 
-/// Pushes the branch and sends the queued reply `reply_id` (see the module docs).
+/// A reply queued and not sent yet, as S-10 finds it on reopen (M7 decision 12): `pushed` when
+/// its commit is already on `origin/<source branch>` ("Pushed. Reply not sent yet." with **Send
+/// reply**), else it still waits for **Push and reply**. Never sent by itself.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+#[ts(export)]
+pub struct WaitingReply {
+    pub reply: QueuedReply,
+    pub pushed: bool,
+}
+
+fn wrong_branch(source_branch: &str) -> AppError {
+    AppError::new(
+        ErrorCode::Conflict,
+        format!("Check out {source_branch} to push."),
+    )
+}
+
+/// **Push and reply** of S-10: as [`push_and_reply`], but only from the MR's `source_branch`; a
+/// checkout on any other branch is a Conflict before anything is read from the remote or pushed.
+pub async fn push_and_reply_on(
+    job: &PushReply<'_>,
+    source_branch: &str,
+    cancel: &Cancel,
+) -> Result<PushOutcome, AppError> {
+    with_row(job, cancel, Some(source_branch)).await
+}
+
+/// Pushes the checked-out branch and sends the queued reply `reply_id` (see the module docs).
 pub async fn push_and_reply(job: &PushReply<'_>, cancel: &Cancel) -> Result<PushOutcome, AppError> {
+    with_row(job, cancel, None).await
+}
+
+/// The replies of `rows` with whether each commit is on the remote-tracking branch
+/// `origin/<source_branch>` (local refs only: no fetch, no `ls-remote`).
+pub async fn waiting(
+    git: &Git,
+    rows: Vec<QueuedReply>,
+    source_branch: &str,
+    cancel: &Cancel,
+) -> Result<Vec<WaitingReply>, AppError> {
+    let tip = if refs::is_branch_name(source_branch) {
+        refs::verify_commit(git, &format!("refs/remotes/origin/{source_branch}"), cancel).await?
+    } else {
+        None
+    };
+    let mut out = Vec::with_capacity(rows.len());
+    for reply in rows {
+        let pushed = match &tip {
+            Some(tip) => holds(git, tip, &reply.after_sha, cancel).await?,
+            None => false,
+        };
+        out.push(WaitingReply { reply, pushed });
+    }
+    Ok(out)
+}
+
+async fn with_row(
+    job: &PushReply<'_>,
+    cancel: &Cancel,
+    source_branch: Option<&str>,
+) -> Result<PushOutcome, AppError> {
     let row = job
         .store
         .with_conn(|conn| queued_replies::get(conn, job.reply_id))?
         .filter(|r| r.project == job.project && r.iid == job.iid)
         .ok_or_else(not_queued)?;
-    let result = run(job, &row, cancel).await;
+    let result = run(job, &row, source_branch, cancel).await;
     if let Err(error) = &result {
         job.store
             .with_conn(|conn| queued_replies::mark_failed(conn, &row.id, &error.message))?;
@@ -90,9 +151,15 @@ pub async fn push_and_reply(job: &PushReply<'_>, cancel: &Cancel) -> Result<Push
 async fn run(
     job: &PushReply<'_>,
     row: &QueuedReply,
+    source_branch: Option<&str>,
     cancel: &Cancel,
 ) -> Result<PushOutcome, AppError> {
     let status = local::read_status(job.git, cancel).await?;
+    if let Some(source) = source_branch
+        && status.branch.as_deref() != Some(source)
+    {
+        return Err(wrong_branch(source));
+    }
     let Some(branch) = status.branch else {
         return Err(AppError::new(
             ErrorCode::InvalidInput,
@@ -199,5 +266,12 @@ mod tests {
             "Commit 9e1d4b7 isn't on your branch any more. Commit the fix again."
         );
         assert_eq!(not_queued().code, ErrorCode::InvalidInput);
+    }
+
+    #[test]
+    fn f26_5_another_branch_is_told_to_check_out_the_source_branch() {
+        let error = wrong_branch("feature/upload-retry");
+        assert_eq!(error.code, ErrorCode::Conflict);
+        assert_eq!(error.message, "Check out feature/upload-retry to push.");
     }
 }

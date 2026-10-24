@@ -2,6 +2,7 @@
 import type { AuthorThread } from "./AuthorThread";
 import type { PipelineHead } from "./PipelineHead";
 import type { ResolvedSummary } from "./ResolvedSummary";
+import type { WaitingReply } from "./WaitingReply";
 
 /**
  * What S-10 shows of my MR.
@@ -18,4 +19,9 @@ threads: Array<AuthorThread>,
 /**
  * "N threads to answer".
  */
-toAnswer: number, resolved: ResolvedSummary, };
+toAnswer: number, resolved: ResolvedSummary, 
+/**
+ * The replies queued and not sent yet (F-26.5, M7 decision 12), oldest first; S-10 shows each
+ * at its thread with **Send reply** or **Push and reply**, never sending one by itself.
+ */
+waiting: Array<WaitingReply>, };

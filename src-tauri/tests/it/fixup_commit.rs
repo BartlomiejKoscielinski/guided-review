@@ -8,6 +8,11 @@
 
 use crate::fixture_repo;
 
+// F-26.5 Push and reply on the MR's source branch only (the next step after this commit);
+// `tests/it/main.rs` is locked for F-26.5, so the file hangs off this one.
+#[path = "author_push_branch.rs"]
+mod author_push_branch;
+
 use fixture_repo::FixtureRepo;
 use guided_review_lib::git::commit;
 use guided_review_lib::git::fixup_target::{self, FixupTarget};

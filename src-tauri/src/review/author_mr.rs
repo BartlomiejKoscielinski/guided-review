@@ -7,6 +7,7 @@ use std::collections::HashSet;
 use serde::Serialize;
 use ts_rs::TS;
 
+use super::author_push::WaitingReply;
 use super::author_threads::{self, AuthorThread, ResolvedSummary};
 use super::pipeline_view::{self, PipelineHead};
 use crate::error::{AppError, ErrorCode};
@@ -33,6 +34,9 @@ pub struct AuthorMr {
     #[ts(type = "number")]
     pub to_answer: usize,
     pub resolved: ResolvedSummary,
+    /// The replies queued and not sent yet (F-26.5, M7 decision 12), oldest first; S-10 shows each
+    /// at its thread with **Send reply** or **Push and reply**, never sending one by itself.
+    pub waiting: Vec<WaitingReply>,
 }
 
 /// Why my MR could not be read.
@@ -90,6 +94,7 @@ pub async fn load(
         threads: list.threads,
         to_answer: list.to_answer,
         resolved: list.resolved,
+        waiting: Vec::new(),
     })
 }
 
