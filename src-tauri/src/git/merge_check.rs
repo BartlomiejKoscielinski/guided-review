@@ -146,6 +146,19 @@ async fn conflicts(git: &Git, target: &str, cancel: &Cancel) -> Result<Vec<Strin
     Ok(read_conflicts(&output.stdout))
 }
 
+/// Whether HEAD's history holds commit `sha` (`git merge-base --is-ancestor <sha> HEAD`): a
+/// self-review counts for the branch it was made on, also once its uncommitted changes are
+/// committed (F-27.5). Anything but a full hex SHA, and a commit the repository lacks, is `false`.
+pub async fn head_contains(git: &Git, sha: &str, cancel: &Cancel) -> Result<bool, GitError> {
+    let sha = sha.trim();
+    if sha.len() < 40 || !sha.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Ok(false);
+    }
+    let spec = git.spec(["merge-base", "--is-ancestor", sha, "HEAD"]);
+    let output = git.run_spec(spec, cancel, &[0, 1, 128]).await?;
+    Ok(output.code == Some(0))
+}
+
 /// The file names after the OID, sorted and without repeats.
 fn read_conflicts(stdout: &str) -> Vec<String> {
     let mut names: Vec<String> = stdout

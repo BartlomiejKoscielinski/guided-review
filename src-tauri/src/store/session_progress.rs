@@ -60,9 +60,9 @@ pub fn of(conn: &Connection, session: &str) -> Result<Progress, StoreError> {
     })
 }
 
-/// "Self-review done" of S-11's "Before you create" (F-27.5): the progress of the repository's
-/// newest self-review (a local-changes session, `sessions::latest_self_review`). Sessions keep no
-/// branch, so it is per repository; `None` while the repository has no self-review.
+/// The progress of the repository's newest self-review (a local-changes session,
+/// `sessions::latest_self_review`), whatever its head; `None` while the repository has none.
+/// S-11's "Self-review done" narrows this to the current branch (`review::branch_self_review`).
 pub fn latest_self_review(conn: &Connection, repo_id: i64) -> Result<Option<Progress>, StoreError> {
     sessions::latest_self_review(conn, repo_id)?
         .map(|id| of(conn, &id))

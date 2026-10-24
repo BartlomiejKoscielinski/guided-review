@@ -4,6 +4,7 @@ pub mod analysis_status;
 pub mod author_mr;
 pub mod author_push;
 pub mod author_threads;
+pub mod branch_self_review;
 pub mod config_risk;
 pub mod coverage;
 pub mod decisions;

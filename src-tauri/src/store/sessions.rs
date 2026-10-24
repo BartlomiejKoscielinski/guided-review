@@ -296,24 +296,45 @@ pub fn touch(conn: &Connection, id: &str) -> Result<(), StoreError> {
 /// The latest self-review (a local-changes session) of a repository, by its last use: whose kept
 /// notes the MR description reads (F-27.2).
 pub fn latest_self_review(conn: &Connection, repo_id: i64) -> Result<Option<String>, StoreError> {
+    Ok(self_reviews(conn, repo_id)?
+        .into_iter()
+        .next()
+        .map(|r| r.id))
+}
+
+/// A self-review and the HEAD it was made at (`None` when the row has none).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SelfReviewHead {
+    pub id: String,
+    pub head_sha: Option<String>,
+}
+
+/// The self-reviews (local-changes sessions) of a repository, newest use first, with their
+/// heads: S-11's "Self-review done" keeps those of the current branch (F-27.5).
+pub fn self_reviews(conn: &Connection, repo_id: i64) -> Result<Vec<SelfReviewHead>, StoreError> {
     let mut stmt = conn.prepare(
-        "SELECT id, source_json FROM sessions WHERE repo_id = ?1
+        "SELECT id, source_json, head_sha FROM sessions WHERE repo_id = ?1
          ORDER BY updated_at DESC, created_at DESC, rowid DESC",
     )?;
     let rows = stmt.query_map(params![repo_id], |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, Option<String>>(1)?,
+            row.get::<_, Option<String>>(2)?,
+        ))
     })?;
+    let mut reviews = Vec::new();
     for row in rows {
-        let (id, json) = row?;
+        let (id, json, head_sha) = row?;
         let local = json
             .as_deref()
             .and_then(|j| serde_json::from_str::<Source>(j).ok())
             .is_some_and(|source| matches!(source, Source::Local { .. }));
         if local {
-            return Ok(Some(id));
+            reviews.push(SelfReviewHead { id, head_sha });
         }
     }
-    Ok(None)
+    Ok(reviews)
 }
 
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {

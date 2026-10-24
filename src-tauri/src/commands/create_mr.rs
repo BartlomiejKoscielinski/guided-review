@@ -16,10 +16,10 @@ use crate::claude::tasks::mr_description::{self, MrDescription, MrDescriptionReq
 use crate::error::{AppError, AppResult, ErrorCode};
 use crate::git::branch_info;
 use crate::git::merge_check::{self, ExistingMr, MergeCheck, SelfReviewProgress};
-use crate::git::mr_title;
+use crate::git::{Git, mr_title};
 use crate::gitlab::branch_mr;
 use crate::os::process::Cancel;
-use crate::review::drafts;
+use crate::review::{branch_self_review, drafts};
 use crate::store::{self, Store};
 
 /// The title S-11 opens with for an MR into `target` (a branch on origin; the default when
@@ -31,7 +31,7 @@ pub async fn git_mr_title(store: State<'_, Store>, target: Option<String>) -> Ap
 }
 
 /// "Before you create" for an MR of the current branch into `target` (a branch on origin; the
-/// default when missing): the git checks, the newest self-review of the repository and an open MR
+/// default when missing): the git checks, the newest self-review of the branch and an open MR
 /// of the branch. Without GitLab (not connected, no project, a failed request) the MR is unknown
 /// and left out: it never fails the checks. Reads only; never looks for Claude Code.
 #[tauri::command]
@@ -42,17 +42,18 @@ pub async fn git_merge_check(
 ) -> AppResult<MergeCheck> {
     let git = active_git(&store).await?;
     let mut check = merge_check::merge_check(&git, target.as_deref(), &Cancel::new()).await?;
-    check.self_review = latest_self_review(&store).await?;
+    check.self_review = self_review_of_branch(&store, &git).await?;
     check.existing_mr = existing_mr(&gitlab, &store, &check.branch).await;
     Ok(check)
 }
 
-async fn latest_self_review(store: &Store) -> AppResult<Option<SelfReviewProgress>> {
-    let progress = with_store(store, |c| match store::repos::active(c)? {
-        Some(repo) => store::session_progress::latest_self_review(c, repo.id),
-        None => Ok(None),
-    })
-    .await?;
+/// "Self-review done": the newest self-review of the current branch (one made at a commit in
+/// HEAD's history, `review::branch_self_review`); another branch's never counts.
+async fn self_review_of_branch(store: &Store, git: &Git) -> AppResult<Option<SelfReviewProgress>> {
+    let Some(repo) = with_store(store, |c| store::repos::active(c)).await? else {
+        return Ok(None);
+    };
+    let progress = branch_self_review::of_head(store, git, repo.id, &Cancel::new()).await?;
     let count = |n: usize| u32::try_from(n).unwrap_or(u32::MAX);
     Ok(progress.map(|p| SelfReviewProgress {
         reviewed: count(p.reviewed),
