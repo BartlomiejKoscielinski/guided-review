@@ -9,7 +9,11 @@
 //   node tools/verify.mjs --e2e [spec ...]        verify steps + Playwright (all specs or the given ones)
 //   node tools/verify.mjs --only e2e changes      Playwright only, one spec
 //   node tools/verify.mjs --fresh                 lint without its cache (E29: the gate and the Closing)
-import { spawn } from 'node:child_process';
+//
+// E32: a green run of a clean tree (no untracked files either) writes .verify/green.json (tree,
+// steps, specs, fresh); the gate reuses it for the identical tree instead of running the same steps
+// again (gate-lib reusableVerify).
+import { execFileSync, spawn } from 'node:child_process';
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
@@ -95,6 +99,18 @@ function report({ name, ok, secs, output, log }) {
 }
 
 mkdirSync(logDir, { recursive: true });
+const stampPath = join(logDir, 'green.json');
+const gitOut = (argv) => {
+  try {
+    return execFileSync('git', argv, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
+  } catch {
+    return null;
+  }
+};
+const cleanTree = () =>
+  gitOut(['status', '--porcelain']) === '' ? gitOut(['rev-parse', 'HEAD^{tree}']) : null;
+await rm(stampPath, { force: true });
+const treeAtStart = cleanTree();
 const results = [];
 // Phases run one after another; the groups of a phase run in parallel, the steps of a group one
 // after another. Output is printed in STEPS order once everything finished. E29: Vitest runs in a
@@ -142,4 +158,18 @@ if (wantE2e) {
 }
 const failed = results.filter((r) => !r.ok).map((r) => r.name);
 console.log(failed.length ? `FAILED: ${failed.join(', ')}` : 'ALL PASSED');
+if (!failed.length && treeAtStart && cleanTree() === treeAtStart) {
+  const stamp = {
+    tree: treeAtStart,
+    steps,
+    e2e: wantE2e ? specs : null,
+    fresh,
+    at: new Date().toISOString(),
+  };
+  writeFileSync(
+    stampPath,
+    `${JSON.stringify(stamp)}
+`,
+  );
+}
 process.exit(failed.length ? 1 : 0);

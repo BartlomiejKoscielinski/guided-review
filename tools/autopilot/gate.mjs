@@ -25,6 +25,7 @@ import {
   tickProgress,
   untouchedVitestFailures,
   verifySteps,
+  reusableVerify,
 } from './gate-lib.mjs';
 import { itemSlug } from './worktree-lib.mjs';
 
@@ -147,7 +148,23 @@ const verifyArgs = [
   ...(e2e ? ['--e2e', ...e2e.split(',')] : []),
 ];
 const verifyStart = Date.now();
-const verify = run(process.execPath, verifyArgs, wt, { ...process.env, GR_PORT: port });
+// E32: the last role's green verify of this very tree (same steps, --fresh) stands for the gate's.
+let stamp = null;
+try {
+  stamp = JSON.parse(readFileSync(join(wt, '.verify', 'green.json'), 'utf8'));
+} catch {
+  // no stamp: run verify
+}
+const tree = git(['rev-parse', 'HEAD^{tree}']);
+const reuse = reusableVerify(stamp, {
+  tree: tree.ok ? tree.out : null,
+  steps,
+  e2e: e2e ? e2e.split(',') : null,
+});
+if (reuse) verdict.verifyReused = stamp.at;
+const verify = reuse
+  ? { ok: true, out: `reused the green verify of this tree from ${stamp.at} (E32)` }
+  : run(process.execPath, verifyArgs, wt, { ...process.env, GR_PORT: port });
 // E24: Vitest timeouts only in files the item did not touch → re-run those files alone, once.
 const testLog = join(wt, '.verify', 'test.log');
 const rerun = verify.ok

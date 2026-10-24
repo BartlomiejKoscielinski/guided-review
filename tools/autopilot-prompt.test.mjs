@@ -81,7 +81,7 @@ test('autopilot prompt: every role composes with no empty field', () => {
   assert.match(implement, /\.autopilot\/items\/F-04\.3\/context\.md/);
   assert.match(
     implement,
-    /Done when: `GR_PORT=1510 node tools\/verify\.mjs --e2e step` is green \(run it exactly so\)/,
+    /Done when: `GR_PORT=1510 node tools\/verify\.mjs --fresh --e2e step` is green \(run it exactly so\)/,
   );
   assert.match(implement, /state_tests\.rs, tests\/e2e\/step\.spec\.ts/);
   const tests = composePrompt(COMMON, role('tests'), promptValues(args('tests')));
@@ -129,7 +129,7 @@ test('autopilot prompt E12: the implementer of a two-pass item gets its pass and
   const ui = compose({ part: 'ui', item: { ...ITEM, tests } });
   assert.match(ui, /^Scope: pass 2 of 2 \(E12\)/m);
   assert.ok(ui.includes('.autopilot/items/F-04.3/impl-core.json'));
-  assert.ok(ui.includes('Done when: `node tools/verify.mjs` is green'));
+  assert.ok(ui.includes('Done when: `node tools/verify.mjs --fresh` is green'));
   assert.equal(
     coreVerifyCommand(['src-tauri/src/store/state_tests.rs', 'tests/e2e/step.spec.ts']),
     'node tools/verify.mjs --only rust:fmt,rust:clippy,rust:test',
@@ -157,7 +157,7 @@ test('autopilot prompt: fix problems come from the last failed gate, else the re
   );
   assert.equal(fixProblems({ review: { findings: [REVIEW.findings[1]] }, gates: [] }), '');
   assert.deepEqual(offeredIds('# x\n## Files\n- [P-009] not offered\n'), []);
-  assert.equal(verifyCommand(['src/a.test.ts'], 1510), 'node tools/verify.mjs');
+  assert.equal(verifyCommand(['src/a.test.ts'], 1510), 'node tools/verify.mjs --fresh');
 });
 
 test('autopilot prompt: a missing required field is an error', () => {

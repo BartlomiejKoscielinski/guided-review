@@ -134,6 +134,22 @@ const JS_STEPS = ['typecheck', 'lint', 'format:check', 'test', 'test:tools'];
 const RUST_STEPS = ['rust:fmt', 'rust:clippy', 'rust:test'];
 
 /**
+ * E32: whether the stamp of a green verify run (.verify/green.json, written by tools/verify.mjs)
+ * stands for the gate's verify: the same clean tree (HEAD^{tree}), lint run --fresh like the gate,
+ * every step the gate needs, the gate's e2e specs (an empty stamp list = all specs), and at most
+ * `maxAgeMin` old. `steps` null = all steps.
+ */
+export function reusableVerify(stamp, { tree, steps, e2e, now = Date.now(), maxAgeMin = 120 }) {
+  if (!stamp || !tree || stamp.tree !== tree || stamp.fresh !== true) return false;
+  if (!(now - Date.parse(stamp.at) <= maxAgeMin * 60_000)) return false;
+  const need = steps ?? [...JS_STEPS, ...RUST_STEPS];
+  if (!Array.isArray(stamp.steps) || !need.every((s) => stamp.steps.includes(s))) return false;
+  if (!e2e) return true;
+  if (!Array.isArray(stamp.e2e)) return false;
+  return stamp.e2e.length === 0 || e2e.every((s) => stamp.e2e.includes(s));
+}
+
+/**
  * E15: the verify steps the item's diff can affect, or `null` for all of them. The Rust steps only
  * when something under src-tauri/ changed, the others only when something outside it changed: the
  * TypeScript side reads the Rust types only through the committed src/ipc/types/ (ts-rs), so a type

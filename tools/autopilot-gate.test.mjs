@@ -17,6 +17,7 @@ import {
   tickProgress,
   untouchedVitestFailures,
   verifySteps,
+  reusableVerify,
 } from './autopilot/gate-lib.mjs';
 
 const GATE = join(import.meta.dirname, 'autopilot', 'gate.mjs');
@@ -371,4 +372,41 @@ test('untouchedVitestFailures: a slow failed test outside the diff counts as loa
     'src/screens/step/AnswerCard.test.tsx',
   ]);
   assert.equal(untouchedVitestFailures(out, slow.replace('5497ms', '120ms'), []), null);
+});
+
+test('E32 reusableVerify: a green stamp of the same clean tree stands for the gate verify', () => {
+  const now = Date.parse('2026-10-24T12:00:00Z');
+  const all = [
+    'typecheck',
+    'lint',
+    'format:check',
+    'test',
+    'test:tools',
+    'rust:fmt',
+    'rust:clippy',
+    'rust:test',
+  ];
+  const stamp = {
+    tree: 't1',
+    steps: all,
+    e2e: ['review-f27-2'],
+    fresh: true,
+    at: '2026-10-24T11:30:00Z',
+  };
+  const want = { tree: 't1', steps: null, e2e: ['review-f27-2'], now };
+  assert.equal(reusableVerify(stamp, want), true);
+  assert.equal(
+    reusableVerify(stamp, { ...want, steps: ['rust:fmt', 'rust:clippy', 'rust:test'] }),
+    true,
+  );
+  assert.equal(reusableVerify(stamp, { ...want, tree: 't2' }), false);
+  assert.equal(reusableVerify(stamp, { ...want, tree: null }), false);
+  assert.equal(reusableVerify({ ...stamp, fresh: false }, want), false);
+  assert.equal(reusableVerify({ ...stamp, steps: all.slice(0, 5) }, want), false);
+  assert.equal(reusableVerify(stamp, { ...want, e2e: ['other'] }), false);
+  assert.equal(reusableVerify({ ...stamp, e2e: null }, want), false);
+  assert.equal(reusableVerify({ ...stamp, e2e: [] }, want), true);
+  assert.equal(reusableVerify({ ...stamp, e2e: null }, { ...want, e2e: null }), true);
+  assert.equal(reusableVerify({ ...stamp, at: '2026-10-24T09:00:00Z' }, want), false);
+  assert.equal(reusableVerify(null, want), false);
 });
