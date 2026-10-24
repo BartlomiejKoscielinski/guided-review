@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
-import { answeredText, isAnswered } from './authorText';
+import { answeredText } from './authorText';
 import styles from './AuthorQuestionReply.module.css';
 import { useQuestionReply } from './useQuestionReply';
 
@@ -18,8 +18,8 @@ export interface AuthorQuestionReplyProps {
  */
 export function AuthorQuestionReply({ thread, project, iid }: AuthorQuestionReplyProps) {
   const id = useId();
-  const reply = useQuestionReply(project, iid, thread.id);
-  if (isAnswered(thread) || reply.phase === 'sent') {
+  const reply = useQuestionReply(project, iid, thread);
+  if (reply.answered) {
     return (
       <span className={styles.answered}>
         <span className={styles.mark} />

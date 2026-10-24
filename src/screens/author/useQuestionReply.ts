@@ -2,13 +2,20 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toIpcError } from '../../ipc/errors';
 import { authorMrKey } from '../../ipc/hooks/useAuthorMr';
 import { useIpc } from '../../ipc/IpcContext';
+import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import {
   EMPTY_REPLY,
   useAuthorQuestionStore,
   type QuestionReply,
 } from '../../state/authorQuestion';
+import { isAnswered } from './authorText';
 
 export interface QuestionReplyControls extends QuestionReply {
+  /**
+   * The card reads "Answered…": the thread's last note is mine, or my reply went out and no note
+   * has come after it yet (the reload may still be on its way or have failed).
+   */
+  answered: boolean;
   setText: (text: string) => void;
   /** **Draft with Claude**: fills the text with Claude's proposal; sends nothing. */
   draft: () => void;
@@ -21,7 +28,8 @@ export interface QuestionReplyControls extends QuestionReply {
  * `useAuthorQuestionStore`, so a draft or a send that ends while another thread is open lands on
  * the thread it belongs to. Nothing runs until a click.
  */
-export function useQuestionReply(project: string, iid: number, thread: string) {
+export function useQuestionReply(project: string, iid: number, question: AuthorThread) {
+  const thread = question.id;
   const ipc = useIpc();
   const queryClient = useQueryClient();
   const reply = useAuthorQuestionStore((s) => s.replies[thread]) ?? EMPTY_REPLY;
@@ -45,12 +53,14 @@ export function useQuestionReply(project: string, iid: number, thread: string) {
   const send = () => {
     const text = current().text;
     if (busy() || text.trim() === '') return;
+    const notesAtSend = question.notes.length;
     update(thread, { phase: 'sending', error: null });
     ipc.authorReply(project, iid, thread, text).then(
       async () => {
-        // The thread then lists my reply and reads Answered; the composer goes once it does.
+        // The thread then lists my reply and reads Answered; a later note (a follow-up) brings
+        // the composer back, as the thread data decides from then on.
         await queryClient.invalidateQueries({ queryKey: authorMrKey(project, iid) });
-        update(thread, { phase: 'sent', text: '' });
+        update(thread, { phase: 'sent', text: '', notesAtSend });
       },
       (error: unknown) => {
         update(thread, { phase: 'idle', error: toIpcError(error).message });
@@ -58,8 +68,13 @@ export function useQuestionReply(project: string, iid: number, thread: string) {
     );
   };
 
+  const sentPending =
+    reply.phase === 'sent' &&
+    reply.notesAtSend !== null &&
+    question.notes.length <= reply.notesAtSend;
   return {
     ...reply,
+    answered: isAnswered(question) || sentPending,
     setText: (text: string) => {
       update(thread, { text });
     },

@@ -9,6 +9,11 @@ export interface QuestionReply {
   phase: QuestionReplyPhase;
   /** Why the last draft or send failed; cleared by the next one. */
   error: string | null;
+  /**
+   * How many notes the thread had when the last reply went out: "Answered…" holds until the
+   * thread lists a note beyond my reply (a follow-up), whether or not the reload shows the reply.
+   */
+  notesAtSend: number | null;
 }
 
 interface AuthorQuestionStore {
@@ -18,7 +23,12 @@ interface AuthorQuestionStore {
   reset: () => void;
 }
 
-export const EMPTY_REPLY: QuestionReply = { text: '', phase: 'idle', error: null };
+export const EMPTY_REPLY: QuestionReply = {
+  text: '',
+  phase: 'idle',
+  error: null,
+  notesAtSend: null,
+};
 
 export const useAuthorQuestionStore = create<AuthorQuestionStore>()((set) => ({
   replies: {},
