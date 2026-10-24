@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router';
 import type { NewMrState } from '../../app/router';
-import { Button } from '../../components/Button';
 import { useBranchInfo } from '../../ipc/hooks/useBranchInfo';
+import { useCreateMr } from '../../ipc/hooks/useCreateMr';
 import { useMergeCheck } from '../../ipc/hooks/useMergeCheck';
+import { useReviewerSuggestions } from '../../ipc/hooks/useReviewers';
+import type { CreatedMr } from '../../ipc/types/CreatedMr';
 import { BeforeYouCreate } from './BeforeYouCreate';
 import { BranchRow } from './BranchRow';
+import { CreateBlock } from './CreateBlock';
 import { ExistingMrBanner } from './ExistingMrBanner';
 import { blocksCreate } from './mergeChecks';
+import { MrCreated } from './MrCreated';
 import { MrOptions } from './MrOptions';
 import { DEFAULT_MR_OPTIONS, type MrOptionValues } from './mrOptionValues';
 import { MrTextFields } from './MrTextFields';
 import { type AddedReviewer, Reviewers } from './Reviewers';
 import reviewerStyles from './Reviewers.module.css';
+import { addedInListOrder, notifyNote } from './reviewerOrder';
 import { useMrText } from './useMrText';
 import styles from './CreateMr.module.css';
 
@@ -23,7 +28,8 @@ const draftedEntries = new Set<string>();
  * S-11 New merge request (F-27): opened from Push and create MR (S-06), the self-review's Draft
  * MR description (F-17.3) and, from M10, Rider. F-27.1: the heading and the branch block;
  * F-27.2: Title and Description; F-27.3: the Reviewers in the aside; F-27.4: the options and the
- * Create button's label (its action is F-27.6); F-27.5: Before you create and the open-MR banner.
+ * Create button's label; F-27.5: Before you create and the open-MR banner; F-27.6: Create on the
+ * click, the note on who gets notified and the success view, which replaces the whole screen.
  */
 export function CreateMrScreen() {
   const location = useLocation();
@@ -56,6 +62,40 @@ export function CreateMrScreen() {
   // M7 decision 19: not pushed or an open MR block Create; while the checks load it waits, and a
   // failed check (unknown) does not block.
   const blocked = check === undefined ? checks.isPending : blocksCreate(check);
+  const suggestions = useReviewerSuggestions(target, ready);
+  const people = addedInListOrder(suggestions.data ?? [], reviewers);
+  const names = people.map((p) => p.name);
+  const create = useCreateMr();
+  const [created, setCreated] = useState<{ mr: CreatedMr; reviewers: string[] } | null>(null);
+  const onCreate = () => {
+    if (target === undefined || create.isPending) return;
+    create.mutate(
+      {
+        target,
+        title: text.title,
+        description: text.description,
+        reviewerIds: people.map((p) => p.id),
+        draft: options.draft,
+        removeSourceBranch: options.deleteBranch,
+        squash: options.squash,
+      },
+      {
+        onSuccess: (mr) => {
+          setCreated({ mr, reviewers: names });
+        },
+      },
+    );
+  };
+
+  if (created !== null) {
+    return (
+      <div className={styles.layout}>
+        <div className={styles.main}>
+          <MrCreated mr={created.mr} reviewers={created.reviewers} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.layout}>
@@ -108,11 +148,14 @@ export function CreateMrScreen() {
             loading={check === undefined && checks.isPending}
             error={checks.error}
           />
-          <div className={reviewerStyles.createBlock}>
-            <Button variant="primary" size={50} disabled={blocked}>
-              {options.draft ? 'Create draft MR' : 'Create merge request'}
-            </Button>
-          </div>
+          <CreateBlock
+            draft={options.draft}
+            blocked={blocked}
+            creating={create.isPending}
+            error={create.error?.message ?? null}
+            note={notifyNote(names)}
+            onCreate={onCreate}
+          />
         </aside>
       )}
     </div>

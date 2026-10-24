@@ -1,6 +1,7 @@
 import { useReviewerSuggestions } from '../../ipc/hooks/useReviewers';
 import type { ProjectMember } from '../../ipc/types/ProjectMember';
 import { ReviewerRow } from './ReviewerRow';
+import { reviewerRows } from './reviewerOrder';
 import { ReviewerSearch } from './ReviewerSearch';
 import styles from './Reviewers.module.css';
 
@@ -37,12 +38,7 @@ export function Reviewers({ target, added, onAdded }: Props) {
         : [...added, person],
     );
   };
-  // The suggestions, then whoever was added and isn't suggested (from the search or another
-  // target), with the reason they were added with.
-  const rows: AddedReviewer[] = [
-    ...suggested,
-    ...added.filter((a) => !suggested.some((s) => s.username === a.username)),
-  ];
+  const rows = reviewerRows(suggested, added);
   const fromSearch = (member: ProjectMember) => {
     const own = suggested.find((s) => s.username === member.username);
     toggle(own ?? { ...member, reason: ADDED_BY_YOU });
