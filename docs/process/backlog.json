@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T11:29:14.327Z",
+  "updated": "2026-10-24T12:13:41.953Z",
   "items": [
     {
       "id": "F-17.3",
@@ -299,9 +299,18 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "3a9d4d3",
+      "tests": [
+        "src-tauri/tests/it/mr_description_task.rs",
+        "src-tauri/tests/it/mr_title.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/mrDescription.test.ts",
+        "src/screens/create-mr/CreateMrDescription.test.tsx",
+        "tests/e2e/create-mr-f27-2.spec.ts"
+      ]
     },
     {
       "id": "F-27.3",
