@@ -2,6 +2,7 @@ import type { IpcClient } from '../client';
 import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
 import { createStepRuns } from './analysisStatus';
 import { createAuthorPushBackend } from './authorPush';
+import { createReplyDraftBackend } from './authorReplyDraft';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createFixBackend } from './fix';
@@ -201,6 +202,9 @@ export function createMockClient({
       authorPush.withQueued(project, await gitlab.authorMr(project, iid)),
     authorQueueReply: authorPush.authorQueueReply,
     authorPushAndReply: authorPush.authorPushAndReply,
+    // F-26.7: Send reply on a question goes out at once; Draft with Claude only proposes the text.
+    authorReply: authorPush.authorReply,
+    ...createReplyDraftBackend(respond, pause),
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),

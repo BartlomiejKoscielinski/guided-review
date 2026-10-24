@@ -12,6 +12,12 @@ interface Row extends QueuedReply {
   iid: number;
 }
 
+const blank = () =>
+  new IpcError({ code: 'INVALID_INPUT', message: 'Write the reply to send.', retryable: false });
+
+const notFound = () =>
+  new IpcError({ code: 'GITLAB_NOT_FOUND', message: "GitLab didn't find it.", retryable: false });
+
 const notQueued = () =>
   new IpcError({ code: 'INVALID_INPUT', message: "That reply isn't queued.", retryable: false });
 
@@ -25,12 +31,14 @@ const notQueued = () =>
  * mock remote never holds a commit whose reply waits, so each is `pushed: false`. A sent reply
  * (F-26.6) is the last note of its thread, mine: with Resolve the thread leaves the open list and
  * counts as resolved; without it the thread reads `replied` (`answered` for a question) and no
- * longer waits for an answer.
+ * longer waits for an answer. `authorReply` (F-26.7, Send reply on a question) is such a sent
+ * reply at once, as written, without Resolve: a blank body is INVALID_INPUT, a discussion the MR
+ * doesn't have GitLab's 404, as `commands/author_reply.rs`.
  */
 export function createAuthorPushBackend(
   pushFails: () => boolean,
   respond: <T>(value: T) => Promise<T>,
-): Pick<IpcClient, 'authorQueueReply' | 'authorPushAndReply'> & {
+): Pick<IpcClient, 'authorQueueReply' | 'authorPushAndReply' | 'authorReply'> & {
   withQueued: (project: string, mr: AuthorMr) => AuthorMr;
 } {
   const rows = new Map<string, Row>();
@@ -46,15 +54,7 @@ export function createAuthorPushBackend(
   });
   return {
     authorQueueReply: (project, iid, discussion, body, resolve, afterSha) => {
-      if (body.trim() === '') {
-        return Promise.reject(
-          new IpcError({
-            code: 'INVALID_INPUT',
-            message: 'Write the reply to send.',
-            retryable: false,
-          }),
-        );
-      }
+      if (body.trim() === '') return Promise.reject(blank());
       const open = [...rows.values()].find(
         (r) =>
           r.project === project &&
@@ -87,6 +87,23 @@ export function createAuthorPushBackend(
         remoteBranch: `origin/${authorMr().sourceBranch}`,
         resolved: row.resolve,
       });
+    },
+    authorReply: async (project, iid, discussion, body) => {
+      if (body.trim() === '') throw blank();
+      if (!authorMr().threads.some((t) => t.id === discussion)) throw notFound();
+      const id = `sent-reply-${String(next++)}`;
+      rows.set(id, {
+        id,
+        project,
+        iid,
+        discussion,
+        body,
+        resolve: false,
+        afterSha: '',
+        state: 'sent',
+        error: null,
+      });
+      await respond(null);
     },
     withQueued: (project, mr) => {
       const mine = [...rows.values()].filter((r) => r.project === project && r.iid === mr.iid);

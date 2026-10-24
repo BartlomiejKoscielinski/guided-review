@@ -59,6 +59,7 @@ import type { MrList } from './types/MrList';
 import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
 import type { QueuedReply } from './types/QueuedReply';
+import type { ReplyDraft } from './types/ReplyDraft';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
 import type { UnfinishedSession } from './types/UnfinishedSession';
@@ -259,6 +260,10 @@ export function createTauriClient(): IpcClient {
       }),
     authorPushAndReply: (project, iid, id) =>
       call<PushOutcome>('author_push_and_reply', { project, iid, replyId: id }),
+    authorReply: (project, iid, discussion, body) =>
+      call<undefined>('author_reply', { project, iid, discussion, body }),
+    claudeReplyDraft: (project, iid, discussion) =>
+      call<ReplyDraft>('claude_reply_draft', { project, iid, discussion }),
     authorPushPipeline: (project, iid, sha) =>
       call<PipelineTab | null>('author_push_pipeline', { project, iid, sha }),
     pipelineJobs: (project, iid, pipeline) =>
