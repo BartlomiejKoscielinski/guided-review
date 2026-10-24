@@ -771,8 +771,8 @@ const SHOTS: Shot[] = [
     // mock's text with "Drafted by Claude from 3 commits and the diff" and Shorter version.
     // F-27.3: Marta K. and Ola M. added, as the mock's default state shows them (nobody is
     // added at the start). F-27.4: the options at their defaults (Delete branch after merge on)
-    // and Create merge request, as in the mock; the checks and the notify note come with F-27.5
-    // and F-27.6.
+    // and Create merge request with the notify note "Marta K. and Ola M. get notified." (F-27.6),
+    // as in the mock; the checks come with F-27.5.
     screen: 'S11',
     state: 'create-mr',
     lastRoute: { screen: 'S-06' },
@@ -787,6 +787,31 @@ const SHOTS: Shot[] = [
       await reviewers.getByRole('button', { name: 'Add Marta K.' }).click();
       await reviewers.getByRole('button', { name: 'Add Ola M.' }).click();
       await reviewers.getByRole('button', { name: 'Remove Ola M.' }).waitFor();
+    },
+  },
+  {
+    // S11-create-mr-created.png, CreateMR.dc.html {"created":true} (F-27.6): the same S-11 with
+    // Write with Claude and Marta K. and Ola M. added, then Create merge request: the success view
+    // with !483, the pipeline #18361 running, "Marta K., Ola M." notified and the three actions.
+    screen: 'S11',
+    state: 'create-mr-created',
+    lastRoute: { screen: 'S-06' },
+    prepare: async (page) => {
+      await page.getByLabel('Message').fill('Subject');
+      await page.getByRole('button', { name: /^Commit · / }).click();
+      await page.getByRole('status').getByRole('button', { name: 'Push and create MR' }).click();
+      await page.getByTestId('mr-branch-stats').getByText('+84').waitFor();
+      await page.getByRole('button', { name: 'Write with Claude' }).click();
+      await page.getByRole('button', { name: 'Shorter version' }).waitFor({ timeout: 10000 });
+      const reviewers = page.getByRole('region', { name: 'Reviewers' });
+      await reviewers.getByRole('button', { name: 'Add Marta K.' }).click();
+      await reviewers.getByRole('button', { name: 'Add Ola M.' }).click();
+      await reviewers.getByRole('button', { name: 'Remove Ola M.' }).waitFor();
+      await page
+        .getByRole('complementary', { name: 'Reviewers and checks' })
+        .getByRole('button', { name: 'Create merge request' })
+        .click();
+      await page.getByRole('region', { name: 'Merge request created' }).waitFor();
     },
   },
 ];
