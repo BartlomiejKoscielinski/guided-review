@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Button } from '../../components/Button';
 import type { BlockColor } from '../../components/colors';
 import { SpinnerIcon } from '../../components/icons';
@@ -21,8 +22,10 @@ export interface AuthorThreadCardProps {
   onStopWaiting?: () => void;
   /** Fix with Claude (F-25.1 on author threads); the flow is wired by its own criterion. */
   onFixWithClaude?: () => void;
-  /** Reply (F-26.5, F-26.7); the composer is wired by its own criterion. */
+  /** Reply on a change thread (F-26.5); its composer is wired by its own criterion. */
   onReply?: () => void;
+  /** A question's answer (F-26.7): the reply composer, or "Answered…", in place of the actions. */
+  answer?: ReactNode;
   /**
    * After Push and reply in this visit (F-26.6, Author.dc.html `fDone`): the actions and the Rider
    * lines go, my reply ends the conversation, and a resolved thread shows "Resolved".
@@ -33,8 +36,9 @@ export interface AuthorThreadCardProps {
 /**
  * S-10's thread card (F-26.2, Author.dc.html): the conversation in order (avatar, author - my own
  * note reads "You" -, age, full text) and the actions. A change request on a file offers
- * **Fix with Claude**, **Fix in Rider** and **Reply**; a question or a General thread is answered,
- * not fixed, so it offers **Reply** only. While Fix in Rider waits for the file the actions give
+ * **Fix with Claude**, **Fix in Rider** and **Reply**; a General change thread is answered, not
+ * fixed, so it offers **Reply** only; a question holds its reply composer instead (`answer`,
+ * F-26.7). While Fix in Rider waits for the file the actions give
  * way to the busy line and **Stop waiting**; a detected change shows "Change detected from Rider.
  * Commit it below." (F-26.3, Author.dc.html `fBusy`, `fApplied`). After the push the
  * conversation ends with my reply, and a resolved thread reads "Resolved" (F-26.6, `fDone`).
@@ -45,6 +49,7 @@ export function AuthorThreadCard({
   onFixInRider,
   onFixWithClaude,
   onReply,
+  answer,
   riderPhase = 'idle',
   riderBusyText = '',
   onStopWaiting,
@@ -52,6 +57,7 @@ export function AuthorThreadCard({
 }: AuthorThreadCardProps) {
   const fixable = thread.kind === 'change' && thread.path !== null;
   const phase = pushed ? 'pushed' : riderPhase;
+  const question = thread.kind === 'question' && answer !== undefined;
   return (
     <section aria-label="Thread" className={styles.card}>
       {thread.notes.map((note, i) => (
@@ -68,7 +74,8 @@ export function AuthorThreadCard({
           </div>
         </div>
       ))}
-      {phase === 'idle' && (
+      {phase === 'idle' && question && answer}
+      {phase === 'idle' && !question && (
         <div className={styles.actions}>
           {fixable && (
             <>

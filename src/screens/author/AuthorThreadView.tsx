@@ -9,6 +9,7 @@ import type { WaitingReply } from '../../ipc/types/WaitingReply';
 import { noteAvatarColor, splitPath } from './authorText';
 import { useAuthorCommitStore } from '../../state/authorCommit';
 import { AuthorCommitPanel } from './AuthorCommitPanel';
+import { AuthorQuestionReply } from './AuthorQuestionReply';
 import { AuthorThreadCard } from './AuthorThreadCard';
 import styles from './AuthorThreadView.module.css';
 import { useFixInRider } from './useFixInRider';
@@ -109,6 +110,11 @@ export function AuthorThreadView({
       }
       onStopWaiting={fixInRider.stop}
       pushed={draft?.push === 'done' ? (draft.resolve ? 'resolved' : 'replied') : undefined}
+      answer={
+        thread.kind === 'question' ? (
+          <AuthorQuestionReply thread={thread} project={project} iid={iid} />
+        ) : undefined
+      }
     />
   );
 

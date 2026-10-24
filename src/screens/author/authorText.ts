@@ -89,3 +89,11 @@ export function pushedPipelineText(tab: PipelineTab | null): string {
   if (!tab) return 'Pipeline starting…';
   return `Pipeline #${String(tab.number)} ${STATUS_WORD[tab.status].toLowerCase()}`;
 }
+
+/**
+ * A question after my reply (F-26.7, Author.dc.html `qSent`): "Answered. The thread stays open
+ * until Piotr resolves it." The reviewer by first name, no pronoun guessed from it.
+ */
+export function answeredText(author: string): string {
+  return `Answered. The thread stays open until ${firstName(author)} resolves it.`;
+}
