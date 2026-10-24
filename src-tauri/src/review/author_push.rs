@@ -7,7 +7,9 @@
 //! 2. `git ls-remote origin refs/heads/<branch>`: a remote tip that already holds the commit skips
 //!    the push (a restart after a push, decision 12); a tip that isn't an ancestor of HEAD is
 //!    "Pull first" and nothing is pushed or sent (decision 11);
-//! 3. `git push` (the existing F-16.5 push), then the remote tip must hold `after_sha`;
+//! 3. `git push` (the existing F-16.5 push), then the remote tip must hold `after_sha`; that tip
+//!    (HEAD, possibly a later commit than `after_sha`) is the pushed sha whose MR pipeline S-10
+//!    then looks up (F-26.6);
 //! 4. the reply, then Resolve when the switch is on, through `gitlab/thread_actions.rs`.
 //!
 //! Any failure keeps the reply `queued` with the failure in plain words (Retry); a note GitLab
@@ -49,6 +51,12 @@ pub enum PushOutcome {
         #[serde(rename = "remoteBranch")]
         remote_branch: String,
         resolved: bool,
+        /// The remote tip the push reached (or already held): the commit GitLab runs the MR
+        /// pipeline for, `after_sha` or a later commit on top of it (F-26.6, M7 decision 13).
+        /// None only when the reply was already sent and the remote branch is gone.
+        #[serde(rename = "pushedSha", skip_serializing_if = "Option::is_none")]
+        #[ts(optional)]
+        pushed_sha: Option<String>,
     },
     /// The remote has commits the checkout doesn't have: nothing pushed, nothing sent.
     PullFirst,
@@ -168,9 +176,16 @@ async fn run(
     };
     let remote_branch = format!("origin/{branch}");
     if row.state == SENT {
+        let pushed_sha = commit::remote_tip(job.git, &branch, cancel)
+            .await
+            .unwrap_or_else(|error| {
+                tracing::warn!(%error, "remote tip unreadable; S-10 waits for no new pipeline");
+                None
+            });
         return Ok(PushOutcome::Done {
             remote_branch,
             resolved: row.resolve,
+            pushed_sha,
         });
     }
     let head = refs::verify_commit(job.git, "HEAD", cancel)
@@ -185,7 +200,9 @@ async fn run(
         Some(tip) => holds(job.git, tip, &row.after_sha, cancel).await?,
         None => false,
     };
-    if !pushed {
+    let pushed_sha = if pushed {
+        tip
+    } else {
         if let Some(tip) = &tip
             && !holds(job.git, &head, tip, cancel).await?
         {
@@ -200,7 +217,8 @@ async fn run(
         if !reached {
             return Err(not_on_remote(&row.after_sha, &remote_branch));
         }
-    }
+        after
+    };
 
     if !row.replied {
         thread_actions::reply(job.client, job.project, job.iid, &row.discussion, &row.body).await?;
@@ -215,6 +233,7 @@ async fn run(
     Ok(PushOutcome::Done {
         remote_branch,
         resolved: row.resolve,
+        pushed_sha,
     })
 }
 
@@ -247,10 +266,16 @@ mod tests {
         let done = PushOutcome::Done {
             remote_branch: "origin/feature/upload-retry".to_owned(),
             resolved: true,
+            pushed_sha: Some("9e1d4b7c2a5f8e0d3b6a9c1e4f7a0d2b5c8e1f40".to_owned()),
         };
         assert_eq!(
             serde_json::to_value(&done).unwrap(),
-            json!({ "kind": "done", "remoteBranch": "origin/feature/upload-retry", "resolved": true })
+            json!({
+                "kind": "done",
+                "remoteBranch": "origin/feature/upload-retry",
+                "resolved": true,
+                "pushedSha": "9e1d4b7c2a5f8e0d3b6a9c1e4f7a0d2b5c8e1f40",
+            })
         );
         assert_eq!(
             serde_json::to_value(PushOutcome::PullFirst).unwrap(),
