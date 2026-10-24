@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T14:31:14.719Z",
+  "updated": "2026-10-24T19:31:18.301Z",
   "items": [
     {
       "id": "F-17.3",
@@ -319,9 +319,21 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
-      "attempts": 0,
-      "note": ""
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "f15b239",
+      "tests": [
+        "src-tauri/tests/it/reviewers_codeowners.rs",
+        "src-tauri/tests/it/reviewers_blame.rs",
+        "src-tauri/tests/it/reviewers_suggest.rs",
+        "src-tauri/tests/it/reviewers_gitlab.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/reviewers.test.ts",
+        "src/ipc/tauriReviewers.test.ts",
+        "src/screens/create-mr/CreateMrReviewers.test.tsx",
+        "tests/e2e/create-mr-f27-3.spec.ts"
+      ]
     },
     {
       "id": "F-27.4",
@@ -329,9 +341,15 @@
       "title": "Options: Mark as draft, Delete branch after merge (default on), Squash commits.",
       "kind": "mixed",
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "cf92ff5",
+      "tests": [
+        "src/screens/create-mr/CreateMrOptions.test.tsx",
+        "tests/e2e/create-mr-f27-4.spec.ts"
+      ],
+      "forkSha": "2facbaa"
     },
     {
       "id": "F-27.5",
