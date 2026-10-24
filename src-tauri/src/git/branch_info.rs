@@ -37,6 +37,8 @@ pub struct BranchInfo {
 }
 
 const REMOTE_PREFIX: &str = "refs/remotes/origin/";
+/// S-11 shows it in place of the numbers when the chosen target is gone.
+const NOT_ON_ORIGIN: &str = "That target is not a branch on origin.";
 
 /// The branch block for `target` (a branch on `origin`, with or without `origin/`), or for the
 /// default target when it is missing. A target that is no branch on `origin` is refused.
@@ -58,9 +60,7 @@ pub async fn branch_info(
         Some(asked) => {
             let name = asked.strip_prefix("origin/").unwrap_or(asked);
             if !refs::is_branch_name(name) || !targets.iter().any(|t| t == name) {
-                return Err(GitError::Invalid(
-                    "That target is not a branch on origin.".to_owned(),
-                ));
+                return Err(GitError::Invalid(NOT_ON_ORIGIN.to_owned()));
             }
             Some(name.to_owned())
         }
@@ -192,5 +192,11 @@ mod tests {
             ["develop", "feature/zażółć", "main", "release/1.8"]
         );
         assert!(order_targets("", None, Some("main")).is_empty());
+    }
+
+    #[test]
+    fn f27_1_a_refused_target_says_it_is_not_on_origin() {
+        let error = crate::error::AppError::from(GitError::Invalid(NOT_ON_ORIGIN.to_owned()));
+        assert_eq!(error.message, "That target is not a branch on origin.");
     }
 }
