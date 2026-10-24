@@ -765,13 +765,16 @@ const SHOTS: Shot[] = [
     },
   },
   {
-    // S11-create-mr.png, CreateMR.dc.html {} (F-27.1): S-11 restored with the branch block
-    // chore/compiled-bindings → develop, 3 commits · 12 files · +84 −40. The Title, Description,
-    // options and the Reviewers and checks aside come with F-27.2 to F-27.6.
+    // S11-create-mr.png, CreateMR.dc.html {} (F-27.1): S-06 › Commit › Push and create MR (S-11
+    // is not restored on start), the branch block chore/compiled-bindings → develop, 3 commits ·
+    // 12 files · +84 −40. Title, Description, options and the aside come with F-27.2 to F-27.6.
     screen: 'S11',
     state: 'create-mr',
-    lastRoute: { screen: 'S-11' },
+    lastRoute: { screen: 'S-06' },
     prepare: async (page) => {
+      await page.getByLabel('Message').fill('Subject');
+      await page.getByRole('button', { name: /^Commit · / }).click();
+      await page.getByRole('status').getByRole('button', { name: 'Push and create MR' }).click();
       await page.getByTestId('mr-branch-stats').getByText('+84').waitFor();
     },
   },
