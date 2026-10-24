@@ -25,6 +25,7 @@ mod author_push_pipeline;
 mod author_push_reply;
 mod author_thread_view;
 mod author_threads;
+mod branch_info;
 mod browser_open;
 mod claude_tasks;
 mod drafts_of_the_mr;
