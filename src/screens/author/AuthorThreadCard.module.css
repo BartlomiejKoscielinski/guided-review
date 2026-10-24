@@ -166,3 +166,8 @@
   height: 9px;
   background: var(--green);
 }
+
+/* After Push and reply with Resolve (F-26.6, Author.dc.html `fDone`). */
+.resolved {
+  align-self: flex-start;
+}

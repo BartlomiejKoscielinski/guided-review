@@ -85,6 +85,7 @@ export function AuthorThreadView({
   const line = thread.line;
   const fixInRider = useFixInRider(path, line ?? 1, target);
   const openCommit = useAuthorCommitStore((s) => s.open);
+  const draft = useAuthorCommitStore((s) => s.drafts[thread.id]);
   const changed = fixInRider.phase === 'changed';
   useEffect(() => {
     // F-26.4, M7 decision 9: the message is prefilled without Claude after a Rider change.
@@ -107,6 +108,7 @@ export function AuthorThreadView({
           : ''
       }
       onStopWaiting={fixInRider.stop}
+      pushed={draft?.push === 'done' ? (draft.resolve ? 'resolved' : 'replied') : undefined}
     />
   );
 

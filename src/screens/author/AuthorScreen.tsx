@@ -1,7 +1,12 @@
 import { useRef, useState } from 'react';
 import { Square } from '../../components/Square';
+import { useGitlabStatus } from '../../ipc/hooks/useGitlab';
+import type { AuthorMr } from '../../ipc/types/AuthorMr';
+import type { AuthorThread } from '../../ipc/types/AuthorThread';
+import { useAuthorCommitStore } from '../../state/authorCommit';
 import { headingText, resolvedText } from './authorText';
 import { AuthorThreadView } from './AuthorThreadView';
+import { keepPushed, tagOf, visitCounts, withPushedReply } from './pushedThreads';
 import { ThreadList } from './ThreadList';
 import { useRouteAuthorMr } from './useRouteAuthorMr';
 import styles from './Author.module.css';
@@ -9,17 +14,35 @@ import styles from './Author.module.css';
 /**
  * S-10 Your MR (F-26.1), left panel: "Feedback on your MR", how many threads wait for an answer,
  * the branch, the thread list (first thread selected), the threads resolved earlier and the
- * safety note; the main column opens the selected thread in the code (F-26.2). Read from the active repository's GitLab project when opened by navigation; a
+ * safety note; the main column opens the selected thread in the code (F-26.2). A thread pushed in
+ * this visit reads Resolved or Replied and stays listed (F-26.6). Read from the active repository's GitLab project when opened by navigation; a
  * restored start reads nothing (F-30.4) and asks to open the MR again.
  */
 export function AuthorScreen() {
   const { iid, project, restored, noProject, mr } = useRouteAuthorMr();
+  const drafts = useAuthorCommitStore((s) => s.drafts);
   const [picked, setPicked] = useState<string | null>(null);
-  const threads = mr.data?.threads ?? [];
+  // A thread resolved by a push in this visit stays listed when GitLab's list is read again.
+  const [listed, setListed] = useState<{ from: AuthorMr | undefined; threads: AuthorThread[] }>({
+    from: undefined,
+    threads: [],
+  });
+  if (listed.from !== mr.data) {
+    setListed({
+      from: mr.data,
+      threads: mr.data ? keepPushed(listed.threads, mr.data.threads, drafts) : [],
+    });
+  }
+  // My name for the reply note after a push; a restored start reads nothing (F-30.4).
+  const me = useGitlabStatus(!restored).data?.user?.name;
+  const threads = (listed.from === mr.data ? listed.threads : (mr.data?.threads ?? [])).map((t) =>
+    withPushedReply(t, drafts[t.id], me),
+  );
   const thread = threads.find((t) => t.id === picked) ?? threads[0];
   const selected = thread?.id ?? null;
   const mainRef = useRef<HTMLDivElement>(null);
-  const resolved = mr.data ? resolvedText(mr.data.resolved) : null;
+  const counts = mr.data ? visitCounts(mr.data, threads, drafts) : null;
+  const resolved = counts ? resolvedText(counts.resolved) : null;
 
   return (
     <div className={styles.screen}>
@@ -28,7 +51,7 @@ export function AuthorScreen() {
           <span className={styles.label}>Feedback on your MR</span>
           {mr.data && (
             <>
-              <h1 className={styles.heading}>{headingText(mr.data.toAnswer)}</h1>
+              <h1 className={styles.heading}>{headingText(counts?.toAnswer ?? 0)}</h1>
               <span className={styles.branch}>
                 {`${mr.data.sourceBranch} → ${mr.data.targetBranch}`}
               </span>
@@ -48,7 +71,12 @@ export function AuthorScreen() {
         ) : mr.data ? (
           <div className={styles.threads}>
             {threads.length > 0 && (
-              <ThreadList threads={threads} selected={selected} onSelect={setPicked} />
+              <ThreadList
+                threads={threads}
+                tagOf={(t) => tagOf(t, drafts[t.id])}
+                selected={selected}
+                onSelect={setPicked}
+              />
             )}
             {resolved !== null && (
               <div className={styles.resolved}>

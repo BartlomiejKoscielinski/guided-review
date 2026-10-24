@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthorCommitStore, type AuthorCommitDraft } from '../../state/authorCommit';
 import { renderWithIpc } from '../../test/render';
@@ -7,8 +8,8 @@ import { AuthorPushPanel } from './AuthorPushPanel';
 import { fixedReply } from './authorText';
 
 // F-26.5 states the spec and the mock leave open (P-017): the panel after a successful push
-// (the "Pushed" block alone until F-26.6 adds its sentence and pipeline link), Pull first with
-// Open in Rider, and a blank reply that can't be pushed.
+// (F-26.6 adds its sentence and the pipeline's router link, hence the MemoryRouter), Pull first
+// with Open in Rider, and a blank reply that can't be pushed.
 
 const COMMITTED = { sha: '9e1d4b7c2a5f8e0d3b6a9c1e4f7a0d2b5c8e1f40', shortSha: '9e1d4b7' };
 
@@ -22,16 +23,18 @@ function show(patch: Partial<AuthorCommitDraft>, onOpenRider = vi.fn()) {
   const draft = useAuthorCommitStore.getState().drafts.t1;
   if (!draft) throw new Error('no draft');
   renderWithIpc(
-    <AuthorPushPanel
-      threadId="t1"
-      project="mobile/mobile-app"
-      iid={480}
-      author="Marta K."
-      branch="feature/upload-retry"
-      draft={draft}
-      committed={COMMITTED}
-      onOpenRider={onOpenRider}
-    />,
+    <MemoryRouter>
+      <AuthorPushPanel
+        threadId="t1"
+        project="mobile/mobile-app"
+        iid={480}
+        author="Marta K."
+        branch="feature/upload-retry"
+        draft={draft}
+        committed={COMMITTED}
+        onOpenRider={onOpenRider}
+      />
+    </MemoryRouter>,
     {},
   );
   return onOpenRider;

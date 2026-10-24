@@ -2,11 +2,13 @@ import type { Ref } from 'react';
 import { Tag } from '../../components/Tag';
 import type { BlockColor } from '../../components/colors';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
-import { STATUS_TAG } from './authorText';
+import type { ThreadTag } from './pushedThreads';
 import styles from './Author.module.css';
 
 export interface ThreadListItemProps {
   thread: AuthorThread;
+  /** Its status tag, after a push in this visit too (F-26.6). */
+  tag: ThreadTag;
   avatarColor: BlockColor;
   selected: boolean;
   onSelect: () => void;
@@ -16,12 +18,12 @@ export interface ThreadListItemProps {
 /** One thread of S-10's list: avatar, author, `file:line`, a two-line excerpt and its tag. */
 export function ThreadListItem({
   thread,
+  tag,
   avatarColor,
   selected,
   onSelect,
   buttonRef,
 }: ThreadListItemProps) {
-  const tag = STATUS_TAG[thread.status];
   return (
     <button
       ref={buttonRef}

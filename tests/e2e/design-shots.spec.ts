@@ -714,6 +714,36 @@ const SHOTS: Shot[] = [
         .waitFor();
     },
   },
+  {
+    // S10-author-pushed.png, Author.dc.html {"fix":"pushed"} (F-26.6): after Commit, Push and
+    // reply with Resolve on: "Pushed", "Replied to Marta and resolved the thread." and the new
+    // pipeline's link once the mock finds #18360 running; the list tags the thread "Resolved" and
+    // the heading counts Piotr's question alone.
+    screen: 'S10',
+    state: 'author-pushed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix in Rider' }).click();
+      await card
+        .getByText('Change detected from Rider. Commit it below.')
+        .waitFor({ timeout: 8000 });
+      const panel = page.getByRole('region', { name: 'Commit and push' });
+      await panel
+        .getByRole('textbox', { name: 'Commit message' })
+        .fill('Backoff now doubles and stops at 60 s.');
+      await panel.getByRole('checkbox', { name: /^As a fixup of b71e3a0/ }).waitFor();
+      await panel.getByRole('button', { name: 'Commit', exact: true }).click();
+      await panel.getByRole('button', { name: 'Push and reply' }).click();
+      await panel
+        .getByRole('link', { name: 'Pipeline #18360 running' })
+        .waitFor({ timeout: 15_000 });
+      await page.getByRole('heading', { level: 1, name: '1 thread to answer' }).waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

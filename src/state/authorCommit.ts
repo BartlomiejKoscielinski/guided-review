@@ -18,6 +18,8 @@ export interface AuthorCommitDraft {
   /** The queued reply's ID in the core, once **Commit** queued it. */
   replyId: string | null;
   push: AuthorPushPhase;
+  /** When the push and the reply went through (ms since the epoch): S-10 polls the new pipeline. */
+  pushedAt: number | null;
   /** Why the last push or reply failed (the Retry state). */
   pushError: string | null;
 }
@@ -39,6 +41,7 @@ const FRESH_PUSH = {
   resolve: true,
   replyId: null,
   push: 'idle',
+  pushedAt: null,
   pushError: null,
 } as const satisfies Partial<AuthorCommitDraft>;
 

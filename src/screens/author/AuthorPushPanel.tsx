@@ -3,7 +3,8 @@ import { SpinnerIcon } from '../../components/icons';
 import { useAuthorPushAndReply } from '../../ipc/hooks/useAuthorMr';
 import type { CommitResult } from '../../ipc/types/CommitResult';
 import { useAuthorCommitStore, type AuthorCommitDraft } from '../../state/authorCommit';
-import { firstName } from './authorText';
+import { AuthorPushedPipeline } from './AuthorPushedPipeline';
+import { firstName, pushedText } from './authorText';
 import styles from './AuthorCommitPanel.module.css';
 
 export interface AuthorPushPanelProps {
@@ -27,7 +28,7 @@ const PULL_FIRST = "The remote has commits you don't have. Pull with rebase in R
  * reply**, which queues the reply as shown and pushes; the reply is sent only after the push.
  * A remote with commits the checkout lacks is "Pull first" (nothing pushed); a failure keeps
  * everything and offers **Retry**. All of it lives in the thread's draft, so it outlives picking
- * another thread. F-26.6 owns what the panel says after the push.
+ * another thread. After the push (F-26.6): "Pushed", what was sent and the new pipeline's link.
  */
 export function AuthorPushPanel({
   threadId,
@@ -45,7 +46,12 @@ export function AuthorPushPanel({
       update(threadId, { push: 'pushing', pushError: null });
     },
     onSuccess: (outcome) => {
-      update(threadId, { push: outcome.kind === 'done' ? 'done' : 'pullFirst' });
+      update(
+        threadId,
+        outcome.kind === 'done'
+          ? { push: 'done', resolve: outcome.resolved, pushedAt: Date.now() }
+          : { push: 'pullFirst' },
+      );
     },
     onError: (error) => {
       update(threadId, { push: 'failed', pushError: error.message });
@@ -56,6 +62,13 @@ export function AuthorPushPanel({
     return (
       <div className={styles.head}>
         <span className={styles.committed}>Pushed</span>
+        <span className={styles.done}>{pushedText(author, draft.resolve)}</span>
+        <AuthorPushedPipeline
+          project={project}
+          iid={iid}
+          sha={committed.sha}
+          pushedAt={draft.pushedAt}
+        />
       </div>
     );
   }

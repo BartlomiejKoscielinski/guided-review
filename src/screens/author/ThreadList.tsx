@@ -1,11 +1,14 @@
 import { useRef, type KeyboardEvent } from 'react';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import { avatarColors } from './authorText';
+import type { ThreadTag } from './pushedThreads';
 import { ThreadListItem } from './ThreadListItem';
 import styles from './Author.module.css';
 
 export interface ThreadListProps {
   threads: AuthorThread[];
+  /** The tag each thread shows. */
+  tagOf: (thread: AuthorThread) => ThreadTag;
   selected: string | null;
   onSelect: (id: string) => void;
 }
@@ -14,7 +17,7 @@ export interface ThreadListProps {
  * S-10's thread list (F-26.1): a listbox with one option per open thread, a roving tab stop on
  * the selected one; Up and Down (Home and End) move the selection and the focus, without wrapping.
  */
-export function ThreadList({ threads, selected, onSelect }: ThreadListProps) {
+export function ThreadList({ threads, tagOf, selected, onSelect }: ThreadListProps) {
   const buttons = useRef(new Map<string, HTMLButtonElement>());
   const colors = avatarColors(threads);
   const index = threads.findIndex((t) => t.id === selected);
@@ -44,6 +47,7 @@ export function ThreadList({ threads, selected, onSelect }: ThreadListProps) {
         <ThreadListItem
           key={thread.id}
           thread={thread}
+          tag={tagOf(thread)}
           avatarColor={colors[i] ?? 'green'}
           selected={thread.id === selected}
           onSelect={() => {

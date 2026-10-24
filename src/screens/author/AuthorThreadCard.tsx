@@ -1,6 +1,7 @@
 import { Button } from '../../components/Button';
 import type { BlockColor } from '../../components/colors';
 import { SpinnerIcon } from '../../components/icons';
+import { Tag } from '../../components/Tag';
 import { formatAge } from '../../format/age';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import styles from './AuthorThreadCard.module.css';
@@ -22,6 +23,11 @@ export interface AuthorThreadCardProps {
   onFixWithClaude?: () => void;
   /** Reply (F-26.5, F-26.7); the composer is wired by its own criterion. */
   onReply?: () => void;
+  /**
+   * After Push and reply in this visit (F-26.6, Author.dc.html `fDone`): the actions and the Rider
+   * lines go, my reply ends the conversation, and a resolved thread shows "Resolved".
+   */
+  pushed?: 'resolved' | 'replied';
 }
 
 /**
@@ -30,7 +36,8 @@ export interface AuthorThreadCardProps {
  * **Fix with Claude**, **Fix in Rider** and **Reply**; a question or a General thread is answered,
  * not fixed, so it offers **Reply** only. While Fix in Rider waits for the file the actions give
  * way to the busy line and **Stop waiting**; a detected change shows "Change detected from Rider.
- * Commit it below." (F-26.3, Author.dc.html `fBusy`, `fApplied`).
+ * Commit it below." (F-26.3, Author.dc.html `fBusy`, `fApplied`). After the push the
+ * conversation ends with my reply, and a resolved thread reads "Resolved" (F-26.6, `fDone`).
  */
 export function AuthorThreadCard({
   thread,
@@ -41,8 +48,10 @@ export function AuthorThreadCard({
   riderPhase = 'idle',
   riderBusyText = '',
   onStopWaiting,
+  pushed,
 }: AuthorThreadCardProps) {
   const fixable = thread.kind === 'change' && thread.path !== null;
+  const phase = pushed ? 'pushed' : riderPhase;
   return (
     <section aria-label="Thread" className={styles.card}>
       {thread.notes.map((note, i) => (
@@ -59,7 +68,7 @@ export function AuthorThreadCard({
           </div>
         </div>
       ))}
-      {riderPhase === 'idle' && (
+      {phase === 'idle' && (
         <div className={styles.actions}>
           {fixable && (
             <>
@@ -76,7 +85,7 @@ export function AuthorThreadCard({
           </button>
         </div>
       )}
-      {riderPhase === 'waiting' && (
+      {phase === 'waiting' && (
         <div className={styles.busyRow}>
           <span role="status" className={styles.busy}>
             <SpinnerIcon className={styles.spinner} />
@@ -87,10 +96,15 @@ export function AuthorThreadCard({
           </Button>
         </div>
       )}
-      {riderPhase === 'changed' && (
+      {phase === 'changed' && (
         <span role="status" className={styles.applied}>
           <span className={styles.appliedMark} />
           Change detected from Rider. Commit it below.
+        </span>
+      )}
+      {pushed === 'resolved' && (
+        <span className={styles.resolved}>
+          <Tag color="green">Resolved</Tag>
         </span>
       )}
     </section>

@@ -11,6 +11,7 @@ import type { AuthorMr } from '../types/AuthorMr';
 import type { CommitResult } from '../types/CommitResult';
 import type { FileDiff } from '../types/FileDiff';
 import type { FixupTarget } from '../types/FixupTarget';
+import type { PipelineTab } from '../types/PipelineTab';
 import type { PushOutcome } from '../types/PushOutcome';
 import type { QueuedReply } from '../types/QueuedReply';
 
@@ -153,5 +154,41 @@ export function useAuthorPushAndReply(
       await queryClient.invalidateQueries({ queryKey: authorMrKey(v.project, v.iid) });
       await queryClient.invalidateQueries({ queryKey: ['git'] });
     },
+  });
+}
+
+/** How often and how long S-10 asks for the pushed commit's pipeline (M7 decision 13). */
+export const PUSH_PIPELINE_POLL_MS = 2000;
+export const PUSH_PIPELINE_WAIT_MS = 30_000;
+
+/**
+ * The MR pipeline GitLab started for the pushed commit `sha` (F-26.6, M7 decision 13); `null`
+ * until it exists. Asked only once the push is done (`pushedAt`, ms since the epoch), then every
+ * 2 s until found or 30 s after the push, then the MR is read again for the title bar's chip. A
+ * failed lookup is only one answer less: no retry, no alert, the next poll asks again.
+ */
+export function useAuthorPushPipeline(
+  project: string,
+  iid: number,
+  sha: string,
+  pushedAt: number | null,
+): UseQueryResult<PipelineTab | null, IpcError> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  const waiting = () => pushedAt !== null && Date.now() - pushedAt < PUSH_PIPELINE_WAIT_MS;
+  return useQuery<PipelineTab | null, IpcError>({
+    queryKey: ['gitlab', 'author-push-pipeline', project, iid, sha],
+    queryFn: async () => {
+      const tab = await ipc.authorPushPipeline(project, iid, sha);
+      // The new pipeline is now the MR's head: the title bar's chip reads it again.
+      if (tab) void queryClient.invalidateQueries({ queryKey: authorMrKey(project, iid) });
+      return tab;
+    },
+    enabled: pushedAt !== null && sha !== '',
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: true,
+    refetchInterval: (query) => (!query.state.data && waiting() ? PUSH_PIPELINE_POLL_MS : false),
   });
 }

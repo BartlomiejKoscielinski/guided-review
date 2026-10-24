@@ -197,3 +197,20 @@
   text-transform: uppercase;
   cursor: pointer;
 }
+
+/* After Push and reply (F-26.6, Author.dc.html `cDone`). */
+.done {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.pipeline {
+  margin-left: auto;
+  color: var(--yellow);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}

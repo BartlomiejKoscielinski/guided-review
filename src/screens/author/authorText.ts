@@ -1,8 +1,10 @@
 import type { BlockColor } from '../../components/colors';
 import type { AuthorNote } from '../../ipc/types/AuthorNote';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
+import type { PipelineTab } from '../../ipc/types/PipelineTab';
 import type { ResolvedSummary } from '../../ipc/types/ResolvedSummary';
 import type { ThreadStatus } from '../../ipc/types/ThreadStatus';
+import { STATUS_WORD } from '../pipeline/pipelineText';
 
 /** The status tag of a thread (02 › S-10: Question blue, not the mock's orange). */
 export const STATUS_TAG: Record<ThreadStatus, { word: string; color: BlockColor }> = {
@@ -69,4 +71,21 @@ export function fixedReply(shortSha: string, message: string): string {
 /** "Marta" of "Marta K.": the caption names the thread by its author's first name. */
 export function firstName(author: string): string {
   return author.trim().split(/\s+/)[0] ?? author;
+}
+
+/**
+ * What the panel says after **Push and reply** (F-26.6, Author.dc.html `doneText`): "Replied to
+ * Marta and resolved the thread." or, with Resolve off, "Replied to Marta. The thread stays open."
+ */
+export function pushedText(author: string, resolved: boolean): string {
+  const name = firstName(author);
+  return resolved
+    ? `Replied to ${name} and resolved the thread.`
+    : `Replied to ${name}. The thread stays open.`;
+}
+
+/** The new pipeline's link (M7 decision 13): "Pipeline #18360 running" or "Pipeline starting…". */
+export function pushedPipelineText(tab: PipelineTab | null): string {
+  if (!tab) return 'Pipeline starting…';
+  return `Pipeline #${String(tab.number)} ${STATUS_WORD[tab.status].toLowerCase()}`;
 }
