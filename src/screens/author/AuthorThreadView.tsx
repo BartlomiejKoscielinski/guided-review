@@ -5,6 +5,7 @@ import { useAuthorFileDiff } from '../../ipc/hooks/useAuthorMr';
 import { useRiderOpen } from '../../ipc/hooks/useChanges';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import type { FileDiff } from '../../ipc/types/FileDiff';
+import type { WaitingReply } from '../../ipc/types/WaitingReply';
 import { noteAvatarColor, splitPath } from './authorText';
 import { useAuthorCommitStore } from '../../state/authorCommit';
 import { AuthorCommitPanel } from './AuthorCommitPanel';
@@ -22,6 +23,8 @@ export interface AuthorThreadViewProps {
   source: string;
   project: string;
   iid: number;
+  /** The reply found queued for this thread on reopen (M7 decision 12). */
+  waiting?: WaitingReply;
   /** S-10's main column, which scrolls the diff. */
   scrollRoot: RefObject<HTMLElement | null>;
 }
@@ -62,6 +65,7 @@ export function AuthorThreadView({
   threads,
   target,
   source,
+  waiting,
   project,
   iid,
   scrollRoot,
@@ -167,6 +171,7 @@ export function AuthorThreadView({
         iid={iid}
         author={thread.author}
         branch={source}
+        waiting={waiting}
         onOpenRider={openRider}
       />
     </>

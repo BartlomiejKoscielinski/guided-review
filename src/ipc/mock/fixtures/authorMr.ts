@@ -41,6 +41,7 @@ export function authorMr(now: Date = new Date()): AuthorMr {
     title: 'Retry in UploadWorker after network loss',
     sourceBranch: 'feature/upload-retry',
     targetBranch: 'develop',
+    waiting: [],
     pipeline: {
       status: 'passed',
       allowedFailures: 0,

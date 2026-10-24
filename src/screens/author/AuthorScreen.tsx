@@ -77,6 +77,7 @@ export function AuthorScreen() {
             threads={threads}
             target={mr.data.targetBranch}
             source={mr.data.sourceBranch}
+            waiting={mr.data.waiting.find((w) => w.reply.discussion === thread.id)}
             project={project}
             iid={iid}
             scrollRoot={mainRef}

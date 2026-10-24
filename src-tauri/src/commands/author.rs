@@ -1,6 +1,7 @@
 //! `author_mr` (F-26.1): S-10 Your MR reads my merge request (title, branches, head pipeline and
 //! the thread list), read only. Called when the screen opens by navigation, never on a restored
-//! start (F-30.4); it runs no Claude, so it needs no Claude Code lookup. `author_file_diff`
+//! start (F-30.4); it runs no Claude, so it needs no Claude Code lookup, and adds the replies still
+//! queued with whether their commit is on the local `origin/<source>` ref (M7 decision 12). `author_file_diff`
 //! (F-26.2) reads the selected thread's file from the user's own checkout, read only;
 //! `author_fixup_target` (F-26.4) names the commit a fix of a thread is a fixup of, read only.
 //! `author_queue_reply` (F-26.5) stores the reply **Commit** queues, sending nothing;
@@ -15,9 +16,10 @@ use crate::error::{AppError, ErrorCode};
 use crate::git::diff;
 use crate::git::fixup_target::{self, FixupTarget};
 use crate::git::model::FileDiff;
+use crate::gitlab::mr;
 use crate::os::process::Cancel;
 use crate::review::author_mr::{self, AuthorMr, AuthorMrError};
-use crate::review::author_push::{self, PushOutcome, PushReply};
+use crate::review::author_push::{self, PushOutcome, PushReply, WaitingReply};
 use crate::store::Store;
 use crate::store::queued_replies::{self, NewQueuedReply, QueuedReply};
 
@@ -43,7 +45,40 @@ pub async fn author_mr(
     if let Err(AuthorMrError::Gitlab(e)) = &result {
         forget_status_on_auth_error(&gitlab, Some(e)).await;
     }
-    Ok(result?)
+    let mut mr = result?;
+    mr.waiting = waiting_replies(&store, &project, iid, &mr.source_branch).await;
+    Ok(mr)
+}
+
+/// The replies of my MR still queued, for S-10 on reopen (M7 decision 12); read only. Unreadable
+/// replies or no active checkout give none, logged: the thread list still opens.
+async fn waiting_replies(
+    store: &Store,
+    project: &str,
+    iid: u64,
+    source_branch: &str,
+) -> Vec<WaitingReply> {
+    let rows = match store.with_conn(|conn| queued_replies::pending(conn, project, iid)) {
+        Ok(rows) if !rows.is_empty() => rows,
+        Ok(_) => return Vec::new(),
+        Err(error) => {
+            tracing::warn!(%error, "queued replies unreadable; S-10 shows none waiting");
+            return Vec::new();
+        }
+    };
+    let git = match active_git(store).await {
+        Ok(git) => git,
+        Err(error) => {
+            tracing::warn!(%error, "no active checkout; S-10 shows no reply waiting");
+            return Vec::new();
+        }
+    };
+    author_push::waiting(&git, rows, source_branch, &Cancel::new())
+        .await
+        .unwrap_or_else(|error| {
+            tracing::warn!(%error, "queued replies not checked; S-10 shows none waiting");
+            Vec::new()
+        })
 }
 
 /// The unified diff of `path` in the active repository from merge-base(`origin/<target>`, HEAD)
@@ -102,7 +137,8 @@ pub async fn author_queue_reply(
     Ok(store.with_conn(|conn| queued_replies::queue(conn, &reply))?)
 }
 
-/// **Push and reply** (F-26.5, M7 decisions 11 and 12): pushes the active checkout's branch and
+/// **Push and reply** (F-26.5, M7 decisions 11 and 12): pushes the MR's source branch from the
+/// active checkout (another checked-out branch is refused, nothing pushed) and
 /// then sends the queued reply `reply_id` (and Resolve when it is on); "Pull first" pushes
 /// nothing. A failure keeps the reply queued for **Retry**.
 #[tauri::command]
@@ -115,6 +151,14 @@ pub async fn author_push_and_reply(
 ) -> AppResult<PushOutcome> {
     let (client, _) = connected_client(&gitlab, &store).await?;
     let git = active_git(&store).await?;
+    // S-10 pushes only the MR's own branch: GitLab names it, never the checkout.
+    let source = match mr::get(&client, &project, iid).await {
+        Ok(info) => info.source_branch,
+        Err(e) => {
+            forget_status_on_auth_error(&gitlab, Some(&e)).await;
+            return Err(e.into());
+        }
+    };
     let job = PushReply {
         client: &client,
         store: &store,
@@ -123,5 +167,5 @@ pub async fn author_push_and_reply(
         iid,
         reply_id: &reply_id,
     };
-    author_push::push_and_reply(&job, &Cancel::new()).await
+    author_push::push_and_reply_on(&job, &source, &Cancel::new()).await
 }
