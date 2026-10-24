@@ -69,6 +69,7 @@ mod publish_never_approves;
 mod publish_note_refs;
 mod publish_remap;
 mod publish_retry_notes;
+mod reply_draft_task;
 mod resume;
 mod self_review;
 mod self_review_untracked;
