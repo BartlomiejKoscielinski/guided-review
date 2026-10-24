@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T11:00:53.749Z",
+  "updated": "2026-10-24T11:29:14.327Z",
   "items": [
     {
       "id": "F-17.3",
@@ -280,18 +280,17 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "2ce28a0",
+      "lockSha": "37db747",
       "tests": [
         "src-tauri/tests/it/branch_info.rs",
         "src-tauri/tests/it/main.rs",
         "src/ipc/mock/branchInfo.test.ts",
         "src/screens/create-mr/CreateMrBranch.test.tsx",
         "tests/e2e/create-mr-f27-1.spec.ts"
-      ],
-      "forkSha": "3ebce08"
+      ]
     },
     {
       "id": "F-27.2",
