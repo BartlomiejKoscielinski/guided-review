@@ -118,14 +118,27 @@ async fn gather(
     })
 }
 
-/// The rules that own the changed files, the one owning most changed lines first.
+/// The rules that own the changed files in any section, the one owning most changed lines
+/// first; the same pattern in several sections is one entry with the users of each.
 fn owners_of_change(rules: &codeowners::CodeOwners, changed: &[(String, u32)]) -> Vec<Owned> {
     let mut by_pattern: BTreeMap<String, (Owned, u32)> = BTreeMap::new();
     for (path, lines) in changed {
-        if let Some(owned) = rules.owners_of(path).filter(|o| !o.users.is_empty()) {
-            let entry = by_pattern
-                .entry(owned.pattern.clone())
-                .or_insert((owned, 0));
+        for owned in rules.owners_in_sections(path) {
+            if owned.users.is_empty() {
+                continue;
+            }
+            let entry = by_pattern.entry(owned.pattern.clone()).or_insert_with(|| {
+                let empty = Owned {
+                    pattern: owned.pattern.clone(),
+                    users: Vec::new(),
+                };
+                (empty, 0)
+            });
+            for user in owned.users {
+                if !entry.0.users.contains(&user) {
+                    entry.0.users.push(user);
+                }
+            }
             entry.1 = entry.1.saturating_add(*lines);
         }
     }
@@ -206,4 +219,25 @@ pub async fn gitlab_users_search(
         .collect();
     found.sort_by_key(|m| m.name.to_lowercase());
     Ok(found)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn f27_3_a_path_owned_in_two_sections_names_both_owners() {
+        let rules = codeowners::CodeOwners::parse(
+            "[Views] @marta.k\n/src/App/Views/\n\n[QA]\n*.xaml @qa.lead\n",
+        );
+        let owners = owners_of_change(&rules, &[("src/App/Views/Main.xaml".to_owned(), 12)]);
+        let mut owned: Vec<(&str, &[String])> = owners
+            .iter()
+            .map(|o| (o.pattern.as_str(), o.users.as_slice()))
+            .collect();
+        owned.sort();
+        let marta = ["marta.k".to_owned()];
+        let qa = ["qa.lead".to_owned()];
+        assert_eq!(owned, [("*.xaml", &qa[..]), ("src/App/Views/", &marta[..])]);
+    }
 }

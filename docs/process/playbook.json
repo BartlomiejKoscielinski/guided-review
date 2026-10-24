@@ -1,5 +1,5 @@
 {
-  "items": 79,
+  "items": 80,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 44,
+      "helpful": 45,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 33,
+      "helpful": 34,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 17,
+      "helpful": 18,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 38,
+      "helpful": 39,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T14:47:55.168Z",
@@ -147,12 +147,13 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 51,
+      "helpful": 52,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T14:47:55.295Z",
       "lastUsedItem": 4,
       "source": "F-06.5",
@@ -172,7 +173,7 @@
         "src/screens/author/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
-      "helpful": 35,
+      "helpful": 36,
       "harmful": 0,
       "seen": 8,
       "created": "2026-10-14T15:13:07.675Z",
@@ -189,7 +190,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 50,
+      "helpful": 51,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -263,7 +264,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 46,
+      "helpful": 47,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -356,7 +357,7 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 35,
+      "helpful": 36,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
@@ -1492,6 +1493,36 @@
       "created": "2026-10-24T12:13:41.245Z",
       "lastUsedItem": 78,
       "source": "F-27.2"
+    },
+    {
+      "id": "P-149",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/reviewers/**"
+      ],
+      "text": "When code re-implements an external file format or matching rule (CODEOWNERS sections, last match per section, fnmatch with pathname), the tests stage should read the upstream docs and lock the multi-section and glob edge cases as red tests, because the only normal review finding on F-27.3 was that a flat last-match ignored GitLab's per-section rule, and it cost a fix round of about 66k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T19:31:09.813Z",
+      "lastUsedItem": 79,
+      "source": "F-27.3"
+    },
+    {
+      "id": "P-150",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "Do not issue one sequential HTTP lookup per candidate inside a load that runs on every screen open (F-27.3: about 32 GET members/all calls). Batch the lookups, run them concurrently, or cap them at the first few certain results, because a call over the VPN that waits on a long chain shows a skeleton for seconds and review flagged it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T19:31:09.880Z",
+      "lastUsedItem": 79,
+      "source": "F-27.3"
     }
   ]
 }

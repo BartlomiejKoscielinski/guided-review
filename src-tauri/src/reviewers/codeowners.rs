@@ -2,9 +2,11 @@
 //! target branch on `origin`, never from the working tree. Comments, sections with default
 //! owners (`[Name][N] @user`, `^[Optional]`), `*`, `?`, `**`, a leading `/` (anchored at the
 //! root; without it the pattern matches at any depth) and a trailing `/` (the folder and all
-//! below it). The last matching rule of the file wins, also when it names nobody the app can
-//! add. Only `@user` owners count: groups (`@group/sub`), roles (`@@maintainer`) and e-mail
-//! addresses are skipped.
+//! below it). As in GitLab, the last matching rule wins within a section (also when it names
+//! nobody the app can add), and a path matched in several sections has the owners of each of
+//! them (one code-owner approval rule per section). Rules before the first header form the
+//! default section; headers with the same name (any case) are one section. Only `@user` owners
+//! count: groups (`@group/sub`), roles (`@@maintainer`) and e-mail addresses are skipped.
 
 use crate::git::error::GitError;
 use crate::git::refs;
@@ -45,22 +47,32 @@ impl Rule {
     }
 }
 
-/// A parsed CODEOWNERS file.
+/// The rules of one section, in file order.
+#[derive(Debug, Clone)]
+struct Section {
+    /// The name in lower case; empty for the default section before the first header.
+    key: String,
+    rules: Vec<Rule>,
+}
+
+/// A parsed CODEOWNERS file: its sections in the order they first appear.
 #[derive(Debug, Clone, Default)]
 pub struct CodeOwners {
-    rules: Vec<Rule>,
+    sections: Vec<Section>,
 }
 
 impl CodeOwners {
     pub fn parse(text: &str) -> Self {
-        let mut rules = Vec::new();
+        let mut sections: Vec<Section> = Vec::new();
+        let mut current = 0;
         let mut defaults: Vec<String> = Vec::new();
         for line in text.lines() {
             let line = line.trim();
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
-            if let Some(owners) = section_owners(line) {
+            if let Some((name, owners)) = section_header(line) {
+                current = section_index(&mut sections, &name.to_lowercase());
                 defaults = owners;
                 continue;
             }
@@ -72,30 +84,54 @@ impl CodeOwners {
             } else {
                 users_of(&owners)
             };
-            rules.push(rule(&raw, users));
+            if sections.is_empty() {
+                section_index(&mut sections, "");
+            }
+            if let Some(section) = sections.get_mut(current) {
+                section.rules.push(rule(&raw, users));
+            }
         }
-        Self { rules }
+        Self { sections }
     }
 
-    /// The last rule that matches `path` (relative to the repository root, `/`-separated);
-    /// `None` when no rule does.
-    pub fn owners_of(&self, path: &str) -> Option<Owned> {
-        self.rules
+    /// The owners of `path` (relative to the repository root, `/`-separated): the last matching
+    /// rule of each section that has one, in section order; empty when no rule matches.
+    pub fn owners_in_sections(&self, path: &str) -> Vec<Owned> {
+        self.sections
             .iter()
-            .rev()
-            .find(|rule| rule.matches(path))
+            .filter_map(|section| section.rules.iter().rev().find(|rule| rule.matches(path)))
             .map(|rule| Owned {
                 pattern: rule.pattern.clone(),
                 users: rule.users.clone(),
             })
+            .collect()
+    }
+
+    /// The matching rule of the last section that has one (in a file without sections, the
+    /// last matching rule); `None` when no rule matches. Every section's owner:
+    /// [`Self::owners_in_sections`].
+    pub fn owners_of(&self, path: &str) -> Option<Owned> {
+        self.owners_in_sections(path).pop()
     }
 }
 
-/// The default owners of a section header (`[Name]`, `^[Name]`, `[Name][2] @a @b`), or `None`
-/// when the line is no header.
-fn section_owners(line: &str) -> Option<Vec<String>> {
+/// The section named `key`, added at the end when the file had none of that name yet.
+fn section_index(sections: &mut Vec<Section>, key: &str) -> usize {
+    if let Some(index) = sections.iter().position(|s| s.key == key) {
+        return index;
+    }
+    sections.push(Section {
+        key: key.to_owned(),
+        rules: Vec::new(),
+    });
+    sections.len() - 1
+}
+
+/// The name and default owners of a section header (`[Name]`, `^[Name]`, `[Name][2] @a @b`),
+/// or `None` when the line is no header.
+fn section_header(line: &str) -> Option<(String, Vec<String>)> {
     let rest = line.strip_prefix('^').unwrap_or(line).strip_prefix('[')?;
-    let (_, mut rest) = rest.split_once(']')?;
+    let (name, mut rest) = rest.split_once(']')?;
     if let Some(after) = rest.strip_prefix('[')
         && let Some((count, tail)) = after.split_once(']')
         && count.chars().all(|c| c.is_ascii_digit())
@@ -103,7 +139,7 @@ fn section_owners(line: &str) -> Option<Vec<String>> {
         rest = tail;
     }
     let owners: Vec<String> = rest.split_whitespace().map(str::to_owned).collect();
-    Some(users_of(&owners))
+    Some((name.trim().to_owned(), users_of(&owners)))
 }
 
 /// Splits on whitespace that isn't escaped with `\`; `\ ` and `\#` become the plain character.
@@ -280,6 +316,57 @@ mod tests {
         assert_eq!(
             owners.owners_of("Moje pliki/a.cs").unwrap().users,
             ["ola.m"]
+        );
+    }
+
+    fn owned(owners: &CodeOwners, path: &str) -> Vec<(String, Vec<String>)> {
+        owners
+            .owners_in_sections(path)
+            .into_iter()
+            .map(|o| (o.pattern, o.users))
+            .collect()
+    }
+
+    fn own(pattern: &str, users: &[&str]) -> (String, Vec<String>) {
+        (
+            pattern.to_owned(),
+            users.iter().map(|u| (*u).to_owned()).collect(),
+        )
+    }
+
+    #[test]
+    fn f27_3_sections_each_give_their_last_match() {
+        let owners = CodeOwners::parse(
+            "* @fallback.u\n[Views] @marta.k\n/src/App/Views/\n/src/App/Views/Special.xaml @ola.m\n\n^[QA]\n*.xaml @qa.lead\n\n[views]\n/src/App/Views/Old/ @piotr.s\n",
+        );
+        // The default section, Views and QA each own Main.xaml: the later QA rule keeps Marta.
+        assert_eq!(
+            owned(&owners, "src/App/Views/Main.xaml"),
+            [
+                own("*", &["fallback.u"]),
+                own("src/App/Views/", &["marta.k"]),
+                own("*.xaml", &["qa.lead"]),
+            ]
+        );
+        // The last match wins within a section; a header repeated in another case is the same
+        // section, so its later rule wins there.
+        assert_eq!(
+            owned(&owners, "src/App/Views/Old/A.xaml"),
+            [
+                own("*", &["fallback.u"]),
+                own("src/App/Views/Old/", &["piotr.s"]),
+                own("*.xaml", &["qa.lead"]),
+            ]
+        );
+        assert_eq!(
+            owned(&owners, "src/App/Views/Special.xaml")[1],
+            own("src/App/Views/Special.xaml", &["ola.m"])
+        );
+        assert_eq!(owned(&owners, "a.cs"), [own("*", &["fallback.u"])]);
+        assert!(
+            CodeOwners::parse("[Empty]\n")
+                .owners_in_sections("a.cs")
+                .is_empty()
         );
     }
 }
