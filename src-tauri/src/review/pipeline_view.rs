@@ -98,6 +98,24 @@ pub async fn tabs(
         .collect())
 }
 
+/// The newest pipeline of the MR for exactly the full `sha` (F-26.6, M7 decision 13): S-10 links
+/// to it after **Push and reply**. `None` until GitLab has started one for that commit (a short or
+/// partial SHA matches nothing), never an older pipeline. Read only.
+pub async fn tab_for_sha(
+    client: &GitlabClient,
+    project: &str,
+    iid: u64,
+    sha: &str,
+) -> Result<Option<PipelineTab>, GitlabError> {
+    if sha.is_empty() {
+        return Ok(None);
+    }
+    Ok(tabs(client, project, iid)
+        .await?
+        .into_iter()
+        .find(|tab| tab.sha == sha))
+}
+
 /// The full head SHA of the MR (F-20.3's confirmation shows 7 chars). Read only.
 pub async fn mr_head_sha(
     client: &GitlabClient,

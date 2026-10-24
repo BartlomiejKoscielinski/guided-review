@@ -1,7 +1,10 @@
 import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { AuthorMr } from '../types/AuthorMr';
+import type { AuthorNote } from '../types/AuthorNote';
+import type { AuthorThread } from '../types/AuthorThread';
 import type { QueuedReply } from '../types/QueuedReply';
+import type { ThreadStatus } from '../types/ThreadStatus';
 import { authorMr } from './fixtures/authorMr';
 
 interface Row extends QueuedReply {
@@ -19,7 +22,10 @@ const notQueued = () =>
  * commits you don't have, as `gitPush` there), else the push and the reply go through: done on
  * origin/<source branch>. `withQueued` gives `authorMr`'s threads with a reply not sent yet the
  * status `fixedLocally` and lists them in `waiting`, as the core reads `queued_replies`; the
- * mock remote never holds a commit whose reply waits, so each is `pushed: false`.
+ * mock remote never holds a commit whose reply waits, so each is `pushed: false`. A sent reply
+ * (F-26.6) is the last note of its thread, mine: with Resolve the thread leaves the open list and
+ * counts as resolved; without it the thread reads `replied` (`answered` for a question) and no
+ * longer waits for an answer.
  */
 export function createAuthorPushBackend(
   pushFails: () => boolean,
@@ -83,21 +89,64 @@ export function createAuthorPushBackend(
       });
     },
     withQueued: (project, mr) => {
-      const queued = new Set(
-        [...rows.values()]
-          .filter((r) => r.project === project && r.iid === mr.iid && r.state === 'queued')
-          .map((r) => r.discussion),
-      );
-      const waiting = [...rows.values()]
-        .filter((r) => r.project === project && r.iid === mr.iid && r.state === 'queued')
+      const mine = [...rows.values()].filter((r) => r.project === project && r.iid === mr.iid);
+      const queued = new Set(mine.filter((r) => r.state === 'queued').map((r) => r.discussion));
+      const sent = new Map(mine.filter((r) => r.state === 'sent').map((r) => [r.discussion, r]));
+      const waiting = mine
+        .filter((r) => r.state === 'queued')
         .map((r) => ({ reply: view(r), pushed: false }));
-      return {
-        ...mr,
-        waiting,
-        threads: mr.threads.map((t) =>
-          queued.has(t.id) ? { ...t, status: 'fixedLocally' as const } : t,
-        ),
-      };
+      return withSent(
+        {
+          ...mr,
+          waiting,
+          threads: mr.threads.map((t) =>
+            queued.has(t.id) ? { ...t, status: 'fixedLocally' as const } : t,
+          ),
+        },
+        sent,
+      );
     },
   };
 }
+
+const ANSWERED: readonly ThreadStatus[] = ['replied', 'answered'];
+
+/** The threads after their replies in `sent` went out (F-26.6), as GitLab then lists them. */
+function withSent(mr: AuthorMr, sent: Map<string, Row>): AuthorMr {
+  let toAnswer = mr.toAnswer;
+  let resolved = mr.resolved.count;
+  const threads: AuthorThread[] = [];
+  for (const thread of mr.threads) {
+    const reply = sent.get(thread.id);
+    if (!reply) {
+      threads.push(thread);
+      continue;
+    }
+    if (!ANSWERED.includes(thread.status)) toAnswer -= 1;
+    if (reply.resolve) {
+      resolved += 1;
+      continue;
+    }
+    const note: AuthorNote = {
+      author: ME.name,
+      avatar: ME.avatar,
+      body: reply.body,
+      createdAt: new Date().toISOString(),
+      mine: true,
+    };
+    threads.push({
+      ...thread,
+      status: thread.kind === 'question' ? 'answered' : 'replied',
+      notes: [...thread.notes, note],
+    });
+  }
+  return {
+    ...mr,
+    threads,
+    toAnswer: Math.max(0, toAnswer),
+    resolved: { ...mr.resolved, count: resolved },
+  };
+}
+
+/** The mock's signed-in user (`gitlab.ts`), who sends the replies. */
+const ME = { name: 'Bartek K.', avatar: 'BK' };

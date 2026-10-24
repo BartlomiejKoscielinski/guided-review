@@ -52,6 +52,7 @@ type GitlabClient = Pick<
   | 'authorMr'
   | 'authorFileDiff'
   | 'authorFixupTarget'
+  | 'authorPushPipeline'
 >;
 
 const HOUR = 3_600_000;

@@ -450,6 +450,11 @@ export interface IpcClient {
    * (nothing pushed); a rejection keeps the reply queued for Retry.
    */
   authorPushAndReply: (project: string, iid: number, id: string) => Promise<PushOutcome>;
+  /**
+   * The MR pipeline GitLab started for the pushed commit (F-26.6, M7 decision 13): the full `sha`;
+   * `null` until GitLab has one for exactly that commit. Read only; S-10 asks after a push only.
+   */
+  authorPushPipeline: (project: string, iid: number, sha: string) => Promise<PipelineTab | null>;
 
   // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
   /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */

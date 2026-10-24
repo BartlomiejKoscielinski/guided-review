@@ -2,6 +2,7 @@ import type { IpcClient } from '../client';
 import { IpcError } from '../errors';
 import type { GitlabUser } from '../types/GitlabUser';
 import type { MrRow } from '../types/MrRow';
+import type { PipelineTab } from '../types/PipelineTab';
 import { toFileDiff } from './diff';
 import { AUTHOR_MR, authorMr, FIXUP_TARGET, UPLOAD_WORKER_DIFF } from './fixtures/authorMr';
 import { layerOf } from './layer';
@@ -13,6 +14,16 @@ const notMine = () =>
     retryable: false,
   });
 
+/** The pipeline GitLab starts for the pushed fix (Author.dc.html: "Pipeline #18360 running"). */
+const PUSHED_PIPELINE: PipelineTab = {
+  id: 18360,
+  number: 18360,
+  sha: '',
+  version: 2,
+  latest: true,
+  status: 'running',
+};
+
 const notFound = () =>
   new IpcError({ code: 'GITLAB_NOT_FOUND', message: "GitLab didn't find it.", retryable: false });
 
@@ -22,14 +33,20 @@ const notFound = () =>
  * is GitLab's 404. `authorFileDiff` (F-26.2) reads the checkout, not GitLab: UploadWorker.cs is
  * the fixture's diff, any other file is one the author didn't change (no hunks).
  * `authorFixupTarget` (F-26.4) reads git: any thread's fix is a fixup of b71e3a0 (Author.dc.html).
+ * `authorPushPipeline` (F-26.6) stands in for GitLab starting the pipeline of a pushed commit
+ * asynchronously: the first lookup of a sha finds none yet, a later one #18360 running, which is
+ * then the MR's head pipeline in `authorMr` too (the title bar's chip, Author.dc.html).
  */
 export function createAuthorBackend(
   user: () => GitlabUser | null,
   unauthorized: () => IpcError,
   respond: <T>(value: T) => Promise<T>,
   listed: (iid: number) => MrRow | undefined,
-): Pick<IpcClient, 'authorMr' | 'authorFileDiff' | 'authorFixupTarget'> {
+): Pick<IpcClient, 'authorMr' | 'authorFileDiff' | 'authorFixupTarget' | 'authorPushPipeline'> {
   const loadedAt = new Date();
+  const lookups = new Map<string, number>();
+  /** The MRs whose pushed pipeline was found, with its sha: their head pipeline is #18360. */
+  const started = new Map<number, string>();
   return {
     authorMr: (_project, iid) => {
       const me = user();
@@ -37,7 +54,13 @@ export function createAuthorBackend(
       const row = listed(iid);
       if (row && row.author.username !== me.username) return Promise.reject(notMine());
       if (iid !== AUTHOR_MR) return Promise.reject(notFound());
-      return respond(authorMr(loadedAt));
+      const mr = authorMr(loadedAt);
+      const sha = started.get(iid);
+      if (sha === undefined || !mr.pipeline) return respond(mr);
+      return respond({
+        ...mr,
+        pipeline: { ...mr.pipeline, status: 'running', number: 18360, sha, durationSecs: null },
+      });
     },
     authorFileDiff: (_target, path) =>
       respond(
@@ -55,5 +78,14 @@ export function createAuthorBackend(
             },
       ),
     authorFixupTarget: () => respond({ ...FIXUP_TARGET }),
+    authorPushPipeline: (project, iid, sha) => {
+      if (!user()) return Promise.reject(unauthorized());
+      const key = `${project}!${String(iid)}@${sha}`;
+      const asked = (lookups.get(key) ?? 0) + 1;
+      lookups.set(key, asked);
+      if (asked === 1 || sha === '') return respond(null);
+      started.set(iid, sha);
+      return respond({ ...PUSHED_PIPELINE, sha });
+    },
   };
 }

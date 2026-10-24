@@ -259,6 +259,8 @@ export function createTauriClient(): IpcClient {
       }),
     authorPushAndReply: (project, iid, id) =>
       call<PushOutcome>('author_push_and_reply', { project, iid, replyId: id }),
+    authorPushPipeline: (project, iid, sha) =>
+      call<PipelineTab | null>('author_push_pipeline', { project, iid, sha }),
     pipelineJobs: (project, iid, pipeline) =>
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),

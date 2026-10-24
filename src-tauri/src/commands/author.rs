@@ -5,7 +5,8 @@
 //! (F-26.2) reads the selected thread's file from the user's own checkout, read only;
 //! `author_fixup_target` (F-26.4) names the commit a fix of a thread is a fixup of, read only.
 //! `author_queue_reply` (F-26.5) stores the reply **Commit** queues, sending nothing;
-//! `author_push_and_reply` runs only on the click on **Push and reply** or **Retry**.
+//! `author_push_and_reply` runs only on the click on **Push and reply** or **Retry**;
+//! `author_push_pipeline` (F-26.6) then looks up the pipeline of the pushed commit, read only.
 
 use tauri::State;
 
@@ -20,6 +21,7 @@ use crate::gitlab::mr;
 use crate::os::process::Cancel;
 use crate::review::author_mr::{self, AuthorMr, AuthorMrError};
 use crate::review::author_push::{self, PushOutcome, PushReply, WaitingReply};
+use crate::review::pipeline_view::{self, PipelineTab};
 use crate::store::Store;
 use crate::store::queued_replies::{self, NewQueuedReply, QueuedReply};
 
@@ -168,4 +170,20 @@ pub async fn author_push_and_reply(
         reply_id: &reply_id,
     };
     author_push::push_and_reply_on(&job, &source, &Cancel::new()).await
+}
+
+/// The MR pipeline GitLab started for the pushed commit `sha` (F-26.6, M7 decision 13), `None`
+/// while there is none yet; S-10 asks again for up to 30 s after the push. Read only.
+#[tauri::command]
+pub async fn author_push_pipeline(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    sha: String,
+) -> AppResult<Option<PipelineTab>> {
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::tab_for_sha(&client, &project, iid, &sha).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
 }
