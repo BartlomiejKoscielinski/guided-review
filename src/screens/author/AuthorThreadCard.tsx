@@ -31,6 +31,8 @@ export interface AuthorThreadCardProps {
    * lines go, my reply ends the conversation, and a resolved thread shows "Resolved".
    */
   pushed?: 'resolved' | 'replied';
+  /** Read-only author mode (F-26.8): no Fix with Claude, no Fix in Rider; Reply stays. */
+  readOnly?: boolean;
 }
 
 /**
@@ -54,8 +56,9 @@ export function AuthorThreadCard({
   riderBusyText = '',
   onStopWaiting,
   pushed,
+  readOnly = false,
 }: AuthorThreadCardProps) {
-  const fixable = thread.kind === 'change' && thread.path !== null;
+  const fixable = !readOnly && thread.kind === 'change' && thread.path !== null;
   const phase = pushed ? 'pushed' : riderPhase;
   const question = thread.kind === 'question' && answer !== undefined;
   return (

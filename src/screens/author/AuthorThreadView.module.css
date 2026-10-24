@@ -60,6 +60,22 @@
   padding: 24px 28px;
 }
 
+/* F-26.8: read-only author mode, the checkout is on another branch. */
+.readOnly {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 28px 0;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.general .readOnly {
+  margin: 0 0 18px;
+}
+
 .error {
   margin: 18px 28px 0;
   padding: 10px 12px;

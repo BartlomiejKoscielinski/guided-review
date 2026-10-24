@@ -24,4 +24,10 @@ toAnswer: number, resolved: ResolvedSummary,
  * The replies queued and not sent yet (F-26.5, M7 decision 12), oldest first; S-10 shows each
  * at its thread with **Send reply** or **Push and reply**, never sending one by itself.
  */
-waiting: Array<WaitingReply>, };
+waiting: Array<WaitingReply>, 
+/**
+ * Whether the user's checkout is on the MR's source branch (F-26.8). When it isn't (another
+ * branch, a detached HEAD, another repository or a checkout git can't read), S-10 is read
+ * only: Fix, Commit and Push are hidden, replies stay (M7 decision 14).
+ */
+onSourceBranch: boolean, };

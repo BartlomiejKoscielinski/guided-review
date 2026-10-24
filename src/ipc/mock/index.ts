@@ -10,6 +10,7 @@ import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
 import { createPlanBackend } from './plan';
+import type { AuthorScenario } from './authorMr';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
@@ -39,6 +40,8 @@ export const MOCK_CLAUDE_KEY = 'guided-review.mock.claude';
 export const MOCK_GITLAB_KEY = 'guided-review.mock.gitlab';
 /** Key with a `ReviewScenario` (S-02 plan and S-03 step task failures, cached plan). */
 export const MOCK_REVIEW_KEY = 'guided-review.mock.review';
+/** Key with an `AuthorScenario` (S-10 checkout not on the MR's source branch, F-26.8). */
+export const MOCK_AUTHOR_KEY = 'guided-review.mock.author';
 
 export interface MockOptions {
   /** Fake latency per call, so loading states are visible in `npm run dev:mock`. */
@@ -60,6 +63,8 @@ export interface MockOptions {
   rider?: RiderScenario;
   /** S-03 variations; the storage's `MOCK_REVIEW_KEY` wins. */
   review?: ReviewScenario;
+  /** S-10 variations; the storage's `MOCK_AUTHOR_KEY` wins. */
+  author?: AuthorScenario;
 }
 
 const wait = (ms: number): Promise<void> =>
@@ -118,6 +123,7 @@ export function createMockClient({
   gitlab: gitlabOption = {},
   rider: riderOption = {},
   review: reviewOption = {},
+  author: authorOption = {},
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
@@ -164,6 +170,7 @@ export function createMockClient({
     (sessionId) => gitlab.gitlabDiscussions(sessionId),
   );
   const fix = createFixBackend(data, sourceOf);
+  const authorScenario = loadJson(storage, MOCK_AUTHOR_KEY, authorOption);
   const authorPush = createAuthorPushBackend(() => changes.pushFails === 'rejected', respond);
   return {
     appHealth: () => respond(health),
@@ -198,8 +205,13 @@ export function createMockClient({
     },
     ...gitlab,
     // F-26.5: a queued reply tags its thread "Fixed locally · not pushed" until it is sent.
-    authorMr: async (project, iid) =>
-      authorPush.withQueued(project, await gitlab.authorMr(project, iid)),
+    // F-26.8: the scenario can put the checkout on another branch (read-only author mode).
+    authorMr: async (project, iid) => ({
+      ...authorPush.withQueued(project, await gitlab.authorMr(project, iid)),
+      ...(authorScenario.onSourceBranch === undefined
+        ? {}
+        : { onSourceBranch: authorScenario.onSourceBranch }),
+    }),
     authorQueueReply: authorPush.authorQueueReply,
     authorPushAndReply: authorPush.authorPushAndReply,
     // F-26.7: Send reply on a question goes out at once; Draft with Claude only proposes the text.

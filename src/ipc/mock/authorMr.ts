@@ -7,6 +7,14 @@ import { toFileDiff } from './diff';
 import { AUTHOR_MR, authorMr, FIXUP_TARGET, UPLOAD_WORKER_DIFF } from './fixtures/authorMr';
 import { layerOf } from './layer';
 
+/**
+ * S-10 variations (F-26.8): `onSourceBranch: false` puts the user's checkout on another branch, so
+ * author mode is read only. The default is the checkout on !480's source branch.
+ */
+export interface AuthorScenario {
+  onSourceBranch?: boolean;
+}
+
 const notMine = () =>
   new IpcError({
     code: 'INVALID_INPUT',

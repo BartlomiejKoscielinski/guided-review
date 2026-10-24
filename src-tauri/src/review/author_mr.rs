@@ -11,10 +11,13 @@ use super::author_push::WaitingReply;
 use super::author_threads::{self, AuthorThread, ResolvedSummary};
 use super::pipeline_view::{self, PipelineHead};
 use crate::error::{AppError, ErrorCode};
+use crate::git::Git;
+use crate::git::refs;
 use crate::gitlab::client::GitlabClient;
 use crate::gitlab::discussions;
 use crate::gitlab::error::GitlabError;
 use crate::gitlab::mr::{self, MrInfo};
+use crate::os::process::Cancel;
 
 /// What S-10 shows of my MR.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
@@ -37,6 +40,10 @@ pub struct AuthorMr {
     /// The replies queued and not sent yet (F-26.5, M7 decision 12), oldest first; S-10 shows each
     /// at its thread with **Send reply** or **Push and reply**, never sending one by itself.
     pub waiting: Vec<WaitingReply>,
+    /// Whether the user's checkout is on the MR's source branch (F-26.8). When it isn't (another
+    /// branch, a detached HEAD, another repository or a checkout git can't read), S-10 is read
+    /// only: Fix, Commit and Push are hidden, replies stay (M7 decision 14).
+    pub on_source_branch: bool,
 }
 
 /// Why my MR could not be read.
@@ -95,7 +102,22 @@ pub async fn load(
         to_answer: list.to_answer,
         resolved: list.resolved,
         waiting: Vec::new(),
+        on_source_branch: false,
     })
+}
+
+/// Whether the checkout of `git` has `source_branch` checked out (F-26.8): the exact branch name,
+/// not a detached HEAD on its commit. A checkout git can't read is not on it. Read only: the app
+/// never switches the user's branch.
+pub async fn on_source_branch(git: &Git, source_branch: &str, cancel: &Cancel) -> bool {
+    match refs::current_branch(git, cancel).await {
+        Ok(Some(branch)) => branch == source_branch,
+        Ok(None) => false,
+        Err(error) => {
+            tracing::warn!(%error, "checkout branch unreadable; S-10 is read only");
+            false
+        }
+    }
 }
 
 #[cfg(test)]

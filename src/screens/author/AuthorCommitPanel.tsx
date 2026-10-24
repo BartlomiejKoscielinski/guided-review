@@ -33,6 +33,8 @@ export interface AuthorCommitPanelProps {
   /** A reply still queued for the thread on reopen: shown when no draft is open (decision 12). */
   waiting?: WaitingReply;
   onOpenRider: () => void;
+  /** Read-only author mode (F-26.8): no Commit, no Push; Send reply of a pushed reply stays. */
+  readOnly?: boolean;
 }
 
 /**
@@ -56,10 +58,11 @@ export function AuthorCommitPanel({
   branch,
   waiting,
   onOpenRider,
+  readOnly = false,
 }: AuthorCommitPanelProps) {
   const draft = useAuthorCommitStore((s) => s.drafts[threadId]);
   const update = useAuthorCommitStore((s) => s.update);
-  const shown = draft !== undefined && draft.committed === null;
+  const shown = !readOnly && draft !== undefined && draft.committed === null;
   const fixupTarget = useAuthorFixupTarget(target, path, line, shown);
   const commit = useAuthorCommit();
   const queue = useAuthorQueueReply({
@@ -77,6 +80,11 @@ export function AuthorCommitPanel({
     },
     [path],
   );
+  // F-26.8: off the source branch nothing is committed or pushed from here; a reply whose commit is
+  // already on origin can still be sent (M7 decision 14).
+  if (readOnly && (draft !== undefined ? draft.push !== 'done' : waiting?.pushed !== true)) {
+    return null;
+  }
   if (!draft) {
     if (!waiting) return null;
     return (

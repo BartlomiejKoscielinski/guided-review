@@ -49,7 +49,38 @@ pub async fn author_mr(
     }
     let mut mr = result?;
     mr.waiting = waiting_replies(&store, &project, iid, &mr.source_branch).await;
+    mr.on_source_branch = checkout_on_source_branch(&store, &project, &mr.source_branch).await;
     Ok(mr)
+}
+
+/// Whether the active checkout is the MR's project with its source branch checked out (F-26.8);
+/// anything else (no active repository, another project, another branch, a detached HEAD) keeps
+/// S-10 read only. Reads only: the app never switches the user's branch.
+async fn checkout_on_source_branch(store: &Store, project: &str, source_branch: &str) -> bool {
+    let active = store.with_conn(|conn| crate::store::repos::active(conn));
+    match active {
+        Ok(Some(repo)) => {
+            let other_project = repo
+                .gitlab_project
+                .as_deref()
+                .is_some_and(|p| !p.eq_ignore_ascii_case(project));
+            if other_project {
+                return false;
+            }
+        }
+        Ok(None) => return false,
+        Err(error) => {
+            tracing::warn!(%error, "active repository unreadable; S-10 is read only");
+            return false;
+        }
+    }
+    match active_git(store).await {
+        Ok(git) => author_mr::on_source_branch(&git, source_branch, &Cancel::new()).await,
+        Err(error) => {
+            tracing::warn!(%error, "no active checkout; S-10 is read only");
+            false
+        }
+    }
 }
 
 /// The replies of my MR still queued, for S-10 on reopen (M7 decision 12); read only. Unreadable

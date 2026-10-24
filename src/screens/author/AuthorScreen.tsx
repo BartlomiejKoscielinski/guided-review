@@ -109,6 +109,7 @@ export function AuthorScreen() {
             project={project}
             iid={iid}
             scrollRoot={mainRef}
+            readOnly={!mr.data.onSourceBranch}
           />
         )}
       </div>

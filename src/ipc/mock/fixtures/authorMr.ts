@@ -42,6 +42,7 @@ export function authorMr(now: Date = new Date()): AuthorMr {
     sourceBranch: 'feature/upload-retry',
     targetBranch: 'develop',
     waiting: [],
+    onSourceBranch: true,
     pipeline: {
       status: 'passed',
       allowedFailures: 0,

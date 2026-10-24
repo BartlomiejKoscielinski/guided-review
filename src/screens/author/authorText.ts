@@ -102,3 +102,8 @@ export function answeredText(author: string): string {
 export function isAnswered(thread: AuthorThread): boolean {
   return thread.status === 'answered' || thread.notes.at(-1)?.mine === true;
 }
+
+/** F-26.8: the notice of read-only author mode, naming the MR's source branch. */
+export function readOnlyText(branch: string): string {
+  return `Check out ${branch} to fix here. The app never switches your branch.`;
+}

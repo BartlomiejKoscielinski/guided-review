@@ -6,7 +6,8 @@ import { useRiderOpen } from '../../ipc/hooks/useChanges';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import type { WaitingReply } from '../../ipc/types/WaitingReply';
-import { noteAvatarColor, splitPath } from './authorText';
+import { Square } from '../../components/Square';
+import { noteAvatarColor, readOnlyText, splitPath } from './authorText';
 import { useAuthorCommitStore } from '../../state/authorCommit';
 import { AuthorCommitPanel } from './AuthorCommitPanel';
 import { AuthorQuestionReply } from './AuthorQuestionReply';
@@ -28,6 +29,12 @@ export interface AuthorThreadViewProps {
   waiting?: WaitingReply;
   /** S-10's main column, which scrolls the diff. */
   scrollRoot: RefObject<HTMLElement | null>;
+  /**
+   * The checkout isn't on the MR's source branch (F-26.8): a notice to check it out, Fix with
+   * Claude, Fix in Rider, Commit and Push are hidden; Reply, the question composer, Send reply of
+   * an already pushed reply and Open in Rider stay (M7 decision 14).
+   */
+  readOnly?: boolean;
 }
 
 /** The file bar's height: a line scrolled to the top sits under it. */
@@ -70,6 +77,7 @@ export function AuthorThreadView({
   project,
   iid,
   scrollRoot,
+  readOnly = false,
 }: AuthorThreadViewProps) {
   const diff = useAuthorFileDiff(target, thread.path);
   const rider = useRiderOpen();
@@ -109,6 +117,7 @@ export function AuthorThreadView({
           : ''
       }
       onStopWaiting={fixInRider.stop}
+      readOnly={readOnly}
       pushed={draft?.push === 'done' ? (draft.resolve ? 'resolved' : 'replied') : undefined}
       answer={
         thread.kind === 'question' ? (
@@ -118,8 +127,20 @@ export function AuthorThreadView({
     />
   );
 
+  const notice = readOnly ? (
+    <p role="note" className={styles.readOnly}>
+      <Square color="blue" size={9} />
+      <span>{readOnlyText(source)}</span>
+    </p>
+  ) : null;
+
   if (path === null) {
-    return <div className={styles.general}>{card}</div>;
+    return (
+      <div className={styles.general}>
+        {notice}
+        {card}
+      </div>
+    );
   }
 
   const file = diff.data;
@@ -147,6 +168,7 @@ export function AuthorThreadView({
           {line !== null ? `Open in Rider · line ${String(line)}` : 'Open in Rider'}
         </button>
       </div>
+      {notice}
       {(diff.isError || rider.isError || fixInRider.error !== null) && (
         <p role="alert" className={styles.error}>
           {diff.error?.message ?? rider.error?.message ?? fixInRider.error?.message}
@@ -181,6 +203,7 @@ export function AuthorThreadView({
         branch={source}
         waiting={waiting}
         onOpenRider={openRider}
+        readOnly={readOnly}
       />
     </>
   );
