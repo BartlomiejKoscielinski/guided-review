@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-24T07:24:11.713Z",
+  "updated": "2026-10-24T08:08:22.182Z",
   "items": [
     {
       "id": "F-17.3",
@@ -220,18 +220,17 @@
       "title": "After push: \"Pushed · Replied to <name> and resolved the thread.\" and a link to the new pipeline.",
       "kind": "mixed",
       "deps": [],
-      "status": "tests-ready",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "note": "",
-      "lockSha": "42874c9",
+      "lockSha": "bfa7715",
       "tests": [
         "src-tauri/tests/it/author_push_pipeline.rs",
         "src-tauri/tests/it/main.rs",
         "src/ipc/mock/authorPushPipeline.test.ts",
         "src/screens/author/AuthorPushed.test.tsx",
         "tests/e2e/author-f26-6.spec.ts"
-      ],
-      "forkSha": "e94623d"
+      ]
     },
     {
       "id": "F-26.7",
@@ -240,9 +239,19 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "todo",
+      "status": "tests-ready",
       "attempts": 0,
-      "note": ""
+      "note": "",
+      "lockSha": "b66a020",
+      "tests": [
+        "src-tauri/tests/it/reply_draft_task.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorReply.test.ts",
+        "src/ipc/tauriAuthorReply.test.ts",
+        "src/screens/author/AuthorQuestionReply.test.tsx",
+        "tests/e2e/author-f26-7.spec.ts"
+      ],
+      "forkSha": "15e1e76"
     },
     {
       "id": "F-26.8",
