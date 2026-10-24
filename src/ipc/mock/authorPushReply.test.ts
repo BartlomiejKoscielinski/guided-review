@@ -36,7 +36,7 @@ describe('mock authorQueueReply and authorPushAndReply (F-26.5)', () => {
     );
 
     expect(first).toEqual({
-      id: expect.any(String),
+      id: expect.any(String) as string,
       discussion: THREAD,
       body: BODY,
       resolve: true,
