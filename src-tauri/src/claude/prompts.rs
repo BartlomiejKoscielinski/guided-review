@@ -27,6 +27,9 @@ pub const FIX_SCHEMA: &str = include_str!("../../resources/schemas/fix-result.sc
 pub const PIPELINE_EXPLAIN: &str = include_str!("../../resources/prompts/pipeline-explain.md");
 pub const PIPELINE_EXPLAIN_SCHEMA: &str =
     include_str!("../../resources/schemas/pipeline-explain.schema.json");
+pub const REPLY_DRAFT: &str = include_str!("../../resources/prompts/reply-draft.md");
+pub const REPLY_DRAFT_SCHEMA: &str =
+    include_str!("../../resources/schemas/reply-draft.schema.json");
 
 /// Fills `{{name}}` placeholders; unknown placeholders stay as they are.
 pub fn render(template: &str, values: &[(&str, &str)]) -> String {

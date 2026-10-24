@@ -235,6 +235,8 @@ pub fn run() {
             commands::author::author_queue_reply,
             commands::author::author_push_and_reply,
             commands::author::author_push_pipeline,
+            commands::author_reply::author_reply,
+            commands::author_reply::claude_reply_draft,
             commands::gitlab_threads::gitlab_approval_state,
             commands::approval::summary_status,
             commands::approval::gitlab_approve,

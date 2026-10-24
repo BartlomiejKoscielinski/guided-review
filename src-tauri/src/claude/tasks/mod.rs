@@ -8,6 +8,7 @@ pub mod pipeline_explain;
 pub mod pipeline_explain_inputs;
 pub mod plan;
 pub mod plan_inputs;
+pub mod reply_draft;
 pub mod step;
 pub mod step_inputs;
 pub mod summary_comment;
