@@ -67,7 +67,9 @@ import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
 import type { MrList } from './types/MrList';
 import type { MrTab } from './types/MrTab';
+import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
+import type { QueuedReply } from './types/QueuedReply';
 import type { Selection } from './types/Selection';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
@@ -428,6 +430,26 @@ export interface IpcClient {
    * Reads git only.
    */
   authorFixupTarget(target: string, path: string, line: number | null): Promise<FixupTarget>;
+  /**
+   * Queues the reply **Commit** made for `discussion` (F-26.5): `body` "Fixed in <sha>. <one
+   * sentence>." sent after the push of `afterSha` (the full SHA), then Resolve when `resolve`.
+   * Queueing the thread again replaces it and keeps its ID. Sends nothing. (A property, not a
+   * method, so a test can hand it on unbound.)
+   */
+  authorQueueReply: (
+    project: string,
+    iid: number,
+    discussion: string,
+    body: string,
+    resolve: boolean,
+    afterSha: string,
+  ) => Promise<QueuedReply>;
+  /**
+   * **Push and reply** (F-26.5, M7 decisions 11 and 12): pushes the branch, then sends the queued
+   * reply `id` (and Resolve). `pullFirst` when the remote has commits the checkout doesn't have
+   * (nothing pushed); a rejection keeps the reply queued for Retry.
+   */
+  authorPushAndReply: (project: string, iid: number, id: string) => Promise<PushOutcome>;
 
   // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
   /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */

@@ -55,3 +55,18 @@ export function splitPath(path: string): { dir: string; name: string } {
   const cut = path.lastIndexOf('/') + 1;
   return { dir: path.slice(0, cut), name: path.slice(cut) };
 }
+
+/**
+ * The reply queued after Commit (F-26.5): "Fixed in <sha>. <one sentence>.", the sentence being
+ * the commit message's first line as typed with one full stop at the end, never two. No Claude.
+ */
+export function fixedReply(shortSha: string, message: string): string {
+  const sentence = (message.split('\n')[0] ?? '').trim();
+  if (sentence === '') return `Fixed in ${shortSha}.`;
+  return `Fixed in ${shortSha}. ${/[.!?…]$/.test(sentence) ? sentence : `${sentence}.`}`;
+}
+
+/** "Marta" of "Marta K.": the caption names the thread by its author's first name. */
+export function firstName(author: string): string {
+  return author.trim().split(/\s+/)[0] ?? author;
+}

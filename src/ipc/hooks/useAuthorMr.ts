@@ -11,6 +11,8 @@ import type { AuthorMr } from '../types/AuthorMr';
 import type { CommitResult } from '../types/CommitResult';
 import type { FileDiff } from '../types/FileDiff';
 import type { FixupTarget } from '../types/FixupTarget';
+import type { PushOutcome } from '../types/PushOutcome';
+import type { QueuedReply } from '../types/QueuedReply';
 
 export const authorMrKey = (project: string, iid: number) =>
   ['gitlab', 'author-mr', project, iid] as const;
@@ -83,5 +85,73 @@ export function useAuthorCommit(): UseMutationResult<CommitResult, IpcError, Aut
   return useMutation<CommitResult, IpcError, AuthorCommitInput>({
     mutationFn: ({ message, fixup, path }) => ipc.gitCommit(message, false, fixup, [path]),
     onSettled: () => queryClient.invalidateQueries({ queryKey: ['git'] }),
+  });
+}
+
+export interface AuthorReplyInput {
+  project: string;
+  iid: number;
+  discussion: string;
+  /** "Fixed in <sha>. <one sentence>." as the box shows it. */
+  body: string;
+  resolve: boolean;
+  /** The full SHA of the commit the reply names. */
+  afterSha: string;
+}
+
+/** Callbacks run even when the panel is gone by then (another thread was picked). */
+export interface AuthorReplyCallbacks<T> {
+  onMutate?: (input: AuthorReplyInput) => void;
+  onSuccess?: (result: T, input: AuthorReplyInput) => void;
+  onError?: (error: IpcError, input: AuthorReplyInput) => void;
+}
+
+/**
+ * Queues the reply after **Commit** (F-26.5); sends nothing. The thread then reads "Fixed locally
+ * · not pushed".
+ */
+export function useAuthorQueueReply(
+  on: AuthorReplyCallbacks<QueuedReply> = {},
+): UseMutationResult<QueuedReply, IpcError, AuthorReplyInput> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  return useMutation<QueuedReply, IpcError, AuthorReplyInput>({
+    mutationFn: (v) =>
+      ipc.authorQueueReply(v.project, v.iid, v.discussion, v.body, v.resolve, v.afterSha),
+    onSuccess: on.onSuccess,
+    onError: on.onError,
+    onSettled: (_r, _e, v) =>
+      queryClient.invalidateQueries({ queryKey: authorMrKey(v.project, v.iid) }),
+  });
+}
+
+/**
+ * **Push and reply** and **Retry** (F-26.5): queues the reply as the box and the switch show it,
+ * then pushes and sends it; only on the click.
+ */
+export function useAuthorPushAndReply(
+  on: AuthorReplyCallbacks<PushOutcome> = {},
+): UseMutationResult<PushOutcome, IpcError, AuthorReplyInput> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  return useMutation<PushOutcome, IpcError, AuthorReplyInput>({
+    mutationFn: async (v) => {
+      const queued = await ipc.authorQueueReply(
+        v.project,
+        v.iid,
+        v.discussion,
+        v.body,
+        v.resolve,
+        v.afterSha,
+      );
+      return ipc.authorPushAndReply(v.project, v.iid, queued.id);
+    },
+    onMutate: on.onMutate,
+    onSuccess: on.onSuccess,
+    onError: on.onError,
+    onSettled: async (_r, _e, v) => {
+      await queryClient.invalidateQueries({ queryKey: authorMrKey(v.project, v.iid) });
+      await queryClient.invalidateQueries({ queryKey: ['git'] });
+    },
   });
 }

@@ -1,11 +1,16 @@
 import { Button } from '../../components/Button';
 import { ClaudeIcon } from '../../components/icons';
-import { useAuthorCommit, useAuthorFixupTarget } from '../../ipc/hooks/useAuthorMr';
+import {
+  useAuthorCommit,
+  useAuthorFixupTarget,
+  useAuthorQueueReply,
+} from '../../ipc/hooks/useAuthorMr';
 import type { FileDiff } from '../../ipc/types/FileDiff';
 import { useAuthorCommitStore } from '../../state/authorCommit';
 import { CommitFailure } from '../changes/CommitFailure';
 import { useSuggest } from '../changes/useSuggest';
-import { splitPath } from './authorText';
+import { AuthorPushPanel } from './AuthorPushPanel';
+import { fixedReply, splitPath } from './authorText';
 import styles from './AuthorCommitPanel.module.css';
 
 export interface AuthorCommitPanelProps {
@@ -17,6 +22,13 @@ export interface AuthorCommitPanelProps {
   target: string;
   /** The file's diff, for the "+N −M" next to its name. */
   diff: FileDiff | undefined;
+  /** My MR: where the reply goes after the push (F-26.5). */
+  project: string;
+  iid: number;
+  /** The thread's author, the MR's source branch and Open in Rider, for the push panel. */
+  author: string;
+  branch: string;
+  onOpenRider: () => void;
 }
 
 /**
@@ -25,14 +37,34 @@ export interface AuthorCommitPanelProps {
  * “<subject>”" (on) with its note, and **Commit** of the fixed file alone. Commit waits for the
  * fixup target so a commit is never silently a plain one; a target that can't be read leaves a
  * separate commit, said so. A hook's rejection shows its output; the form stays. Done:
- * "Committed" and the short SHA (the push follows in F-26.5).
+ * "Committed" and the short SHA; the reply "Fixed in <sha>. <one sentence>." is queued at once
+ * and **Push and reply** follows (F-26.5).
  */
-export function AuthorCommitPanel({ threadId, path, line, target, diff }: AuthorCommitPanelProps) {
+export function AuthorCommitPanel({
+  threadId,
+  path,
+  line,
+  target,
+  diff,
+  project,
+  iid,
+  author,
+  branch,
+  onOpenRider,
+}: AuthorCommitPanelProps) {
   const draft = useAuthorCommitStore((s) => s.drafts[threadId]);
   const update = useAuthorCommitStore((s) => s.update);
   const shown = draft !== undefined && draft.committed === null;
   const fixupTarget = useAuthorFixupTarget(target, path, line, shown);
   const commit = useAuthorCommit();
+  const queue = useAuthorQueueReply({
+    onSuccess: (queued) => {
+      update(threadId, { replyId: queued.id });
+    },
+    onError: (error) => {
+      update(threadId, { pushError: error.message });
+    },
+  });
   // Suggest describes the fixed file as Commit takes it, never what else is staged (decision 10).
   const suggest = useSuggest(
     (message) => {
@@ -46,10 +78,16 @@ export function AuthorCommitPanel({ threadId, path, line, target, diff }: Author
     return (
       <div className={styles.dock}>
         <section aria-label="Commit and push" className={styles.panel}>
-          <div className={styles.head}>
-            <span className={styles.committed}>Committed</span>{' '}
-            <span className={styles.sha}>{draft.committed.shortSha}</span>
-          </div>
+          <AuthorPushPanel
+            threadId={threadId}
+            project={project}
+            iid={iid}
+            author={author}
+            branch={branch}
+            draft={draft}
+            committed={draft.committed}
+            onOpenRider={onOpenRider}
+          />
         </section>
       </div>
     );
@@ -68,7 +106,17 @@ export function AuthorCommitPanel({ threadId, path, line, target, diff }: Author
       { message: draft.message, fixup: asFixup ? found.sha : null, path },
       {
         onSuccess: (committed) => {
-          update(threadId, { committed });
+          // F-26.5: the reply is queued in the core at once; nothing is sent before the push.
+          const reply = fixedReply(committed.shortSha, draft.message);
+          update(threadId, { committed, reply });
+          queue.mutate({
+            project,
+            iid,
+            discussion: threadId,
+            body: reply,
+            resolve: draft.resolve,
+            afterSha: committed.sha,
+          });
         },
       },
     );

@@ -14,5 +14,5 @@ export function useRouteAuthorMr() {
   const project = repos.data?.find((r) => r.isActive)?.gitlabProject ?? undefined;
   const mr = useAuthorMr(project, iid, !restored);
   const noProject = !restored && repos.isSuccess && !project;
-  return { iid, restored, noProject, mr };
+  return { iid, project, restored, noProject, mr };
 }

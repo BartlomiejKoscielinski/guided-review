@@ -685,6 +685,35 @@ const SHOTS: Shot[] = [
         .waitFor();
     },
   },
+  {
+    // S10-author-committed.png, Author.dc.html {"fix":"committed"} (F-26.5): after Fix in Rider and
+    // Commit, "Committed <sha> not pushed yet", the reply to be sent to Marta's thread, "Resolve
+    // the thread" on, Push and reply with its hint; the list tags the thread "Fixed locally".
+    screen: 'S10',
+    state: 'author-committed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix in Rider' }).click();
+      await card
+        .getByText('Change detected from Rider. Commit it below.')
+        .waitFor({ timeout: 8000 });
+      const panel = page.getByRole('region', { name: 'Commit and push' });
+      await panel
+        .getByRole('textbox', { name: 'Commit message' })
+        .fill('Backoff now doubles and stops at 60 s.');
+      await panel.getByRole('checkbox', { name: /^As a fixup of b71e3a0/ }).waitFor();
+      await panel.getByRole('button', { name: 'Commit', exact: true }).click();
+      await panel.getByRole('button', { name: 'Push and reply' }).waitFor();
+      await page
+        .getByRole('listbox', { name: 'Threads' })
+        .getByText('Fixed locally · not pushed')
+        .waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

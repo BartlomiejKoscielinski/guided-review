@@ -13,7 +13,7 @@ import styles from './Author.module.css';
  * restored start reads nothing (F-30.4) and asks to open the MR again.
  */
 export function AuthorScreen() {
-  const { restored, noProject, mr } = useRouteAuthorMr();
+  const { iid, project, restored, noProject, mr } = useRouteAuthorMr();
   const [picked, setPicked] = useState<string | null>(null);
   const threads = mr.data?.threads ?? [];
   const thread = threads.find((t) => t.id === picked) ?? threads[0];
@@ -70,12 +70,15 @@ export function AuthorScreen() {
         </div>
       </aside>
       <div ref={mainRef} className={styles.main}>
-        {mr.data && thread && (
+        {mr.data && thread && project && (
           <AuthorThreadView
             key={thread.id}
             thread={thread}
             threads={threads}
             target={mr.data.targetBranch}
+            source={mr.data.sourceBranch}
+            project={project}
+            iid={iid}
             scrollRoot={mainRef}
           />
         )}

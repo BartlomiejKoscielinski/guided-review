@@ -18,7 +18,18 @@ const DIFF = toFileDiff(UPLOAD_WORKER_DIFF);
 function show(client: Partial<IpcClient>) {
   useAuthorCommitStore.getState().open('t1', 'Address review on UploadWorker.cs:46');
   renderWithIpc(
-    <AuthorCommitPanel threadId="t1" path={PATH} line={46} target="develop" diff={DIFF} />,
+    <AuthorCommitPanel
+      threadId="t1"
+      path={PATH}
+      line={46}
+      target="develop"
+      diff={DIFF}
+      project="mobile/mobile-app"
+      iid={480}
+      author="Marta K."
+      branch="feature/upload-retry"
+      onOpenRider={() => undefined}
+    />,
     client,
   );
   return screen.getByRole('region', { name: 'Commit and push' });

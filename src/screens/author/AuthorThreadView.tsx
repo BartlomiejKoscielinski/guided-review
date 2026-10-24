@@ -18,6 +18,10 @@ export interface AuthorThreadViewProps {
   threads: AuthorThread[];
   /** The MR's target branch: the diff runs from merge-base(origin/<target>, HEAD). */
   target: string;
+  /** The MR's source branch, the project and the MR, for Push and reply (F-26.5). */
+  source: string;
+  project: string;
+  iid: number;
   /** S-10's main column, which scrolls the diff. */
   scrollRoot: RefObject<HTMLElement | null>;
 }
@@ -53,7 +57,15 @@ const hasLine = (diff: FileDiff, { side, no }: Anchor) =>
  * line is outside the diff, the card stands above the code. A General thread has no file: its
  * conversation only. A fix of the file brings the commit panel under the code (F-26.4).
  */
-export function AuthorThreadView({ thread, threads, target, scrollRoot }: AuthorThreadViewProps) {
+export function AuthorThreadView({
+  thread,
+  threads,
+  target,
+  source,
+  project,
+  iid,
+  scrollRoot,
+}: AuthorThreadViewProps) {
   const diff = useAuthorFileDiff(target, thread.path);
   const rider = useRiderOpen();
   const [waited, setWaited] = useState(false);
@@ -145,7 +157,18 @@ export function AuthorThreadView({ thread, threads, target, scrollRoot }: Author
           />
         </div>
       )}
-      <AuthorCommitPanel threadId={thread.id} path={path} line={line} target={target} diff={file} />
+      <AuthorCommitPanel
+        threadId={thread.id}
+        path={path}
+        line={line}
+        target={target}
+        diff={file}
+        project={project}
+        iid={iid}
+        author={thread.author}
+        branch={source}
+        onOpenRider={openRider}
+      />
     </>
   );
 }

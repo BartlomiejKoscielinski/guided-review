@@ -1,6 +1,7 @@
 import type { IpcClient } from '../client';
 import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
 import { createStepRuns } from './analysisStatus';
+import { createAuthorPushBackend } from './authorPush';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
 import { createFixBackend } from './fix';
@@ -162,6 +163,7 @@ export function createMockClient({
     (sessionId) => gitlab.gitlabDiscussions(sessionId),
   );
   const fix = createFixBackend(data, sourceOf);
+  const authorPush = createAuthorPushBackend(() => changes.pushFails === 'rejected', respond);
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -194,6 +196,11 @@ export function createMockClient({
       return claude.claudeCancel(task);
     },
     ...gitlab,
+    // F-26.5: a queued reply tags its thread "Fixed locally · not pushed" until it is sent.
+    authorMr: async (project, iid) =>
+      authorPush.withQueued(project, await gitlab.authorMr(project, iid)),
+    authorQueueReply: authorPush.authorQueueReply,
+    authorPushAndReply: authorPush.authorPushAndReply,
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),

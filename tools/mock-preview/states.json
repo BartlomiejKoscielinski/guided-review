@@ -46,5 +46,6 @@
   "S10-author-fix-applied": {
     "mock": "Author.dc.html",
     "state": { "fix": "applied", "via": "rider", "msg": "Address review on UploadWorker.cs:46" }
-  }
+  },
+  "S10-author-committed": { "mock": "Author.dc.html", "state": { "fix": "committed" } }
 }

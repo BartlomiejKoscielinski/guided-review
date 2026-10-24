@@ -56,7 +56,9 @@ import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
 import type { MrList } from './types/MrList';
+import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
+import type { QueuedReply } from './types/QueuedReply';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
 import type { UnfinishedSession } from './types/UnfinishedSession';
@@ -246,6 +248,17 @@ export function createTauriClient(): IpcClient {
     authorFileDiff: (target, path) => call<FileDiff>('author_file_diff', { target, path }),
     authorFixupTarget: (target, path, line) =>
       call<FixupTarget>('author_fixup_target', { target, path, line }),
+    authorQueueReply: (project, iid, discussion, body, resolve, afterSha) =>
+      call<QueuedReply>('author_queue_reply', {
+        project,
+        iid,
+        discussion,
+        body,
+        resolve,
+        afterSha,
+      }),
+    authorPushAndReply: (project, iid, id) =>
+      call<PushOutcome>('author_push_and_reply', { project, iid, replyId: id }),
     pipelineJobs: (project, iid, pipeline) =>
       call<StageColumn[]>('pipeline_jobs', { project, iid, pipeline }),
     jobRetry: (project, iid, job) => call<JobRow>('job_retry', { project, iid, job }),
