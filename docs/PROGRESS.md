@@ -156,7 +156,7 @@ Rules for Claude Code:
 
 ## M7 · Own code: fix, author mode, new MR
 - [x] F-17.3 At the end it offers a draft MR description (F-27.2) and Browse and commit. (7d1adf2, 2a7d4c6, 8044c2a)
-- [ ] F-25.1 Available in self-review notes and author-mode threads. Never offered on a teammate's MR. — partial: autopilot (9c2439e, a490f2d, 16d7fc6)
+- [x] F-25.1 Available in self-review notes and author-mode threads. Never offered on a teammate's MR. (9c2439e, a490f2d, 16d7fc6, 77e66d0, 1afb8df, 573e8eb, d74295e, 6dc6c5f)
 - [x] F-25.2 Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may… (7c05823, e535bc6)
 - [x] F-25.3 The proposal shows as a diff card "Proposed change · Edited 1 file: <name>" with a one-sentence… (28d52fe, 0d4f6c1, 99f4de8, 9c26ecd, cbbd5b8, 4358c7d)
 - [x] F-25.4 Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run… (c912e79, 2198de2, 805ba7a, 3af40c0, 4d2b101, ad0ca98)
