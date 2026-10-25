@@ -9,6 +9,7 @@ pub mod claude;
 pub mod create_mr;
 pub mod drafts;
 pub mod fix;
+pub mod fix_thread;
 pub mod fix_watch;
 pub mod git;
 pub mod gitlab;

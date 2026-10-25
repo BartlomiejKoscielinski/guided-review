@@ -217,6 +217,7 @@ pub fn run() {
             commands::claude::claude_commit_message,
             commands::claude::claude_cancel,
             commands::fix::fix_propose,
+            commands::fix_thread::fix_propose_thread,
             commands::fix::fix_accept,
             commands::fix_watch::fix_watch,
             commands::fix_watch::fix_watch_stop,

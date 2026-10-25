@@ -47,10 +47,10 @@ pub struct FixTarget {
 }
 
 /// The note to fix: its file, line and text.
-struct Note {
-    file: String,
-    line: u32,
-    request: String,
+pub(super) struct Note {
+    pub file: String,
+    pub line: u32,
+    pub request: String,
 }
 
 /// The session's repository and the facts `fix_allowed` reads.
@@ -79,20 +79,61 @@ pub async fn fix_propose(
     let session = session(&store, &target.session_id, git_program.as_deref(), me).await?;
     fix_allowed(&session.source, &session.cx)?;
     let note = note(&store, &target).await?;
-    let exe = executable(&store).await?;
-    let ctx = plan_context(&claude, &store, &exe, &settings.claude);
-    let git = Git::new(git_program.as_deref().map(Path::new), &session.repo);
+    let run = Run {
+        claude: &claude,
+        store: &store,
+        proposals: &proposals,
+        settings: &settings,
+        repo_id: session.repo_id,
+        repo: &session.repo,
+        origin: "a self-review note",
+    };
+    run_fix(run, &note, &target.task, ch).await
+}
+
+/// Where an allowed fix runs: the user's own checkout and what the run needs around it.
+pub(super) struct Run<'a> {
+    pub claude: &'a ClaudeApp,
+    pub store: &'a Store,
+    pub proposals: &'a Proposals,
+    pub settings: &'a crate::settings::Settings,
+    pub repo_id: i64,
+    pub repo: &'a Path,
+    /// What the note is, for the prompt ("a self-review note", "a review thread on my MR").
+    pub origin: &'a str,
+}
+
+/// The run of an allowed fix (F-25.2, F-25.3): scratch worktree, Claude on the one file, the
+/// guard, and the proposal kept for Accept or Discard. `fix_allowed` was asked before.
+pub(super) async fn run_fix(
+    run: Run<'_>,
+    note: &Note,
+    task: &str,
+    ch: Channel<ClaudeTaskEvent<FixProposal>>,
+) -> AppResult<FixProposal> {
+    let Run {
+        claude,
+        store,
+        proposals,
+        settings,
+        repo_id,
+        repo,
+        origin,
+    } = run;
+    let exe = executable(store).await?;
+    let ctx = plan_context(claude, store, &exe, &settings.claude);
+    let git = Git::new(settings.git.path.as_deref().map(Path::new), repo);
 
     let emit = sender(ch);
     let cancel = Cancel::new();
-    claude.track(&target.task, &cancel);
+    claude.track(task, &cancel);
     let id = format!("fix-{}", uuid::Uuid::new_v4().simple());
     let root = claude.tmp_root.join("scratch");
     let result = async {
         let scratch = scratch::create(
             &git,
-            &store,
-            session.repo_id,
+            store,
+            repo_id,
             &root,
             &id,
             Path::new(&note.file),
@@ -102,28 +143,28 @@ pub async fn fix_propose(
         let context = format!("{}, line {}", note.file, note.line);
         let req = FixRequest {
             scratch: &scratch,
-            origin: "a self-review note",
+            origin,
             request: &note.request,
             context: &context,
         };
         emit(ClaudeTaskEvent::Queued);
         let started = || emit(ClaudeTaskEvent::Started);
         let run = fix::run(&ctx, &req, &started, &cancel).await;
-        after_task(&claude, &store, run.as_ref().map(drop)).await;
+        after_task(claude, store, run.as_ref().map(drop)).await;
         let outcome = match run {
             Ok(outcome) => outcome,
             Err(error) => {
-                scratch::remove(&git, &store, &scratch).await;
+                scratch::remove(&git, store, &scratch).await;
                 return Err(AppError::from(error));
             }
         };
-        guard::verify(&git, &store, &scratch, &cancel).await?;
+        guard::verify(&git, store, &scratch, &cancel).await?;
         let built = proposal::build(&git, &scratch, &id, &outcome, &cancel).await;
-        keep_or_remove(&git, &store, &proposals, &session.repo, scratch, &built).await;
+        keep_or_remove(&git, store, proposals, repo, scratch, &built).await;
         built
     }
     .await;
-    claude.untrack(&target.task);
+    claude.untrack(task);
     emit(match &result {
         Ok(proposal) => ClaudeTaskEvent::Done {
             result: proposal.clone(),

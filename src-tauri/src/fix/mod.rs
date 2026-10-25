@@ -8,3 +8,4 @@ pub mod guard;
 pub mod janitor;
 pub mod proposal;
 pub mod proposals;
+pub mod thread;

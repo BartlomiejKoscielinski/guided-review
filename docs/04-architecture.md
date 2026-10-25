@@ -121,7 +121,7 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | git | `git_status`, `git_log(branch?, query?)`, `git_status_summary`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)` (source `local`, `commit{sha}` or `session{sessionId}` = an MR session's merge base → head), `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
 | repos | `repo_active`, `repo_pick` (folder dialog in the core; adds the repository and makes it active), `repo_list`, `repo_switch(id)`, `repo_set_default(id)`, `repo_remove(id)`. The **default** repository is the one the app starts with (and deep links without a project use); `repo_switch` changes the **active** one (S-01, S-06) until the app restarts |
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
-| fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
+| fix | `fix_propose(target)`, `fix_propose_thread(target)` (a change thread of my MR, S-10), `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |
 | claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task, only?)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
 | rules | `rules_list`, `rules_suggestions`, `rules_propose_mr(id)`, `rules_dismiss(id, kind)` |
