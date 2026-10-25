@@ -101,7 +101,10 @@ pub async fn fix_propose_thread(
     };
     fix_allowed(&source, &cx)?;
     let Some(repo) = active else {
-        return Err(AppError::new(ErrorCode::FixNotAllowed, "Pick a repository first."));
+        return Err(AppError::new(
+            ErrorCode::FixNotAllowed,
+            "Pick a repository first.",
+        ));
     };
     let list = author_threads::of(&threads, &me, &HashSet::new(), &HashSet::new());
     let thread = list

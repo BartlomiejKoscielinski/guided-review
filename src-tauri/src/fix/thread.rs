@@ -33,7 +33,11 @@ pub fn thread_note(thread: &AuthorThread) -> AppResult<ThreadNote> {
         .notes
         .iter()
         .map(|n| {
-            let who = if n.mine { "Me (the MR author)" } else { &n.author };
+            let who = if n.mine {
+                "Me (the MR author)"
+            } else {
+                &n.author
+            };
             format!("{who}: {}", n.body)
         })
         .collect::<Vec<_>>()
@@ -175,7 +179,10 @@ mod tests {
 
     #[test]
     fn f25_1_same_project_matches_case_insensitively_and_without_origin() {
-        assert!(same_project(Some("Mobile/Delivery-App"), "mobile/delivery-app"));
+        assert!(same_project(
+            Some("Mobile/Delivery-App"),
+            "mobile/delivery-app"
+        ));
         assert!(same_project(None, "mobile/delivery-app"));
         assert!(!same_project(Some("mobile/other"), "mobile/delivery-app"));
     }

@@ -83,7 +83,7 @@ export function AuthorScreen() {
                   tagOf(
                     t,
                     drafts[t.id],
-                    project !== null && proposedKey === threadFixKey(project, iid, t.id),
+                    project !== undefined && proposedKey === threadFixKey(project, iid, t.id),
                   )
                 }
                 selected={selected}

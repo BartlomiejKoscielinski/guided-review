@@ -23,7 +23,9 @@ const CLAUDE = { timeout: 4000 };
 async function openAuthor(author: { onSourceBranch?: boolean } = {}) {
   const base = createMockClient({ latencyMs: 0, author });
   await base.repoPick();
-  const fixProposeThread = vi.fn(base.fixProposeThread);
+  const fixProposeThread = vi.fn((...args: Parameters<typeof base.fixProposeThread>) =>
+    base.fixProposeThread(...args),
+  );
   const client = { ...base, fixProposeThread };
   const app = renderApp({ screen: 'S-01' }, client);
   await act(() => app.router.navigate(pathFor({ screen: 'S-10', iid: IID })));
