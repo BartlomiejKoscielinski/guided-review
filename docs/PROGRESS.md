@@ -173,7 +173,7 @@ Rules for Claude Code:
 - [x] F-27.3 Reviewers suggested with reasons: code owner (CODEOWNERS), "Wrote N% of the changed lines" (git blame)… (f15b239, d5d8d14, 2facbaa, 1187d44)
 - [x] F-27.4 Options: Mark as draft, Delete branch after merge (default on), Squash commits. (cf92ff5, 78adeaa)
 - [x] F-27.5 Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done… (1e5cf26, 3ffcc4b, fbc7dcb, d4b92b3, d10066b)
-- [ ] F-27.6 Create merge request / Create draft MR; note who gets notified. Success screen: "!483" big green block…
+- [x] F-27.6 Create merge request / Create draft MR; note who gets notified. Success screen: "!483" big green block… (4b6b74c, 251ef4d, b4bfe4f, f567dac, 68ca703, 614c4ea)
 
 ## M8 · Re-review and moved code
 - [ ] F-04.2 If the MR head moved since the session started, the card shows an orange tag "N NEW COMMITS", a primary…
