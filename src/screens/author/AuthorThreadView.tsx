@@ -14,6 +14,8 @@ import { AuthorQuestionReply } from './AuthorQuestionReply';
 import { AuthorThreadCard } from './AuthorThreadCard';
 import styles from './AuthorThreadView.module.css';
 import { useFixInRider } from './useFixInRider';
+import { FixCard } from '../fix/FixCard';
+import { useThreadFix } from '../fix/useFix';
 
 export interface AuthorThreadViewProps {
   thread: AuthorThread;
@@ -99,6 +101,13 @@ export function AuthorThreadView({
   const openCommit = useAuthorCommitStore((s) => s.open);
   const draft = useAuthorCommitStore((s) => s.drafts[thread.id]);
   const changed = fixInRider.phase === 'changed';
+  // F-25.1: Fix with Claude on this change thread; the run outlives the card (useFixStore).
+  // M7 decision 9: after Accept the commit message is Claude's explanation, without Claude.
+  const fix = useThreadFix(project, iid, thread, (explanation) => {
+    openCommit(thread.id, explanation);
+  });
+  const fixState = readOnly ? null : fix.state;
+  const accepted = fixState?.phase === 'applied';
   useEffect(() => {
     // F-26.4, M7 decision 9: the message is prefilled without Claude after a Rider change.
     if (changed && path !== null) {
@@ -113,6 +122,20 @@ export function AuthorThreadView({
       thread={thread}
       colors={thread.notes.map((n) => noteAvatarColor(threads, n))}
       onFixInRider={fixInRider.start}
+      onFixWithClaude={fix.start}
+      fixBlocked={fix.blocked}
+      fixApplied={accepted}
+      fixCard={
+        fixState !== null && fixState.phase !== 'applied' ? (
+          <FixCard
+            state={fixState}
+            onAccept={fix.accept}
+            onDiscard={fix.discard}
+            onCancel={fix.cancel}
+            onClose={fix.close}
+          />
+        ) : undefined
+      }
       riderPhase={fixInRider.phase}
       riderBusyText={
         path !== null

@@ -5,6 +5,7 @@ import { useGitlabStatus } from '../../ipc/hooks/useGitlab';
 import type { AuthorMr } from '../../ipc/types/AuthorMr';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
 import { useAuthorCommitStore } from '../../state/authorCommit';
+import { threadFixKey, useFixStore } from '../../state/fix';
 import { headingText, resolvedText } from './authorText';
 import { AuthorThreadView } from './AuthorThreadView';
 import { keepPushed, tagOf, visitCounts, withPushedReply } from './pushedThreads';
@@ -24,6 +25,8 @@ export function AuthorScreen() {
   // F-26.8: the checkout may change outside the app; coming back reads it again.
   useAuthorRefreshOnFocus(project, iid);
   const drafts = useAuthorCommitStore((s) => s.drafts);
+  // Author.dc.html `statusOf`: the thread whose Claude proposal waits reads "Fix proposed".
+  const proposedKey = useFixStore((s) => (s.open?.state.phase === 'proposed' ? s.open.key : null));
   const [picked, setPicked] = useState<string | null>(null);
   // A thread resolved by a push in this visit stays listed when GitLab's list is read again.
   const [listed, setListed] = useState<{ from: AuthorMr | undefined; threads: AuthorThread[] }>({
@@ -76,7 +79,13 @@ export function AuthorScreen() {
             {threads.length > 0 && (
               <ThreadList
                 threads={threads}
-                tagOf={(t) => tagOf(t, drafts[t.id])}
+                tagOf={(t) =>
+                  tagOf(
+                    t,
+                    drafts[t.id],
+                    project !== null && proposedKey === threadFixKey(project, iid, t.id),
+                  )
+                }
                 selected={selected}
                 onSelect={setPicked}
               />

@@ -1,6 +1,7 @@
 import { useIpc } from '../../ipc/IpcContext';
 import { IpcError } from '../../ipc/errors';
-import { fixKey, useFixStore, type OpenFix } from '../../state/fix';
+import type { FixProposal } from '../../ipc/types/FixProposal';
+import { fixKey, threadFixKey, useFixStore, type OpenFix } from '../../state/fix';
 import type { FixCardState } from './fixState';
 
 /** The tooltip of Fix with Claude while another fix runs or waits (M7 decision 4). */
@@ -40,7 +41,39 @@ export function useFix(
   file: string,
 ): UseFix {
   const ipc = useIpc();
-  const key = fixKey(sessionId, note);
+  return useFixRun(fixKey(sessionId, note), file, (task) =>
+    ipc.fixPropose({ task, sessionId, ...note }, () => undefined),
+  );
+}
+
+/**
+ * Fix with Claude on a change thread of my MR (F-25.1 on S-10): the same card and store as a
+ * note's fix, run by `fixProposeThread` on the thread's file.
+ */
+export function useThreadFix(
+  project: string,
+  iid: number,
+  thread: { id: string; path: string | null },
+  onApplied: (explanation: string) => void,
+): UseFix {
+  const ipc = useIpc();
+  return useFixRun(
+    threadFixKey(project, iid, thread.id),
+    thread.path ?? '',
+    (task) => ipc.fixProposeThread({ task, project, iid, threadId: thread.id }, () => undefined),
+    onApplied,
+  );
+}
+
+/** One fix's run and card, whatever it fixes: `propose` starts it under the task ID. */
+function useFixRun(
+  key: string,
+  file: string,
+  propose: (task: string) => Promise<FixProposal>,
+  /** Once, when the core wrote the change (also when the card left the screen meanwhile). */
+  onApplied?: (explanation: string) => void,
+): UseFix {
+  const ipc = useIpc();
   const open = useFixStore((s) => s.open);
   const blocked = useFixStore((s) => busy(s.open));
   const mine = open?.key === key ? open : null;
@@ -51,8 +84,7 @@ export function useFix(
     const task = `fix-${String(Date.now())}-${String(runs)}`;
     const { setOpen, settle } = useFixStore.getState();
     setOpen({ key, task, state: { phase: 'running', file } });
-    ipc
-      .fixPropose({ task, sessionId, ...note }, () => undefined)
+    propose(task)
       .then((proposal) => {
         settle(task, { phase: 'proposed', proposal });
       })
@@ -85,6 +117,7 @@ export function useFix(
       .fixAccept(proposed.proposal.id)
       .then(() => {
         settle(current.task, { phase: 'applied' });
+        onApplied?.(proposed.proposal.explanation);
       })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);

@@ -102,6 +102,13 @@
   font-weight: 800;
 }
 
+/* M7 decision 4: another fix runs or waits (the Button's disabled look). */
+.actions .primary:disabled {
+  background: var(--raised-2);
+  color: var(--text-muted);
+  cursor: default;
+}
+
 .actions .neutral {
   padding: 0 14px;
   background: var(--raised-2);

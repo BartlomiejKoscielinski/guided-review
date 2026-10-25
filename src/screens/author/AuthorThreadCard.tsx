@@ -6,6 +6,7 @@ import { Square } from '../../components/Square';
 import { Tag } from '../../components/Tag';
 import { formatAge } from '../../format/age';
 import type { AuthorThread } from '../../ipc/types/AuthorThread';
+import { FINISH_FIRST } from '../fix/useFix';
 import { OTHER_CHANGES_TEXT } from './authorText';
 import styles from './AuthorThreadCard.module.css';
 import type { RiderFixPhase } from './useFixInRider';
@@ -22,8 +23,17 @@ export interface AuthorThreadCardProps {
   riderBusyText?: string;
   /** **Stop waiting**. */
   onStopWaiting?: () => void;
-  /** Fix with Claude (F-25.1 on author threads); the flow is wired by its own criterion. */
+  /** Fix with Claude (F-25.1 on author threads): starts the run whose card is `fixCard`. */
   onFixWithClaude?: () => void;
+  /** Another fix runs or waits (M7 decision 4): Fix with Claude is disabled with its tooltip. */
+  fixBlocked?: boolean;
+  /**
+   * The fix card of this thread while Claude works, proposes or failed (F-25.3, Author.dc.html
+   * `fBusy`, `fProposed`), in place of the actions.
+   */
+  fixCard?: ReactNode;
+  /** Claude's change was accepted (F-25.4): "Applied to your working copy. Commit it below." */
+  fixApplied?: boolean;
   /** Reply on a change thread (F-26.5); its composer is wired by its own criterion. */
   onReply?: () => void;
   /** A question's answer (F-26.7): the reply composer, or "Answered…", in place of the actions. */
@@ -57,6 +67,9 @@ export function AuthorThreadCard({
   colors,
   onFixInRider,
   onFixWithClaude,
+  fixBlocked = false,
+  fixCard,
+  fixApplied = false,
   onReply,
   answer,
   riderPhase = 'idle',
@@ -67,7 +80,9 @@ export function AuthorThreadCard({
   otherChanges = false,
 }: AuthorThreadCardProps) {
   const fixable = !readOnly && thread.kind === 'change' && thread.path !== null;
-  const phase = pushed ? 'pushed' : riderPhase;
+  // Claude's fix takes the place of the actions like Rider's wait does; a push ends both.
+  const claude = fixable && !pushed && (fixApplied || fixCard !== undefined);
+  const phase = pushed ? 'pushed' : claude ? 'claude' : riderPhase;
   const question = thread.kind === 'question' && answer !== undefined;
   return (
     <section aria-label="Thread" className={styles.card}>
@@ -96,7 +111,13 @@ export function AuthorThreadCard({
         <div className={styles.actions}>
           {fixable && (
             <>
-              <button type="button" className={styles.primary} onClick={onFixWithClaude}>
+              <button
+                type="button"
+                className={styles.primary}
+                disabled={fixBlocked}
+                title={fixBlocked ? FINISH_FIRST : undefined}
+                onClick={onFixWithClaude}
+              >
                 Fix with Claude
               </button>
               <button type="button" className={styles.neutral} onClick={onFixInRider}>
@@ -119,6 +140,13 @@ export function AuthorThreadCard({
             Stop waiting
           </Button>
         </div>
+      )}
+      {phase === 'claude' && !fixApplied && fixCard}
+      {phase === 'claude' && fixApplied && (
+        <span role="status" className={styles.applied}>
+          <span className={styles.appliedMark} />
+          Applied to your working copy. Commit it below.
+        </span>
       )}
       {phase === 'changed' && (
         <span role="status" className={styles.applied}>

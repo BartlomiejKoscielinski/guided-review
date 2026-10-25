@@ -28,10 +28,15 @@ const answered = (thread: AuthorThread) =>
 /**
  * The thread's tag (Author.dc.html `statusOf`): after its Push and reply in this visit (F-26.6)
  * "Resolved" (green) with Resolve on, else "Replied" ("Answered" for a question GitLab lists so),
- * whatever the list read before the push; otherwise its status.
+ * whatever the list read before the push; a Claude proposal waiting for Accept "Fix proposed"
+ * (purple); otherwise its status.
  */
-export function tagOf(thread: AuthorThread, draft: AuthorCommitDraft | undefined): ThreadTag {
-  if (!pushed(draft)) return STATUS_TAG[thread.status];
+export function tagOf(
+  thread: AuthorThread,
+  draft: AuthorCommitDraft | undefined,
+  proposed = false,
+): ThreadTag {
+  if (!pushed(draft)) return proposed ? STATUS_TAG.fixProposed : STATUS_TAG[thread.status];
   if (resolvedHere(draft)) return RESOLVED_TAG;
   return thread.status === 'answered' ? STATUS_TAG.answered : STATUS_TAG.replied;
 }

@@ -38,3 +38,8 @@ export function fixKey(sessionId: string, note: { findingId: string } | { draftI
     ? `${sessionId}\0finding\0${note.findingId}`
     : `${sessionId}\0draft\0${note.draftId}`;
 }
+
+/** The store key of a thread of my MR on S-10 (F-25.1). */
+export function threadFixKey(project: string, iid: number, threadId: string) {
+  return `author\0${project}\0${String(iid)}\0${threadId}`;
+}
