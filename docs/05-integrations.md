@@ -66,13 +66,29 @@ Without AI, first match wins, case-insensitive paths; the result is `Hunk.mechan
 
 File-level hunks (F-05.7) are not classified here; they stay skim proposals as before.
 
+### Re-review (F-21, F-04.2; M8 spec, D-84)
+What S-09 and the S-01 tag show is computed in the core from these rules:
+- **Versions**: `GET …/versions` sorted by `created_at` ascending → `v1 … vn`. **Your version** = the version whose `head_commit_sha` equals the session's `head_sha`; none → S-09 "Your version unknown" and "from" = `v(n-1)`. A version's base = its `base_commit_sha`.
+- **Fetch**: `git fetch origin <sha>` into the review repository for each needed head that is not present. **verify** on 17.11.7 that GitLab serves the head of an older, force-pushed-over version by SHA (keep-around refs); if the fetch fails and the commits are not local → S-09 "Your version's commits gone".
+- **Push kind** (who/when line): base moved (`old_base ≠ new_base`) → rebased; else `git merge-base --is-ancestor old_head new_head` → new commits on top (count = `git rev-list --count old_head..new_head`); else force-pushed.
+- **Commit tags** from the range-diff above: `=` Same, `!` Changed, `>` New, `<` Dropped. Changed "N hunks" = hunks of the commit's replay diff (Replay row above: `git diff T <new_commit>`). **N** (S-09 heading, S-01 tag) = Changed + New.
+- **Can't pair**: both versions have commits and the range-diff has no `=` and no `!` line → one whole-version comparison: `T = git merge-tree --write-tree --merge-base=old_base new_base old_head`, author's change = `git diff T new_head`; S-09 counts its files.
+- **Replay conflict**: merge-tree reports conflicts for a Changed commit → show the range-diff patch comparison for it (S-09 "Replay conflict").
+- **Rebase noise**: only when the base moved: commits = `git rev-list --count old_base..new_base`, files = `git diff --name-only old_base new_base`. Greyed lines (Show): hunks of `git diff <old_commit> <new_commit> -- <the commit's files>` that are not in the commit's replay diff.
+- **Still valid / look at again**: over the steps you marked reviewed in your version. A step is "to look at again" when a line of one of its hunks, mapped from your version to `T` by line text (the F-11.3 placement), overlaps a line the whole-version author's change (`git diff T new_head`) removes or changes, or when it can't be mapped; else "still valid".
+- **Drafts on changed code**: your unpublished drafts whose line passes the same overlap test.
+- **Steps of Review N changes**: one per change in the list order; a Changed step holds its replay diff, a New step its own diff; Review N files (can't pair) = one step per file of the whole-version change.
+- **S-01 tag**: computed on the S-01 refresh (open, window focus, F-02.4 timer) for unfinished MR sessions whose MR head SHA differs from the session's, with the same fetch and range-diff; until it finishes or when it fails the tag reads "New version".
+- **Claude**: the Re-review summary task (below) runs only on **Summarize with Claude** / **Check with Claude**, once per pair of versions for every change and every draft on changed code; commit key = the new short SHA (`all` for the whole-version comparison); cache key = from head + to head + prompt version.
+
 ### Moved code (own algorithm, git as test oracle)
 `git diff --color-moved` cannot report "moved with a small change", so the core implements detection itself (`git/moved.rs`):
 1. Collect runs of deleted lines and added lines across all files of the diff.
 2. Normalize lines (trim, collapse inner whitespace); ignore blank lines and lines that are only braces.
 3. Find matching blocks between a deleted run and an added run: at least 3 lines and 20 alphanumeric characters (git's threshold), allowing up to 2 modified lines inside when the block is ≥ 8 lines.
 4. Mark lines with `MovedRef { block_id, origin_file, origin_range, changed_lines }`.
-5. Test oracle: for blocks without changes, results must match `git -c color.diff.oldMoved=… -c color.diff.newMoved=… diff --color=always --color-moved=blocks --color-moved-ws=allow-indentation-change` on the fixture repos.
+5. Where: step review diffs only (S-03, S-04); S-06, S-09 and S-10 stay plain in M8 (02 › S-12 Moved rows).
+6. Test oracle: for blocks without changes, results must match `git -c color.diff.oldMoved=… -c color.diff.newMoved=… diff --color=always --color-moved=blocks --color-moved-ws=allow-indentation-change` on the fixture repos.
 
 ---
 
