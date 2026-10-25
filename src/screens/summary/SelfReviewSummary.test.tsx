@@ -148,7 +148,8 @@ describe('S-05 self-review summary', () => {
     await screen.findByText(COUNTER);
     expect(
       screen.queryByRole('button', {
-        name: /publish|approve|resolve|reply|reopen|fix with claude/i,
+        // Fix with Claude per kept note arrives in M7 (F-25.1, SelfReviewSummaryFix.test.tsx).
+        name: /publish|approve|resolve|reply|reopen/i,
       }),
     ).toBeNull();
     expect(screen.queryAllByRole('tab')).toHaveLength(0);

@@ -9,10 +9,6 @@ export const PLACEHOLDER = {
   mr: { iid: '!482', title: 'Offline queue for delivery photos' },
   /** S-09 context (M8). */
   rereviewMr: { iid: '!471', title: 'Signature screen: field validation' },
-  /** S-10 context (M7). */
-  authorMr: { iid: '!480', title: 'Retry in UploadWorker after network loss' },
   /** Branch block on S-06 and S-11 (M1, M7). */
   branch: 'chore/compiled-bindings',
-  /** S-10 pipeline status (F-26.1, M7). */
-  pipelineStatus: 'Pipeline passed',
 } as const;

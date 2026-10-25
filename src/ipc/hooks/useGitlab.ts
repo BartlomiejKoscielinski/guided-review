@@ -16,12 +16,13 @@ export const GITLAB_STATUS_KEY = ['gitlab', 'status'] as const;
 /** Every S-01 MR tab; refreshed when the active repository or the token changes. */
 export const GITLAB_MRS_ROOT = ['gitlab', 'mrs'] as const;
 
-/** Connected / no token / failing, with the masked token (F-19.2). */
-export function useGitlabStatus(): UseQueryResult<GitlabStatus, IpcError> {
+/** Connected / no token / failing, with the masked token (F-19.2); `enabled` false: cache only. */
+export function useGitlabStatus(enabled = true): UseQueryResult<GitlabStatus, IpcError> {
   const ipc = useIpc();
   return useQuery<GitlabStatus, IpcError>({
     queryKey: GITLAB_STATUS_KEY,
     queryFn: () => ipc.gitlabStatus(false),
+    enabled,
   });
 }
 

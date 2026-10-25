@@ -1,6 +1,8 @@
 //! Rider commands: `rider_open` (F-15.5, F-24.1) opens a file at a line, from the active
 //! repository's working copy or, for a session, from the folder `rider.openFrom` picks;
-//! `rider_status` and `rider_pick_executable` back Settings › Integrations (F-24.4).
+//! `rider_status` and `rider_pick_executable` back Settings › Integrations (F-24.4);
+//! `os_open_gitlab_url` (F-20.4, M6 decision 13) opens a page of the configured GitLab in the
+//! default browser.
 
 use std::path::{Component, Path, PathBuf};
 
@@ -10,6 +12,7 @@ use tauri_plugin_dialog::DialogExt;
 use super::repo::active_git;
 use super::with_store;
 use crate::error::{AppError, AppResult, ErrorCode};
+use crate::os::browser::{self, BrowserError};
 use crate::os::process::spawn_detached;
 use crate::os::rider::{self, RiderInput, RiderInstall};
 use crate::os::rider_pick::{self, RiderStatus};
@@ -65,6 +68,22 @@ pub async fn rider_open(
         AppError::internal("Rider could not be started.").with_detail(e.to_string())
     })?;
     Ok(())
+}
+
+/// Opens `url` in the default browser when it is an `https` URL on the configured GitLab host
+/// (Open in GitLab, F-20.4); anything else is refused and starts nothing.
+#[tauri::command]
+pub async fn os_open_gitlab_url(store: State<'_, Store>, url: String) -> AppResult<()> {
+    let server = with_store(&store, |conn| {
+        Ok(store::settings::load(conn)?.gitlab.server)
+    })
+    .await?;
+    browser::open_gitlab_url(server.as_deref().unwrap_or(""), &url).map_err(|e| match e {
+        BrowserError::Refused => AppError::new(ErrorCode::InvalidInput, e.to_string()),
+        BrowserError::Launch(source) => {
+            AppError::internal("The browser could not be started.").with_detail(source.to_string())
+        }
+    })
 }
 
 /// The install the app uses: the Settings value, else the detected one (docs/05 › Rider).

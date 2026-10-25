@@ -80,7 +80,7 @@ describe('Tauri IPC client', () => {
       ['git_file_diff', { source: { kind: 'local' }, file }],
       ['git_stage', { selection }],
       ['git_unstage', { selection }],
-      ['git_commit', { message: 'Subject', amend: true }],
+      ['git_commit', { message: 'Subject', amend: true, fixup: null, only: null }],
       ['git_last_message', undefined],
       ['git_push', undefined],
       ['rider_open', { file: 'a b/ż.cs', line: 12, session: null }],
@@ -99,6 +99,8 @@ describe('Tauri IPC client', () => {
     await client.gitLog();
     await client.gitLog('feature/zażółć', 'torch');
     await client.gitStatusSummary();
+    await client.gitBranchInfo();
+    await client.gitBranchInfo('main');
     await client.sessionOpenCommit({ from: '9be0d47', to: 'a3f9c12' });
     await client.sessionOpenLocal({ kind: 'branchVsTarget', target: 'origin/develop' });
     await client.sessionOpenBranch('develop');
@@ -112,6 +114,8 @@ describe('Tauri IPC client', () => {
       ['git_log', { branch: null, query: null }],
       ['git_log', { branch: 'feature/zażółć', query: 'torch' }],
       ['git_status_summary', undefined],
+      ['git_branch_info', { target: null }],
+      ['git_branch_info', { target: 'main' }],
       ['session_open_commit', { range: { from: '9be0d47', to: 'a3f9c12' } }],
       ['session_open_local', { scope: { kind: 'branchVsTarget', target: 'origin/develop' } }],
       ['session_open_branch', { branch: 'develop' }],

@@ -4,12 +4,14 @@
 pub mod claude;
 pub mod commands;
 pub mod error;
+pub mod fix;
 pub mod git;
 pub mod gitlab;
 pub mod logging;
 pub mod nav;
 pub mod os;
 pub mod review;
+pub mod reviewers;
 pub mod route;
 pub mod settings;
 pub mod source;
@@ -148,12 +150,17 @@ pub fn run() {
             }
             let store = open_store()?;
             let app_data = os::paths::app_data_dir()?;
+            // Before the tmp folder sweep, so git removes its own worktrees (F-25.4).
+            commands::fix::sweep_scratches(&store);
             commands::claude::manage(app.handle(), &app_data, &store);
             app.manage(store);
             commands::repo::manage(app.handle());
             app.manage(commands::gitlab::GitlabApp::default());
             app.manage(commands::sessions::PrepareTasks::default());
             app.manage(commands::review::ReviewApp::default());
+            app.manage(fix::proposals::Proposals::default());
+            app.manage(commands::job_trace::JobTraces::default());
+            app.manage(commands::fix_watch::FixWatches::default());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -189,6 +196,7 @@ pub fn run() {
             commands::git::git_status,
             commands::git::git_log,
             commands::git::git_status_summary,
+            commands::git::git_branch_info,
             commands::git::git_commit_info,
             commands::git::git_file_diff,
             commands::git::git_stage,
@@ -197,6 +205,7 @@ pub fn run() {
             commands::git::git_last_message,
             commands::git::git_push,
             commands::os::rider_open,
+            commands::os::os_open_gitlab_url,
             commands::os::rider_status,
             commands::os::rider_pick_executable,
             commands::claude::claude_status,
@@ -207,21 +216,58 @@ pub fn run() {
             commands::claude::claude_models,
             commands::claude::claude_commit_message,
             commands::claude::claude_cancel,
+            commands::fix::fix_propose,
+            commands::fix_thread::fix_propose_thread,
+            commands::fix::fix_accept,
+            commands::fix_watch::fix_watch,
+            commands::fix_watch::fix_watch_stop,
+            commands::fix::fix_discard,
             commands::summary::claude_summary_comment,
             commands::summary::session_summary,
             commands::summary::session_set_summary,
             commands::thread_check::claude_thread_check,
+            commands::job_explain::job_explain,
             commands::gitlab::gitlab_status,
             commands::gitlab::gitlab_account_save,
             commands::gitlab::gitlab_account_remove,
             commands::gitlab::gitlab_list_mrs,
             commands::gitlab_threads::gitlab_discussions,
+            commands::author::author_mr,
+            commands::author::author_file_diff,
+            commands::author::author_fixup_target,
+            commands::author::author_uncommitted_files,
+            commands::author::author_queue_reply,
+            commands::author::author_push_and_reply,
+            commands::author::author_push_pipeline,
+            commands::author_reply::author_reply,
+            commands::author_reply::claude_reply_draft,
+            commands::create_mr::git_mr_title,
+            commands::create_mr::git_merge_check,
+            commands::create_mr::gitlab_create_mr,
+            commands::create_mr::claude_mr_description,
+            commands::reviewers::reviewers_suggest,
+            commands::reviewers::gitlab_users_search,
             commands::gitlab_threads::gitlab_approval_state,
             commands::approval::summary_status,
             commands::approval::gitlab_approve,
             commands::approval::gitlab_unapprove,
             commands::gitlab_threads::gitlab_resolve,
             commands::gitlab_threads::gitlab_reply,
+            commands::pipeline::pipeline_list,
+            commands::pipeline::pipeline_get,
+            commands::pipeline::pipeline_jobs,
+            commands::pipeline::job_retry,
+            commands::pipeline::job_cancel,
+            commands::pipeline::job_artifacts,
+            commands::pipeline::job_details,
+            commands::pipeline::job_play,
+            commands::pipeline::job_variables_get,
+            commands::pipeline::pipeline_mr_head,
+            commands::pipeline::pipeline_run_mr,
+            commands::pipeline::pipeline_retry,
+            commands::pipeline::pipeline_cancel,
+            commands::job_trace::job_trace,
+            commands::job_trace::job_trace_stop,
             commands::review_plan::review_plan,
             commands::review_plan::review_set_strategy,
             commands::review_plan::review_reorder_steps,

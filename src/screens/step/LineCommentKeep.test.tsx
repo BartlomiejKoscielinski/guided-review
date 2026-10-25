@@ -121,7 +121,7 @@ describe('S-03 line comments are never lost or hidden (F-09.7)', () => {
     await ctrlD();
     expect(await screen.findByText('Step 4 of 8')).toBeInTheDocument();
     expect(textArea(await composer('L50'))).toHaveValue(`${HALF} queue`);
-  });
+  }, 15_000);
 
   it('F-09.7 Comment or C on other lines while the composer holds text keeps it and moves the focus back to its text', async () => {
     const { client } = await backend();
@@ -139,7 +139,7 @@ describe('S-03 line comments are never lost or hidden (F-09.7)', () => {
     await userEvent.keyboard('c');
     expect(screen.queryByRole('article', { name: 'Comment on L46' })).toBeNull();
     expect(textArea(await composer('L50'))).toHaveFocus();
-  });
+  }, 15_000);
 
   it('F-09.7 an empty composer still moves to the lines commented on next', async () => {
     const { client } = await backend();

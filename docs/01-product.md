@@ -219,11 +219,11 @@ This file is the source of truth for **what** the app does. Every feature has an
 - **F-21.3** Compare control: from version (v1, v2 … with a "you" marker on the version last reviewed) → latest.
 - **F-21.4** Commits list from `git range-diff` with word tags: **Same** (patch identical after rebase), **Changed** (N hunks changed), **New**, **Dropped** (struck through).
 - **F-21.5** Rebase noise: "Rebase brought N commits from <target>. Hidden: they aren't part of this MR." with Show/Hide.
-- **F-21.6** Selecting a commit shows Claude's one-paragraph summary of what changed and a split diff "Version 2 · your review" vs "Version 3 · now" limited to that commit's changes. Same and Dropped commits show a one-line explanation instead.
-- **F-21.7** "Your review so far": steps still valid / steps to look at again; drafts on changed code with Claude's verdict ("fixed in v3 …") and **Drop draft** / **Keep** (Undo).
+- **F-21.6** Selecting a commit shows Claude's one-paragraph summary of what changed and a split diff "Version 2 · your review" vs "Version 3 · now" limited to that commit's changes. Same and Dropped commits show a one-line explanation instead. Claude writes the summaries only after a click on **Summarize with Claude** (one run for the whole comparison; owner direction 2026-10-14, no automatic Claude run); a cached summary shows at once (S-09 states, D-84).
+- **F-21.7** "Your review so far": steps still valid / steps to look at again; drafts on changed code with Claude's verdict ("fixed in v3 …") and **Drop draft** / **Keep** (Undo). The verdict comes from the same click-started run as F-21.6 (S-09 states).
 - **F-21.8** Only changed commits become steps; unchanged steps keep their reviewed state.
 
-### F-22 Moved code
+### F-22 Moved code · S-12 (moved rows in S-03/S-04)
 - **F-22.1** Blocks moved between or within files are detected and collapsed to one row: "MOVED · 16 lines from `<file>` L88–103" with **Show** / **Hide** and **Go to origin**.
 - **F-22.2** Small edits inside a moved block are shown ("1 LINE CHANGED" tag) and, when expanded, unchanged moved lines are dimmed and changed lines shown as a normal −/+ pair.
 - **F-22.3** The origin side of a move shows "Moved to `<file>` L44–59" instead of a full deletion.

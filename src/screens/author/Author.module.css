@@ -1,0 +1,195 @@
+/* S-10 Your MR (Author.dc.html): left panel with the thread list; the main area follows. */
+.screen {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.panel {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 26px 18px 24px;
+  background: var(--panel);
+  overflow: auto;
+}
+
+.main {
+  flex: 999 1 640px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 6px;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blue-text);
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 46px;
+  line-height: 0.95;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.branch {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.threads,
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.thread {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  background: var(--panel-2);
+}
+
+.thread[aria-selected='true'] {
+  background: var(--raised-2);
+  box-shadow: inset 0 0 0 2px var(--yellow);
+}
+
+.thread:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.avatar[data-color='orange'] {
+  background: var(--orange);
+}
+.avatar[data-color='blue'] {
+  background: var(--blue);
+}
+.avatar[data-color='purple'] {
+  background: var(--purple);
+}
+
+.threadBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.threadHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.threadAuthor {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.threadPlace {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.excerpt {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text-body);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.threadTag {
+  display: flex;
+}
+
+.resolved {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.safety {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: var(--panel-2);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.safetyTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+}
+
+.note {
+  margin: 0;
+  padding: 0 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.error {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  font-size: 14px;
+  color: var(--orange-text);
+}

@@ -5,7 +5,10 @@ import type { MrList } from '../types/MrList';
 import type { MrRow } from '../types/MrRow';
 import type { MrTab } from '../types/MrTab';
 import { createApprovalActions, type ApprovalScenario } from './approvals';
+import { createAuthorBackend } from './authorMr';
 import type { MockSessionData } from './session-data';
+import { createBrowserBackend } from './browser';
+import { createPipelineBackend } from './pipeline';
 import { createPublishActions, type PublishScenario } from './publish';
 import { createThreadActions } from './threads';
 
@@ -28,8 +31,28 @@ type GitlabClient = Pick<
   | 'gitlabUnapprove'
   | 'gitlabResolve'
   | 'gitlabReply'
+  | 'pipelineList'
+  | 'pipelineGet'
+  | 'pipelineJobs'
+  | 'jobRetry'
+  | 'jobCancel'
+  | 'jobPlay'
+  | 'jobVariablesGet'
+  | 'pipelineMrHead'
+  | 'pipelineRunMr'
+  | 'pipelineRetry'
+  | 'pipelineCancel'
+  | 'jobTrace'
+  | 'jobExplain'
+  | 'jobArtifacts'
+  | 'jobDetails'
+  | 'osOpenGitlabUrl'
   | 'draftsPublish'
   | 'gitlabForeignDrafts'
+  | 'authorMr'
+  | 'authorFileDiff'
+  | 'authorFixupTarget'
+  | 'authorPushPipeline'
 >;
 
 const HOUR = 3_600_000;
@@ -251,5 +274,12 @@ export function createGitlabBackend(
     ...createThreadActions(store, signedIn, addToken, respond),
     ...createApprovalActions(store, scenario, signedIn, addToken, respond),
     ...createPublishActions(store, scenario, signedIn, addToken, respond),
+    ...createPipelineBackend(signedIn, addToken, respond),
+    ...createBrowserBackend(() => status.server, respond),
+    ...createAuthorBackend(signedIn, addToken, respond, (iid) =>
+      Object.values(lists())
+        .flat()
+        .find((r) => r.iid === iid),
+    ),
   };
 }

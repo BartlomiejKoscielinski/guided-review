@@ -1,6 +1,10 @@
 //! Review sessions: plan model, coverage invariant (`coverage.rs`), steps, decisions, drafts.
 
 pub mod analysis_status;
+pub mod author_mr;
+pub mod author_push;
+pub mod author_threads;
+pub mod branch_self_review;
 pub mod config_risk;
 pub mod coverage;
 pub mod decisions;
@@ -11,6 +15,8 @@ mod file_place_tests;
 pub mod finding_model;
 pub mod findings;
 pub mod fingerprint;
+pub mod job_explain;
+pub mod job_log;
 pub mod layer;
 pub mod line_map;
 pub mod mechanical;
@@ -18,6 +24,8 @@ pub mod model;
 pub mod mr_summary;
 pub mod note_position;
 pub mod open_mr;
+pub mod pipeline_artifacts;
+pub mod pipeline_view;
 pub mod plan;
 pub mod plan_cache;
 pub mod plan_fallback;
@@ -33,6 +41,7 @@ pub mod publish_remap;
 pub mod publish_session;
 mod publish_store;
 pub mod resume;
+pub mod retry_signature;
 pub mod session_state;
 pub mod sessions;
 pub mod source_files;

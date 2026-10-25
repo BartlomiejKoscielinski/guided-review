@@ -59,14 +59,17 @@ export function implementScope(part, tests, itemDir) {
   return 'the whole criterion in one pass.';
 }
 
-/** The exact verify command of an item: its locked e2e specs on the autopilot port, else plain. */
+/**
+ * The exact verify command of an item: its locked e2e specs on the autopilot port, else plain;
+ * --fresh like the gate, so the gate can reuse a green run of the same tree (E32).
+ */
 export function verifyCommand(tests, port) {
   const specs = (tests ?? [])
     .map((t) => slash(t).match(/^tests\/e2e\/(.+)\.spec\.ts$/)?.[1])
     .filter(Boolean);
   return specs.length
-    ? `GR_PORT=${port} node tools/verify.mjs --e2e ${specs.join(' ')}`
-    : 'node tools/verify.mjs';
+    ? `GR_PORT=${port} node tools/verify.mjs --fresh --e2e ${specs.join(' ')}`
+    : 'node tools/verify.mjs --fresh';
 }
 
 const clip = (s) => (s.length > MAX_DETAIL ? `${s.slice(0, MAX_DETAIL)}\n…` : s);

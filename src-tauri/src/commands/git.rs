@@ -8,6 +8,7 @@ use ts_rs::TS;
 use super::repo::{RepoState, active_git};
 use super::sessions::mr_session;
 use crate::error::{AppError, AppResult, ErrorCode};
+use crate::git::branch_info::{self, BranchInfo};
 use crate::git::commit::{self, CommitInfo, CommitResult, PushResult};
 use crate::git::diff::{self, ChangedFile};
 use crate::git::local::{self, FileRef, LocalChanges};
@@ -56,6 +57,17 @@ pub async fn git_log(
 pub async fn git_status_summary(store: State<'_, Store>) -> AppResult<StatusSummary> {
     let git = active_git(&store).await?;
     Ok(summary::status_summary(&git, &Cancel::new()).await?)
+}
+
+/// The branch block of S-11 (F-27.1): source, upstream, the `origin` targets and the numbers
+/// against `target` (the default from `origin/HEAD` when missing).
+#[tauri::command]
+pub async fn git_branch_info(
+    store: State<'_, Store>,
+    target: Option<String>,
+) -> AppResult<BranchInfo> {
+    let git = active_git(&store).await?;
+    Ok(branch_info::branch_info(&git, target.as_deref(), &Cancel::new()).await?)
 }
 
 /// Details and files of a commit; HEAD when `sha` is missing (F-15.6).
@@ -134,17 +146,37 @@ pub async fn git_unstage(
     Ok(staging::unstage(&git, &selection, &Cancel::new()).await?)
 }
 
-/// Commits what is staged, or amends HEAD (F-16.4).
+/// Commits what is staged, or amends HEAD (F-16.4); with `only`, S-10's commit of the fixed
+/// file alone, as a fixup of the commit `fixup` when given (F-26.4).
 #[tauri::command]
 pub async fn git_commit(
     store: State<'_, Store>,
     state: State<'_, RepoState>,
     message: String,
     amend: bool,
+    fixup: Option<String>,
+    only: Option<Vec<String>>,
 ) -> AppResult<CommitResult> {
     let git = active_git(&store).await?;
+    let cancel = Cancel::new();
+    let Some(only) = only else {
+        if fixup.is_some() {
+            return Err(AppError::new(
+                ErrorCode::InvalidInput,
+                "A fixup commit needs the fixed file.",
+            ));
+        }
+        let _write = state.write_lock.lock().await;
+        return Ok(commit::commit(&git, &message, amend, &cancel).await?);
+    };
+    if amend {
+        return Err(AppError::new(
+            ErrorCode::InvalidInput,
+            "A fix is a new commit, never an amend.",
+        ));
+    }
     let _write = state.write_lock.lock().await;
-    Ok(commit::commit(&git, &message, amend, &Cancel::new()).await?)
+    Ok(commit::commit_only(&git, &message, fixup.as_deref(), &only, &cancel).await?)
 }
 
 /// HEAD's message, for Amend previous commit (02 › S-06).

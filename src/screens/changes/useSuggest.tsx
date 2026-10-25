@@ -13,10 +13,11 @@ export interface Suggest {
 /**
  * Suggest (F-16.4): Claude writes a commit message from the staged diff. A failure never
  * touches the message being written (NFR-03); a usage limit says so with the reset time
- * (F-18.7) and the user can retry.
+ * (F-18.7) and the user can retry. With `only` (S-10, F-26.4) Claude writes from those files'
+ * changes against HEAD instead, the ones the commit of a fix takes.
  */
-export function useSuggest(onMessage: (message: string) => void): Suggest {
-  const task = useCommitMessage(onMessage);
+export function useSuggest(onMessage: (message: string) => void, only?: string[]): Suggest {
+  const task = useCommitMessage(onMessage, only);
   const status = useClaudeStatus();
   const error = task.error;
   let notice: ReactNode = null;

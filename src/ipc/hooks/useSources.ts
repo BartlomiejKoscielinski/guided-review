@@ -5,6 +5,7 @@ import {
   useQueryClient,
   type UseQueryResult,
 } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { PREPARING_PATH } from '../../app/routes';
 import { useStartStore } from '../../state/start';
@@ -63,11 +64,18 @@ function openDetected(
  * stage), the app shows S-02 Preparing, which takes over: it opens the plan, shows a failure or
  * cancels (F-05.6). Before that, errors (F-01.5) stay with the caller on S-01.
  */
+/**
+ * Every review S-01 opens (source input, MR row, commits, my changes) shares this key, so the MR
+ * rows can stay inert while one is being prepared (F-20.10).
+ */
+export const OPEN_REVIEW_KEY = ['openReview'] as const;
+
 export function useOpenSource() {
   const ipc = useIpc();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  return useMutation<OpenedSession, IpcError, string>({
+  const mutation = useMutation<OpenedSession, IpcError, string>({
+    mutationKey: [...OPEN_REVIEW_KEY, 'source'],
     mutationFn: async (input) => {
       const source = await queryClient.query<DetectedSource | null, IpcError>({
         queryKey: detectKey(input),
@@ -112,11 +120,21 @@ export function useOpenSource() {
     },
     // An MR of another repository switches to it; a typed path adds one (F-01.5, F-30.7).
     onSettled: () => {
+      useStartStore.getState().openSettled();
       void queryClient.invalidateQueries({ queryKey: ['repo'] });
       void queryClient.invalidateQueries({ queryKey: ['git'] });
       void queryClient.invalidateQueries({ queryKey: GITLAB_MRS_ROOT });
     },
   });
+  const { mutate } = mutation;
+  const mutateOpening = useCallback<typeof mutate>(
+    (input, options) => {
+      useStartStore.getState().openStarted();
+      mutate(input, options);
+    },
+    [mutate],
+  );
+  return { ...mutation, mutate: mutateOpening };
 }
 
 /** The Commits column (F-03.1): the current branch, filtered by message, author or SHA. */
@@ -147,6 +165,7 @@ export function useStatusSummary(enabled: boolean): UseQueryResult<StatusSummary
 export function useOpenCommit() {
   const ipc = useIpc();
   return useMutation<OpenedSession, IpcError, CommitRange>({
+    mutationKey: [...OPEN_REVIEW_KEY, 'commit'],
     mutationFn: (range) => ipc.sessionOpenCommit(range),
   });
 }
@@ -155,6 +174,7 @@ export function useOpenCommit() {
 export function useOpenLocal() {
   const ipc = useIpc();
   return useMutation<OpenedSession, IpcError, LocalScope>({
+    mutationKey: [...OPEN_REVIEW_KEY, 'local'],
     mutationFn: (scope) => ipc.sessionOpenLocal(scope),
   });
 }

@@ -3,19 +3,24 @@
 //! the working-tree watcher and review worktrees (`worktree.rs`). Range-diff and moved code
 //! follow in later milestones.
 
+pub mod branch_info;
 pub mod commit;
 pub mod diff;
 pub mod error;
+pub mod fixup_target;
 pub mod hunk_id;
 pub mod intraline;
 pub mod line_state;
 pub mod local;
 pub mod log;
+pub mod merge_check;
 pub mod model;
+pub mod mr_title;
 pub mod patch;
 pub mod patch_builder;
 pub mod refs;
 pub mod runner;
+pub mod scratch;
 pub mod staging;
 pub mod status;
 pub mod summary;

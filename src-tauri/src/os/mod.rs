@@ -1,5 +1,6 @@
-//! Windows integration: child processes (`process.rs`), credentials, Rider, deep links, notifications, autostart.
+//! Windows integration: child processes (`process.rs`), the default browser (`browser.rs`), credentials, Rider, deep links, notifications, autostart.
 
+pub mod browser;
 pub mod cancel;
 pub mod credentials;
 #[cfg(windows)]

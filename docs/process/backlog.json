@@ -1,316 +1,398 @@
 {
-  "milestone": "M5",
-  "updated": "2026-10-19T13:03:10.896Z",
+  "milestone": "M7",
+  "updated": "2026-10-25T17:01:35.722Z",
   "items": [
     {
-      "id": "F-11.1",
-      "milestone": "M5",
-      "title": "Threads on lines in the current step show inline (avatars, author · age, text, replies).",
+      "id": "F-17.3",
+      "milestone": "M7",
+      "title": "At the end it offers a draft MR description (F-27.2) and Browse and commit.",
       "kind": "mixed",
       "deps": [],
       "status": "done",
       "attempts": 1,
       "note": "",
-      "lockSha": "497757e",
+      "lockSha": "7d1adf2",
       "tests": [
-        "src/screens/detailed/DetailedThreads.test.tsx",
-        "src/screens/step/ThreadCard.test.tsx",
-        "tests/e2e/detailed-f11-1.spec.ts"
+        "src/screens/summary/SelfReviewSummaryOffers.test.tsx",
+        "tests/e2e/summary-self-review-f17-3.spec.ts"
       ]
     },
     {
-      "id": "F-11.2",
-      "milestone": "M5",
-      "title": "Actions: Resolve (green), Reply, Reopen on resolved threads. Resolve/unresolve are sent immediately and…",
-      "kind": "mixed",
-      "split": true,
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (2898715): Resolve/Reopen/Reply on thread cards in S-03/S-04, gitlab_resolve/gitlab_reply commands, cached threads updated after an action, composer state kept in the review store. Live check left: with the stand-in GitLab, Resolve, Reopen and Reply change the thread on the server and the card; a 403 shows the plain-language error; scroll-away keeps typed reply.",
-      "lockSha": "ef15d47",
-      "tests": [
-        "src-tauri/tests/gitlab_thread_actions.rs",
-        "src/ipc/mock/threadActions.test.ts",
-        "src/ipc/tauriThreadActions.test.ts",
-        "src/screens/step/ThreadActions.test.tsx",
-        "src/screens/detailed/DetailedThreadActions.test.tsx",
-        "tests/e2e/step-f11-2.spec.ts"
-      ]
-    },
-    {
-      "id": "F-11.3",
-      "milestone": "M5",
-      "title": "Threads on outdated lines (from an older version) are shown on the closest matching line (same line text…",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (7ce6cca): line_map.rs/thread_place.rs place outdated threads on the nearest matching line (±20) or the file header, Outdated tag, header cards in S-03/S-04, rename-aware file match, fold opens thread line ±3. Live check left: with the stand-in GitLab, a thread written on an older MR version whose commit is not in the object store (git fetch origin <sha>; REST compare + files/raw fallback if GitLab refuses, **verify** in docs/05) is placed correctly; Outdated tag and header card look right in S-03 layouts A/B/C and S-04.",
-      "lockSha": "9d165ba",
-      "tests": [
-        "src-tauri/tests/thread_place.rs",
-        "src/ipc/mock/threads-outdated.test.ts",
-        "src/screens/step/ThreadOutdated.test.tsx",
-        "src/screens/detailed/DetailedThreadsOutdated.test.tsx",
-        "tests/e2e/step-f11-3.spec.ts"
-      ],
-      "disputes": [
-        "tests/e2e/step-f11-3.spec.ts@a23c36b"
-      ]
-    },
-    {
-      "id": "F-12.1",
-      "milestone": "M5",
-      "title": "\"SUMMARY\" with \"All N steps reviewed.\" (or \"N of M steps reviewed.\") and Back to steps.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "d2a77bf",
-      "tests": [
-        "src/screens/summary/MrSummary.test.tsx",
-        "tests/e2e/summary-f12-1.spec.ts"
-      ]
-    },
-    {
-      "id": "F-12.2",
-      "milestone": "M5",
-      "title": "Tabs Drafts N and Threads N open.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "ee1ce81",
-      "tests": [
-        "src/screens/summary/SummaryTabs.test.tsx",
-        "tests/e2e/summary-f12-2.spec.ts"
-      ]
-    },
-    {
-      "id": "F-12.3",
-      "milestone": "M5",
-      "title": "Drafts list: checkbox (include in publish), severity square, text, file:line, edit pencil. Note \"Only you…",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "dd93fbe",
-      "tests": [
-        "src/screens/summary/DraftsTab.test.tsx",
-        "tests/e2e/summary-f12-3.spec.ts"
-      ]
-    },
-    {
-      "id": "F-12.4",
-      "milestone": "M5",
-      "title": "\"Add a summary comment\" checkbox reveals a text area prefilled by Claude with a short overall summary.",
-      "kind": "mixed",
-      "split": true,
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built and merged (8df6ace: 479b0a3 6ebb047 e585cc3 61059a8 ae7ef8c). Live check left: on S-05 of the stand-in MR tick 'Add a summary comment' with a real claude run (running label, suggestion, edit, restart keeps tick and text) and once with Claude signed out (empty area, no label). Gates 1-2 failed only on F-09.7 Vitest timeouts under load from the parallel test author; gate 3 green.",
-      "lockSha": "cd48032",
-      "tests": [
-        "src-tauri/tests/summary_task.rs",
-        "src-tauri/tests/session_summary.rs",
-        "src/ipc/tauriSummary.test.ts",
-        "src/ipc/mock/summary.test.ts",
-        "src/screens/summary/SummaryCommentField.test.tsx",
-        "tests/e2e/summary-f12-4.spec.ts"
-      ]
-    },
-    {
-      "id": "F-12.5",
-      "milestone": "M5",
-      "title": "Publish (N) publishes the selected drafts (and summary comment) in one batch so the author gets a single…",
+      "id": "F-25.1",
+      "milestone": "M7",
+      "title": "Available in self-review notes and author-mode threads. Never offered on a teammate's MR.",
       "kind": "mixed",
       "split": true,
       "deps": [],
       "status": "done",
       "attempts": 2,
-      "note": "Merged acb86e8. Live 2026-10-19: plain Publish in one batch works on the stand-in (MR !5). Still unchecked live: decision 10b re-map to a newer MR version (outdated drafts, GET versions, DELETE draft_notes/:id, git fetch origin <sha>), summary comment in the batch, restored-start foreign-drafts check. Needs a sandbox MR pushed after drafts were written.",
-      "lockSha": "fdaf618",
+      "note": "Resumed: the author-mode screen (F-26.x) it waited for is built. Left: S-10 author-mode threads offer Fix with Claude (onFix wired to F-25.2/F-25.3); the S-01 self-review notes part was built in the first attempt.",
+      "lockSha": "2d712cb",
       "tests": [
-        "src-tauri/tests/publish_drafts.rs",
-        "src/ipc/tauriPublish.test.ts",
-        "src/ipc/mock/publish.test.ts",
-        "src/screens/summary/MrSummaryPublish.test.tsx",
-        "tests/e2e/summary-f12-5.spec.ts"
+        "src-tauri/src/fix/eligibility_tests.rs",
+        "src/screens/summary/SelfReviewSummaryFix.test.tsx",
+        "src/screens/step/NoteCardFix.test.tsx",
+        "tests/e2e/summary-f25-1.spec.ts"
+      ]
+    },
+    {
+      "id": "F-25.2",
+      "milestone": "M7",
+      "title": "Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "f36def1",
+      "tests": [
+        "src-tauri/tests/fix_scratch.rs",
+        "src-tauri/tests/fix_task.rs"
+      ]
+    },
+    {
+      "id": "F-25.3",
+      "milestone": "M7",
+      "title": "The proposal shows as a diff card \"Proposed change · Edited 1 file: <name>\" with a one-sentence…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "7c92e8b",
+      "tests": [
+        "src-tauri/tests/fix_proposal.rs",
+        "src/ipc/mock/fix.test.ts",
+        "src/ipc/tauriFix.test.ts",
+        "src/screens/fix/FixCard.test.tsx",
+        "src/screens/step/NoteCardFixCard.test.tsx",
+        "src/screens/summary/SelfReviewSummaryFixCard.test.tsx",
+        "tests/e2e/step-f25-3.spec.ts",
+        "src/test/fixProposal.ts"
       ],
       "disputes": [
-        "src-tauri/tests/publish_drafts.rs@a020f7b",
-        "src/screens/summary/MrSummaryPublish.test.tsx@338533d"
+        "src/screens/summary/SelfReviewSummaryFixCard.test.tsx@cbbd5b8",
+        "tests/e2e/step-f25-3.spec.ts@4358c7d"
       ]
     },
     {
-      "id": "F-12.6",
-      "milestone": "M5",
-      "title": "Publishing never approves the MR.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "1c0614f",
-      "tests": [
-        "src-tauri/tests/publish_never_approves.rs",
-        "src/screens/summary/MrSummaryNoApproval.test.tsx",
-        "tests/e2e/summary-f12-6.spec.ts"
-      ]
-    },
-    {
-      "id": "F-12.7",
-      "milestone": "M5",
-      "title": "Drafts belong to the MR (project + iid). Drafts added outside a review (Explain failure on S-08, Add as a…",
+      "id": "F-25.4",
+      "milestone": "M7",
+      "title": "Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run…",
       "kind": "mixed",
       "split": true,
       "deps": [],
       "status": "done",
       "attempts": 1,
       "note": "",
-      "lockSha": "953975a",
+      "lockSha": "c912e79",
       "tests": [
-        "src-tauri/tests/drafts_of_the_mr.rs",
-        "src-tauri/tests/drafts_of_the_mr_pick_up.rs",
-        "src-tauri/tests/drafts_of_the_mr_review.rs",
-        "src-tauri/tests/support/mr_drafts.rs",
-        "src/ipc/tauriDraftsForMr.test.ts",
-        "src/ipc/mock/draftsForMr.test.ts",
-        "src/screens/summary/DraftsOnlySummary.test.tsx",
-        "src/screens/start/ResumeCardDraftsOnly.test.tsx",
-        "tests/e2e/summary-f12-7.spec.ts"
+        "src-tauri/tests/fix_accept.rs",
+        "src/ipc/mock/fixAccept.test.ts",
+        "src/ipc/tauriFixAccept.test.ts",
+        "src/screens/step/NoteCardFixAccept.test.tsx",
+        "src/screens/summary/SelfReviewSummaryFixAccept.test.tsx",
+        "src/test/fixAccept.ts",
+        "tests/e2e/step-f25-4.spec.ts"
       ],
       "disputes": [
-        "src-tauri/tests/drafts_of_the_mr_review.rs@5154260"
+        "src/screens/step/NoteCardFixAccept.test.tsx@4d2b101"
       ]
     },
     {
-      "id": "F-13.1",
-      "milestone": "M5",
-      "title": "Filters All / Open N / Resolved N.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "bf65399",
-      "tests": [
-        "src/screens/summary/ThreadsFilters.test.tsx",
-        "tests/e2e/summary-f13-1.spec.ts"
-      ]
-    },
-    {
-      "id": "F-13.2",
-      "milestone": "M5",
-      "title": "Each thread: first message, author · replies · file:line, Resolve or Reopen.",
-      "kind": "mixed",
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "f444a33",
-      "tests": [
-        "src/screens/summary/ThreadRow.test.tsx",
-        "src/screens/summary/ThreadRowActions.test.tsx",
-        "src/screens/summary/ThreadShowInCode.test.tsx",
-        "src/test/threadRows.tsx",
-        "tests/e2e/summary-f13-2.spec.ts"
-      ]
-    },
-    {
-      "id": "F-13.3",
-      "milestone": "M5",
-      "title": "Claude hint chip when the thread looks addressed by a later commit (\"Claude: index added in a91f2c0\").",
+      "id": "F-26.1",
+      "milestone": "M7",
+      "title": "Title bar shows \"You're the author\" (blue) and pipeline status. Left panel: \"FEEDBACK ON YOUR MR\", \"N…",
       "kind": "mixed",
       "split": true,
       "deps": [],
       "status": "done",
       "attempts": 1,
-      "note": "Built and merged (a93eb68; commits 421d7b8 58b0531 362cf80 9e86162 d465348 90e801e): claude_thread_check (read-only Step analysis task, cache per head + thread set, validation), Check with Claude bar on S-05 Threads, chips 'Claude: <hint> in <sha7>', none/failure + Retry. Live check left: Check with Claude in tauri dev against the stand-in GitLab with an open thread written on an older version (real Claude run, chip, focus return, spinner).",
-      "lockSha": "ed42de6",
+      "note": "S-10 thread list, title bar 'You’re the author' and pipeline chip built on the mock (author_mr core + command); left: check author_mr against the stand-in GitLab in tauri dev (own MR list, someone else's MR refusal, restored start shows 'Open the MR again to load it.', chip in the real title bar). Commits 33ae45f 3e07e25 b25ea38.",
+      "lockSha": "df958fb",
       "tests": [
-        "src-tauri/tests/thread_check_task.rs",
-        "src/ipc/tauriThreadCheck.test.ts",
-        "src/ipc/mock/threadCheck.test.ts",
-        "src/screens/summary/ThreadCheck.test.tsx",
-        "tests/e2e/summary-f13-3.spec.ts"
-      ]
-    },
-    {
-      "id": "F-14.1",
-      "milestone": "M5",
-      "title": "Approval tile: state (\"NOT APPROVED YET\" with dashed square / approved in solid green), \"Approvals: X of…",
-      "kind": "mixed",
-      "split": true,
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "",
-      "lockSha": "d148f8d",
-      "tests": [
-        "src-tauri/tests/gitlab_approvals.rs",
-        "src/screens/summary/ApprovalTile.test.tsx",
-        "src/ipc/mock/approvalState.test.ts",
-        "src/ipc/tauriApprovalState.test.ts",
-        "tests/e2e/summary-f14-1.spec.ts"
-      ]
-    },
-    {
-      "id": "F-14.2",
-      "milestone": "M5",
-      "title": "Approve MR / Revoke approval. Approval is sent with the head SHA that was reviewed; if the MR changed…",
-      "kind": "mixed",
-      "split": true,
-      "deps": [],
-      "status": "done",
-      "attempts": 1,
-      "note": "Built: Approve MR / Revoke approval with reviewed head sha, CONFLICT on other sha or 409 -> MR-changed banner + disabled Approve, summary_status, no key approves (dce0661 bf00194 8e1ccd7 f25cdf4, merged 6178f76). Live check left: Approve and Revoke against the stand-in GitLab in tauri dev, and what GitLab answers to a stale sha.",
-      "lockSha": "b8613a8",
-      "tests": [
-        "src-tauri/tests/gitlab_approve.rs",
-        "src/ipc/mock/approve.test.ts",
-        "src/screens/summary/ApprovalTileActions.test.tsx",
-        "tests/e2e/summary-f14-2.spec.ts"
+        "src-tauri/tests/it/author_threads.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorMr.test.ts",
+        "src/screens/author/AuthorScreen.test.tsx",
+        "src/app/titlebar/AuthorTitleBar.test.tsx",
+        "tests/e2e/author-f26-1.spec.ts"
       ],
       "disputes": [
-        "tests/e2e/summary-f14-2.spec.ts@8e1ccd7",
-        "src/screens/summary/ApprovalTileActions.test.tsx@f25cdf4"
+        "src-tauri/tests/it/author_threads.rs@b25ea38"
       ]
     },
     {
-      "id": "F-14.3",
-      "milestone": "M5",
-      "title": "The tile states \"Approving doesn't publish comments.\" and the number of open threads (\"Open threads: 3.\"…",
+      "id": "F-26.2",
+      "milestone": "M7",
+      "title": "The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix…",
       "kind": "mixed",
       "deps": [],
       "status": "done",
       "attempts": 1,
       "note": "",
-      "lockSha": "3c1befe",
+      "lockSha": "b1afb2b",
       "tests": [
-        "src/screens/summary/ApprovalTileNotes.test.tsx",
-        "tests/e2e/summary-f14-3.spec.ts"
+        "src-tauri/tests/it/author_thread_view.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorThreadView.test.ts",
+        "src/screens/author/AuthorThreadView.test.tsx",
+        "tests/e2e/author-f26-2.spec.ts"
+      ],
+      "disputes": [
+        "src/screens/author/AuthorThreadView.test.tsx@a5191ae"
       ]
     },
     {
-      "id": "F-18.8",
-      "milestone": "M5",
-      "title": "While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chi…",
+      "id": "F-26.3",
+      "milestone": "M7",
+      "title": "Fix in Rider opens the file at the line and watches the working tree; a detected change continues the flow…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "5207cb7",
+      "tests": [
+        "src-tauri/tests/it/fix_watch.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/tauriFixWatch.test.ts",
+        "src/ipc/mock/fixWatch.test.ts",
+        "src/screens/author/AuthorFixInRider.test.tsx",
+        "tests/e2e/author-f26-3.spec.ts"
+      ],
+      "disputes": [
+        "tests/e2e/author-f26-3.spec.ts@4226bca"
+      ]
+    },
+    {
+      "id": "F-26.4",
+      "milestone": "M7",
+      "title": "After a fix: commit panel with a suggested message, \"As a fixup of <sha> \"<subject>\"\" (default on) with…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "Merged c432b9a; the after-Accept prefill (Claude's explanation as the commit message, decision 9) came with F-25.1 (de27c5a). Left: the real-app check: Fix in Rider on a real checkout, Commit with the fixup switch on and off, git log 'fixup! <subject>' with the message as body, other staged files stay staged, a rejecting hook shows its output; Fix with Claude on an S-10 change thread then Accept prefills the commit message.",
+      "lockSha": "0776829",
+      "tests": [
+        "src-tauri/tests/it/fixup_commit.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/screens/author/AuthorCommitPanel.test.tsx",
+        "src/ipc/mock/gitCommitFixup.test.ts",
+        "src/ipc/tauriGitCommit.test.ts",
+        "tests/e2e/author-f26-4.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/fixup_commit.rs@96ff530"
+      ]
+    },
+    {
+      "id": "F-26.5",
+      "milestone": "M7",
+      "title": "After commit: \"Committed <sha> · not pushed yet\", the reply to be sent (\"Fixed in <sha>. <one…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "conductor split the dispute commit 3908520 into ffac200 cf191d4 94df086 (gate: one file per dispute commit; roles may not rebase)",
+      "lockSha": "54c8066",
+      "tests": [
+        "src-tauri/tests/it/author_push_reply.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/screens/author/AuthorPushReply.test.tsx",
+        "src/ipc/mock/authorPushReply.test.ts",
+        "tests/e2e/author-f26-5.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/author_push_reply.rs@ffac200",
+        "src/ipc/mock/authorPushReply.test.ts@cf191d4",
+        "src/screens/author/AuthorPushReply.test.tsx@94df086"
+      ]
+    },
+    {
+      "id": "F-26.6",
+      "milestone": "M7",
+      "title": "After push: \"Pushed · Replied to <name> and resolved the thread.\" and a link to the new pipeline.",
       "kind": "mixed",
       "deps": [],
       "status": "done",
       "attempts": 1,
-      "note": "Merged 92ca577. Built: claude_activity command (queue counts), useClaudeActivity poll 1 s, purple spinner right of the Claude status chip (S-01) and of every model chip (S-02..S-11 except S-07), reduced motion stops it. Left: live check in tauri dev (spinner visible and spinning while a Claude task runs).",
-      "lockSha": "998a3c2",
+      "note": "",
+      "lockSha": "bfa7715",
       "tests": [
-        "src/app/titlebar/ClaudeActivity.test.tsx",
-        "tests/e2e/titlebar-f18-8.spec.ts",
-        "src/app/shell.test.tsx"
+        "src-tauri/tests/it/author_push_pipeline.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorPushPipeline.test.ts",
+        "src/screens/author/AuthorPushed.test.tsx",
+        "tests/e2e/author-f26-6.spec.ts"
+      ]
+    },
+    {
+      "id": "F-26.7",
+      "milestone": "M7",
+      "title": "Question threads: reply text area, Draft with Claude (fills a proposed answer), Send reply (immediate).…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "377050d",
+      "tests": [
+        "src-tauri/tests/it/reply_draft_task.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/authorReply.test.ts",
+        "src/ipc/tauriAuthorReply.test.ts",
+        "src/screens/author/AuthorQuestionReply.test.tsx",
+        "tests/e2e/author-f26-7.spec.ts"
+      ]
+    },
+    {
+      "id": "F-26.8",
+      "milestone": "M7",
+      "title": "If the user's checkout isn't on the MR's source branch, author mode is read-only with \"Check out <branch>…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "ff5cc88",
+      "tests": [
+        "src-tauri/tests/it/author_checkout.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/screens/author/AuthorReadOnly.test.tsx",
+        "src/ipc/mock/authorCheckout.test.ts",
+        "tests/e2e/author-f26-8.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/author_checkout.rs@ea3d0b2"
+      ]
+    },
+    {
+      "id": "F-27.1",
+      "milestone": "M7",
+      "title": "Opened from \"Push and create MR\" (S-06), self-review end, or Rider. Branch block source → target (target…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "37db747",
+      "tests": [
+        "src-tauri/tests/it/branch_info.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/branchInfo.test.ts",
+        "src/screens/create-mr/CreateMrBranch.test.tsx",
+        "tests/e2e/create-mr-f27-1.spec.ts"
+      ]
+    },
+    {
+      "id": "F-27.2",
+      "milestone": "M7",
+      "title": "Title and description prefilled by Claude from commits and diff; description sections What, Why, How to…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "3a9d4d3",
+      "tests": [
+        "src-tauri/tests/it/mr_description_task.rs",
+        "src-tauri/tests/it/mr_title.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/mrDescription.test.ts",
+        "src/screens/create-mr/CreateMrDescription.test.tsx",
+        "tests/e2e/create-mr-f27-2.spec.ts"
+      ]
+    },
+    {
+      "id": "F-27.3",
+      "milestone": "M7",
+      "title": "Reviewers suggested with reasons: code owner (CODEOWNERS), \"Wrote N% of the changed lines\" (git blame)…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "f15b239",
+      "tests": [
+        "src-tauri/tests/it/reviewers_codeowners.rs",
+        "src-tauri/tests/it/reviewers_blame.rs",
+        "src-tauri/tests/it/reviewers_suggest.rs",
+        "src-tauri/tests/it/reviewers_gitlab.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/mock/reviewers.test.ts",
+        "src/ipc/tauriReviewers.test.ts",
+        "src/screens/create-mr/CreateMrReviewers.test.tsx",
+        "tests/e2e/create-mr-f27-3.spec.ts"
+      ]
+    },
+    {
+      "id": "F-27.4",
+      "milestone": "M7",
+      "title": "Options: Mark as draft, Delete branch after merge (default on), Squash commits.",
+      "kind": "mixed",
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "0635328",
+      "tests": [
+        "src/screens/create-mr/CreateMrOptions.test.tsx",
+        "tests/e2e/create-mr-f27-4.spec.ts"
+      ]
+    },
+    {
+      "id": "F-27.5",
+      "milestone": "M7",
+      "title": "Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done…",
+      "kind": "mixed",
+      "split": true,
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "",
+      "lockSha": "0c5e39d",
+      "tests": [
+        "src-tauri/tests/it/merge_check.rs",
+        "src-tauri/tests/it/merge_check_gitlab.rs",
+        "src-tauri/tests/it/merge_check_self_review.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/screens/create-mr/CreateMrChecks.test.tsx",
+        "src/ipc/mock/mergeCheck.test.ts",
+        "src/ipc/tauriMergeCheck.test.ts",
+        "tests/e2e/create-mr-f27-5.spec.ts"
+      ],
+      "disputes": [
+        "src-tauri/tests/it/merge_check.rs@d4b92b3"
+      ]
+    },
+    {
+      "id": "F-27.6",
+      "milestone": "M7",
+      "title": "Create merge request / Create draft MR; note who gets notified. Success screen: \"!483\" big green block…",
+      "kind": "mixed",
+      "deps": [],
+      "status": "done",
+      "attempts": 1,
+      "note": "implemented on ap/f27-6 (cbf1aa0), verify green; review and gate not run: the owner stopped the run",
+      "lockSha": "c655543",
+      "tests": [
+        "src-tauri/tests/it/create_mr.rs",
+        "src-tauri/tests/it/main.rs",
+        "src/ipc/tauriCreateMr.test.ts",
+        "src/ipc/mock/createMr.test.ts",
+        "src/screens/create-mr/CreateMrCreate.test.tsx",
+        "src/screens/create-mr/CreateMrCreated.test.tsx",
+        "tests/e2e/create-mr-f27-6.spec.ts"
       ]
     }
   ]

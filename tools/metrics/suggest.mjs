@@ -22,6 +22,9 @@ const READER =
 // Waiting for the owner is not tool time.
 const HUMAN = /^(AskUserQuestion|ExitPlanMode)/;
 export const isReader = (label) => READER.test(label);
+// The process's own compact-report scripts: the autopilot conductor calls them once or twice per
+// item by design (backlog next/set/decision), so many calls are not a "write a script" signal (retro 2026-10-24).
+const PROCESS_SCRIPT = /^(Bash|PowerShell): node tools\/(autopilot|metrics)\//;
 
 const k = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : `${Math.round(n / 1000)}k`);
 const min = (ms) => `${(ms / 60000).toFixed(1)} min`;
@@ -51,6 +54,7 @@ export function sessionSuggestions(r) {
     (g) =>
       /^(Bash|PowerShell): /.test(g.label) &&
       !isReader(g.label) &&
+      !PROCESS_SCRIPT.test(g.label) &&
       g.calls >= LIMITS.repeatInSession,
   ))
     hit(

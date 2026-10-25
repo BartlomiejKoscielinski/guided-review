@@ -564,6 +564,273 @@ const SHOTS: Shot[] = [
       await page.getByText('Created').waitFor();
     },
   },
+  {
+    // S08-pipeline.png: !482's newest pipeline (#18342, Passed, 1 allowed failure), opened from
+    // the plan's pipeline link (F-20.1), with its four stage columns and ui-tests:android
+    // selected (F-20.2) with its details and log (F-20.5).
+    screen: 'S08',
+    state: 'pipeline',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByTestId('pipeline-meta').waitFor();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('log', { name: 'Job log' }).locator('[data-kind]').first().waitFor();
+      // Its retry failed again on the same test in the mock data (F-20.9, Pipeline.dc.html's
+      // failedAgain line under "Why it failed").
+      await page.getByText('Retried: failed again on the same test.').waitFor();
+      // The PNG shows ui-tests:android explained (F-20.7); Claude runs only on the click.
+      await page.getByRole('button', { name: 'Explain failure', exact: true }).click();
+      await page.getByTestId('explain-verdict').waitFor({ timeout: 10_000 });
+    },
+  },
+  {
+    // Pipeline.dc.html {"confirm":true}: Run new pipeline's confirmation strip (F-20.3).
+    screen: 'S08',
+    state: 'pipeline-confirm',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('button', { name: 'Run new pipeline', exact: true }).click();
+      await page.getByRole('alertdialog').getByText('a3f9c12', { exact: true }).waitFor();
+    },
+  },
+  {
+    // S08-pipeline-manual-job.png: distribute:qa of #18342 selected with its row's Run (F-20.2):
+    // the manual-job form (F-20.6), no variables yet, Run distribute:qa and where it runs.
+    screen: 'S08',
+    state: 'pipeline-manual-job',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).click();
+      await page.getByText('Runs on', { exact: false }).waitFor();
+    },
+  },
+  {
+    // S08-pipeline-old-failed.png ({"pipe":"p321","job":"unit-tests","ex":{"p321:unit-tests":
+    // "done"}}): the older failed #18321 with unit-tests selected and Explain failure answered
+    // (F-20.7): Already fixed in version 3, its evidence chips and no suggested comment.
+    screen: 'S08',
+    state: 'pipeline-old-failed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('tab', { name: /#18321/ }).click();
+      await page.getByRole('button', { name: 'unit-tests, Failed', exact: true }).click();
+      await page.getByRole('button', { name: 'Explain failure', exact: true }).click();
+      await page.getByTestId('explain-verdict').waitFor({ timeout: 10_000 });
+    },
+  },
+  {
+    // S08-pipeline-running.png: the new pipeline #18351 after Run pipeline (F-20.3), running,
+    // started by you just now, its build stage running and the manual jobs still manual;
+    // build:android selected with its first two log lines streaming (F-20.5).
+    screen: 'S08',
+    state: 'pipeline-running',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      await openMr482(page);
+      await page.getByRole('link', { name: /pipeline passed/i }).click();
+      await page.getByRole('button', { name: 'distribute:qa, Manual' }).waitFor();
+      await page.getByRole('button', { name: 'Run new pipeline', exact: true }).click();
+      await page.getByRole('button', { name: 'Run pipeline', exact: true }).click();
+      await page.getByRole('button', { name: 'build:android, Running' }).click();
+      await page.getByText('Running. The log streams on the left.').waitFor();
+      await page.getByRole('log', { name: 'Job log' }).locator('[data-kind]').nth(1).waitFor();
+    },
+  },
+  {
+    // S10-author.png: my !480 opened from S-01's Mine tab (F-26.1): "2 threads to answer", Marta
+    // K.'s change request selected, Piotr S.'s question, "1 resolved earlier" and the safety note;
+    // the main column opens Marta's thread in UploadWorker.cs at line 46 (F-26.2).
+    screen: 'S10',
+    state: 'author',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      await page.getByRole('heading', { level: 1, name: '2 threads to answer' }).waitFor();
+      await page.getByTestId('title-bar').getByRole('link', { name: 'Pipeline passed' }).waitFor();
+      await page.getByRole('region', { name: 'Thread' }).getByText('Fix with Claude').waitFor();
+      await page.locator('[data-kind="add"]:has([data-line-no="46"])').waitFor();
+    },
+  },
+  {
+    // S10-author-fix-proposed.png, Author.dc.html {"fix":"proposed"} (F-25.1, F-25.3): Fix with
+    // Claude on Marta K.'s thread; the card shows "Proposed change · Edited 1 file:
+    // UploadWorker.cs", the backoff diff, Claude's sentence, Accept and Discard; the list tags the
+    // thread "Fix proposed".
+    screen: 'S10',
+    state: 'author-fix-proposed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix with Claude' }).click();
+      await card.getByRole('button', { name: 'Accept' }).waitFor({ timeout: 8000 });
+    },
+  },
+  {
+    // Author.dc.html {"fix":"applied","via":"rider"} (no PNG yet): Fix in Rider on Marta's thread,
+    // the mock's Rider changes UploadWorker.cs, and the commit panel (F-26.4) shows "Commit the
+    // fix", the prefilled message, the fixup switch on with its note and Commit.
+    screen: 'S10',
+    state: 'author-fix-applied',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix in Rider' }).click();
+      await card
+        .getByText('Change detected from Rider. Commit it below.')
+        .waitFor({ timeout: 8000 });
+      await page
+        .getByRole('region', { name: 'Commit and push' })
+        .getByRole('checkbox', { name: /^As a fixup of b71e3a0/ })
+        .waitFor();
+    },
+  },
+  {
+    // S10-author-committed.png, Author.dc.html {"fix":"committed"} (F-26.5): after Fix in Rider and
+    // Commit, "Committed <sha> not pushed yet", the reply to be sent to Marta's thread, "Resolve
+    // the thread" on, Push and reply with its hint; the list tags the thread "Fixed locally".
+    screen: 'S10',
+    state: 'author-committed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix in Rider' }).click();
+      await card
+        .getByText('Change detected from Rider. Commit it below.')
+        .waitFor({ timeout: 8000 });
+      const panel = page.getByRole('region', { name: 'Commit and push' });
+      await panel
+        .getByRole('textbox', { name: 'Commit message' })
+        .fill('Backoff now doubles and stops at 60 s.');
+      await panel.getByRole('checkbox', { name: /^As a fixup of b71e3a0/ }).waitFor();
+      await panel.getByRole('button', { name: 'Commit', exact: true }).click();
+      await panel.getByRole('button', { name: 'Push and reply' }).waitFor();
+      await page
+        .getByRole('listbox', { name: 'Threads' })
+        .getByText('Fixed locally · not pushed')
+        .waitFor();
+    },
+  },
+  {
+    // S10-author-pushed.png, Author.dc.html {"fix":"pushed"} (F-26.6): after Commit, Push and
+    // reply with Resolve on: "Pushed", "Replied to Marta and resolved the thread." and the new
+    // pipeline's link once the mock finds #18360 running; the list tags the thread "Resolved" and
+    // the heading counts Piotr's question alone.
+    screen: 'S10',
+    state: 'author-pushed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix in Rider' }).click();
+      await card
+        .getByText('Change detected from Rider. Commit it below.')
+        .waitFor({ timeout: 8000 });
+      const panel = page.getByRole('region', { name: 'Commit and push' });
+      await panel
+        .getByRole('textbox', { name: 'Commit message' })
+        .fill('Backoff now doubles and stops at 60 s.');
+      await panel.getByRole('checkbox', { name: /^As a fixup of b71e3a0/ }).waitFor();
+      await panel.getByRole('button', { name: 'Commit', exact: true }).click();
+      await panel.getByRole('button', { name: 'Push and reply' }).click();
+      await panel
+        .getByRole('link', { name: 'Pipeline #18360 running' })
+        .waitFor({ timeout: 15_000 });
+      await page.getByRole('heading', { level: 1, name: '1 thread to answer' }).waitFor();
+    },
+  },
+  {
+    // S10-author-question.png, Author.dc.html {"sel":"t2"} (F-26.7): Piotr S.'s question selected;
+    // its card holds the reply composer: "Your reply" (empty), Draft with Claude, Send reply and
+    // "Replies on your MR go out right away.".
+    screen: 'S10',
+    state: 'author-question',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      await page
+        .getByRole('listbox', { name: 'Threads' })
+        .getByRole('option', { name: /Piotr S\./ })
+        .click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Draft with Claude' }).waitFor();
+      await card.getByRole('textbox', { name: 'Your reply' }).waitFor();
+    },
+  },
+  {
+    // S11-create-mr.png, CreateMR.dc.html {} (F-27.1): S-06 › Commit › Push and create MR (S-11
+    // is not restored on start), the branch block chore/compiled-bindings → develop, 3 commits ·
+    // 12 files · +84 −40. F-27.2: Write with Claude once, so Title and Description hold the
+    // mock's text with "Drafted by Claude from 3 commits and the diff" and Shorter version.
+    // F-27.3: Marta K. and Ola M. added, as the mock's default state shows them (nobody is
+    // added at the start). F-27.4: the options at their defaults (Delete branch after merge on)
+    // and Create merge request with the notify note "Marta K. and Ola M. get notified." (F-27.6),
+    // as in the mock; the checks come with F-27.5.
+    screen: 'S11',
+    state: 'create-mr',
+    lastRoute: { screen: 'S-06' },
+    prepare: async (page) => {
+      await page.getByLabel('Message').fill('Subject');
+      await page.getByRole('button', { name: /^Commit · / }).click();
+      await page.getByRole('status').getByRole('button', { name: 'Push and create MR' }).click();
+      await page.getByTestId('mr-branch-stats').getByText('+84').waitFor();
+      await page.getByRole('button', { name: 'Write with Claude' }).click();
+      await page.getByRole('button', { name: 'Shorter version' }).waitFor({ timeout: 10000 });
+      const reviewers = page.getByRole('region', { name: 'Reviewers' });
+      await reviewers.getByRole('button', { name: 'Add Marta K.' }).click();
+      await reviewers.getByRole('button', { name: 'Add Ola M.' }).click();
+      await reviewers.getByRole('button', { name: 'Remove Ola M.' }).waitFor();
+    },
+  },
+  {
+    // S11-create-mr-created.png, CreateMR.dc.html {"created":true} (F-27.6): the same S-11 with
+    // Write with Claude and Marta K. and Ola M. added, then Create merge request: the success view
+    // with !483, the pipeline #18361 running, "Marta K., Ola M." notified and the three actions.
+    screen: 'S11',
+    state: 'create-mr-created',
+    lastRoute: { screen: 'S-06' },
+    prepare: async (page) => {
+      await page.getByLabel('Message').fill('Subject');
+      await page.getByRole('button', { name: /^Commit · / }).click();
+      await page.getByRole('status').getByRole('button', { name: 'Push and create MR' }).click();
+      await page.getByTestId('mr-branch-stats').getByText('+84').waitFor();
+      await page.getByRole('button', { name: 'Write with Claude' }).click();
+      await page.getByRole('button', { name: 'Shorter version' }).waitFor({ timeout: 10000 });
+      const reviewers = page.getByRole('region', { name: 'Reviewers' });
+      await reviewers.getByRole('button', { name: 'Add Marta K.' }).click();
+      await reviewers.getByRole('button', { name: 'Add Ola M.' }).click();
+      await reviewers.getByRole('button', { name: 'Remove Ola M.' }).waitFor();
+      await page
+        .getByRole('complementary', { name: 'Reviewers and checks' })
+        .getByRole('button', { name: 'Create merge request' })
+        .click();
+      await page.getByRole('region', { name: 'Merge request created' }).waitFor();
+    },
+  },
 ];
 
 mkdirSync('.design-check', { recursive: true });

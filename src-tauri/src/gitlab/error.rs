@@ -144,12 +144,32 @@ impl From<GitlabError> for AppError {
                 AppError::new(ErrorCode::GitlabUnreachable, unreachable_message(problem))
                     .with_detail(detail)
             }
-            GitlabError::Status { status: 409, .. } => {
-                AppError::new(ErrorCode::Conflict, "GitLab reports a conflict.").with_detail(detail)
-            }
+            // A conflict with GitLab's words when it gives them (F-27.6: "Another open merge
+            // request already exists for this source branch: !482").
+            GitlabError::Status {
+                status: 409,
+                message,
+            } => AppError::new(
+                ErrorCode::Conflict,
+                message.map_or_else(
+                    || "GitLab reports a conflict.".to_owned(),
+                    |message| plain_words(&message),
+                ),
+            )
+            .with_detail(detail),
             GitlabError::Status { status, .. } if status >= 500 => {
                 AppError::new(ErrorCode::GitlabUnreachable, "GitLab had a server error.")
                     .with_detail(detail)
+            }
+            GitlabError::Status { status, message } if (400..500).contains(&status) => {
+                // A refusal of what the user asked (F-20.3: "No stages / jobs for this
+                // pipeline."): GitLab's own words are the message the screen shows.
+                AppError::new(
+                    ErrorCode::InvalidInput,
+                    message
+                        .map(|message| plain_words(&message))
+                        .unwrap_or_else(|| format!("GitLab refused the request ({status}).")),
+                )
             }
             GitlabError::InvalidUrl => {
                 AppError::new(ErrorCode::InvalidInput, "The GitLab server URL is invalid.")
@@ -165,6 +185,46 @@ impl From<GitlabError> for AppError {
                 AppError::internal("GitLab's answer was unexpected.").with_detail(detail)
             }
         }
+    }
+}
+
+/// A message [`error_message`] kept as JSON text (field errors of `render_validation_error!`,
+/// `{"base":["No stages / jobs for this pipeline."]}`) as words for the screen: `base` first,
+/// then each other field as "<field> <error>", joined with spaces. Any other text is unchanged.
+fn plain_words(message: &str) -> String {
+    let mut words = Vec::new();
+    match serde_json::from_str::<Value>(message) {
+        Ok(Value::Object(fields)) => {
+            if let Some(base) = fields.get("base") {
+                collect_words(base, None, &mut words);
+            }
+            for (field, errors) in fields.iter().filter(|(field, _)| *field != "base") {
+                collect_words(errors, Some(&field.replace('_', " ")), &mut words);
+            }
+        }
+        Ok(list @ Value::Array(_)) => collect_words(&list, None, &mut words),
+        _ => return message.to_owned(),
+    }
+    if words.is_empty() {
+        message.to_owned()
+    } else {
+        words.join(" ")
+    }
+}
+
+fn collect_words(value: &Value, field: Option<&str>, words: &mut Vec<String>) {
+    match value {
+        Value::String(text) if !text.trim().is_empty() => words.push(match field {
+            Some(field) => format!("{field} {}", text.trim()),
+            None => text.trim().to_owned(),
+        }),
+        Value::Array(items) => items
+            .iter()
+            .for_each(|item| collect_words(item, field, words)),
+        Value::Object(fields) => fields
+            .values()
+            .for_each(|inner| collect_words(inner, field, words)),
+        _ => {}
     }
 }
 
@@ -258,6 +318,39 @@ mod tests {
                 .count(),
             MESSAGE_LIMIT
         );
+    }
+
+    #[test]
+    fn f20_3_a_4xx_refusal_with_field_errors_reads_as_plain_words() {
+        // `render_validation_error!` of `POST …/merge_requests/:iid/pipelines` (decision 8).
+        let body = json!({"message": {"base": ["No stages / jobs for this pipeline."]}});
+        let app = AppError::from(GitlabError::from_status(400, None, &body));
+        assert_eq!(app.code, ErrorCode::InvalidInput);
+        assert_eq!(app.message, "No stages / jobs for this pipeline.");
+
+        let body = json!({"message": {
+            "ref": ["is protected", "is not a branch"],
+            "base": ["Pipeline will not run."]
+        }});
+        let app = AppError::from(GitlabError::from_status(422, None, &body));
+        assert_eq!(
+            app.message,
+            "Pipeline will not run. ref is protected ref is not a branch"
+        );
+
+        let body = json!({"message": ["Reference not found", "Try again."]});
+        let app = AppError::from(GitlabError::from_status(400, None, &body));
+        assert_eq!(app.message, "Reference not found Try again.");
+    }
+
+    #[test]
+    fn f20_3_a_4xx_refusal_without_a_message_names_the_status() {
+        let app = AppError::from(GitlabError::Status {
+            status: 422,
+            message: None,
+        });
+        assert_eq!(app.code, ErrorCode::InvalidInput);
+        assert_eq!(app.message, "GitLab refused the request (422).");
     }
 
     #[test]

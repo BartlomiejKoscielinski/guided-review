@@ -34,18 +34,33 @@ pub struct Inputs {
 
 /// `git diff --cached` and the last 20 subjects. `Invalid` when nothing is staged.
 pub async fn inputs(git: &Git, cancel: &Cancel) -> Result<Inputs, ClaudeError> {
+    inputs_for(git, &[], cancel).await
+}
+
+/// As [`inputs`]; with `only` (S-10's commit of a fix, F-26.4) the diff is what
+/// `git commit -- <only>` takes instead: `git diff HEAD -- <only>`, staged and unstaged edits
+/// of those files alike, and nothing else that is staged (M7 decision 10).
+pub async fn inputs_for(
+    git: &Git,
+    only: &[String],
+    cancel: &Cancel,
+) -> Result<Inputs, ClaudeError> {
     let git_error = |e: crate::git::GitError| ClaudeError::failed(e.to_string());
-    let diff = git
-        .run(
-            ["diff", "--cached", "--no-color", "--no-ext-diff", "-M"],
-            cancel,
-        )
-        .await
-        .map_err(git_error)?;
+    let mut args = vec!["diff", "--no-color", "--no-ext-diff", "-M"];
+    if only.is_empty() {
+        args.push("--cached");
+    } else {
+        args.extend(["HEAD", "--"]);
+        args.extend(only.iter().map(String::as_str));
+    }
+    let diff = git.run(args, cancel).await.map_err(git_error)?;
     if diff.stdout.trim().is_empty() {
-        return Err(ClaudeError::Invalid(
-            "Stage something first; Claude writes the message from the staged changes.".to_owned(),
-        ));
+        let message = if only.is_empty() {
+            "Stage something first; Claude writes the message from the staged changes."
+        } else {
+            "The file has no changes to describe."
+        };
+        return Err(ClaudeError::Invalid(message.to_owned()));
     }
     let spec = git.spec(["log", "-n", RECENT_SUBJECTS, "--format=%s"]);
     // A repository without commits has no subjects (exit 128).
@@ -118,9 +133,18 @@ pub struct Context<'a> {
     pub queue: &'a Queue,
 }
 
-/// Writes the inputs, waits for a queue slot and runs the task.
+/// Writes the inputs, waits for a queue slot and runs the task (the staged changes, S-06).
 pub async fn run(ctx: &Context<'_>, cancel: &Cancel) -> Result<String, ClaudeError> {
-    let inputs = inputs(ctx.git, cancel).await?;
+    run_for(ctx, &[], cancel).await
+}
+
+/// As [`run`]; a non-empty `only` describes those files' changes against HEAD (S-10).
+pub async fn run_for(
+    ctx: &Context<'_>,
+    only: &[String],
+    cancel: &Cancel,
+) -> Result<String, ClaudeError> {
+    let inputs = inputs_for(ctx.git, only, cancel).await?;
     let io = |e: std::io::Error| ClaudeError::failed(format!("task folder: {e}"));
     let dir = TaskDir::create(ctx.tmp_root).map_err(io)?;
     let diff_file = dir.write("staged.diff", &inputs.staged_diff).map_err(io)?;

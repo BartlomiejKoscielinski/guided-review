@@ -22,6 +22,13 @@ export interface StartState {
   /** Ctrl+K was pressed; the S-01 input takes focus once it is on screen (F-01.4). */
   focusPending: boolean;
   preparing: Preparation | null;
+  /**
+   * Reviews being opened from the S-01 source input or an MR row. Set as the user submits, before
+   * the first await, so the MR rows and their pipeline links turn inert at once (F-20.10).
+   */
+  opening: number;
+  openStarted: () => void;
+  openSettled: () => void;
   requestFocus: () => void;
   focusTaken: () => void;
   prepareStarted: (task: string, iid: number) => void;
@@ -41,6 +48,13 @@ export const useStartStore = create<StartState>()((set) => {
   return {
     focusPending: false,
     preparing: null,
+    opening: 0,
+    openStarted: () => {
+      set((state) => ({ opening: state.opening + 1 }));
+    },
+    openSettled: () => {
+      set((state) => ({ opening: Math.max(0, state.opening - 1) }));
+    },
     requestFocus: () => {
       set({ focusPending: true });
     },

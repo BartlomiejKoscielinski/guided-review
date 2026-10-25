@@ -293,6 +293,50 @@ pub fn touch(conn: &Connection, id: &str) -> Result<(), StoreError> {
     Ok(())
 }
 
+/// The latest self-review (a local-changes session) of a repository, by its last use: whose kept
+/// notes the MR description reads (F-27.2).
+pub fn latest_self_review(conn: &Connection, repo_id: i64) -> Result<Option<String>, StoreError> {
+    Ok(self_reviews(conn, repo_id)?
+        .into_iter()
+        .next()
+        .map(|r| r.id))
+}
+
+/// A self-review and the HEAD it was made at (`None` when the row has none).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SelfReviewHead {
+    pub id: String,
+    pub head_sha: Option<String>,
+}
+
+/// The self-reviews (local-changes sessions) of a repository, newest use first, with their
+/// heads: S-11's "Self-review done" keeps those of the current branch (F-27.5).
+pub fn self_reviews(conn: &Connection, repo_id: i64) -> Result<Vec<SelfReviewHead>, StoreError> {
+    let mut stmt = conn.prepare(
+        "SELECT id, source_json, head_sha FROM sessions WHERE repo_id = ?1
+         ORDER BY updated_at DESC, created_at DESC, rowid DESC",
+    )?;
+    let rows = stmt.query_map(params![repo_id], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, Option<String>>(1)?,
+            row.get::<_, Option<String>>(2)?,
+        ))
+    })?;
+    let mut reviews = Vec::new();
+    for row in rows {
+        let (id, json, head_sha) = row?;
+        let local = json
+            .as_deref()
+            .and_then(|j| serde_json::from_str::<Source>(j).ok())
+            .is_some_and(|source| matches!(source, Source::Local { .. }));
+        if local {
+            reviews.push(SelfReviewHead { id, head_sha });
+        }
+    }
+    Ok(reviews)
+}
+
 pub fn exists(conn: &Connection, id: &str) -> Result<bool, StoreError> {
     Ok(conn
         .query_row("SELECT 1 FROM sessions WHERE id = ?1", params![id], |_| {
@@ -322,6 +366,31 @@ pub(crate) fn insert_for_test(
 mod tests {
     use super::*;
     use crate::store::Store;
+
+    #[test]
+    fn f27_2_the_latest_self_review_is_the_last_used_local_session_of_the_repository() {
+        let store = Store::open_in_memory().unwrap();
+        let found = store
+            .with_conn(|c| {
+                let local = r#"{"kind":"local","scope":{"kind":"staged"}}"#;
+                let mr = r#"{"kind":"mr","project":"g/p","iid":7}"#;
+                for (id, repo, json, updated) in [
+                    ("old", 1, local, "2026-10-11T08:00:00Z"),
+                    ("new", 1, local, "2026-10-11T09:00:00Z"),
+                    ("mr", 1, mr, "2026-10-11T10:00:00Z"),
+                    ("other", 2, local, "2026-10-11T11:00:00Z"),
+                ] {
+                    c.execute(
+                        "INSERT INTO sessions (id, repo_id, source_json, status, updated_at)
+                         VALUES (?1, ?2, ?3, 'done', ?4)",
+                        params![id, repo, json, updated],
+                    )?;
+                }
+                Ok((latest_self_review(c, 1)?, latest_self_review(c, 3)?))
+            })
+            .unwrap();
+        assert_eq!(found, (Some("new".to_owned()), None));
+    }
 
     #[test]
     fn empty_table_has_no_unfinished_sessions() {

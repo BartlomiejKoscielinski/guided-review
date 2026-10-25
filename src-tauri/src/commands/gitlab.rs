@@ -29,6 +29,19 @@ pub struct GitlabApp {
     status: tokio::sync::Mutex<Option<GitlabStatus>>,
 }
 
+impl GitlabApp {
+    /// The signed-in username from the last status, without asking GitLab (`None` before a
+    /// status check or when not signed in).
+    pub(crate) async fn cached_username(&self) -> Option<String> {
+        self.status
+            .lock()
+            .await
+            .as_ref()
+            .and_then(|s| s.user.as_ref())
+            .map(|u| u.username.clone())
+    }
+}
+
 impl Default for GitlabApp {
     fn default() -> Self {
         Self {
@@ -180,7 +193,7 @@ fn add_token() -> AppError {
     )
 }
 
-fn not_connected(status: &GitlabStatus) -> AppError {
+pub(crate) fn not_connected(status: &GitlabStatus) -> AppError {
     match (&status.state, &status.problem) {
         (GitlabConnection::Failing, Some(problem)) => problem.clone(),
         _ => add_token(),
@@ -188,7 +201,7 @@ fn not_connected(status: &GitlabStatus) -> AppError {
 }
 
 /// The GitLab project of the active repository, from its `origin` remote.
-async fn active_project(store: &Store, server: &str) -> AppResult<String> {
+pub(crate) async fn active_project(store: &Store, server: &str) -> AppResult<String> {
     let git = active_git(store).await?;
     let output = git
         .run(["remote", "get-url", "origin"], &Cancel::new())

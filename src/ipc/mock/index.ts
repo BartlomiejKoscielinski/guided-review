@@ -1,15 +1,24 @@
 import type { IpcClient } from '../client';
 import { applySettingsPatch, type SettingsPatch } from '../settings-patch';
 import { createStepRuns } from './analysisStatus';
+import { createAuthorPushBackend } from './authorPush';
+import { createReplyDraftBackend } from './authorReplyDraft';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
+import { createFixBackend, type ThreadOf } from './fix';
+import { IpcError } from '../errors';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
 import { createPlanBackend } from './plan';
+import { authorUncommittedFiles, type AuthorScenario } from './authorMr';
 import { createReviewBackend, type ReviewScenario } from './review';
 import { createRiderBackend, type RiderScenario } from './rider';
 import { createSessionData } from './session-data';
+import { createBranchInfoBackend, mockTarget } from './branchInfo';
+import { createCreateMrBackend } from './createMr';
+import { createMergeCheckBackend, MOCK_MR_CHECKS_KEY, type MergeCheckScenario } from './mergeCheck';
+import { createReviewersBackend } from './reviewers';
 import { createSourcesBackend, mockSessionSource } from './sources';
 import { createStateBackend } from './state';
 import type { Settings } from '../types/Settings';
@@ -36,6 +45,8 @@ export const MOCK_CLAUDE_KEY = 'guided-review.mock.claude';
 export const MOCK_GITLAB_KEY = 'guided-review.mock.gitlab';
 /** Key with a `ReviewScenario` (S-02 plan and S-03 step task failures, cached plan). */
 export const MOCK_REVIEW_KEY = 'guided-review.mock.review';
+/** Key with an `AuthorScenario` (S-10 checkout not on the MR's source branch, F-26.8). */
+export const MOCK_AUTHOR_KEY = 'guided-review.mock.author';
 
 export interface MockOptions {
   /** Fake latency per call, so loading states are visible in `npm run dev:mock`. */
@@ -57,6 +68,8 @@ export interface MockOptions {
   rider?: RiderScenario;
   /** S-03 variations; the storage's `MOCK_REVIEW_KEY` wins. */
   review?: ReviewScenario;
+  /** S-10 variations; the storage's `MOCK_AUTHOR_KEY` wins. */
+  author?: AuthorScenario;
 }
 
 const wait = (ms: number): Promise<void> =>
@@ -115,6 +128,7 @@ export function createMockClient({
   gitlab: gitlabOption = {},
   rider: riderOption = {},
   review: reviewOption = {},
+  author: authorOption = {},
 }: MockOptions = {}): IpcClient {
   let settings = loadSettings(storage);
   const sessions = loadSessions(storage, sessionsOption);
@@ -153,6 +167,60 @@ export function createMockClient({
     respond,
     data,
   );
+  const claude = createClaudeBackend(
+    loadJson(storage, MOCK_CLAUDE_KEY, claudeOption),
+    respond,
+    pause,
+    (sessionId) => data.data.plans[sessionId] !== undefined,
+    (sessionId) => gitlab.gitlabDiscussions(sessionId),
+    (asked) => {
+      mockTarget(repos, asked);
+    },
+  );
+  const fix = createFixBackend(data, sourceOf, (target) => fixThreadOf(target));
+  const authorScenario = loadJson(storage, MOCK_AUTHOR_KEY, authorOption);
+  const mrChecks = loadJson<MergeCheckScenario>(storage, MOCK_MR_CHECKS_KEY, {});
+  const changesBackend = createChangesBackend(changes, respond, repos);
+  const createMr = createCreateMrBackend(
+    respond,
+    repos,
+    () => gitlab.gitlabStatus(false),
+    mrChecks.existingMr,
+  );
+  const authorPush = createAuthorPushBackend(() => changes.pushFails === 'rejected', respond);
+  const authorMr: IpcClient['authorMr'] = async (project, iid) => ({
+    ...authorPush.withQueued(
+      project,
+      // F-27.6: Go to your MR opens the MR Create made (!483).
+      (await createMr.authorMr(iid)) ?? (await gitlab.authorMr(project, iid)),
+    ),
+    // F-26.8: the scenario can put the checkout on another branch (read-only author mode).
+    ...(authorScenario.onSourceBranch === undefined
+      ? {}
+      : { onSourceBranch: authorScenario.onSourceBranch }),
+  });
+  /**
+   * F-25.1 on S-10, as `commands/fix_thread.rs`: a teammate's MR (authorMr's INVALID_INPUT) or a
+   * checkout off its source branch is FIX_NOT_ALLOWED; a question or a General thread, or one
+   * not listed, is INVALID_INPUT.
+   */
+  const fixThreadOf: ThreadOf = async ({ project, iid, threadId }) => {
+    const refuse = (message: string, code: 'FIX_NOT_ALLOWED' | 'INVALID_INPUT') =>
+      new IpcError({ code, message, retryable: false });
+    const mine = await authorMr(project, iid).catch((error: unknown) => {
+      if (error instanceof IpcError && error.code === 'INVALID_INPUT')
+        throw refuse('Fix with Claude is only available on your own code.', 'FIX_NOT_ALLOWED');
+      throw error;
+    });
+    if (!mine.onSourceBranch)
+      throw refuse('Fix with Claude is only available on your own code.', 'FIX_NOT_ALLOWED');
+    const thread = mine.threads.find((t) => t.id === threadId);
+    if (!thread) throw refuse('Unknown thread.', 'INVALID_INPUT');
+    if (thread.kind !== 'change')
+      throw refuse('Only a change request can be fixed.', 'INVALID_INPUT');
+    if (thread.path === null) throw refuse('This thread has no file to fix.', 'INVALID_INPUT');
+    return { file: thread.path, line: thread.line ?? thread.oldLine ?? 1 };
+  };
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -169,20 +237,45 @@ export function createMockClient({
         }),
         ...sessions,
       ]),
-    ...createChangesBackend(changes, respond, repos),
+    ...changesBackend,
+    // F-27.5: Push now on S-11 turns "Branch pushed" green.
+    ...createMergeCheckBackend(
+      respond,
+      repos,
+      mrChecks,
+      changesBackend.gitPush,
+      createMr.existingMr,
+    ),
+    // F-27.6: Create merge request makes !483, the branch's open MR from then on.
+    gitlabCreateMr: createMr.gitlabCreateMr,
     ...createSourcesBackend(respond, repos, data, focusLayout, startIn),
+    ...createBranchInfoBackend(respond, repos),
+    ...createReviewersBackend(respond, repos, () => gitlab.gitlabStatus(false)),
     ...createPrepareBackend(repos, pause, data, focusLayout, startIn, (sessionId, mr) => {
       moveMrDrafts(data.data, sourceOf, mr, sessionId);
     }),
     ...createMrDraftsBackend(respond, data, sourceOf),
-    ...createClaudeBackend(
-      loadJson(storage, MOCK_CLAUDE_KEY, claudeOption),
-      respond,
-      pause,
-      (sessionId) => data.data.plans[sessionId] !== undefined,
-      (sessionId) => gitlab.gitlabDiscussions(sessionId),
-    ),
+    ...claude,
+    // F-25.3: a fix run ends on `claudeCancel(task)` like the other Claude tasks.
+    fixPropose: fix.fixPropose,
+    fixProposeThread: fix.fixProposeThread,
+    fixAccept: fix.fixAccept,
+    fixDiscard: fix.fixDiscard,
+    claudeCancel: (task) => {
+      fix.cancel(task);
+      return claude.claudeCancel(task);
+    },
     ...gitlab,
+    // F-26.5: a queued reply tags its thread "Fixed locally · not pushed" until it is sent.
+    authorMr,
+    // M7 decision 10: S-10 warns before Fix when other files have uncommitted changes.
+    authorUncommittedFiles: () =>
+      authorUncommittedFiles(authorScenario, () => repos.active() !== null, respond),
+    authorQueueReply: authorPush.authorQueueReply,
+    authorPushAndReply: authorPush.authorPushAndReply,
+    // F-26.7: Send reply on a question goes out at once; Draft with Claude only proposes the text.
+    authorReply: authorPush.authorReply,
+    ...createReplyDraftBackend(respond, pause),
     ...createReviewBackend(reviewScenario, respond, pause, data, runs),
     ...createPlanBackend(reviewScenario, respond, pause, data, runs),
     ...createStateBackend(respond, data, focusLayout, startIn),

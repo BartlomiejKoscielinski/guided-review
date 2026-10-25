@@ -17,6 +17,7 @@ import {
   tickProgress,
   untouchedVitestFailures,
   verifySteps,
+  reusableVerify,
 } from './autopilot/gate-lib.mjs';
 
 const GATE = join(import.meta.dirname, 'autopilot', 'gate.mjs');
@@ -64,7 +65,13 @@ function repo() {
   mkdirSync(join(main, 'tools'), { recursive: true });
   mkdirSync(join(main, 'docs'), { recursive: true });
   mkdirSync(join(main, 'src'), { recursive: true });
-  writeFileSync(join(main, 'tools', 'verify.mjs'), 'process.exit(0);\n');
+  // The fake verify records its arguments outside the repo (E29 test below).
+  const verifyArgs = join(dir, 'verify-args.txt');
+  writeFileSync(
+    join(main, 'tools', 'verify.mjs'),
+    `import { appendFileSync } from 'node:fs';\n` +
+      `appendFileSync(${JSON.stringify(verifyArgs)}, process.argv.slice(2).join(' ') + '\\n');\n`,
+  );
   writeFileSync(join(main, 'tools', 'audit.mjs'), 'process.exit(0);\n');
   writeFileSync(join(main, 'docs', 'PROGRESS.md'), '## M3 · Test\n- [ ] F-01.1 Something.\n');
   writeFileSync(join(main, 'src', 'a.ts'), 'export const a = 1;\n');
@@ -101,7 +108,7 @@ function repo() {
     );
     return { code: r.status, verdict: JSON.parse(r.stdout) };
   };
-  return { dir, main, wt, git, commit, gate };
+  return { dir, main, wt, git, commit, gate, verifyArgs };
 }
 
 test('E15 autopilot gate: verify runs only the steps the diff affects', () => {
@@ -133,6 +140,12 @@ test('E15 autopilot gate: the verdict names the verify steps; --full runs all', 
     ]);
     assert.equal(typeof first.verdict.verifySecs, 'number');
     assert.equal(r.gate('--no-merge', '--full').verdict.verifySteps, 'all');
+    const calls = readFileSync(r.verifyArgs, 'utf8').trim().split(/\r?\n/);
+    assert.deepEqual(
+      calls.map((c) => c.split(' ')[0]),
+      ['--fresh', '--fresh'],
+      'E29: the gate lints without the ESLint cache',
+    );
   } finally {
     await rm(r.dir, { recursive: true, force: true });
   }
@@ -349,4 +362,70 @@ test('untouchedVitestFailures: only test failed on timeouts outside the diff (E2
   assert.equal(untouchedVitestFailures(out, log, ['src/screens/step/LineComposer.test.tsx']), null);
   assert.equal(untouchedVitestFailures(out, log.replace('timed out', 'failed'), []), null);
   assert.equal(untouchedVitestFailures(`${out}\nFAIL  lint  3s`, log, []), null);
+});
+
+test('untouchedVitestFailures: a slow failed test outside the diff counts as load (E27)', () => {
+  const out = 'PASS  lint  30s\nFAIL  test  42s\nFAILED: test';
+  const slow =
+    '   × F-11.2 in Detailed mode a reply is sent at once 5497ms\n FAIL  src/screens/step/AnswerCard.test.tsx > F-11.2 x\n';
+  assert.deepEqual(untouchedVitestFailures(out, slow, ['src/screens/pipeline/A.tsx']), [
+    'src/screens/step/AnswerCard.test.tsx',
+  ]);
+  assert.equal(untouchedVitestFailures(out, slow.replace('5497ms', '120ms'), []), null);
+});
+
+test('E32 reusableVerify: a green stamp of the same clean tree stands for the gate verify', () => {
+  const now = Date.parse('2026-10-24T12:00:00Z');
+  const all = [
+    'typecheck',
+    'lint',
+    'format:check',
+    'test',
+    'test:tools',
+    'rust:fmt',
+    'rust:clippy',
+    'rust:test',
+  ];
+  const stamp = {
+    tree: 't1',
+    steps: all,
+    e2e: ['review-f27-2'],
+    fresh: true,
+    at: '2026-10-24T11:30:00Z',
+  };
+  const want = { tree: 't1', steps: null, e2e: ['review-f27-2'], now };
+  assert.equal(reusableVerify(stamp, want), true);
+  assert.equal(
+    reusableVerify(stamp, { ...want, steps: ['rust:fmt', 'rust:clippy', 'rust:test'] }),
+    true,
+  );
+  assert.equal(reusableVerify(stamp, { ...want, tree: 't2' }), false);
+  assert.equal(reusableVerify(stamp, { ...want, tree: null }), false);
+  assert.equal(reusableVerify({ ...stamp, fresh: false }, want), false);
+  assert.equal(reusableVerify({ ...stamp, steps: all.slice(0, 5) }, want), false);
+  assert.equal(reusableVerify(stamp, { ...want, e2e: ['other'] }), false);
+  assert.equal(reusableVerify({ ...stamp, e2e: null }, want), false);
+  assert.equal(reusableVerify({ ...stamp, e2e: [] }, want), true);
+  assert.equal(reusableVerify({ ...stamp, e2e: null }, { ...want, e2e: null }), true);
+  assert.equal(reusableVerify({ ...stamp, at: '2026-10-24T09:00:00Z' }, want), false);
+  assert.equal(reusableVerify(null, want), false);
+});
+
+test('E28 testsCheckSteps picks the cheap steps a broken locked test fails', async () => {
+  const { testsCheckSteps } = await import('./autopilot/gate-lib.mjs');
+  assert.equal(testsCheckSteps([]), null);
+  assert.deepEqual(testsCheckSteps(['tests/e2e/author-f26-3.spec.ts']), [
+    'format:check',
+    'typecheck',
+    'lint',
+  ]);
+  assert.deepEqual(testsCheckSteps(['src-tauri\\tests\\it\\fixup_commit.rs']), [
+    'format:check',
+    'rust:fmt',
+    'rust:clippy',
+  ]);
+  assert.deepEqual(
+    testsCheckSteps(['src/screens/x/X.test.tsx', 'src-tauri/src/review/y.rs']).length,
+    5,
+  );
 });

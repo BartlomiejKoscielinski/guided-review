@@ -27,6 +27,10 @@ pub enum ErrorCode {
     ClaudeGuardViolation,
     ClaudeLimited,
     NavUnavailable,
+    /// Fix with Claude asked for on code that is not the user's own (F-25.1).
+    FixNotAllowed,
+    /// Accept of a fix whose file changed while Claude worked (F-25.4): run it again.
+    FixStale,
     Cancelled,
     Conflict,
     InvalidInput,

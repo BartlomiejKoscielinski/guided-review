@@ -5,18 +5,31 @@ import type { ApprovalState } from './types/ApprovalState';
 import type { SummaryStatus } from './types/SummaryStatus';
 import type { AppHealth } from './types/AppHealth';
 import type { AskAnswer } from './types/AskAnswer';
+import type { AuthorMr } from './types/AuthorMr';
 import type { ClaudeActivity } from './types/ClaudeActivity';
 import type { ClaudeStatus } from './types/ClaudeStatus';
 import type { ClaudeTaskEvent } from './types/ClaudeTaskEvent';
+import type { JobArtifact } from './types/JobArtifact';
+import type { JobDetailsView } from './types/JobDetailsView';
 import type { DecisionOutcome } from './types/DecisionOutcome';
 import type { Draft } from './types/Draft';
 import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
+import type { FixProposal } from './types/FixProposal';
+import type { FixTarget } from './types/FixTarget';
+import type { FixThreadTarget } from './types/FixThreadTarget';
+import type { FixWatchEvent } from './types/FixWatchEvent';
 import type { Layout } from './types/Layout';
 import type { Mode } from './types/Mode';
 import type { LineSelection } from './types/LineSelection';
 import type { NewDraft } from './types/NewDraft';
 import type { NewMrDraft } from './types/NewMrDraft';
+import type { JobLogEvent } from './types/JobLogEvent';
+import type { JobRow } from './types/JobRow';
+import type { JobVariable } from './types/JobVariable';
+import type { PipelineHead } from './types/PipelineHead';
+import type { PipelineTab } from './types/PipelineTab';
+import type { StageColumn } from './types/StageColumn';
 import type { PlanView } from './types/PlanView';
 import type { PublishOutcome } from './types/PublishOutcome';
 import type { ResumedSession } from './types/ResumedSession';
@@ -37,22 +50,36 @@ import type { CommitRange } from './types/CommitRange';
 import type { DetectedSource } from './types/DetectedSource';
 import type { LocalScope } from './types/LocalScope';
 import type { OpenedSession } from './types/OpenedSession';
+import type { JobExplainEvent } from './types/JobExplainEvent';
+import type { JobExplanation } from './types/JobExplanation';
 import type { PrepareProgress } from './types/PrepareProgress';
 import type { Repo } from './types/Repo';
 import type { RiderStatus } from './types/RiderStatus';
 import type { SessionMr } from './types/SessionMr';
 import type { Source } from './types/Source';
+import type { BranchInfo } from './types/BranchInfo';
+import type { MergeCheck } from './types/MergeCheck';
 import type { StatusSummary } from './types/StatusSummary';
 import type { CommitResult } from './types/CommitResult';
 import type { DiffSource } from './types/DiffSource';
 import type { FileDiff } from './types/FileDiff';
+import type { FixupTarget } from './types/FixupTarget';
 import type { FileRef } from './types/FileRef';
 import type { GitlabStatus } from './types/GitlabStatus';
 import type { LocalChanges } from './types/LocalChanges';
 import type { ModelInfo } from './types/ModelInfo';
+import type { MrDescription } from './types/MrDescription';
+import type { MrDescriptionVariant } from './types/MrDescriptionVariant';
 import type { MrList } from './types/MrList';
 import type { MrTab } from './types/MrTab';
+import type { CreatedMr } from './types/CreatedMr';
+import type { CreateMrRequest } from './types/CreateMrRequest';
+import type { ProjectMember } from './types/ProjectMember';
+import type { PushOutcome } from './types/PushOutcome';
 import type { PushResult } from './types/PushResult';
+import type { QueuedReply } from './types/QueuedReply';
+import type { ReplyDraft } from './types/ReplyDraft';
+import type { ReviewerSuggestion } from './types/ReviewerSuggestion';
 import type { Selection } from './types/Selection';
 import type { Route } from './types/Route';
 import type { Settings } from './types/Settings';
@@ -94,6 +121,32 @@ export interface IpcClient {
   gitLog(branch?: string, query?: string): Promise<CommitList>;
   /** Counts of the three My changes scopes (F-03.3). */
   gitStatusSummary(): Promise<StatusSummary>;
+  /** The S-11 branch block against `target` (a branch on origin; the default when missing). */
+  gitBranchInfo(target?: string): Promise<BranchInfo>;
+  /**
+   * The title S-11 opens with for an MR into `target` (F-27.2, read without Claude): a single
+   * commit's subject, or the branch name in words for several; empty with nothing to name it after.
+   */
+  gitMrTitle(target?: string): Promise<string>;
+  /**
+   * S-11's "Before you create" for an MR into `target` (F-27.5; the default when missing): the
+   * branch on origin at HEAD, the files conflicting with the target (`git merge-tree`), the newest
+   * self-review and an open MR of the branch. Reads only.
+   */
+  gitMergeCheck(target?: string): Promise<MergeCheck>;
+  /**
+   * S-11's suggested reviewers for an MR into `target` (F-27.3; the default when missing): at most
+   * three project members with one reason each (code owner, blame share, review history).
+   */
+  reviewersSuggest(target?: string): Promise<ReviewerSuggestion[]>;
+  /** Project members matching the typed text, never the signed-in user (F-27.3). */
+  gitlabUsersSearch(query: string): Promise<ProjectMember[]>;
+  /**
+   * **Create merge request** / **Create draft MR** of S-11 (F-27.6): an MR of the checked-out
+   * branch with the title as typed (the core adds `Draft: ` when `draft`), sent only by the click.
+   * GitLab's words for a refusal are the error's message (CONFLICT: an open MR of the branch).
+   */
+  gitlabCreateMr(request: CreateMrRequest): Promise<CreatedMr>;
   /** Step review of a commit or a range `from..to`, `from` excluded (F-01.3, F-03.2). */
   sessionOpenCommit(range: CommitRange): Promise<OpenedSession>;
   /** Self-review of local changes in one scope (F-03.4). */
@@ -279,7 +332,17 @@ export interface IpcClient {
   /** Writes the selection into the git index (F-16.1). */
   gitStage(selection: Selection): Promise<void>;
   gitUnstage(selection: Selection): Promise<void>;
-  gitCommit(message: string, amend: boolean): Promise<CommitResult>;
+  /**
+   * Commits what is staged, or amends HEAD (F-16.4). With `only` (S-10, F-26.4) just those files
+   * go in, from the working tree, and other staged changes stay staged; `fixup` (a full SHA) makes
+   * it "fixup! <subject>" with the message as its body. Never amends with `only`.
+   */
+  gitCommit(
+    message: string,
+    amend: boolean,
+    fixup?: string | null,
+    only?: string[] | null,
+  ): Promise<CommitResult>;
   /** HEAD's message, for Amend previous commit. */
   gitLastMessage(): Promise<string | null>;
   gitPush(): Promise<PushResult>;
@@ -308,8 +371,55 @@ export interface IpcClient {
   claudePickExecutable(): Promise<ClaudeStatus | null>;
   /** Models and their effort levels (F-18.2, F-18.4). */
   claudeModels(): Promise<ModelInfo[]>;
-  /** Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. */
-  claudeCommitMessage(task: string): Promise<string>;
+  /**
+   * **Fix with Claude** on a note of the user's own code (F-25.2, F-25.3): Claude edits the
+   * note's one file in a scratch copy; `started`, then `done` with the proposal (no hunks: no
+   * change). `target.task` names the run for `claudeCancel`. A teammate's MR is refused with
+   * FIX_NOT_ALLOWED (F-25.1). The click is the explicit action; nothing runs it on its own.
+   */
+  fixPropose(
+    target: FixTarget,
+    onEvent: (event: ClaudeTaskEvent<FixProposal>) => void,
+  ): Promise<FixProposal>;
+  /**
+   * **Fix with Claude** on a change thread of my MR on S-10 (F-25.1, F-25.3): as `fixPropose`,
+   * with the thread's file and conversation. FIX_NOT_ALLOWED unless the MR is mine and the active
+   * checkout is on its source branch (F-26.8); a question or a General thread is INVALID_INPUT.
+   */
+  fixProposeThread(
+    target: FixThreadTarget,
+    onEvent: (event: ClaudeTaskEvent<FixProposal>) => void,
+  ): Promise<FixProposal>;
+  /**
+   * **Accept** of a fix proposal (F-25.4): writes Claude's edit into the working copy, unstaged,
+   * only if the file is unchanged since the run started; otherwise FIX_STALE "The file changed
+   * while Claude worked. Run it again." and the proposal stays open. A proposal that is no longer
+   * open is INVALID_INPUT.
+   */
+  fixAccept(id: string): Promise<void>;
+  /** **Discard** of a fix proposal (F-25.4): drops it; the working copy is never touched. */
+  fixDiscard(id: string): Promise<void>;
+  /**
+   * **Fix in Rider** (F-26.3): waits for a content change of `file` (repository-relative) in the
+   * own checkout; `{ kind: 'changed' }` arrives once. Resolves to the function that ends the watch.
+   */
+  fixWatch(file: string, onEvent: (event: FixWatchEvent) => void): Promise<() => void>;
+  /**
+   * Suggest: a commit message from the staged diff; `task` names it for `claudeCancel`. With
+   * `only` (S-10, F-26.4) from those files' changes against HEAD instead, what `gitCommit` with
+   * the same `only` commits, so other staged changes never reach the message.
+   */
+  claudeCommitMessage(task: string, only?: string[]): Promise<string>;
+  /**
+   * S-11 (F-27.2): Write with Claude (`normal`), Shorter version (`short`), Longer version (`long`):
+   * the title and the What / Why / How to test description of the current branch into `target`
+   * (the default when missing); `task` names it for `claudeCancel`. Runs only on a click.
+   */
+  claudeMrDescription(
+    task: string,
+    variant: MrDescriptionVariant,
+    target?: string,
+  ): Promise<MrDescription>;
   claudeCancel(task: string): Promise<void>;
 
   // GitLab (F-01.6, F-02.1, F-02.2, F-11.2, F-19.2, F-19.5).
@@ -357,6 +467,134 @@ export interface IpcClient {
    * too (F-12.5, M5 decision 8); read only. Never called on a restored start (F-30.4).
    */
   gitlabForeignDrafts(sessionId: string): Promise<number>;
+
+  // S-10 Your MR (F-26). Never called on a restored start (F-30.4).
+  /**
+   * My MR `iid` of `project` (F-26.1): title, branches, head pipeline and the thread list;
+   * someone else's MR is INVALID_INPUT.
+   */
+  authorMr(project: string, iid: number): Promise<AuthorMr>;
+  /**
+   * The unified diff of `path` in the active repository from merge-base(origin/`target`, HEAD) to
+   * the working tree (F-26.2); no hunks for a file the author didn't change. Read only.
+   */
+  authorFileDiff(target: string, path: string): Promise<FileDiff>;
+  /**
+   * The commit a fix of the thread on `line` of `path` is a fixup of (F-26.4, M7 decision 8): the
+   * blame of the line in my MR's range, else the newest range commit touching the file, else HEAD.
+   * Reads git only.
+   */
+  authorFixupTarget(target: string, path: string, line: number | null): Promise<FixupTarget>;
+  /**
+   * The active checkout's uncommitted files (M7 decision 10): HEAD → working tree, staged and
+   * untracked included, repository-relative with `/`. S-10 warns before Fix when any is not the
+   * thread's file. Reads git only.
+   */
+  authorUncommittedFiles(): Promise<string[]>;
+  /**
+   * Queues the reply **Commit** made for `discussion` (F-26.5): `body` "Fixed in <sha>. <one
+   * sentence>." sent after the push of `afterSha` (the full SHA), then Resolve when `resolve`.
+   * Queueing the thread again replaces it and keeps its ID. Sends nothing. (A property, not a
+   * method, so a test can hand it on unbound.)
+   */
+  authorQueueReply: (
+    project: string,
+    iid: number,
+    discussion: string,
+    body: string,
+    resolve: boolean,
+    afterSha: string,
+  ) => Promise<QueuedReply>;
+  /**
+   * **Push and reply** (F-26.5, M7 decisions 11 and 12): pushes the branch, then sends the queued
+   * reply `id` (and Resolve). `pullFirst` when the remote has commits the checkout doesn't have
+   * (nothing pushed); a rejection keeps the reply queued for Retry.
+   */
+  authorPushAndReply: (project: string, iid: number, id: string) => Promise<PushOutcome>;
+  /**
+   * **Send reply** on a question thread of my MR (F-26.7): `body` becomes my note of `discussion`
+   * at once, as written (no queue, no push); the thread stays open until the reviewer resolves it.
+   * A blank body is INVALID_INPUT.
+   */
+  authorReply: (project: string, iid: number, discussion: string, body: string) => Promise<void>;
+  /**
+   * **Draft with Claude** on a question thread of my MR (F-26.7): a proposed answer from the
+   * thread and the code at its line in my checkout (read-only profile, "Questions" group). Fills
+   * the text area only; nothing is sent or cached.
+   */
+  claudeReplyDraft: (project: string, iid: number, discussion: string) => Promise<ReplyDraft>;
+  /**
+   * The MR pipeline GitLab started for the pushed commit (F-26.6, M7 decision 13): the full `sha`;
+   * `null` until GitLab has one for exactly that commit. Read only; S-10 asks after a push only.
+   */
+  authorPushPipeline: (project: string, iid: number, sha: string) => Promise<PipelineTab | null>;
+
+  // S-08 Pipeline (F-20); Retry and Cancel only on a click. Never called on a restored start (F-30.4).
+  /** The MR's pipelines newest first, each with its MR version ("version 3 · latest", F-20.1). */
+  pipelineList(project: string, iid: number): Promise<PipelineTab[]>;
+  /** The status block and meta line of pipeline `id` of the MR (F-20.1). */
+  pipelineGet(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /** The stage columns of pipeline `pipeline` of the MR, retried attempts hidden (F-20.2). */
+  pipelineJobs(project: string, iid: number, pipeline: number): Promise<StageColumn[]>;
+  /** Retries job `job` at once (F-20.2, decision 6); the row of the new attempt (a new id). */
+  jobRetry(project: string, iid: number, job: number): Promise<JobRow>;
+  /** Cancels job `job` at once (F-20.2, decision 6); the row as GitLab now has it. */
+  jobCancel(project: string, iid: number, job: number): Promise<JobRow>;
+  /**
+   * Plays manual job `job` with the variables for this run (F-20.6, decision 11); only the form's
+   * Run `<job>` calls it. After GitLab accepted it they are that job name's last values.
+   */
+  jobPlay(project: string, iid: number, job: number, vars: JobVariable[]): Promise<JobRow>;
+  /** The variables job `jobName` of `project` last ran with on this machine (F-20.6). */
+  jobVariablesGet(project: string, jobName: string): Promise<JobVariable[]>;
+  /** The MR's full head SHA, read when Run new pipeline's confirmation opens (F-20.3). */
+  pipelineMrHead(project: string, iid: number): Promise<string>;
+  /** Starts a new merge request pipeline after the user confirmed; the new latest tab (F-20.3). */
+  pipelineRunMr(project: string, iid: number): Promise<PipelineTab>;
+  /** Retry failed jobs of pipeline `id` at once (F-20.4); its head as it now is. */
+  pipelineRetry(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /** Cancel pipeline `id` at once (F-20.4); its head as it now is. */
+  pipelineCancel(project: string, iid: number, id: number): Promise<PipelineHead>;
+  /**
+   * Explain failure of failed job `job` (F-20.7, M6 decisions 12 and 14), only on its click: the
+   * review worktree is prepared (`preparing`), then Claude reads the log, the test report, the
+   * MR diff and the MR's pipelines (`reading`), then `done` or `failed`. Nothing is posted; a
+   * repeat for the same job comes from the cache.
+   */
+  jobExplain(
+    project: string,
+    iid: number,
+    job: number,
+    onEvent: (event: JobExplainEvent) => void,
+  ): Promise<JobExplanation>;
+  /**
+   * The log of job `job` (F-20.5, decision 10): `onEvent` gets the whole log first (`replace`),
+   * then only new lines while the job runs (re-read every 3 s); settles when the stream ends
+   * (`done`, or `signal` aborted: another job picked, the screen left). Read only.
+   */
+  jobTrace(
+    project: string,
+    iid: number,
+    job: number,
+    onEvent: (event: JobLogEvent) => void,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  /**
+   * The files of successful job `job` (F-20.8, M6 decision 13) without its log and GitLab's
+   * index: name, size label ("48 MB") and the download URL Download opens in the browser.
+   */
+  jobArtifacts(project: string, iid: number, job: number): Promise<JobArtifact[]>;
+  /**
+   * The details panel's facts about failed job `job` (F-20.9, M6 decision 15):
+   * `retriedSameFailure` when its previous attempt in the same pipeline failed on exactly the
+   * same tests.
+   */
+  jobDetails(project: string, iid: number, job: number): Promise<JobDetailsView>;
+  /**
+   * Opens a page of the configured GitLab in the default browser (Open in GitLab, F-20.4); the
+   * core refuses anything that is not `https` on the GitLab host (INVALID_INPUT).
+   */
+  osOpenGitlabUrl(url: string): Promise<void>;
 
   // Window controls for the custom title bar (F-30.1); components never call Tauri directly.
   windowMinimize(): Promise<void>;

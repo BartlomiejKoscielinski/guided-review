@@ -12,6 +12,7 @@ use super::hunk_id;
 use super::intraline;
 use super::model::{FileDiff, FileStatus, Hunk, Line, LineKind, display_text};
 use super::patch::{self, PatchFile};
+use super::refs;
 use super::runner::Git;
 use crate::os::process::Cancel;
 use crate::review::layer::layer_of;
@@ -116,6 +117,64 @@ pub async fn range_file_diff(
             what: "patch for the requested file",
         })?;
     Ok(to_model(&patch, !output.lossy))
+}
+
+/// S-10's diff of one file of my MR (F-26.2, M7 decision 6): from merge-base(`origin/<target>`,
+/// HEAD) to the working tree, staged and unstaged edits included, so local fixes show at once;
+/// numbered as in the working tree. A file the author didn't change has no hunks. Read only.
+pub async fn author_file_diff(
+    git: &Git,
+    target: &str,
+    path: &str,
+    cancel: &Cancel,
+) -> Result<FileDiff, GitError> {
+    let base = author_base(git, target, cancel).await?;
+    let mut args: Vec<OsString> = PATCH_ARGS.iter().map(OsString::from).collect();
+    args.extend([base.into(), "--".into(), path.into()]);
+    let output = git.run(args, cancel).await?;
+    let patch = parse_patches(&output.stdout)?
+        .into_iter()
+        .find(|p| p.path() == path);
+    Ok(match patch {
+        Some(patch) => to_model(&patch, !output.lossy),
+        None => FileDiff {
+            old_path: None,
+            new_path: Some(path.to_owned()),
+            status: FileStatus::Modified,
+            binary: false,
+            mode_change: None,
+            additions: 0,
+            deletions: 0,
+            layer: layer_of(path),
+            hunks: Vec::new(),
+            line_staging: false,
+        },
+    })
+}
+
+/// merge-base(`origin/<target>`, HEAD) of my MR's branch (a local `<target>` without the remote
+/// one), where S-10's diff and the fixup range start (F-26.2, F-26.4).
+pub async fn author_base(git: &Git, target: &str, cancel: &Cancel) -> Result<String, GitError> {
+    let remote = refs::target_commit(git, &format!("origin/{target}"), cancel).await?;
+    let target_sha = match remote {
+        Some(sha) => sha,
+        None => refs::target_commit(git, target, cancel)
+            .await?
+            .ok_or_else(|| {
+                GitError::Invalid(format!(
+                    "The target branch {target} isn't in this checkout."
+                ))
+            })?,
+    };
+    let spec = git.spec(["merge-base", target_sha.as_str(), "HEAD"]);
+    let output = git.run_spec(spec, cancel, &[0, 1]).await?;
+    let base = output.stdout.trim();
+    if output.code != Some(0) || base.is_empty() {
+        return Err(GitError::Invalid(format!(
+            "Your branch and {target} have no common history."
+        )));
+    }
+    Ok(base.to_owned())
 }
 
 pub fn parse_patches(text: &str) -> Result<Vec<PatchFile>, GitError> {

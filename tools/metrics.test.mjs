@@ -89,6 +89,25 @@ test('rules: reading tax and long sessions are reported, waiting for the owner i
   assert.deepEqual(rules, ['R4 long-session', 'R11 reading-tax']);
 });
 
+test('R2: repeated process scripts (tools/autopilot, tools/metrics) are not a script candidate, other commands are', () => {
+  const r = {
+    main: { turns: 10, baseContext: 50_000, maxContext: 100_000, cacheReadOver150k: 0 },
+    subagents: [],
+    tools: [{ name: 'Bash', calls: 40, tokens: 40_000 }],
+    toolErrors: 0,
+    bigResults: [],
+    repeated: [
+      { label: 'Bash: node tools/autopilot/backlog.mjs', calls: 21, tax: 8e5 },
+      { label: 'Bash: python', calls: 12, tax: 3e5 },
+    ],
+    topTax: [],
+    topTime: [],
+  };
+  const hits = sessionSuggestions(r).filter((s) => s.rule === 'R2 repeated-command');
+  assert.equal(hits.length, 1);
+  assert.match(hits[0].text, /^Bash: python/);
+});
+
 test('E4 transcript folders: the checkout, worktrees under it and lanes next to it with their lane', () => {
   const names = [
     'C--Repos-guided-review',

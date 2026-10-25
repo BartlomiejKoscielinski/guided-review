@@ -1,0 +1,113 @@
+/* S-08 manual-job form (Pipeline.dc.html): variables for this run, + Add variable, Run <job>. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+  padding: 22px 22px 26px;
+}
+
+.vars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rowWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) 38px;
+  gap: 4px;
+}
+
+.input {
+  height: 38px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.input:focus-visible,
+.remove:focus-visible,
+.add:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--raised-2);
+  color: var(--text);
+}
+
+.problem {
+  font-size: 13px;
+  color: var(--orange-text);
+}
+
+.add {
+  align-self: flex-start;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.add:hover {
+  color: var(--text);
+}
+
+.runLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.runsOn {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.sha {
+  font-family: var(--font-mono);
+  color: var(--text-3);
+}

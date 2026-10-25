@@ -62,7 +62,7 @@ function stepAtLine(position: DiffPosition): string | null {
 }
 
 /** A note's key in `SessionData.notes`: the core keeps notes per session (F-09.4). */
-const noteKey = (sessionId: string, findingId: string) => `${sessionId}\0${findingId}`;
+export const noteKey = (sessionId: string, findingId: string) => `${sessionId}\0${findingId}`;
 
 /** The step's notes with the decisions made on them (a note keeps its decision across runs). */
 function decided(data: SessionData, sessionId: string, stepId: string): StepAnalysis {

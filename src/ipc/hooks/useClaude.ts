@@ -70,11 +70,11 @@ export function useClaudeModels(): UseQueryResult<ModelInfo[], IpcError> {
  * Suggest (F-16.4); the status follows the task result (F-18.1, F-18.7). `onMessage` runs on
  * success even if the screen re-rendered meanwhile.
  */
-export function useCommitMessage(onMessage: (message: string) => void) {
+export function useCommitMessage(onMessage: (message: string) => void, only?: string[]) {
   const ipc = useIpc();
   const queryClient = useQueryClient();
   return useMutation<string, IpcError, string>({
-    mutationFn: (task) => ipc.claudeCommitMessage(task),
+    mutationFn: (task) => ipc.claudeCommitMessage(task, only),
     onSuccess: onMessage,
     onSettled: () => queryClient.invalidateQueries({ queryKey: CLAUDE_STATUS_KEY }),
   });

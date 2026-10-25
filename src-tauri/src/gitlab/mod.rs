@@ -5,12 +5,18 @@
 
 pub mod account;
 pub mod approvals;
+pub mod branch_mr;
 pub mod client;
+pub mod create_mr;
 pub mod discussions;
 pub mod draft_notes;
 pub mod error;
+pub mod jobs;
+pub mod members;
 pub mod mr;
 pub mod mrs;
+pub mod pipelines;
 pub mod project;
 pub mod thread_actions;
 pub mod tls;
+pub mod versions;

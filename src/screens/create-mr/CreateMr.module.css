@@ -1,0 +1,278 @@
+/* S-11 New merge request (CreateMR.dc.html). */
+
+/* main and the aside side by side; the aside wraps below on a narrow window. */
+.layout {
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.main {
+  flex: 999 1 620px;
+  min-width: 0;
+  overflow: auto;
+}
+
+.screen {
+  max-width: 900px;
+  padding: 34px 48px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 52px;
+  line-height: 0.95;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.branchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.source {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--green);
+  padding: 5px 10px;
+}
+
+.arrow {
+  color: var(--text-muted);
+  flex: 0 0 auto;
+}
+
+.target {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  background: var(--raised);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.stats {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.added {
+  color: var(--diff-add-text);
+}
+
+.deleted {
+  color: var(--diff-del-text);
+}
+
+.statsError,
+.alert {
+  margin: 0;
+  font-size: 13px;
+  color: var(--orange-text);
+}
+
+.note {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.loading {
+  height: 32px;
+  width: 360px;
+  max-width: 100%;
+  background: var(--panel-2);
+}
+
+/* F-27.2 Title and Description. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.title {
+  height: 46px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.descriptionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.drafted {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.claudeDot {
+  width: 8px;
+  height: 8px;
+  background: var(--purple);
+}
+
+.regenerate {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--purple);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.regenerate:disabled {
+  cursor: default;
+}
+
+.spinner {
+  flex: none;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+.description {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--panel-2);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  resize: vertical;
+}
+
+/* "Replace your edits?" (M7 decision 16), the confirmation strip of S-08's Run pipeline. */
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  padding: 12px 16px;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.question {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.confirmButtons {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.replace,
+.cancel {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+/* The page's yellow focus ring would vanish on the yellow strip. */
+.replace:focus-visible,
+.cancel:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.replace {
+  background: var(--ink);
+  color: var(--yellow);
+  font-weight: 800;
+}
+
+.cancel {
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+/* Options under the Description (F-27.4): checkbox chips on the panel fill; scoped under
+   .options so they win over Checkbox .control whatever order the CSS loads in. */
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.options .option {
+  height: 40px;
+  gap: 10px;
+  padding: 0 14px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 14px;
+}

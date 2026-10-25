@@ -3,17 +3,27 @@
 
 pub mod app;
 pub mod approval;
+pub mod author;
+pub mod author_reply;
 pub mod claude;
+pub mod create_mr;
 pub mod drafts;
+pub mod fix;
+pub mod fix_thread;
+pub mod fix_watch;
 pub mod git;
 pub mod gitlab;
 pub mod gitlab_threads;
+pub mod job_explain;
+pub mod job_trace;
 pub mod os;
+pub mod pipeline;
 pub mod publish;
 pub mod repo;
 pub mod review;
 pub mod review_plan;
 pub mod review_status;
+pub mod reviewers;
 pub mod session_state;
 pub mod sessions;
 pub mod source;

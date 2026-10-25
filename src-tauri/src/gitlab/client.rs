@@ -28,6 +28,15 @@ pub struct GitlabResponse {
     pub body: Value,
 }
 
+/// A response before its body is decoded.
+struct RawResponse {
+    status: u16,
+    header_names: Vec<String>,
+    next_page: Option<u32>,
+    retry_after: Option<Duration>,
+    bytes: Vec<u8>,
+}
+
 #[derive(Debug, Clone)]
 pub struct GitlabClient {
     http: reqwest::Client,
@@ -127,6 +136,45 @@ impl GitlabClient {
         query: &[(&str, String)],
         body: Option<&Value>,
     ) -> Result<GitlabResponse, GitlabError> {
+        let raw = self.send(method, path, query, body).await?;
+        let body = if raw.bytes.iter().all(u8::is_ascii_whitespace) {
+            Value::Null
+        } else {
+            match serde_json::from_slice(&raw.bytes) {
+                Ok(body) => body,
+                Err(_) if raw.status >= 400 => Value::Null,
+                Err(error) => return Err(GitlabError::Decode(error.to_string())),
+            }
+        };
+        if raw.status >= 400 {
+            return Err(GitlabError::from_status(raw.status, raw.retry_after, &body));
+        }
+        Ok(GitlabResponse {
+            status: raw.status,
+            header_names: raw.header_names,
+            next_page: raw.next_page,
+            body,
+        })
+    }
+
+    /// A GET whose answer is plain text (a job trace, F-20.5), decoded as UTF-8 with invalid
+    /// bytes replaced; error statuses map like [`Self::request`].
+    pub async fn get_text(&self, path: &str) -> Result<String, GitlabError> {
+        let raw = self.send(Method::GET, path, &[], None).await?;
+        if raw.status >= 400 {
+            let body = serde_json::from_slice(&raw.bytes).unwrap_or(Value::Null);
+            return Err(GitlabError::from_status(raw.status, raw.retry_after, &body));
+        }
+        Ok(String::from_utf8_lossy(&raw.bytes).into_owned())
+    }
+
+    async fn send(
+        &self,
+        method: Method,
+        path: &str,
+        query: &[(&str, String)],
+        body: Option<&Value>,
+    ) -> Result<RawResponse, GitlabError> {
         let started = Instant::now();
         let mut request = self
             .http
@@ -150,7 +198,7 @@ impl GitlabClient {
         };
         let next_page = header_number("x-next-page").and_then(|page| u32::try_from(page).ok());
         let retry_after = header_number("retry-after").map(Duration::from_secs);
-        let bytes = response.bytes().await.map_err(network_error)?;
+        let bytes = response.bytes().await.map_err(network_error)?.to_vec();
         tracing::debug!(
             %method,
             path,
@@ -158,23 +206,12 @@ impl GitlabClient {
             ms = started.elapsed().as_millis(),
             "GitLab request"
         );
-        let body = if bytes.iter().all(u8::is_ascii_whitespace) {
-            Value::Null
-        } else {
-            match serde_json::from_slice(&bytes) {
-                Ok(body) => body,
-                Err(_) if status >= 400 => Value::Null,
-                Err(error) => return Err(GitlabError::Decode(error.to_string())),
-            }
-        };
-        if status >= 400 {
-            return Err(GitlabError::from_status(status, retry_after, &body));
-        }
-        Ok(GitlabResponse {
+        Ok(RawResponse {
             status,
             header_names,
             next_page,
-            body,
+            retry_after,
+            bytes,
         })
     }
 

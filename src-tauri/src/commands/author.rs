@@ -1,0 +1,230 @@
+//! `author_mr` (F-26.1): S-10 Your MR reads my merge request (title, branches, head pipeline and
+//! the thread list), read only. Called when the screen opens by navigation, never on a restored
+//! start (F-30.4); it runs no Claude, so it needs no Claude Code lookup, and adds the replies still
+//! queued with whether their commit is on the local `origin/<source>` ref (M7 decision 12). `author_file_diff`
+//! (F-26.2) reads the selected thread's file from the user's own checkout, read only;
+//! `author_fixup_target` (F-26.4) names the commit a fix of a thread is a fixup of, read only;
+//! `author_uncommitted_files` (M7 decision 10) lists the checkout's uncommitted files, read only.
+//! `author_queue_reply` (F-26.5) stores the reply **Commit** queues, sending nothing;
+//! `author_push_and_reply` runs only on the click on **Push and reply** or **Retry**;
+//! `author_push_pipeline` (F-26.6) then looks up the pipeline of the pushed commit, read only.
+
+use tauri::State;
+
+use super::gitlab::{GitlabApp, connected_client, forget_status_on_auth_error, not_connected};
+use super::repo::active_git;
+use crate::error::AppResult;
+use crate::error::{AppError, ErrorCode};
+use crate::git::diff;
+use crate::git::fixup_target::{self, FixupTarget};
+use crate::git::model::FileDiff;
+use crate::gitlab::mr;
+use crate::os::process::Cancel;
+use crate::review::author_mr::{self, AuthorMr, AuthorMrError};
+use crate::review::author_push::{self, PushOutcome, PushReply, WaitingReply};
+use crate::review::pipeline_view::{self, PipelineTab};
+use crate::store::Store;
+use crate::store::queued_replies::{self, NewQueuedReply, QueuedReply};
+
+/// My MR `iid` of `project` as S-10 shows it; someone else's MR is `INVALID_INPUT`.
+#[tauri::command]
+pub async fn author_mr(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+) -> AppResult<AuthorMr> {
+    let (client, status) = connected_client(&gitlab, &store).await?;
+    let Some(user) = status.user.as_ref() else {
+        return Err(not_connected(&status));
+    };
+    let queued = store
+        .with_conn(|conn| queued_replies::pending_discussions(conn, &project, iid))
+        .unwrap_or_else(|error| {
+            tracing::warn!(%error, "queued replies unreadable; S-10 shows no Fixed locally tag");
+            Default::default()
+        });
+    let result = author_mr::load(&client, &project, iid, &user.username, &queued).await;
+    if let Err(AuthorMrError::Gitlab(e)) = &result {
+        forget_status_on_auth_error(&gitlab, Some(e)).await;
+    }
+    let mut mr = result?;
+    mr.waiting = waiting_replies(&store, &project, iid, &mr.source_branch).await;
+    mr.on_source_branch = checkout_on_source_branch(&store, &project, &mr.source_branch).await;
+    Ok(mr)
+}
+
+/// Whether the active checkout is the MR's project with its source branch checked out (F-26.8);
+/// anything else (no active repository, another project, another branch, a detached HEAD) keeps
+/// S-10 read only. Reads only: the app never switches the user's branch.
+async fn checkout_on_source_branch(store: &Store, project: &str, source_branch: &str) -> bool {
+    let active = store.with_conn(|conn| crate::store::repos::active(conn));
+    match active {
+        Ok(Some(repo)) => {
+            let other_project = repo
+                .gitlab_project
+                .as_deref()
+                .is_some_and(|p| !p.eq_ignore_ascii_case(project));
+            if other_project {
+                return false;
+            }
+        }
+        Ok(None) => return false,
+        Err(error) => {
+            tracing::warn!(%error, "active repository unreadable; S-10 is read only");
+            return false;
+        }
+    }
+    match active_git(store).await {
+        Ok(git) => author_mr::on_source_branch(&git, source_branch, &Cancel::new()).await,
+        Err(error) => {
+            tracing::warn!(%error, "no active checkout; S-10 is read only");
+            false
+        }
+    }
+}
+
+/// The replies of my MR still queued, for S-10 on reopen (M7 decision 12); read only. Unreadable
+/// replies or no active checkout give none, logged: the thread list still opens.
+async fn waiting_replies(
+    store: &Store,
+    project: &str,
+    iid: u64,
+    source_branch: &str,
+) -> Vec<WaitingReply> {
+    let rows = match store.with_conn(|conn| queued_replies::pending(conn, project, iid)) {
+        Ok(rows) if !rows.is_empty() => rows,
+        Ok(_) => return Vec::new(),
+        Err(error) => {
+            tracing::warn!(%error, "queued replies unreadable; S-10 shows none waiting");
+            return Vec::new();
+        }
+    };
+    let git = match active_git(store).await {
+        Ok(git) => git,
+        Err(error) => {
+            tracing::warn!(%error, "no active checkout; S-10 shows no reply waiting");
+            return Vec::new();
+        }
+    };
+    author_push::waiting(&git, rows, source_branch, &Cancel::new())
+        .await
+        .unwrap_or_else(|error| {
+            tracing::warn!(%error, "queued replies not checked; S-10 shows none waiting");
+            Vec::new()
+        })
+}
+
+/// The unified diff of `path` in the active repository from merge-base(`origin/<target>`, HEAD)
+/// to the working tree (F-26.2, M7 decision 6); `target` is the MR's target branch.
+#[tauri::command]
+pub async fn author_file_diff(
+    store: State<'_, Store>,
+    target: String,
+    path: String,
+) -> AppResult<FileDiff> {
+    let git = active_git(&store).await?;
+    Ok(diff::author_file_diff(&git, &target, &path, &Cancel::new()).await?)
+}
+
+/// The commit a fix of the thread on `line` of `path` is a fixup of (F-26.4, M7 decision 8):
+/// the blame of the line in my MR's range, else the newest range commit touching the file, else
+/// HEAD. Reads git only; no Claude, no GitLab.
+#[tauri::command]
+pub async fn author_fixup_target(
+    store: State<'_, Store>,
+    target: String,
+    path: String,
+    line: Option<u32>,
+) -> AppResult<FixupTarget> {
+    let git = active_git(&store).await?;
+    Ok(fixup_target::find(&git, &target, &path, line, &Cancel::new()).await?)
+}
+
+/// The files of the active checkout with uncommitted changes (M7 decision 10): S-10 shows "You
+/// have other uncommitted changes." above the fix actions when any is not the thread's file.
+/// Read only; read again when the window gets focus.
+#[tauri::command]
+pub async fn author_uncommitted_files(store: State<'_, Store>) -> AppResult<Vec<String>> {
+    let git = active_git(&store).await?;
+    Ok(author_mr::uncommitted_files(&git, &Cancel::new()).await?)
+}
+
+/// Queues the reply **Commit** made for `discussion` of my MR (F-26.5): "Fixed in <sha>. <one
+/// sentence>." sent after the push of `after_sha`; queueing the thread again replaces it. Sends
+/// nothing (M7 decision 12).
+#[tauri::command]
+pub async fn author_queue_reply(
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    discussion: String,
+    body: String,
+    resolve: bool,
+    after_sha: String,
+) -> AppResult<QueuedReply> {
+    if body.trim().is_empty() {
+        return Err(AppError::new(
+            ErrorCode::InvalidInput,
+            "Write the reply to send.",
+        ));
+    }
+    let reply = NewQueuedReply {
+        project,
+        iid,
+        discussion,
+        body,
+        resolve,
+        after_sha,
+    };
+    Ok(store.with_conn(|conn| queued_replies::queue(conn, &reply))?)
+}
+
+/// **Push and reply** (F-26.5, M7 decisions 11 and 12): pushes the MR's source branch from the
+/// active checkout (another checked-out branch is refused, nothing pushed) and
+/// then sends the queued reply `reply_id` (and Resolve when it is on); "Pull first" pushes
+/// nothing. A failure keeps the reply queued for **Retry**.
+#[tauri::command]
+pub async fn author_push_and_reply(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    reply_id: String,
+) -> AppResult<PushOutcome> {
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let git = active_git(&store).await?;
+    // S-10 pushes only the MR's own branch: GitLab names it, never the checkout.
+    let source = match mr::get(&client, &project, iid).await {
+        Ok(info) => info.source_branch,
+        Err(e) => {
+            forget_status_on_auth_error(&gitlab, Some(&e)).await;
+            return Err(e.into());
+        }
+    };
+    let job = PushReply {
+        client: &client,
+        store: &store,
+        git: &git,
+        project: &project,
+        iid,
+        reply_id: &reply_id,
+    };
+    author_push::push_and_reply_on(&job, &source, &Cancel::new()).await
+}
+
+/// The MR pipeline GitLab started for the pushed commit `sha` (F-26.6, M7 decision 13), `None`
+/// while there is none yet; S-10 asks again for up to 30 s after the push. Read only.
+#[tauri::command]
+pub async fn author_push_pipeline(
+    gitlab: State<'_, GitlabApp>,
+    store: State<'_, Store>,
+    project: String,
+    iid: u64,
+    sha: String,
+) -> AppResult<Option<PipelineTab>> {
+    let (client, _) = connected_client(&gitlab, &store).await?;
+    let result = pipeline_view::tab_for_sha(&client, &project, iid, &sha).await;
+    forget_status_on_auth_error(&gitlab, result.as_ref().err()).await;
+    Ok(result?)
+}

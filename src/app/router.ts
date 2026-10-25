@@ -35,6 +35,12 @@ export interface StartState {
   restored: true;
 }
 
+/** Location state of S-11 opened by the self-review's Draft MR description (F-17.3). */
+export interface NewMrState {
+  /** That click asks for the description to be written (M7 decision 15); S-11 starts nothing else. */
+  draftDescription: true;
+}
+
 export const routeObjects: RouteObject[] = [
   {
     element: createElement(Shell),

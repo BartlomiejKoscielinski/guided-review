@@ -1,0 +1,98 @@
+/* The answer of an S-10 question (F-26.7, Author.dc.html `isQuestion`). */
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.text {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.text::placeholder {
+  color: var(--text-muted);
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--orange-text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.actions button {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.draft {
+  background: var(--purple);
+}
+
+.send {
+  background: var(--blue);
+}
+
+.actions button:disabled {
+  background: var(--raised-2);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.hint {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-muted);
+}
+
+/* After the reply (Author.dc.html `qSent`). */
+.answered {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--blue-text);
+}
+
+.mark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  background: var(--blue);
+}

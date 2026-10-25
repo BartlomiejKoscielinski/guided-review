@@ -34,12 +34,18 @@ pub struct MrInfo {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct MrAuthor {
     pub name: String,
+    /// Compared with the signed-in user: S-10 opens only the author's own MR (F-26.1).
+    #[serde(default)]
+    pub username: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct MrPipeline {
     /// REST status in lower case (`success`, `failed`, `running`, …).
     pub status: String,
+    /// The pipeline id, for its head on S-10 (F-26.1).
+    #[serde(default)]
+    pub id: Option<u64>,
 }
 
 impl MrInfo {

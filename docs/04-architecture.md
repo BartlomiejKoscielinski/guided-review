@@ -81,7 +81,7 @@ guided-review/
 │  │  ├─ route.rs                Route and start-route rules (F-30.4)
 │  │  └─ error.rs                AppError
 │  ├─ resources/prompts/*.md, resources/schemas/*.json   (copied from docs/claude/)
-│  └─ tests/                     integration tests with fixture repos; bin/ test helpers
+│  └─ tests/                     integration tests with fixture repos, one binary in it/ (E29); bin/ test helpers
 │                                (gr-test-child, fake-claude)
 ├─ tests/e2e/                    Playwright specs against the mock backend
 ├─ tools/mock-preview/           mock renderer for design checks
@@ -100,7 +100,7 @@ type ErrorCode =
   | 'GIT_NOT_FOUND' | 'GIT_TOO_OLD' | 'GIT_FAILED' | 'WORKTREE_FAILED'
   | 'GITLAB_UNAUTHORIZED' | 'GITLAB_FORBIDDEN' | 'GITLAB_NOT_FOUND' | 'GITLAB_RATE_LIMITED' | 'GITLAB_UNREACHABLE'
   | 'CLAUDE_NOT_FOUND' | 'CLAUDE_NOT_SIGNED_IN' | 'CLAUDE_FAILED' | 'CLAUDE_SCHEMA' | 'CLAUDE_GUARD_VIOLATION' | 'CLAUDE_LIMITED'
-  | 'NAV_UNAVAILABLE' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
+  | 'NAV_UNAVAILABLE' | 'FIX_NOT_ALLOWED' | 'CANCELLED' | 'CONFLICT' | 'INVALID_INPUT' | 'INTERNAL';
 ```
 
 Window controls of the custom title bar (minimize, maximize/restore, close, start dragging, maximized state) are part of the same interface: `tauri.ts` uses the Tauri window API (capabilities `core:window:allow-minimize`, `-toggle-maximize`, `-close`, `-start-dragging`), the mock keeps the state in memory. Components never call Tauri directly.
@@ -121,9 +121,9 @@ Command groups (non-exhaustive; add commands only with a matching type and mock)
 | git | `git_status`, `git_log(branch?, query?)`, `git_status_summary`, `git_commit_info(sha)`, `git_last_message`, `git_file_diff(source, path)` (source `local`, `commit{sha}` or `session{sessionId}` = an MR session's merge base → head), `git_stage(selection)`, `git_unstage(selection)`, `git_commit(message, amend, fixup?)`, `git_push`, `git_merge_check(target)` |
 | repos | `repo_active`, `repo_pick` (folder dialog in the core; adds the repository and makes it active), `repo_list`, `repo_switch(id)`, `repo_set_default(id)`, `repo_remove(id)`. The **default** repository is the one the app starts with (and deep links without a project use); `repo_switch` changes the **active** one (S-01, S-06) until the app restarts |
 | rereview | `rereview_compare(iid, from, to)`, `rereview_commit(pair)` |
-| fix | `fix_propose(target)`, `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
+| fix | `fix_propose(target)`, `fix_propose_thread(target)` (a change thread of my MR, S-10), `fix_accept(id)`, `fix_discard(id)`, `fix_watch(file, ch)` |
 | nav | `nav_status`, `nav_hover(file, line, col)`, `nav_definition`, `nav_usages`, `nav_usages_insight` |
-| claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
+| claude | `claude_status`, `claude_refresh`, `claude_models`, `claude_sign_in`, `claude_pick_executable`, `claude_commit_message(task, only?)`, `claude_mr_description(variant)`, `claude_reply_draft(thread)`, `claude_cancel(task)` |
 | rules | `rules_list`, `rules_suggestions`, `rules_propose_mr(id)`, `rules_dismiss(id, kind)` |
 | os | `rider_open(file, line, session?)` (with a session, the root follows `rider.openFrom`, F-24.1), `rider_install_tools`, `tray_state`, `notifications_set_paused(until)` |
 

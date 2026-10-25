@@ -112,6 +112,14 @@
   padding: 16px;
   background: var(--panel);
 }
+/* A note on a file: Fix with Claude at the end of the row (F-25.1). */
+.rowFix {
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+}
+/* The fix card under the note, across the row (F-25.3). */
+.fixCard {
+  grid-column: 1 / -1;
+}
 
 .dot {
   margin-top: 5px;
@@ -381,4 +389,11 @@
   font-size: 14.5px;
   line-height: 1.55;
   resize: vertical;
+}
+
+/* The end of a self-review (F-17.3): Draft MR description and Browse and commit under the list. */
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }

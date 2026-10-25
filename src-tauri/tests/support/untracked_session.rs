@@ -1,7 +1,8 @@
 //! A self-review (F-17.1) session of uncommitted changes whose untracked files sit in a dot
 //! directory (an IDE's `.idea` folder; the live check of attempt 1 failed every step there),
-//! planned with the fake `claude`. Shared by `self_review_untracked.rs` and
-//! `self_review_untracked_log.rs`, which declare `fake_claude` and `fixture_repo` at their root.
+//! planned with the fake `claude`. Shared by `it/self_review_untracked.rs` and
+//! `self_review_untracked_log.rs`, which declare `fake_claude` and `fixture_repo` at their root
+//! (`it/main.rs` for the first).
 //! Synthetic data only (ADR-019).
 #![allow(
     dead_code,

@@ -1,5 +1,5 @@
 {
-  "items": 53,
+  "items": 84,
   "entries": [
     {
       "id": "P-003",
@@ -10,7 +10,7 @@
         "tests/e2e/**"
       ],
       "text": "Confirm the new Vitest AC tests fail for the right reason before implementing (5 were red here), and do not treat an e2e guard that counts occurrences as the red signal because it passes at baseline.",
-      "helpful": 34,
+      "helpful": 47,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T08:53:29.568Z",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 17,
+      "helpful": 37,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 17,
+      "helpful": 38,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -116,7 +116,7 @@
         "ui"
       ],
       "text": "When a core flag reaches a screen (Hunk.mechanical feeding the Skim row), set it in the mock backend in the same item, and first list the existing tests that read the unflagged rows so they stay green with the flag set, because F-05.5 left it unset so the Skim row was not visible in dev:mock and had no e2e test until F-06.6, and F-06.6 skipped it to avoid folding hunks in other tests, which left the Skim row without mock data and its real-app check in the manual field.",
-      "helpful": 10,
+      "helpful": 18,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:19:12.128Z",
@@ -134,9 +134,9 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 18,
+      "helpful": 42,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-14T14:47:55.168Z",
       "lastUsedItem": 14,
       "source": "F-06.5",
@@ -147,12 +147,13 @@
       "tags": [
         "ui",
         "tests",
-        "src/screens/**"
+        "src/screens/**",
+        "mixed"
       ],
       "text": "Autopilot roles cannot run /app, so a drag or other pointer behaviour is covered only by the e2e mock; record 'not tried in the real app' in the item's manual field, as F-06.5 did, so the next interactive session runs that check.",
-      "helpful": 34,
+      "helpful": 54,
       "harmful": 0,
-      "seen": 1,
+      "seen": 2,
       "created": "2026-10-14T14:47:55.295Z",
       "lastUsedItem": 4,
       "source": "F-06.5",
@@ -168,12 +169,13 @@
         "mixed",
         "src/screens/detailed/**",
         "src/screens/step/**",
-        "src/screens/summary/**"
+        "src/screens/summary/**",
+        "src/screens/author/**"
       ],
       "text": "When the plan row and the existing code disagree on what a control does, or a status colour or check has combinations nobody defined (reviewed and current, skipped before current), write each reading you chose as a tests-stage decision and make it a red assertion, because F-06.6's Show expanded an inline path list in code while the plan row said it opens the browse, and F-07.1 found two undefined status combinations; both items passed gate 1 without a fix round. Lock an edge state's accessible name, tooltip and shortcut hint the same way (F-30.3: the last step's arrow keeps 'Next step' but opens S-05), since both F-30.3 review nits came from that reading left unlocked. The same holds for an inline editor over an async save: lock the editor-open and save-in-flight combinations (dimmed style lifted, Cancel and Esc during the save, pencil while editing), where all three F-12.3 review nits sat.",
-      "helpful": 29,
+      "helpful": 37,
       "harmful": 0,
-      "seen": 7,
+      "seen": 8,
       "created": "2026-10-14T15:13:07.675Z",
       "lastUsedItem": 41,
       "source": "F-06.6",
@@ -188,7 +190,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 28,
+      "helpful": 55,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -222,12 +224,13 @@
         "src/screens/plan/**",
         "implement",
         "src/screens/summary/**",
-        "docs/plans/**"
+        "docs/plans/**",
+        "src/screens/author/**"
       ],
       "text": "When the tests stage finds an open gap, record it under decisions or a backlog entry rather than notes: F-06.9 left three gaps (threads missing from the plan cache key, counted threads shown in no step, restored steps without thread cards) in notes with decisions empty.",
-      "helpful": 12,
+      "helpful": 13,
       "harmful": 0,
-      "seen": 3,
+      "seen": 4,
       "created": "2026-10-14T15:34:55.903Z",
       "lastUsedItem": 6,
       "source": "F-06.9",
@@ -243,7 +246,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 13,
+      "helpful": 19,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -261,7 +264,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 26,
+      "helpful": 51,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -296,7 +299,7 @@
         "src/screens/detailed/**"
       ],
       "text": "When a prop changes a component's behaviour (NoteCard selfReview), grep every render site in the tests stage: GuidePanel layout C was left without the prop and the gap went only into tests notes, not decisions or a backlog entry. For shared state that other keys or features read (the J/K current hunk), also grep the milestone plan decisions for its name and lock every existing consumer (C composer start line, Ctrl+Shift+O target) as its own red test, because unlocked M4 decision 13 became the only severe review finding of F-30.6.",
-      "helpful": 7,
+      "helpful": 8,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-15T06:36:00.066Z",
@@ -304,25 +307,6 @@
       "source": "F-09.2",
       "promoted": true,
       "promotedTo": "tests"
-    },
-    {
-      "id": "P-030",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/src/review/**",
-        "src-tauri/tests/**",
-        "ui",
-        "src/screens/**"
-      ],
-      "text": "For dismiss, undo or any filter keyed by a shared fingerprint, assert what the reload shows for each decision state (open, draft, dismissed), not only the table row: the F-09.4 undo test checked only the dismissals row and passed while a reloaded open note vanished, which only review caught. Pin the restored-after-restart state of a screen the same way, as a red test in the tests stage, because F-17.4 left it to the implementer and review raised the missing progress line after a restart.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 2,
-      "created": "2026-10-15T07:10:35.512Z",
-      "lastUsedItem": 15,
-      "source": "F-09.4",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
       "id": "P-032",
@@ -333,7 +317,7 @@
         "src-tauri/tests/**"
       ],
       "text": "Give a state-bug fix a regression test that you have seen fail on the old code, as fix-1's resume.rs reload test did (it fails with the old filter), so the green gate proves the fix rather than the table.",
-      "helpful": 7,
+      "helpful": 9,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-15T07:10:35.609Z",
@@ -373,44 +357,13 @@
         "src/screens/summary/**"
       ],
       "text": "Record the loading and error reading of any copy or button choice that depends on an async query as a tests decision with a red assertion, because the MR fallback during loading (Add to drafts on a self-review) was left in notes and review flagged it; on the implement side, give a screen that chooses its view from a query a loading and error branch instead of the default view, since the self-review session showed the MR stub while the query loaded (F-17.4).",
-      "helpful": 21,
+      "helpful": 38,
       "harmful": 0,
       "seen": 10,
       "created": "2026-10-15T09:26:23.811Z",
       "lastUsedItem": 15,
       "source": "F-17.2",
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-046",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/**"
-      ],
-      "text": "Read cached state after a restart through the existing resume hook (useResume, as S-03 does), not the TanStack plan query, because a disabled query never loads the stored plan.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T09:59:03.977Z",
-      "lastUsedItem": 15,
-      "source": "F-17.4",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-048",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/tests/**"
-      ],
-      "text": "When a golden or live test is #[ignore]d, add a non-ignored test in verify that builds its seed and loads it through the production loader with a placeholder executable, because F-09.5's eval seed used a layer name that plan::layer() rejects, so verify stayed green while the live run panicked with PlanNotReady and the item needed a second attempt.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T11:16:26.108Z",
-      "lastUsedItem": 16,
-      "source": "F-09.5"
     },
     {
       "id": "P-049",
@@ -424,9 +377,9 @@
         "src/screens/summary/**"
       ],
       "text": "Before committing an assertion, name the production change that would make it fail and drop or turn it into a comment if there is none, because the only review findings in both F-09.5 attempts were assertions that cannot fail (a mock test over static fixture data, and assert!(!cx.fallback) after a loader that always returns false); for a rule that reads a context list (threads, cached notes), empty that list and confirm the tests fail, as F-09.5's empty thread list failed 4 of 6 Rust tests.",
-      "helpful": 21,
+      "helpful": 33,
       "harmful": 0,
-      "seen": 4,
+      "seen": 5,
       "created": "2026-10-15T11:16:26.158Z",
       "lastUsedItem": 16,
       "source": "F-09.5",
@@ -451,143 +404,6 @@
       "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
     },
     {
-      "id": "P-051",
-      "tags": [
-        "core",
-        "tests",
-        "src-tauri/tests/**"
-      ],
-      "text": "Put a test that installs a global tracing subscriber or log file in its own tests/*.rs binary (or use the thread-local set_default and match the line by a unique key), and run a new test binary several times before committing, because a 3-test binary sharing the global logger failed 6 of 7 runs in review.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T11:47:51.504Z",
-      "lastUsedItem": 17,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-052",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/review/**"
-      ],
-      "text": "When logging a failed Claude step, write only code and message for Claude-originated errors (ClaudeFailed, ClaudeNotSignedIn, ClaudeLimited) and log the detail only for app-written errors, because that detail carries Claude's stderr or result text and NFR-08 keeps Claude output out of logs; cover one Claude code with a canary test.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T11:47:51.551Z",
-      "lastUsedItem": 17,
-      "source": "F-17.1",
-      "hold": "E18 coding rules group B replaces it (docs/process/CODING-RULES-PROPOSAL.md, Playbook overlap); the retro that starts E18 removes it"
-    },
-    {
-      "id": "P-053",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/tests/eval*.rs"
-      ],
-      "text": "When relaxing an eval's text-matching check to remove a false positive, give the exemption only to the field that caused it (the note body) and add a verify-run unit case for every other field (title, suggested_comment) where the topic and the exempting phrase share one sentence, because F-09.5's first sentence-level fix exempted all three fields and review showed that a title like 'async void, already raised in the open thread' would pass the item's only check, which cost a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T15:03:45.339Z",
-      "lastUsedItem": 18,
-      "source": "F-09.5"
-    },
-    {
-      "id": "P-054",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "When a locked e2e assertion compares a region's text with toHaveText, check whether the region holds CSS text-transform uppercase buttons (Barlow Condensed) and lock it with { useInnerText: true }, because tests/e2e/detailed.spec.ts:78 compared textContent with a captured innerText, could never pass, and cost a test dispute plus a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T17:03:45.175Z",
-      "lastUsedItem": 19,
-      "source": "F-08.1"
-    },
-    {
-      "id": "P-056",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/detailed/**"
-      ],
-      "text": "Build an in-screen info header as a div with data-testid, not a <header> element, because a second banner landmark breaks the existing role=banner tests of the screen header (F-08.1); list that test id in the tests notes.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T17:36:56.620Z",
-      "lastUsedItem": 20,
-      "source": "F-08.2"
-    },
-    {
-      "id": "P-057",
-      "tags": [
-        "mixed",
-        "implement",
-        "src/screens/**/*.module.css"
-      ],
-      "text": "Do not override :focus-visible in a component CSS module (keep the global docs/03 outside ring), and check any var(--yellow) element (ring, badge, mark) on the yellow current-row fill, because --focus equals --yellow and the inset yellow ring on Rail's current row was invisible (review severity normal, WCAG 2.4.7, fix round 1) while the structure-only design-check came back clean.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T18:37:59.862Z",
-      "lastUsedItem": 21,
-      "source": "F-08.3"
-    },
-    {
-      "id": "P-059",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/**/*.test.tsx"
-      ],
-      "text": "Run npm run typecheck (not only vitest) on the new test files before the tests commit, because vitest strips types and a helper like screen.getAllByRole(...)[0] is HTMLElement | undefined under noUncheckedIndexedAccess, which cost a test dispute and a test-only fix round (F-08.4 helper next()); destructure the first match and throw when it is missing.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T19:08:46.107Z",
-      "lastUsedItem": 22,
-      "source": "F-08.4"
-    },
-    {
-      "id": "P-060",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**"
-      ],
-      "text": "When an e2e guard counts or targets getByRole by name (for example radiogroup 'Layout' with toHaveCount(0)), pass exact: true, because Playwright matches names as case-insensitive substrings and the same screen's other required control ('Diff layout') was counted, so all 6 detailed e2e tests failed at the guard and cost a test dispute plus a fix round.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T19:52:39.906Z",
-      "lastUsedItem": 23,
-      "source": "F-08.5"
-    },
-    {
-      "id": "P-061",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/detailed/**"
-      ],
-      "text": "When a Vitest test needs a diff line past the first screenful (about L41) to render a note, mock offsetHeight per element in jsdom (it has no layout) and put that in the tests notes, so the implementer does not chase an empty line list.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-15T20:40:04.671Z",
-      "lastUsedItem": 24,
-      "source": "F-08.6"
-    },
-    {
       "id": "P-062",
       "tags": [
         "mixed",
@@ -606,68 +422,6 @@
       "source": "F-08.7"
     },
     {
-      "id": "P-063",
-      "tags": [
-        "ui",
-        "tests",
-        "src/screens/**/*.test.tsx"
-      ],
-      "text": "Keep locked userEvent tests that type long text well under the 5000 ms vitest timeout (use paste, fireEvent or an explicit per-test timeout), because two locked AskBox cases timed out once when the test step took 94 s instead of 39-55 s, and the implementer could not change them.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T07:25:08.791Z",
-      "lastUsedItem": 25,
-      "source": "F-08.7"
-    },
-    {
-      "id": "P-064",
-      "tags": [
-        "ui",
-        "implement",
-        "src/screens/detailed/**"
-      ],
-      "text": "Never key React lists by strings that come from Claude's output (read.file, checklist text) without the index, because the core does not dedupe files_read or checklist and duplicates give React key warnings and rows that tick together.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T07:25:08.837Z",
-      "lastUsedItem": 25,
-      "source": "F-08.7"
-    },
-    {
-      "id": "P-065",
-      "tags": [
-        "mixed",
-        "tests",
-        "src/ipc/hooks/**",
-        "src-tauri/src/review/**"
-      ],
-      "text": "When a UI re-reads a status on a timer because a background run sends no events, define the poll condition as 'any run of the session is in flight, queued or starting included' (not 'the status shows a step running') and pin it with a test where the first read lands before the run reaches Running, because F-08.8's useAnalysisStatus only polled after a read that already had a running step, and review found that a read arriving before the prefetch leaves the queue ends polling and leaves the footer stale.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T08:00:09.903Z",
-      "lastUsedItem": 26,
-      "source": "F-08.8"
-    },
-    {
-      "id": "P-066",
-      "tags": [
-        "core",
-        "implement",
-        "src-tauri/src/commands/**",
-        "src-tauri/src/review/**"
-      ],
-      "text": "A core command the UI calls on a timer must run its store reads and per-step cache validation loop inside with_store/spawn_blocking like the commands around it, because review flagged review_analysis_status calling step::cached_analysis (SQLite plus worktree file checks) for every step on the async command thread once a second.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-16T08:00:09.954Z",
-      "lastUsedItem": 26,
-      "source": "F-08.8"
-    },
-    {
       "id": "P-067",
       "tags": [
         "ui",
@@ -677,7 +431,7 @@
         "src/screens/settings/**"
       ],
       "text": "A red e2e never runs the lines after its first failing assertion, so before the tests commit prove the rest can pass: run a scratch copy without the red assertions, run its setup and return path at baseline or in a throwaway variant without the new control, and run a new row or layout locator helper against throwaway markup shaped like the mock (delete the scratch files afterwards). F-08.9's toHaveURL lines behind a red check cost a test dispute and a fix round, F-19.1's broken mock return path pushed out-of-item work onto the implementer (153k tokens), while F-19.3 did this and passed with no dispute and no fix round.",
-      "helpful": 1,
+      "helpful": 2,
       "harmful": 0,
       "seen": 6,
       "created": "2026-10-16T08:24:28.933Z",
@@ -696,12 +450,13 @@
         "ui",
         "src/screens/**",
         "src/ipc/mock/**",
-        "src/screens/summary/**"
+        "src/screens/summary/**",
+        "src/screens/pipeline/**"
       ],
       "text": "When a milestone decision reverses an existing test (F-07.2 'the last step has no next' expected disabled), name that test and its new expected value in the tests notes, and list the neighbouring assertions that must stay unchanged (F-08.9 end-card tests), so the implementer edits instead of deleting and the locked-tests gate passes first time. Do the same before changing what a mock returns or requires (a suffix moved into a UI helper, a new precondition such as reviewPlan first): grep the existing tests for the full old string and for calls that skip the precondition, as F-02.5 had to change an F-02.2 mock assertion and an F-10.2 mock test asks without a plan.",
-      "helpful": 15,
+      "helpful": 25,
       "harmful": 0,
-      "seen": 4,
+      "seen": 6,
       "created": "2026-10-16T10:39:05.255Z",
       "lastUsedItem": 31,
       "source": "F-30.3",
@@ -848,15 +603,20 @@
         "fix",
         "src/**/*.test.tsx",
         "implement",
-        "src/screens/step/**"
+        "src/screens/step/**",
+        "src/**",
+        "package.json",
+        "tools/verify.mjs"
       ],
-      "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix.",
-      "helpful": 0,
+      "text": "When gate verify fails only with a 5000 ms Vitest timeout in a test the item did not touch, measure that test with and without the change (here 1.2-1.4 s either way, about 4x slower beside cargo test), then give its describe block an explicit timeout as Footer.test.tsx does and leave the item code alone, as fix-2 did in one small commit (75k tokens). Before editing anything, rerun those files alone and run verify once more, because F-12.4 failed gate 1 and gate 2 on such untouched tests and passed gate 3 with the same commits and no fix. Run the full verify with nothing else running (no parallel cargo test or builds), since load made 4 and 34 unrelated tests time out in F-20.2; to recheck only Vitest use node tools/verify.mjs --only test.",
+      "helpful": 5,
       "harmful": 0,
-      "seen": 2,
+      "seen": 9,
       "created": "2026-10-16T19:09:32.193Z",
-      "lastUsedItem": 42,
-      "source": "F-11.2"
+      "lastUsedItem": 57,
+      "source": "F-11.2",
+      "promoted": true,
+      "promotedTo": "fix"
     },
     {
       "id": "P-086",
@@ -1099,21 +859,6 @@
       "source": "F-13.3"
     },
     {
-      "id": "P-103",
-      "tags": [
-        "ui",
-        "tests",
-        "src/**/*.test.tsx"
-      ],
-      "text": "In the tests stage run eslint on the new test files against the throwaway stubs and remove unused parameters from test doubles before locking, because F-13.3's locked ThreadCheck.test.tsx failed no-unused-vars (the tests notes blamed only missing types), and the implementer, unable to edit a locked test, had to add an eslint.config.js override in a separate commit (9e86162).",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-18T19:53:22.788Z",
-      "lastUsedItem": 47,
-      "source": "F-13.3"
-    },
-    {
       "id": "P-104",
       "tags": [
         "ui",
@@ -1127,22 +872,6 @@
       "created": "2026-10-19T07:48:16.265Z",
       "lastUsedItem": 48,
       "source": "F-14.1"
-    },
-    {
-      "id": "P-105",
-      "tags": [
-        "mixed",
-        "tests",
-        "tests/e2e/**",
-        "src/**/*.test.tsx"
-      ],
-      "text": "Run eslint (npx eslint on the new test files) before the tests commit, not only vitest/playwright, because F-14.2 locked tests carried `void session; void sha;` and a toHaveURL line that failed lint, which forced a test dispute and a fix round (48k tokens) over two one-line edits.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-19T08:49:12.941Z",
-      "lastUsedItem": 49,
-      "source": "F-14.2"
     },
     {
       "id": "P-106",
@@ -1161,22 +890,6 @@
       "source": "F-12.5"
     },
     {
-      "id": "P-107",
-      "tags": [
-        "mixed",
-        "implement",
-        "package.json",
-        "tools/verify.mjs"
-      ],
-      "text": "When verify is red only on a timeout in an unrelated Vitest file while rust:test runs in parallel (LineCommentKeep F-09.7 here, 2 of 3 runs), rerun only the test step (--only test) before debugging, and report it as unrelated flakiness.",
-      "helpful": 0,
-      "harmful": 0,
-      "seen": 1,
-      "created": "2026-10-19T11:04:22.313Z",
-      "lastUsedItem": 51,
-      "source": "F-12.5"
-    },
-    {
       "id": "P-108",
       "tags": [
         "mixed",
@@ -1190,6 +903,689 @@
       "created": "2026-10-19T11:43:10.535Z",
       "lastUsedItem": 52,
       "source": "F-18.8"
+    },
+    {
+      "id": "P-109",
+      "tags": [
+        "mixed",
+        "implement",
+        "src-tauri/src/gitlab/**"
+      ],
+      "text": "Before adding a second mapper for a status enum (e.g. PipelineState::from_rest next to from_graphql), grep the existing mapper and its test and make both agree, or record the difference in the plan, because review found pending mapped to Running by one and Waiting by the other, so the same pipeline read differently on S-01 and S-08.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T15:02:24.101Z",
+      "lastUsedItem": 53,
+      "source": "F-20.1"
+    },
+    {
+      "id": "P-110",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/**",
+        "mixed",
+        "src/screens/create-mr/**"
+      ],
+      "text": "When a tabs component sets aria-controls, render the matching role=tabpanel element in the same commit, and give a not-yet-wired control (e.g. a no-op Run new pipeline button) a disabled state or an explicit note instead of an inert onClick, because review raised both as nits on F-20.1.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 2,
+      "created": "2026-10-19T15:02:24.181Z",
+      "lastUsedItem": 53,
+      "source": "F-20.1"
+    },
+    {
+      "id": "P-111",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/pipeline/**"
+      ],
+      "text": "When the milestone plan decisions give exact copy for an error or alert (decision 8: \"Couldn't retry the job. <reason>\"), assert the full string in the tests stage and never a substring such as toHaveTextContent('403 Forbidden'), because F-20.2's locked tests passed without the prefix and review had to raise it as a finding that cost a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T15:57:52.634Z",
+      "lastUsedItem": 54,
+      "source": "F-20.2"
+    },
+    {
+      "id": "P-112",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**",
+        "src-tauri/src/gitlab/**"
+      ],
+      "text": "Do not rely on a GitLab REST field that docs/05 does not confirm for the on-prem version (the job 'retried' flag); derive the rule from data you already hold (the highest id per stage and name), because the review found F-20.2 would show two rows per retried job if the field were missing, and a wiremock fixture that adds the field by hand proves nothing.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T15:57:52.688Z",
+      "lastUsedItem": 54,
+      "source": "F-20.2"
+    },
+    {
+      "id": "P-114",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Before committing a locked Rust test file, run cargo fmt on it and derive each fixture-dependent expected value (a version number, a count) from the existing production helper that computes it (here versions::number_of counts from the oldest version), because F-20.3's pipeline_run.rs expected version 3 from a two-version fixture and was not rustfmt-clean, so it needed a test dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T17:08:13.870Z",
+      "lastUsedItem": 55,
+      "source": "F-20.3"
+    },
+    {
+      "id": "P-115",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/gitlab/**"
+      ],
+      "text": "When a test locks the mapping of a GitLab error body to user text, include the documented object or array shape of `message` (for example {\"message\":{\"base\":[\"No stages / jobs for this pipeline.\"]}}) next to the plain-string case, because the only normal review finding of F-20.3 was raw JSON on screen that a string-only wiremock test could not catch.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T17:08:13.928Z",
+      "lastUsedItem": 55,
+      "source": "F-20.3"
+    },
+    {
+      "id": "P-116",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/mock/**"
+      ],
+      "text": "Never read the clock (new Date()) per call in a mock fixture; fix the timestamp once when the backend is created, because F-20.3's 'pipelines before the run are unchanged' mock test went flaky whenever two reads landed 1 ms apart and gate 1 failed alongside it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T17:08:13.983Z",
+      "lastUsedItem": 55,
+      "source": "F-20.3"
+    },
+    {
+      "id": "P-117",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/tests/**",
+        "src/screens/**/*.test.tsx"
+      ],
+      "text": "A tests stage that is red only because the production function or control is missing cannot show a fixture mistake, so before committing, check every expected number or default-parameter helper against the sibling test file for the same code: F-20.4's pipeline_actions.rs expected versions 2 and 3 from a fixture serving only two versions (the oldest is version 1 in tests/pipeline_view.rs), and the Vitest forbidden('403 Forbidden', undefined) helper silently kept its default detail. Both caused a test dispute, a review round and a fix round (about 130k tokens) although the implementation was correct.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T17:48:31.940Z",
+      "lastUsedItem": 56,
+      "source": "F-20.4"
+    },
+    {
+      "id": "P-118",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/**/*.test.tsx",
+        "src/screens/**/*.test.tsx",
+        "ui",
+        "tests/e2e/**",
+        "src-tauri/tests/**",
+        "src/**/*.test.ts*"
+      ],
+      "text": "Run typecheck and eslint on the new or changed test files before the tests commit (not only vitest), because F-20.5's locked JobDetails.test.tsx had an unused const and a nonexistent ErrorCode (GITLAB_NETWORK vs GITLAB_UNREACHABLE), which passed at runtime, turned verify red and forced a test dispute. Lint against the throwaway stubs and drop unused parameters from test doubles (F-13.3, F-14.2 void lines); under noUncheckedIndexedAccess getAllByRole(...)[0] is possibly undefined, so destructure and throw when missing (F-08.4).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 8,
+      "created": "2026-10-19T19:36:31.369Z",
+      "lastUsedItem": 57,
+      "source": "F-20.5",
+      "promoted": true,
+      "promotedTo": "tests"
+    },
+    {
+      "id": "P-119",
+      "tags": [
+        "mixed",
+        "implement",
+        "src-tauri/**"
+      ],
+      "text": "Before handing in, run git status and restore files that differ from HEAD only in line endings (F-20.5 left jobs.rs and pipeline_view.rs CRLF-modified with an empty diff), because the gate's clean check refuses a dirty worktree.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T19:36:31.459Z",
+      "lastUsedItem": 57,
+      "source": "F-20.5"
+    },
+    {
+      "id": "P-121",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "When a command does a local write (SQLite save) after GitLab already accepted a write action, lock in the tests stage that a failed local save is only logged and the command still returns Ok, because F-20.6 job_play returned an error for a job that was already running and the review found it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-19T20:15:12.536Z",
+      "lastUsedItem": 58,
+      "source": "F-20.6"
+    },
+    {
+      "id": "P-122",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Assert a Claude action button's look (variant=\"claude\", purple fill) against the design mock, not only the plan-row wording; F-20.7 locked a purple square inside a neutral button, so review found a mismatch with the mock and the fix could not remove the square without disputing the locked test.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T06:57:57.598Z",
+      "lastUsedItem": 59,
+      "source": "F-20.7"
+    },
+    {
+      "id": "P-123",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/pipeline/**"
+      ],
+      "text": "When a test helper takes an override for a mocked command and also records calls (openWith's asked list), make the recording wrap the override, and run each override-using test once against a stub implementation before the tests commit, because 2 of 13 locked tests in F-20.9 could never go green and cost a dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T10:05:34.675Z",
+      "lastUsedItem": 61,
+      "source": "F-20.9"
+    },
+    {
+      "id": "P-124",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a rule compares two values that come from different sources (the report for the current attempt, the log for the previous one), add a red test where both sources are present and the names are realistic (parameterized 'Queue.B(x: 1)'), because the F-20.9 tests only covered one shape, so the pairing that silently never matched reached review as its only normal finding.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T10:05:34.730Z",
+      "lastUsedItem": 61,
+      "source": "F-20.9"
+    },
+    {
+      "id": "P-125",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/start/**"
+      ],
+      "text": "When a link or button repeats in every list row with the same words (the per-row 'pipeline failed' link), lock in the tests stage that each instance has a distinct accessible name or an aria-describedby pointing at its row's !iid and title, because review flagged the identical names under WCAG 2.4.4 after the tests had locked only the shared name.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T10:45:08.268Z",
+      "lastUsedItem": 62,
+      "source": "F-20.10"
+    },
+    {
+      "id": "P-126",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/pipeline/**"
+      ],
+      "text": "When the tests stage locks a control's look (variant, an inner icon or square), copy it from the mock's markup for that element (Pipeline.dc.html), not from the decision text: here a test pinned a purple square inside a neutral button, the mock drew a purple-filled Claude button, and the review could only fix half of it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T13:33:54.156Z",
+      "lastUsedItem": 63,
+      "source": "F-20.7"
+    },
+    {
+      "id": "P-127",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/git/**",
+        "src-tauri/src/fix/**"
+      ],
+      "text": "For a create-then-cleanup function and a post-run guard, make the tests stage lock two edge states the plan row does not name: a target path that already exists (the failure path must leave it untouched and unregistered) and a file Claude creates under a gitignored path (the guard must still report it). Both were left unlocked in F-25.2, and the review raised both as nits (scratch.rs:136 removes another run's scratch folder, guard.rs:30 runs status without --ignored).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T16:04:22.654Z",
+      "lastUsedItem": 66,
+      "source": "F-25.2"
+    },
+    {
+      "id": "P-128",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**",
+        "tests/e2e/**"
+      ],
+      "text": "Write button locators in new component and e2e tests as exact: true (getByRole('button', { name: 'Cancel', exact: true })) or scope them with within(card), because the full-app render also has the title bar's 'Close' caption button and step 4's note marker contains 'cancellation', so F-25.3's unscoped 'Close' and 'Cancel' queries hit strict-mode violations, caused two test disputes and a fix round (44k tokens), and only found out after the implementer ran them.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-20T16:56:43.159Z",
+      "lastUsedItem": 67,
+      "source": "F-25.3"
+    },
+    {
+      "id": "P-129",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/step/**",
+        "src/test/**"
+      ],
+      "text": "When a test drives a note or card on S-05 by its title, check how the layout renders it: layout A (GuidePanel) renders only the focused note as a NoteCard and the others as 'Note N: ...' buttons, so make the test focus that note first or use the focused one. F-25.4's fixItem(CAMERA) test could never find its article, which cost a test dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T08:06:20.635Z",
+      "lastUsedItem": 68,
+      "source": "F-25.4"
+    },
+    {
+      "id": "P-130",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/fix/**",
+        "src/screens/step/**"
+      ],
+      "text": "When an action unmounts the control that was pressed (Accept and Discard replaced by a result line), give the result line role=\"status\" and move focus to the next action in the same commit, and have the tests stage lock both. F-25.4 shipped without either and the review's only normal finding was this (WCAG 4.1.3 and 2.4.3).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T08:06:20.687Z",
+      "lastUsedItem": 68,
+      "source": "F-25.4"
+    },
+    {
+      "id": "P-131",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "In Rust test code never write `&[x.clone()]` for a one-element slice, use `std::slice::from_ref(&x)`, because the red stage cannot run cargo clippy (the module does not compile yet) and clippy::cloned_ref_to_slice_refs under -D warnings turned the locked test into a gate-blocking dispute and a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T09:39:58.049Z",
+      "lastUsedItem": 69,
+      "source": "F-26.1"
+    },
+    {
+      "id": "P-132",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a command bundles its main payload with a secondary read that only feeds a small UI chip (head pipeline for the title bar), map that read's error to None and log it, so the failure does not hide the main result (review nit on author_mr.rs).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T09:39:58.126Z",
+      "lastUsedItem": 69,
+      "source": "F-26.1"
+    },
+    {
+      "id": "P-133",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "Before a tests-stage decision makes an edge case drop part of the criterion (here 'opens at its line' became 'no anchor' for a thread on a removed line), check whether the data already holds the missing value (old_line, and the removed line is a del row in the diff). Keep the criterion working through that value, because review rated the drop 'normal' and the fix cost a round of 75k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T10:19:25.996Z",
+      "lastUsedItem": 70,
+      "source": "F-26.2"
+    },
+    {
+      "id": "P-134",
+      "tags": [
+        "ui",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "When a new region repeats text the same screen already shows elsewhere (here a note that was both the list excerpt and the card body), write every query for it with within(<that region>) and never screen-wide findByText. A passing scratch run with a reference implementation can still miss it, and a locked test with 'Found multiple elements' cost a test dispute plus a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T10:19:26.073Z",
+      "lastUsedItem": 70,
+      "source": "F-26.2"
+    },
+    {
+      "id": "P-135",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/author/**"
+      ],
+      "text": "When the core contract takes its baseline 'at the click' (file hash for a watch) but the UI must first await another call (riderOpen), lock the call order in the tests stage so the watch starts first and is stopped if the open fails, because F-26.3 locked 'riderOpen, then fixWatch' and review flagged that a save between the click and the watch start is never detected.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T10:45:41.104Z",
+      "lastUsedItem": 71,
+      "source": "F-26.3"
+    },
+    {
+      "id": "P-136",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**"
+      ],
+      "text": "Run cargo clippy --all-targets -D warnings (node tools/verify.mjs --only rust:clippy) on a new Rust test file before the tests commit and never add a speculative #![expect(lint)], because the unfulfilled expect in fixup_commit.rs made rust:clippy fail whatever the implementation did. The accepted dispute commit that only deleted those lines was then blocked by the auto-mode classifier ('Security Test Removal'), so gate 1 stayed red and the item ended blocked.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T11:19:11.162Z",
+      "lastUsedItem": 72,
+      "source": "F-26.4"
+    },
+    {
+      "id": "P-137",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**",
+        "src-tauri/src/claude/**"
+      ],
+      "text": "When a screen reuses an existing core or Claude command (Suggest from S-06 on S-10), read what input that command takes (staged diff, S-06 only) in the tests stage and lock a red test that it works on the new screen's data (an unstaged fixed file), because Suggest on S-10 was rated severe and cost fix-1 87k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T11:19:11.242Z",
+      "lastUsedItem": 72,
+      "source": "F-26.4"
+    },
+    {
+      "id": "P-138",
+      "tags": [
+        "mixed",
+        "implement",
+        "src/screens/**"
+      ],
+      "text": "Fix a gap you found yourself in the same item when it makes a shipped button wrong (Suggest on S-10 answering 'Stage something first…'); do not leave it as an 'OPEN GAP for a backlog entry' in notes, because review rated exactly that gap severe and it needed a fix round.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-21T11:19:11.321Z",
+      "lastUsedItem": 72,
+      "source": "F-26.4"
+    },
+    {
+      "id": "P-139",
+      "tags": [
+        "mixed",
+        "fix",
+        "tests/**",
+        "src-tauri/tests/**",
+        "src/**/*.test.ts*"
+      ],
+      "text": "When a test dispute is accepted, commit the lint-only change to each locked test file in its own separate commit, because gate-1 failed its locked-tests check when one fix commit (3908520) touched three locked files, and the conductor had to split it before gate-2 passed.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T07:24:00.829Z",
+      "lastUsedItem": 73,
+      "source": "F-26.5"
+    },
+    {
+      "id": "P-140",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/author/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When a milestone decision in the plan row names a screen or state (M7 decision 12 'Pushed. Reply not sent yet.' with Send reply), lock it with a red test and define the minimal IPC shape in the tests stage rather than deferring it for a missing IPC shape, and add a red core test that a GitLab-writing command refuses to act on the wrong branch (not the MR source branch), because both were review findings of normal severity that cost fix-1 (113k tokens) and the tests stage had left them out.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T07:24:00.887Z",
+      "lastUsedItem": 73,
+      "source": "F-26.5"
+    },
+    {
+      "id": "P-141",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/author/**",
+        "src-tauri/src/review/**"
+      ],
+      "text": "When the UI acts on 'the pushed commit' (a pipeline lookup, a chip refresh), read what the core command actually pushes and returns, and lock a test where that tip is a descendant of the stored commit sha, because F-26.6's tests fixed `authorPushPipeline(PROJECT, IID, full sha)` on the thread's after_sha, and review found the lookup never matches whenever HEAD is a later commit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T08:08:21.409Z",
+      "lastUsedItem": 74,
+      "source": "F-26.6"
+    },
+    {
+      "id": "P-142",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/author/**"
+      ],
+      "text": "Derive a thread card's Answered or sent state from the fetched thread data (compare the note count or the last note's author against a value saved at send), never from a local 'sent' phase that is only reset in tests, because the F-26.7 composer kept showing 'Answered' after the reviewer's follow-up arrived on refetch and review rated it normal.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T10:29:41.788Z",
+      "lastUsedItem": 75,
+      "source": "F-26.7"
+    },
+    {
+      "id": "P-143",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/author/**",
+        "docs/plans/**"
+      ],
+      "text": "Read the approved plan row and the milestone decisions it cites in the tests stage and lock every behaviour named there, not only the AC text: F-26.8 left the plan's decision-10 warning ('other uncommitted changes') out of the tests as belonging to another item, review rated it normal, and the fix round had to add a new command and its tests.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T11:00:41.961Z",
+      "lastUsedItem": 76,
+      "source": "F-26.8"
+    },
+    {
+      "id": "P-144",
+      "tags": [
+        "ui",
+        "implement",
+        "src/ipc/hooks/**",
+        "src/screens/author/**"
+      ],
+      "text": "When a screen shows state read from outside the app (the git checkout branch, the working tree) and the QueryClient has refetchOnWindowFocus off, add a refresh on window focus in the same commit, because the S-10 read-only notice went stale after the user did what it said and review rated it normal.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T11:00:42.016Z",
+      "lastUsedItem": 76,
+      "source": "F-26.8"
+    },
+    {
+      "id": "P-145",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/tests/**",
+        "mixed"
+      ],
+      "text": "Run cargo clippy -- -D warnings (verify --only rust:clippy) on new Rust test files before the tests commit, because a needless borrow in author_checkout.rs turned verify red and cost a test dispute plus a fix-round commit although the test logic was right.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 2,
+      "created": "2026-10-24T11:00:42.070Z",
+      "lastUsedItem": 76,
+      "source": "F-26.8"
+    },
+    {
+      "id": "P-146",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/git/**"
+      ],
+      "text": "When a git core function counts against a ref it listed earlier, return the same typed error as the explicit-argument path if the ref no longer resolves, instead of Ok with zero counts (review of F-27.1 found a '0 commits · 0 files' answer where the 'not a branch on origin' reason belonged).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T11:29:13.656Z",
+      "lastUsedItem": 77,
+      "source": "F-27.1"
+    },
+    {
+      "id": "P-147",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/screens/**"
+      ],
+      "text": "For any text field that stays editable while a Claude or other async run fills it (title, description, composer), lock a red test that types during the run and expects the answer to wait behind a confirm (Replace / Cancel) instead of overwriting, because F-27.2 reset the typed text on success and review rated it severe, which cost fix-1 (56k tokens).",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T12:13:41.190Z",
+      "lastUsedItem": 78,
+      "source": "F-27.2"
+    },
+    {
+      "id": "P-148",
+      "tags": [
+        "ui",
+        "implement",
+        "src/screens/create-mr/**"
+      ],
+      "text": "Store the inputs a Claude result was made from (target, commit count) with the result and show those in its 'Drafted by Claude from N commits' label, never the live query, because F-27.2's label showed a count for a target Claude never saw after the target changed.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T12:13:41.245Z",
+      "lastUsedItem": 78,
+      "source": "F-27.2"
+    },
+    {
+      "id": "P-149",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/reviewers/**"
+      ],
+      "text": "When code re-implements an external file format or matching rule (CODEOWNERS sections, last match per section, fnmatch with pathname), the tests stage should read the upstream docs and lock the multi-section and glob edge cases as red tests, because the only normal review finding on F-27.3 was that a flat last-match ignored GitLab's per-section rule, and it cost a fix round of about 66k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T19:31:09.813Z",
+      "lastUsedItem": 79,
+      "source": "F-27.3"
+    },
+    {
+      "id": "P-150",
+      "tags": [
+        "core",
+        "implement",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "Do not issue one sequential HTTP lookup per candidate inside a load that runs on every screen open (F-27.3: about 32 GET members/all calls). Batch the lookups, run them concurrently, or cap them at the first few certain results, because a call over the VPN that waits on a long chain shows a skeleton for seconds and review flagged it.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T19:31:09.880Z",
+      "lastUsedItem": 79,
+      "source": "F-27.3"
+    },
+    {
+      "id": "P-151",
+      "tags": [
+        "mixed",
+        "tests",
+        "src-tauri/src/commands/**"
+      ],
+      "text": "When a green check's label says it concerns 'this branch' (self-review done, pushed), lock a negative test that state belonging to another branch or session leaves it not-ok and key the lookup by head_sha being an ancestor of HEAD, because F-27.5's tests chose 'newest local session of the repository', review found the false green and it cost a fix round of about 79k tokens.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-24T20:31:44.271Z",
+      "lastUsedItem": 81,
+      "source": "F-27.5"
+    },
+    {
+      "id": "P-152",
+      "tags": [
+        "ui",
+        "tests",
+        "src/ipc/hooks/**"
+      ],
+      "text": "For a write command whose failure code means state changed elsewhere (409 CONFLICT: the branch already has an open MR), lock in the tests stage that the error path also refreshes the related query (merge-check, so the existing-MR banner appears), because F-27.6 refreshed it only on success and review had to raise it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-25T12:38:47.942Z",
+      "lastUsedItem": 82,
+      "source": "F-27.6"
+    },
+    {
+      "id": "P-153",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/ipc/mock/**"
+      ],
+      "text": "Make the mock's default answer match what the real service usually returns (GitLab's create-MR POST mostly gives head_pipeline null) and cover the other shape as a variant test, because F-27.6's mock always answered a running pipeline, so the 'Pipeline starting…' branch was never the one seen in dev:mock and review flagged the gap.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-25T12:38:48.029Z",
+      "lastUsedItem": 82,
+      "source": "F-27.6"
+    },
+    {
+      "id": "P-154",
+      "tags": [
+        "core",
+        "tests",
+        "src-tauri/src/fix/**"
+      ],
+      "text": "When a core helper turns a GitLab thread or diff position into a line hint for an edit of the new file, lock a removed-line thread (only old_line set) with its own red test, because F-25.1's fix_propose_thread fell back to the old-file line number and review raised it as the only finding of the second pass.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-25T16:44:03.444Z",
+      "lastUsedItem": 83,
+      "source": "F-25.1"
     }
   ]
 }

@@ -1,0 +1,163 @@
+/* S-11 aside and its Reviewers section (CreateMR.dc.html, F-27.3). */
+
+.aside {
+  flex: 1 1 400px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 34px 24px 28px;
+  background: var(--panel);
+  overflow: auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.caption {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: var(--panel-2);
+}
+
+.rowOn {
+  background: var(--raised);
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.name {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.reason {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.toggle {
+  height: 30px;
+  min-width: 70px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: var(--raised-2);
+  color: var(--text);
+}
+
+.toggle[aria-pressed='true'] {
+  background: var(--green);
+  color: var(--ink);
+}
+
+.search {
+  height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg-sunken);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.search::placeholder {
+  color: var(--text-muted);
+}
+
+.note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.alert {
+  margin: 0;
+  font-size: 13px;
+  color: var(--orange-text);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loading > span {
+  height: 56px;
+  background: var(--panel-2);
+}
+
+/* The Create button at the foot of the aside (F-27.4 label, F-27.6 action). */
+.createBlock {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.createNote {
+  font-size: 12.5px;
+  text-align: center;
+  color: var(--text-muted);
+}

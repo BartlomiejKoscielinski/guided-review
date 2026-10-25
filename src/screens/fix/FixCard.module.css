@@ -1,0 +1,122 @@
+/* The fix card (Author.dc.html `fProposed`, `fBusy`): a sunken card with the diff of one file. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: var(--bg);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.mark {
+  width: 10px;
+  height: 10px;
+  background: var(--purple);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.lock {
+  flex: none;
+}
+
+/* The diff scrolls inside the card; the long S-03 gutters are not needed here. */
+.diff {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+}
+
+.diff > * {
+  padding: 0;
+}
+
+.sentence {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-body);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.busyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--purple-text);
+}
+
+.spinner {
+  color: var(--purple);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--orange-text);
+}
+
+/* After Accept (Author.dc.html `fApplied`): a green mark and line, Browse and commit beside it. */
+.appliedRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.applied {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--green-text);
+}
+
+.appliedMark {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  background: var(--green);
+}

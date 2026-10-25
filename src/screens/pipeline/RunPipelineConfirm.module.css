@@ -1,0 +1,74 @@
+/* Pipeline.dc.html › the confirmation strip of Run new pipeline (F-20.3). */
+.strip {
+  flex: 0 0 auto;
+  margin: 0 32px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 14px 18px;
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.question {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sha {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+.promise {
+  font-size: 13.5px;
+}
+
+.buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.run,
+.cancel {
+  height: 36px;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+/* The page's yellow focus ring would vanish on the yellow strip. */
+.run:focus-visible,
+.cancel:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.run {
+  padding: 0 16px;
+  background: var(--ink);
+  color: var(--yellow);
+  font-weight: 800;
+}
+
+.run:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.cancel {
+  padding: 0 14px;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}

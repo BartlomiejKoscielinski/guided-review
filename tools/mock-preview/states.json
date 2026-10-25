@@ -30,5 +30,27 @@
   "S07-settings-integrations": { "mock": "Settings.dc.html", "state": { "section": "integrations" } },
   "S07-settings-notifications": { "mock": "Settings.dc.html", "state": { "section": "notifications" } },
   "S07-settings-rules": { "mock": "Settings.dc.html", "state": { "section": "rules" } },
-  "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } }
+  "S07-settings-shortcuts": { "mock": "Settings.dc.html", "state": { "section": "shortcuts" } },
+  "S08-pipeline": { "mock": "Pipeline.dc.html", "state": {} },
+  "S08-pipeline-confirm": { "mock": "Pipeline.dc.html", "state": { "confirm": true } },
+  "S08-pipeline-manual-job": { "mock": "Pipeline.dc.html", "state": { "job": "distribute:qa" } },
+  "S08-pipeline-old-failed": {
+    "mock": "Pipeline.dc.html",
+    "state": { "pipe": "p321", "job": "unit-tests", "ex": { "p321:unit-tests": "done" } }
+  },
+  "S08-pipeline-running": {
+    "mock": "Pipeline.dc.html",
+    "state": { "hasNew": true, "pipe": "p351", "job": "build:android", "tick": 1 }
+  },
+  "S10-author": { "mock": "Author.dc.html", "state": {} },
+  "S10-author-fix-proposed": { "mock": "Author.dc.html", "state": { "fix": "proposed" } },
+  "S10-author-fix-applied": {
+    "mock": "Author.dc.html",
+    "state": { "fix": "applied", "via": "rider", "msg": "Address review on UploadWorker.cs:46" }
+  },
+  "S10-author-committed": { "mock": "Author.dc.html", "state": { "fix": "committed" } },
+  "S10-author-pushed": { "mock": "Author.dc.html", "state": { "fix": "pushed" } },
+  "S10-author-question": { "mock": "Author.dc.html", "state": { "sel": "t2" } },
+  "S11-create-mr": { "mock": "CreateMR.dc.html", "state": {} },
+  "S11-create-mr-created": { "mock": "CreateMR.dc.html", "state": { "created": true } }
 }

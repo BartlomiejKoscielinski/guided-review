@@ -17,6 +17,7 @@ export default defineConfig(
     'test-results',
     '.design-check',
     '.app-driver', // app driver scratch output (screenshots, batches, copies)
+    '.claude/worktrees', // Claude Code worktree copies of this repository
   ]),
   {
     files: ['**/*.{ts,tsx}'],

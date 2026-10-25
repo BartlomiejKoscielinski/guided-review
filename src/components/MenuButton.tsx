@@ -7,6 +7,9 @@ export interface MenuAction {
   /** Sentence case; the menu items are not uppercase. */
   label: string;
   onSelect: () => void;
+  /** Shown but not choosable; `title` says why. */
+  disabled?: boolean;
+  title?: string;
 }
 
 export interface MenuButtonProps {
@@ -76,6 +79,8 @@ export function MenuButton({ label, menuLabel, actions, size = 34 }: MenuButtonP
               type="button"
               role="menuitem"
               className={styles.item}
+              disabled={action.disabled}
+              title={action.title}
               onClick={() => {
                 close();
                 action.onSelect();

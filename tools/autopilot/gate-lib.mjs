@@ -134,6 +134,22 @@ const JS_STEPS = ['typecheck', 'lint', 'format:check', 'test', 'test:tools'];
 const RUST_STEPS = ['rust:fmt', 'rust:clippy', 'rust:test'];
 
 /**
+ * E32: whether the stamp of a green verify run (.verify/green.json, written by tools/verify.mjs)
+ * stands for the gate's verify: the same clean tree (HEAD^{tree}), lint run --fresh like the gate,
+ * every step the gate needs, the gate's e2e specs (an empty stamp list = all specs), and at most
+ * `maxAgeMin` old. `steps` null = all steps.
+ */
+export function reusableVerify(stamp, { tree, steps, e2e, now = Date.now(), maxAgeMin = 120 }) {
+  if (!stamp || !tree || stamp.tree !== tree || stamp.fresh !== true) return false;
+  if (!(now - Date.parse(stamp.at) <= maxAgeMin * 60_000)) return false;
+  const need = steps ?? [...JS_STEPS, ...RUST_STEPS];
+  if (!Array.isArray(stamp.steps) || !need.every((s) => stamp.steps.includes(s))) return false;
+  if (!e2e) return true;
+  if (!Array.isArray(stamp.e2e)) return false;
+  return stamp.e2e.length === 0 || e2e.every((s) => stamp.e2e.includes(s));
+}
+
+/**
  * E15: the verify steps the item's diff can affect, or `null` for all of them. The Rust steps only
  * when something under src-tauri/ changed, the others only when something outside it changed: the
  * TypeScript side reads the Rust types only through the committed src/ipc/types/ (ts-rs), so a type
@@ -152,12 +168,15 @@ export function verifySteps(files, { full = false } = {}) {
 /**
  * E24: the Vitest files to re-run alone when a gate verify failed only on Vitest timeouts in files
  * the item did not touch (S-03 F-09.7 under parallel load, ap-20261017-0624). Returns the failed
- * test files when `test` is the only failed step, the log reports a timeout and no failed file is
- * in the diff; else null (a real failure stays a failure).
+ * test files when `test` is the only failed step, the log reports a timeout (or, E27, a failed test
+ * line `×` that ran >= 3000 ms: a waitFor miss under load, F-20.5 gate 2) and no failed file is in
+ * the diff; else null (a real failure stays a failure, the re-run alone must pass).
  */
 export function untouchedVitestFailures(verifyOut, testLog, files) {
   const steps = [...verifyOut.matchAll(/^FAIL {2}(\S+)/gm)].map((m) => m[1]);
-  if (steps.length !== 1 || steps[0] !== 'test' || !/timed out|timeout/i.test(testLog)) return null;
+  const slow = [...testLog.matchAll(/^\s*×\s.*?\s(\d+)ms\s*$/gm)].some((m) => Number(m[1]) >= 3000);
+  if (steps.length !== 1 || steps[0] !== 'test' || !(slow || /timed out|timeout/i.test(testLog)))
+    return null;
   const norm = (f) => f.replace(/\\/g, '/');
   const failed = [
     ...new Set([...testLog.matchAll(/FAIL\s+(\S+\.test\.[cm]?[jt]sx?)/g)].map((m) => norm(m[1]))),
@@ -189,4 +208,21 @@ export function tickProgress(progressMd, id, shas, complete) {
     lines[i] = `${head} — partial: ${note ? `${note}; ` : ''}autopilot (${shas.join(', ')})`;
   }
   return lines.join('\n');
+}
+
+/**
+ * E28: the cheap verify steps that catch a locked test that does not typecheck, lint, format or
+ * pass clippy (M6 F-20.5, F-20.6; M7 F-26.3 eslint, F-26.4 and F-27.5 clippy), run on the tests
+ * commit before the implementer starts. `null` when no test file is given.
+ */
+export function testsCheckSteps(tests) {
+  const files = tests.map((f) => f.replace(/\\/g, '/'));
+  if (!files.length) return null;
+  const rust = files.some((f) => f.startsWith('src-tauri/') && f.endsWith('.rs'));
+  const ts = files.some((f) => !f.startsWith('src-tauri/') && /\.[cm]?[jt]sx?$/.test(f));
+  return [
+    'format:check',
+    ...(ts ? ['typecheck', 'lint'] : []),
+    ...(rust ? ['rust:fmt', 'rust:clippy'] : []),
+  ];
 }

@@ -143,37 +143,37 @@ Rules for Claude Code:
 - [x] F-18.8 While at least one Claude task runs or waits in the queue, the title bar shows a spinner right of the Claude status chip. (998a3c2, 91b8fd5, 9a87d08)
 
 ## M6 · Pipelines
-- [ ] F-20.1 Shows the MR's pipelines as tabs (newest first, "version N · latest"), the selected pipeline's status…
-- [ ] F-20.2 Stages as columns with job rows: status square (passed ✓, failed ✕, failed-allowed !, running spinner…
-- [ ] F-20.3 Run new pipeline asks for confirmation ("Run a new merge request pipeline on <sha>? Uses the MR's latest…
-- [ ] F-20.4 Retry failed jobs (pipeline), Cancel pipeline (while running), Open in GitLab.
-- [ ] F-20.5 Selecting a job shows details: name, status, stage, duration, Retry/Cancel, Full log; the log tail with…
-- [ ] F-20.6 Manual jobs show their description (when GitLab provides one) and editable variables ("Variables for this…
-- [ ] F-20.7 Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by…
-- [ ] F-20.8 Successful jobs list artifacts with Download.
-- [ ] F-20.9 A retry that fails the same way says "Retried: failed again on the same test."
-- [ ] F-20.10 Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08.
+- [x] F-20.1 Shows the MR's pipelines as tabs (newest first, "version N · latest"), the selected pipeline's status… (d1c239f, d52bfd5, 555aef4)
+- [x] F-20.2 Stages as columns with job rows: status square (passed ✓, failed ✕, failed-allowed !, running spinner… (39f4b0b, e9384b4, 465415b, 3fdc665, 78d5482, e76134f)
+- [x] F-20.3 Run new pipeline asks for confirmation ("Run a new merge request pipeline on <sha>? Uses the MR's latest… (d8baf10, 20283d2, e646e23, af35e6a, fdc6e1c, f98002f, bf30b81, 18a9272, 7570b42)
+- [x] F-20.4 Retry failed jobs (pipeline), Cancel pipeline (while running), Open in GitLab. (295cd39, 769b95b, b0773b5, 4c3bb94, 1a128ec, 165cf8f)
+- [x] F-20.5 Selecting a job shows details: name, status, stage, duration, Retry/Cancel, Full log; the log tail with… (3a689a2, cb5dade, 855d619, 221c770, 6e96ece, 05c545a, afca83a, a104690)
+- [x] F-20.6 Manual jobs show their description (when GitLab provides one) and editable variables ("Variables for this… (065a008, 04303f9, cabaf59, 28c09ed, 9f29f7f)
+- [x] F-20.7 Failed jobs offer Explain failure: Claude reads the log and the MR diff and returns a verdict (Caused by… (a9d5933, da916ae, 0b9bf6a, a278b0a, bc771a0, 5544354, 4684172, 7b16524, 688ab4b, bfdd25d, b26e84c, 9235e75, d9446b2, e29c244)
+- [x] F-20.8 Successful jobs list artifacts with Download. (fbc942b, 5d05246, 568d326)
+- [x] F-20.9 A retry that fails the same way says "Retried: failed again on the same test." (9ddef07, 730a5c7, 43fce43, c21150b, 9ad734c)
+- [x] F-20.10 Pipeline status everywhere (S-01 rows, S-02 meta, S-04 header, S-10 title bar) links to S-08. (c2c53e0, 3c9690e)
 
 ## M7 · Own code: fix, author mode, new MR
-- [ ] F-17.3 At the end it offers a draft MR description (F-27.2) and Browse and commit.
-- [ ] F-25.1 Available in self-review notes and author-mode threads. Never offered on a teammate's MR.
-- [ ] F-25.2 Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may…
-- [ ] F-25.3 The proposal shows as a diff card "Proposed change · Edited 1 file: <name>" with a one-sentence…
-- [ ] F-25.4 Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run…
-- [ ] F-26.1 Title bar shows "You're the author" (blue) and pipeline status. Left panel: "FEEDBACK ON YOUR MR", "N…
-- [ ] F-26.2 The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix…
-- [ ] F-26.3 Fix in Rider opens the file at the line and watches the working tree; a detected change continues the flow…
-- [ ] F-26.4 After a fix: commit panel with a suggested message, "As a fixup of <sha> "<subject>"" (default on) with…
-- [ ] F-26.5 After commit: "Committed <sha> · not pushed yet", the reply to be sent ("Fixed in <sha>. <one…
-- [ ] F-26.6 After push: "Pushed · Replied to <name> and resolved the thread." and a link to the new pipeline.
-- [ ] F-26.7 Question threads: reply text area, Draft with Claude (fills a proposed answer), Send reply (immediate).…
-- [ ] F-26.8 If the user's checkout isn't on the MR's source branch, author mode is read-only with "Check out <branch>…
-- [ ] F-27.1 Opened from "Push and create MR" (S-06), self-review end, or Rider. Branch block source → target (target…
-- [ ] F-27.2 Title and description prefilled by Claude from commits and diff; description sections What, Why, How to…
-- [ ] F-27.3 Reviewers suggested with reasons: code owner (CODEOWNERS), "Wrote N% of the changed lines" (git blame)…
-- [ ] F-27.4 Options: Mark as draft, Delete branch after merge (default on), Squash commits.
-- [ ] F-27.5 Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done…
-- [ ] F-27.6 Create merge request / Create draft MR; note who gets notified. Success screen: "!483" big green block…
+- [x] F-17.3 At the end it offers a draft MR description (F-27.2) and Browse and commit. (7d1adf2, 2a7d4c6, 8044c2a)
+- [x] F-25.1 Available in self-review notes and author-mode threads. Never offered on a teammate's MR. (9c2439e, a490f2d, 16d7fc6, 77e66d0, 1afb8df, 573e8eb, d74295e, 6dc6c5f)
+- [x] F-25.2 Claude works in an app-managed scratch copy of the working tree, never in the user's working copy, and may… (7c05823, e535bc6)
+- [x] F-25.3 The proposal shows as a diff card "Proposed change · Edited 1 file: <name>" with a one-sentence… (28d52fe, 0d4f6c1, 99f4de8, 9c26ecd, cbbd5b8, 4358c7d)
+- [x] F-25.4 Accept writes the change into the working copy (unstaged) only if the file is unchanged since the run… (c912e79, 2198de2, 805ba7a, 3af40c0, 4d2b101, ad0ca98)
+- [x] F-26.1 Title bar shows "You're the author" (blue) and pipeline status. Left panel: "FEEDBACK ON YOUR MR", "N… (df958fb, 33ae45f, 3e07e25, b25ea38)
+- [x] F-26.2 The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix… (4fc0587, 584d043, 8888bfa, 40829dc, c62718e, 1a2e534, a33a4a4, a5191ae, c703b3d)
+- [x] F-26.3 Fix in Rider opens the file at the line and watches the working tree; a detected change continues the flow… (2e0f706, d5086d8, a3fa217, 4226bca)
+- [x] F-26.4 After a fix: commit panel with a suggested message, "As a fixup of <sha> "<subject>"" (default on) with… (4dd8e64, c173f38, 67dd3f4, 1037ffa, 82f5ca8, 96ff530)
+- [x] F-26.5 After commit: "Committed <sha> · not pushed yet", the reply to be sent ("Fixed in <sha>. <one… (54c8066, 13eec68, e94623d, ffac200, cf191d4, 94df086, 8021927)
+- [x] F-26.6 After push: "Pushed · Replied to <name> and resolved the thread." and a link to the new pipeline. (42874c9, 45a02cd, 15e1e76, 8ab44dd)
+- [x] F-26.7 Question threads: reply text area, Draft with Claude (fills a proposed answer), Send reply (immediate).… (b66a020, 3059186, a4640f2, 765cf72, 39d8eea, 093eda4)
+- [x] F-26.8 If the user's checkout isn't on the MR's source branch, author mode is read-only with "Check out <branch>… (3185ac8, 3ebce08, ea3d0b2, 22ae63c)
+- [x] F-27.1 Opened from "Push and create MR" (S-06), self-review end, or Rider. Branch block source → target (target… (2ce28a0, 42d33c4, 7bc9f7d, b625ff3, 2732a68)
+- [x] F-27.2 Title and description prefilled by Claude from commits and diff; description sections What, Why, How to… (104a121, 8c94a16, 3a64a08, 5435e24)
+- [x] F-27.3 Reviewers suggested with reasons: code owner (CODEOWNERS), "Wrote N% of the changed lines" (git blame)… (f15b239, d5d8d14, 2facbaa, 1187d44)
+- [x] F-27.4 Options: Mark as draft, Delete branch after merge (default on), Squash commits. (cf92ff5, 78adeaa)
+- [x] F-27.5 Before you create: Branch pushed, No conflicts with <target> (local git merge-tree), Self-review done… (1e5cf26, 3ffcc4b, fbc7dcb, d4b92b3, d10066b)
+- [x] F-27.6 Create merge request / Create draft MR; note who gets notified. Success screen: "!483" big green block… (4b6b74c, 251ef4d, b4bfe4f, f567dac, 68ca703, 614c4ea)
 
 ## M8 · Re-review and moved code
 - [ ] F-04.2 If the MR head moved since the session started, the card shows an orange tag "N NEW COMMITS", a primary…
@@ -231,3 +231,6 @@ Rows for the kickoff and M0–M3 (merged to main in PRs #1–#6) were removed on
 | 2026-10-16 | M5 · autopilot run ap-20261016-1738 | **M5 started on `m5-threads-publish` (from main after PR #7); plan d858918 (16 rows, decisions D-35); 3 of 16 merged: F-11.1 thread cards in S-04 (f76060e, done), F-11.2 Resolve, Reply, Reopen (2898715, live), F-11.3 threads from an older version placed by line text or on the file header (7ce6cca, live).** Fix rounds: removed-line icon in Unified (F-11.1); reply text lost on scroll or Resolve (F-11.2); threads on renamed files and folds hiding threads (F-11.3); 1 accepted test dispute (a restored step has no threads, D-07/D-36). One gate failed on Vitest timeouts caused by other programs loading the CPU. Decisions D-35 to D-38; playbook P-083 to P-087. Stopped by the owner: F-12.1 tests locked (50c8bb3), implementer not run. E22 stays kept; this run's pace (66.7 min) not counted (owner). Tasks 3/16. | Next: `/autopilot start M5` from F-12.1; its Closing runs the live checks of F-11.2 and F-11.3. |
 | 2026-10-17 | M5 · autopilot run ap-20261017-0624 | **5 of 16 more built and merged: F-12.1 summary heading (bd95a54, done), F-12.2 Drafts/Threads tabs and `gitlab_discussions` (de39b86, done), F-12.3 drafts list (f0bb1fa, done), F-12.4 summary comment by Claude (8df6ace, live), F-12.5 Publish in one batch (5be1992, partial).** Fix rounds: screen-reader status for the summary labels (F-12.4); F-12.5 retry sending stale or unticked notes, a lost summary failure, summary-only publish (decision 7), no fallback to another MR version; 1 accepted test dispute (wiremock closed port). F-12.5 open: decision 10b re-map, restored-start foreign-drafts check, DELETE/versions endpoints to verify on 17.11.7. S-03 F-09.7 Vitest timeouts failed 4 of 9 gate calls; a serial gate verify (1a4798b) was reverted by the owner, gates stay parallel; default cap 4 (c0eed02, owner); playbook curated 76→58 (4d598f8). Full verify green. Decisions D-39 to D-43. Paused once by the usage limit, ended by the owner. Tasks 5/12. | Next: `/autopilot start M5` (F-12.6 tests ready, then F-12.7, F-13.1, F-13.2); its Closing runs the live checks of F-11.2, F-11.3, F-12.4. |
 | 2026-10-18 | M5 · autopilot run ap-20261018-1736 | **2 more built and merged: F-13.2 thread rows on the Threads tab with Resolve/Reopen and Show in code (b6b5d38, done, gate on the first call, 2 review nits), F-13.3 Check with Claude and the hint chips (a93eb68, live).** F-13.3 in two passes (core, screen); the thread-check prompt and schema in `docs/claude` rewritten to the locked contract (PROMPT_VERSION 3); new token `--purple-tint`; eslint lets test doubles keep `_` parameters; one fix round (the status region stays in the accessibility tree). F-14.1 tests written ahead (af04ce5, tests-ready). Decisions D-46, D-47. Headroom MCP tried: 0 tokens saved (the content has to pass through the context first). Stopped by the context guard at 206k, so no live checks (STOP). Full verify green. Tasks 2/4. | Next: `/autopilot start M5` (F-14.1 tests ready, then F-14.2, F-14.3); its Closing runs the live checks of F-11.2, F-11.3, F-12.4, F-13.3. |
+| 2026-10-24 | M7 · autopilot run ap-20261024-0617 | **2 more built and merged: F-26.5 the "Committed <sha> · not pushed yet" panel, the editable "Fixed in <sha>. …" reply, Push and reply with the remote check, queued reply kept on reopen with Send reply (8021927, done), F-26.6 "Pushed · Replied to <name> …", the link to the new pipeline (polled for the pushed tip), thread Resolved or Replied (8ab44dd, done).** F-26.5: an accepted test dispute (lint/clippy only); the fix put three test files in one commit, the gate wants one per file, so the conductor split it on `ap/f26-5` (same tree). F-26.6 passed the gate on the first call after one fix round. 21 decisions in D-74 and D-75. Full verify green. Run stopped by the context guard at 206k. Not tried in the real app: Push and reply and the pipeline link against the stand-in. Tasks 2/4 | Next: `/autopilot start M7` (F-26.7 tests are ready, then F-26.8, F-27.x) |
+| 2026-10-25 | M8 · spec states first (interactive) | **Process report (what to do differently; answered in chat) and the M8 states-and-copy spec written before the autopilot: S-09 table of 30 states with exact copy, S-01 resume card states (F-04.2), S-12 moved rows (F-22), 05 › Re-review rules, F-21.6/F-21.7 Claude summary and draft verdicts only on a click (ccfcdb9); 12 questions decided in D-84; experiment E33 states-first, baseline M7 7.5 decisions per item (0a1b5ff).** Context packs checked: F-21.2 3.5k, F-22.1 1.3k, F-04.2 1.2k tokens, tables included. No criterion ticked (docs only). Open: M7 F-25.1, F-26.4 partial, F-27.6 in review; E28 still planned. Context guard at 200k after task 1. Tasks 1/1 | Next: `/autopilot start M7` to finish M7; then M8 on a new branch, where E33 is judged |
+| 2026-10-25 | M7 · autopilot run ap-20261025-1613, milestone closed | **M7 complete: 19/19 criteria, audit no gaps, full verify green.** F-25.1 resumed by the conductor (it waited only for S-10): Fix with Claude on S-10 change threads of my own MR, new command `fix_propose_thread` (GitLab read-only, refuses question/General threads), shared FixCard, "Fix proposed" tag (de27c5a, gate first pass, 1 nit, D-66 points 7–8). F-26.4 live check passed in the real app (fixup on/off, staged files kept, rejecting hook output, Accept prefills the message; c2c229f). Retro milestone M7: E28 tests-check before the implementer (ae37d11). Observed, not filed: commit panel header counts the file's diff vs target; Claude's explanation (commit message) came back in Polish; stale thread state after an outside reset. Tasks 2/2 · Next: owner merges the M7 PR, then `/autopilot start M8` on a new branch. |

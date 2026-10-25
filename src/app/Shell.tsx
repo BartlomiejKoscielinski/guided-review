@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Outlet, useMatches } from 'react-router';
 import { Dock } from './dock/Dock';
 import { useGlobalShortcuts } from './keyboard';
+import { PreviousScreenContext } from './PreviousScreen';
 import { routeFor, screenInfo, type ScreenId } from './routes';
 import { ScreenTitleBar } from './titlebar/ScreenTitleBar';
 import { useDiffColors } from './useDiffColors';
@@ -26,6 +28,12 @@ export function Shell() {
   useLastRouteSaver(routeFor(screen, match?.params ?? {}));
   useDiffColors();
   useShortcutOverrides();
+  // The screen before this one, for back links that name where they go (S-08, M6 decision 4).
+  const [seen, setSeen] = useState<{ current: ScreenId; previous: ScreenId | null }>({
+    current: screen,
+    previous: null,
+  });
+  if (seen.current !== screen) setSeen({ current: screen, previous: seen.current });
 
   return (
     <div className={styles.shell}>
@@ -33,7 +41,9 @@ export function Shell() {
       <div className={styles.body}>
         <Dock active={screenInfo(screen).dock} />
         <main className={styles.content} aria-label={screenInfo(screen).name}>
-          <Outlet />
+          <PreviousScreenContext value={seen.current === screen ? seen.previous : seen.current}>
+            <Outlet />
+          </PreviousScreenContext>
         </main>
       </div>
     </div>

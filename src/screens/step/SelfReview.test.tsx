@@ -60,7 +60,7 @@ describe('S-03 self-review', () => {
       within(menu)
         .getAllByRole('menuitem')
         .map((i) => i.textContent),
-    ).toEqual(['Edit and keep', 'Ask Claude', 'Copy']);
+    ).toEqual(['Edit and keep', 'Ask Claude', 'Fix with Claude', 'Copy']); // F-25.1 (M7)
   });
 
   it('F-17.2 Keep to fix says the note is on the list at the end; Undo takes it back', async () => {

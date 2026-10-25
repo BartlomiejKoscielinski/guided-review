@@ -1,0 +1,233 @@
+import { useEffect } from 'react';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from '@tanstack/react-query';
+import type { IpcError } from '../errors';
+import { useIpc } from '../IpcContext';
+import type { AuthorMr } from '../types/AuthorMr';
+import type { CommitResult } from '../types/CommitResult';
+import type { FileDiff } from '../types/FileDiff';
+import type { FixupTarget } from '../types/FixupTarget';
+import type { PipelineTab } from '../types/PipelineTab';
+import type { PushOutcome } from '../types/PushOutcome';
+import type { QueuedReply } from '../types/QueuedReply';
+
+export const authorMrKey = (project: string, iid: number) =>
+  ['gitlab', 'author-mr', project, iid] as const;
+
+/**
+ * S-10's MR (F-26.1): title, branches, head pipeline and thread list. `enabled` is false on a
+ * restored start and until the project is known (F-30.4).
+ */
+export function useAuthorMr(
+  project: string | undefined,
+  iid: number,
+  enabled: boolean,
+): UseQueryResult<AuthorMr, IpcError> {
+  const ipc = useIpc();
+  return useQuery<AuthorMr, IpcError>({
+    queryKey: authorMrKey(project ?? '', iid),
+    queryFn: () => ipc.authorMr(project ?? '', iid),
+    enabled: enabled && project !== undefined && project !== '' && Number.isFinite(iid),
+  });
+}
+
+/** The checkout's uncommitted files (M7 decision 10); under `git`, so a commit reads them again. */
+export const AUTHOR_UNCOMMITTED_KEY = ['git', 'author-uncommitted'] as const;
+
+/**
+ * The active checkout's uncommitted files (M7 decision 10): S-10 warns before Fix when any is not
+ * the thread's file. `enabled` only for a thread that can be fixed.
+ */
+export function useAuthorUncommitted(enabled: boolean): UseQueryResult<string[], IpcError> {
+  const ipc = useIpc();
+  return useQuery<string[], IpcError>({
+    queryKey: AUTHOR_UNCOMMITTED_KEY,
+    queryFn: () => ipc.authorUncommittedFiles(),
+    enabled,
+  });
+}
+
+/**
+ * S-10 reads the checkout state again when the app window gets focus (F-26.8, M7 decision 10):
+ * after the user checks out the branch, or another one, in Rider or a terminal, the read-only
+ * notice, Fix and Commit, and the other-changes warning follow without reopening the screen. The
+ * window's `focus` event, not TanStack's visibility check, because switching apps leaves the
+ * WebView visible. Only active queries are read, so a restored start still reads nothing (F-30.4).
+ */
+export function useAuthorRefreshOnFocus(project: string | undefined, iid: number): void {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (project === undefined || project === '') return;
+    const onFocus = () => {
+      void queryClient.invalidateQueries({ queryKey: authorMrKey(project, iid) });
+      void queryClient.invalidateQueries({ queryKey: AUTHOR_UNCOMMITTED_KEY });
+    };
+    window.addEventListener('focus', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [queryClient, project, iid]);
+}
+
+export const authorFileDiffKey = (target: string, path: string) =>
+  ['git', 'author-file-diff', target, path] as const;
+
+/**
+ * The selected thread's file in S-10 (F-26.2): merge-base(origin/`target`, HEAD) → working tree.
+ * Not read for a General thread (`path` null).
+ */
+export function useAuthorFileDiff(
+  target: string,
+  path: string | null,
+): UseQueryResult<FileDiff, IpcError> {
+  const ipc = useIpc();
+  return useQuery<FileDiff, IpcError>({
+    queryKey: authorFileDiffKey(target, path ?? ''),
+    queryFn: () => ipc.authorFileDiff(target, path ?? ''),
+    enabled: path !== null && path !== '',
+  });
+}
+
+/**
+ * The commit a fix of the thread is a fixup of (F-26.4, M7 decision 8); read once the panel shows
+ * (`enabled`). `line` null: a removed line or an outdated position.
+ */
+export function useAuthorFixupTarget(
+  target: string,
+  path: string,
+  line: number | null,
+  enabled: boolean,
+): UseQueryResult<FixupTarget, IpcError> {
+  const ipc = useIpc();
+  return useQuery<FixupTarget, IpcError>({
+    queryKey: ['git', 'author-fixup-target', target, path, line],
+    queryFn: () => ipc.authorFixupTarget(target, path, line),
+    enabled,
+  });
+}
+
+export interface AuthorCommitInput {
+  message: string;
+  /** The full SHA of the fixup target, or null for a separate commit. */
+  fixup: string | null;
+  path: string;
+}
+
+/** **Commit** on S-10 (F-26.4, M7 decision 10): the fixed file alone, never an amend. */
+export function useAuthorCommit(): UseMutationResult<CommitResult, IpcError, AuthorCommitInput> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  return useMutation<CommitResult, IpcError, AuthorCommitInput>({
+    mutationFn: ({ message, fixup, path }) => ipc.gitCommit(message, false, fixup, [path]),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['git'] }),
+  });
+}
+
+export interface AuthorReplyInput {
+  project: string;
+  iid: number;
+  discussion: string;
+  /** "Fixed in <sha>. <one sentence>." as the box shows it. */
+  body: string;
+  resolve: boolean;
+  /** The full SHA of the commit the reply names. */
+  afterSha: string;
+}
+
+/** Callbacks run even when the panel is gone by then (another thread was picked). */
+export interface AuthorReplyCallbacks<T> {
+  onMutate?: (input: AuthorReplyInput) => void;
+  onSuccess?: (result: T, input: AuthorReplyInput) => void;
+  onError?: (error: IpcError, input: AuthorReplyInput) => void;
+}
+
+/**
+ * Queues the reply after **Commit** (F-26.5); sends nothing. The thread then reads "Fixed locally
+ * · not pushed".
+ */
+export function useAuthorQueueReply(
+  on: AuthorReplyCallbacks<QueuedReply> = {},
+): UseMutationResult<QueuedReply, IpcError, AuthorReplyInput> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  return useMutation<QueuedReply, IpcError, AuthorReplyInput>({
+    mutationFn: (v) =>
+      ipc.authorQueueReply(v.project, v.iid, v.discussion, v.body, v.resolve, v.afterSha),
+    onSuccess: on.onSuccess,
+    onError: on.onError,
+    onSettled: (_r, _e, v) =>
+      queryClient.invalidateQueries({ queryKey: authorMrKey(v.project, v.iid) }),
+  });
+}
+
+/**
+ * **Push and reply** and **Retry** (F-26.5): queues the reply as the box and the switch show it,
+ * then pushes and sends it; only on the click.
+ */
+export function useAuthorPushAndReply(
+  on: AuthorReplyCallbacks<PushOutcome> = {},
+): UseMutationResult<PushOutcome, IpcError, AuthorReplyInput> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  return useMutation<PushOutcome, IpcError, AuthorReplyInput>({
+    mutationFn: async (v) => {
+      const queued = await ipc.authorQueueReply(
+        v.project,
+        v.iid,
+        v.discussion,
+        v.body,
+        v.resolve,
+        v.afterSha,
+      );
+      return ipc.authorPushAndReply(v.project, v.iid, queued.id);
+    },
+    onMutate: on.onMutate,
+    onSuccess: on.onSuccess,
+    onError: on.onError,
+    onSettled: async (_r, _e, v) => {
+      await queryClient.invalidateQueries({ queryKey: authorMrKey(v.project, v.iid) });
+      await queryClient.invalidateQueries({ queryKey: ['git'] });
+    },
+  });
+}
+
+/** How often and how long S-10 asks for the pushed commit's pipeline (M7 decision 13). */
+export const PUSH_PIPELINE_POLL_MS = 2000;
+export const PUSH_PIPELINE_WAIT_MS = 30_000;
+
+/**
+ * The MR pipeline GitLab started for the pushed commit `sha` (F-26.6, M7 decision 13); `null`
+ * until it exists. Asked only once the push is done (`pushedAt`, ms since the epoch), then every
+ * 2 s until found or 30 s after the push, then the MR is read again for the title bar's chip. A
+ * failed lookup is only one answer less: no retry, no alert, the next poll asks again.
+ */
+export function useAuthorPushPipeline(
+  project: string,
+  iid: number,
+  sha: string,
+  pushedAt: number | null,
+): UseQueryResult<PipelineTab | null, IpcError> {
+  const ipc = useIpc();
+  const queryClient = useQueryClient();
+  const waiting = () => pushedAt !== null && Date.now() - pushedAt < PUSH_PIPELINE_WAIT_MS;
+  return useQuery<PipelineTab | null, IpcError>({
+    queryKey: ['gitlab', 'author-push-pipeline', project, iid, sha],
+    queryFn: async () => {
+      const tab = await ipc.authorPushPipeline(project, iid, sha);
+      // The new pipeline is now the MR's head: the title bar's chip reads it again.
+      if (tab) void queryClient.invalidateQueries({ queryKey: authorMrKey(project, iid) });
+      return tab;
+    },
+    enabled: pushedAt !== null && sha !== '',
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchIntervalInBackground: true,
+    refetchInterval: (query) => (!query.state.data && waiting() ? PUSH_PIPELINE_POLL_MS : false),
+  });
+}

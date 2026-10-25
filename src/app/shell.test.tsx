@@ -69,7 +69,7 @@ const EXPECTED_CONTROLS: Record<Route['screen'], { text: string[]; controls: str
     controls: ['Sonnet 5.5 · medium'],
   },
   'S-10': {
-    text: ['!480', 'You’re the author', 'Pipeline passed'],
+    text: ['!480', 'You’re the author'],
     controls: ['Sonnet 5.5 · medium'],
   },
   'S-11': {

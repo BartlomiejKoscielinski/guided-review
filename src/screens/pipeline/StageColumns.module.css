@@ -1,0 +1,203 @@
+/* S-08 stage columns and job rows (F-20.2, Pipeline.dc.html). */
+.grid {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 4px;
+  padding: 0 32px;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: var(--panel);
+}
+
+.stageHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 8px;
+}
+
+.stageDot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+}
+
+.stageName {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 6px;
+  background: var(--card);
+}
+
+.rowOn {
+  background: var(--raised-2);
+  box-shadow: inset 0 0 0 2px var(--yellow);
+}
+
+.pick {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 4px 0 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.nameQuiet {
+  color: var(--text-muted);
+}
+
+.nameOn {
+  font-weight: 600;
+}
+
+.right {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.action {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  cursor: pointer;
+  background: var(--switch-off);
+  color: var(--text);
+}
+
+.actionRun {
+  background: var(--white-block);
+  color: var(--ink);
+}
+
+.action:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.pick:focus-visible,
+.action:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+/* The status squares: fills, or an inset ring for the hollow states. */
+.sq {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sq-passed,
+.dot-passed {
+  background: var(--green);
+  color: var(--ink);
+}
+
+.sq-failed,
+.dot-failed {
+  background: var(--orange);
+  color: var(--ink);
+}
+
+.sq-failedAllowed,
+.dot-failedAllowed {
+  color: var(--orange);
+  box-shadow: inset 0 0 0 2px var(--orange);
+}
+
+.sq-running,
+.dot-running {
+  background: var(--blue);
+  color: var(--ink);
+}
+
+.sq-waiting,
+.dot-waiting {
+  color: var(--text-muted);
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+.sq-manual,
+.dot-manual {
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--text);
+}
+
+.sq-canceled,
+.dot-canceled {
+  background: var(--ring-2);
+  color: var(--text-secondary);
+}
+
+.sq-skipped,
+.dot-skipped {
+  color: var(--text-lineno);
+  box-shadow: inset 0 0 0 2px var(--ring-2);
+}
+
+.spin {
+  animation: job-spin 0.9s linear infinite;
+}
+
+@keyframes job-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

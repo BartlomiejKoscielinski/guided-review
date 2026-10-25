@@ -47,35 +47,64 @@
   gap: 4px;
 }
 
+/* A row (F-02.2): the open button covers it through ::after; the pipeline link sits above that
+   cover as its own tab stop (F-20.10, M6 decision 16). */
 .row {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 12px 14px;
-  border: 0;
-  border-radius: 0;
   background: var(--card);
   color: var(--text);
   font-family: var(--font-ui);
   font-size: 14px;
   line-height: 1.5;
   text-align: left;
-  cursor: pointer;
 }
 
-.row:hover:not(:disabled) {
+.row:hover:not(.rowDisabled) {
   background: var(--raised);
 }
 
-.row:disabled {
+/* While a review is being prepared from another row. */
+.rowDisabled {
   cursor: default;
 }
 
-.rowHead {
+/* The row's first line: `!iid` and the title. */
+.open {
   display: flex;
   align-items: baseline;
   gap: 8px;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.open:disabled {
+  cursor: default;
+}
+
+.open:focus-visible {
+  outline: none;
+}
+
+.open:focus-visible::after {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 .iid {
@@ -118,9 +147,17 @@
 }
 
 .pipeline {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pipeline:hover {
+  color: var(--text);
 }
 
 .pipeSquare {
