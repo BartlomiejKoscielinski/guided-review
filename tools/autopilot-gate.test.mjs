@@ -410,3 +410,22 @@ test('E32 reusableVerify: a green stamp of the same clean tree stands for the ga
   assert.equal(reusableVerify({ ...stamp, at: '2026-10-24T09:00:00Z' }, want), false);
   assert.equal(reusableVerify(null, want), false);
 });
+
+test('E28 testsCheckSteps picks the cheap steps a broken locked test fails', async () => {
+  const { testsCheckSteps } = await import('./autopilot/gate-lib.mjs');
+  assert.equal(testsCheckSteps([]), null);
+  assert.deepEqual(testsCheckSteps(['tests/e2e/author-f26-3.spec.ts']), [
+    'format:check',
+    'typecheck',
+    'lint',
+  ]);
+  assert.deepEqual(testsCheckSteps(['src-tauri\\tests\\it\\fixup_commit.rs']), [
+    'format:check',
+    'rust:fmt',
+    'rust:clippy',
+  ]);
+  assert.deepEqual(
+    testsCheckSteps(['src/screens/x/X.test.tsx', 'src-tauri/src/review/y.rs']).length,
+    5,
+  );
+});

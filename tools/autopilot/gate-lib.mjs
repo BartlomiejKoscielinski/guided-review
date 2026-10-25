@@ -209,3 +209,20 @@ export function tickProgress(progressMd, id, shas, complete) {
   }
   return lines.join('\n');
 }
+
+/**
+ * E28: the cheap verify steps that catch a locked test that does not typecheck, lint, format or
+ * pass clippy (M6 F-20.5, F-20.6; M7 F-26.3 eslint, F-26.4 and F-27.5 clippy), run on the tests
+ * commit before the implementer starts. `null` when no test file is given.
+ */
+export function testsCheckSteps(tests) {
+  const files = tests.map((f) => f.replace(/\\/g, '/'));
+  if (!files.length) return null;
+  const rust = files.some((f) => f.startsWith('src-tauri/') && f.endsWith('.rs'));
+  const ts = files.some((f) => !f.startsWith('src-tauri/') && /\.[cm]?[jt]sx?$/.test(f));
+  return [
+    'format:check',
+    ...(ts ? ['typecheck', 'lint'] : []),
+    ...(rust ? ['rust:fmt', 'rust:clippy'] : []),
+  ];
+}
