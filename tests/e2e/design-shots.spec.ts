@@ -664,6 +664,23 @@ const SHOTS: Shot[] = [
     },
   },
   {
+    // S10-author-fix-proposed.png, Author.dc.html {"fix":"proposed"} (F-25.1, F-25.3): Fix with
+    // Claude on Marta K.'s thread; the card shows "Proposed change · Edited 1 file:
+    // UploadWorker.cs", the backoff diff, Claude's sentence, Accept and Discard; the list tags the
+    // thread "Fix proposed".
+    screen: 'S10',
+    state: 'author-fix-proposed',
+    lastRoute: { screen: 'S-01' },
+    prepare: async (page) => {
+      const mrs = page.getByRole('region', { name: 'Merge requests' });
+      await mrs.getByRole('tab', { name: /^Mine/ }).click();
+      await mrs.getByText('Retry in UploadWorker after network loss').click();
+      const card = page.getByRole('region', { name: 'Thread' });
+      await card.getByRole('button', { name: 'Fix with Claude' }).click();
+      await card.getByRole('button', { name: 'Accept' }).waitFor({ timeout: 8000 });
+    },
+  },
+  {
     // Author.dc.html {"fix":"applied","via":"rider"} (no PNG yet): Fix in Rider on Marta's thread,
     // the mock's Rider changes UploadWorker.cs, and the commit panel (F-26.4) shows "Commit the
     // fix", the prefilled message, the fixup switch on with its note and Commit.
