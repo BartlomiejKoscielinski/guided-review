@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-25T12:24:55.204Z",
+  "updated": "2026-10-25T12:38:54.356Z",
   "items": [
     {
       "id": "F-17.3",
@@ -381,7 +381,7 @@
       "title": "Create merge request / Create draft MR; note who gets notified. Success screen: \"!483\" big green block…",
       "kind": "mixed",
       "deps": [],
-      "status": "review",
+      "status": "done",
       "attempts": 1,
       "note": "implemented on ap/f27-6 (cbf1aa0), verify green; review and gate not run: the owner stopped the run",
       "lockSha": "c655543",

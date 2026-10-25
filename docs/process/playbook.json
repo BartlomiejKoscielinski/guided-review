@@ -1,5 +1,5 @@
 {
-  "items": 82,
+  "items": 83,
   "entries": [
     {
       "id": "P-003",
@@ -47,7 +47,7 @@
         "src/screens/step/**"
       ],
       "text": "When an item adds an IPC command, list src/app/shell.test.tsx (the F-30.4 allowed-command list) in the tests stage, because F-04.3 had to add sessionState and sessionResume there outside its planned test files.",
-      "helpful": 35,
+      "helpful": 36,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T14:05:35.020Z",
@@ -64,7 +64,7 @@
         "src-tauri/src/commands/**"
       ],
       "text": "A command that only reads caches (restore, resume) should not call the Claude binary lookup (executable()) or any other discovery, because the review found session_resume failing silently without Claude Code although it runs no claude process.",
-      "helpful": 37,
+      "helpful": 38,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T14:05:35.078Z",
@@ -134,7 +134,7 @@
         "ui"
       ],
       "text": "Give each mock command the same guard order and error code as its core command: check the fallback refusal before the readiness check, because the F-06.5 mock answered a fallback drag with 'The plan isn't ready yet.' where the core returns INVALID_INPUT, and that mismatch was the only red test. Derive a mock flag from the same source field the core reads (session source kind, headSha), never an id prefix or a design-mock note, and keep per-head flags such as planReady equal across mock rows that share a headSha (F-17.2, F-02.5 review findings).",
-      "helpful": 40,
+      "helpful": 41,
       "harmful": 0,
       "seen": 4,
       "created": "2026-10-14T14:47:55.168Z",
@@ -190,7 +190,7 @@
         "src/screens/**"
       ],
       "text": "Add a test assertion in the same commit for any user-visible copy that the spec and mock do not give, because F-06.6 shipped the '5 of 16 files' summary with a decision note but no test, and review raised it as a nit.",
-      "helpful": 53,
+      "helpful": 54,
       "harmful": 0,
       "seen": 1,
       "created": "2026-10-14T15:13:07.737Z",
@@ -246,7 +246,7 @@
         "src/screens/settings/**"
       ],
       "text": "List the e2e locators the implementation must keep (accessible names, role=img text, span order) in the tests verdict notes, as F-07.1 did, and the implementer then passed the full step e2e suite (11/11) with no fix round.",
-      "helpful": 18,
+      "helpful": 19,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.716Z",
@@ -264,7 +264,7 @@
         "src/screens/**"
       ],
       "text": "When a new state changes what a design shot shows, seed that state in the shot spec in the same implement commit (F-07.1 marked steps 1 to 3 reviewed for S-03), and the design-check came back clean.",
-      "helpful": 49,
+      "helpful": 50,
       "harmful": 0,
       "seen": 2,
       "created": "2026-10-14T16:11:26.778Z",
@@ -1541,6 +1541,36 @@
       "created": "2026-10-24T20:31:44.271Z",
       "lastUsedItem": 81,
       "source": "F-27.5"
+    },
+    {
+      "id": "P-152",
+      "tags": [
+        "ui",
+        "tests",
+        "src/ipc/hooks/**"
+      ],
+      "text": "For a write command whose failure code means state changed elsewhere (409 CONFLICT: the branch already has an open MR), lock in the tests stage that the error path also refreshes the related query (merge-check, so the existing-MR banner appears), because F-27.6 refreshed it only on success and review had to raise it as a nit.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-25T12:38:47.942Z",
+      "lastUsedItem": 82,
+      "source": "F-27.6"
+    },
+    {
+      "id": "P-153",
+      "tags": [
+        "mixed",
+        "tests",
+        "src/ipc/mock/**"
+      ],
+      "text": "Make the mock's default answer match what the real service usually returns (GitLab's create-MR POST mostly gives head_pipeline null) and cover the other shape as a variant test, because F-27.6's mock always answered a running pipeline, so the 'Pipeline starting…' branch was never the one seen in dev:mock and review flagged the gap.",
+      "helpful": 0,
+      "harmful": 0,
+      "seen": 1,
+      "created": "2026-10-25T12:38:48.029Z",
+      "lastUsedItem": 82,
+      "source": "F-27.6"
     }
   ]
 }
