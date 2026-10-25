@@ -17,6 +17,7 @@ import type { DraftPatch } from './types/DraftPatch';
 import type { FindingDecision } from './types/FindingDecision';
 import type { FixProposal } from './types/FixProposal';
 import type { FixTarget } from './types/FixTarget';
+import type { FixThreadTarget } from './types/FixThreadTarget';
 import type { FixWatchEvent } from './types/FixWatchEvent';
 import type { Layout } from './types/Layout';
 import type { Mode } from './types/Mode';
@@ -378,6 +379,15 @@ export interface IpcClient {
    */
   fixPropose(
     target: FixTarget,
+    onEvent: (event: ClaudeTaskEvent<FixProposal>) => void,
+  ): Promise<FixProposal>;
+  /**
+   * **Fix with Claude** on a change thread of my MR on S-10 (F-25.1, F-25.3): as `fixPropose`,
+   * with the thread's file and conversation. FIX_NOT_ALLOWED unless the MR is mine and the active
+   * checkout is on its source branch (F-26.8); a question or a General thread is INVALID_INPUT.
+   */
+  fixProposeThread(
+    target: FixThreadTarget,
     onEvent: (event: ClaudeTaskEvent<FixProposal>) => void,
   ): Promise<FixProposal>;
   /**

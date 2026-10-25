@@ -232,6 +232,11 @@ export function createTauriClient(): IpcClient {
       ch.onmessage = onEvent;
       return call<FixProposal>('fix_propose', { target, ch });
     },
+    fixProposeThread: (target, onEvent) => {
+      const ch = new Channel<ClaudeTaskEvent<FixProposal>>();
+      ch.onmessage = onEvent;
+      return call<FixProposal>('fix_propose_thread', { target, ch });
+    },
     fixAccept: (id) => call<undefined>('fix_accept', { id }),
     fixDiscard: (id) => call<undefined>('fix_discard', { id }),
     fixWatch: async (file, onEvent) => {

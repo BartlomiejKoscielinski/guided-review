@@ -5,7 +5,8 @@ import { createAuthorPushBackend } from './authorPush';
 import { createReplyDraftBackend } from './authorReplyDraft';
 import { createChangesBackend, type ChangesScenario } from './changes';
 import { createClaudeBackend, type ClaudeScenario } from './claude';
-import { createFixBackend } from './fix';
+import { createFixBackend, type ThreadOf } from './fix';
+import { IpcError } from '../errors';
 import { createGitlabBackend, type GitlabScenario } from './gitlab';
 import { createMockRepos } from './repos';
 import { createPrepareBackend } from './prepare';
@@ -176,7 +177,7 @@ export function createMockClient({
       mockTarget(repos, asked);
     },
   );
-  const fix = createFixBackend(data, sourceOf);
+  const fix = createFixBackend(data, sourceOf, (target) => fixThreadOf(target));
   const authorScenario = loadJson(storage, MOCK_AUTHOR_KEY, authorOption);
   const mrChecks = loadJson<MergeCheckScenario>(storage, MOCK_MR_CHECKS_KEY, {});
   const changesBackend = createChangesBackend(changes, respond, repos);
@@ -187,6 +188,39 @@ export function createMockClient({
     mrChecks.existingMr,
   );
   const authorPush = createAuthorPushBackend(() => changes.pushFails === 'rejected', respond);
+  const authorMr: IpcClient['authorMr'] = async (project, iid) => ({
+    ...authorPush.withQueued(
+      project,
+      // F-27.6: Go to your MR opens the MR Create made (!483).
+      (await createMr.authorMr(iid)) ?? (await gitlab.authorMr(project, iid)),
+    ),
+    // F-26.8: the scenario can put the checkout on another branch (read-only author mode).
+    ...(authorScenario.onSourceBranch === undefined
+      ? {}
+      : { onSourceBranch: authorScenario.onSourceBranch }),
+  });
+  /**
+   * F-25.1 on S-10, as `commands/fix_thread.rs`: a teammate's MR (authorMr's INVALID_INPUT) or a
+   * checkout off its source branch is FIX_NOT_ALLOWED; a question or a General thread, or one
+   * not listed, is INVALID_INPUT.
+   */
+  const fixThreadOf: ThreadOf = async ({ project, iid, threadId }) => {
+    const refuse = (message: string, code: 'FIX_NOT_ALLOWED' | 'INVALID_INPUT') =>
+      new IpcError({ code, message, retryable: false });
+    const mine = await authorMr(project, iid).catch((error: unknown) => {
+      if (error instanceof IpcError && error.code === 'INVALID_INPUT')
+        throw refuse('Fix with Claude is only available on your own code.', 'FIX_NOT_ALLOWED');
+      throw error;
+    });
+    if (!mine.onSourceBranch)
+      throw refuse('Fix with Claude is only available on your own code.', 'FIX_NOT_ALLOWED');
+    const thread = mine.threads.find((t) => t.id === threadId);
+    if (!thread) throw refuse('Unknown thread.', 'INVALID_INPUT');
+    if (thread.kind !== 'change')
+      throw refuse('Only a change request can be fixed.', 'INVALID_INPUT');
+    if (thread.path === null) throw refuse('This thread has no file to fix.', 'INVALID_INPUT');
+    return { file: thread.path, line: thread.line ?? thread.oldLine ?? 1 };
+  };
   return {
     appHealth: () => respond(health),
     appSettingsGet: () => respond(settings),
@@ -224,6 +258,7 @@ export function createMockClient({
     ...claude,
     // F-25.3: a fix run ends on `claudeCancel(task)` like the other Claude tasks.
     fixPropose: fix.fixPropose,
+    fixProposeThread: fix.fixProposeThread,
     fixAccept: fix.fixAccept,
     fixDiscard: fix.fixDiscard,
     claudeCancel: (task) => {
@@ -232,17 +267,7 @@ export function createMockClient({
     },
     ...gitlab,
     // F-26.5: a queued reply tags its thread "Fixed locally · not pushed" until it is sent.
-    // F-26.8: the scenario can put the checkout on another branch (read-only author mode).
-    authorMr: async (project, iid) => ({
-      ...authorPush.withQueued(
-        project,
-        // F-27.6: Go to your MR opens the MR Create made (!483).
-        (await createMr.authorMr(iid)) ?? (await gitlab.authorMr(project, iid)),
-      ),
-      ...(authorScenario.onSourceBranch === undefined
-        ? {}
-        : { onSourceBranch: authorScenario.onSourceBranch }),
-    }),
+    authorMr,
     // M7 decision 10: S-10 warns before Fix when other files have uncommitted changes.
     authorUncommittedFiles: () =>
       authorUncommittedFiles(authorScenario, () => repos.active() !== null, respond),
