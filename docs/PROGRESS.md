@@ -163,7 +163,7 @@ Rules for Claude Code:
 - [x] F-26.1 Title bar shows "You're the author" (blue) and pipeline status. Left panel: "FEEDBACK ON YOUR MR", "N… (df958fb, 33ae45f, 3e07e25, b25ea38)
 - [x] F-26.2 The selected thread opens in the code at its line with the conversation and actions Fix with Claude, Fix… (4fc0587, 584d043, 8888bfa, 40829dc, c62718e, 1a2e534, a33a4a4, a5191ae, c703b3d)
 - [x] F-26.3 Fix in Rider opens the file at the line and watches the working tree; a detected change continues the flow… (2e0f706, d5086d8, a3fa217, 4226bca)
-- [ ] F-26.4 After a fix: commit panel with a suggested message, "As a fixup of <sha> "<subject>"" (default on) with… — partial: autopilot (4dd8e64, c173f38, 67dd3f4, 1037ffa, 82f5ca8, 96ff530)
+- [x] F-26.4 After a fix: commit panel with a suggested message, "As a fixup of <sha> "<subject>"" (default on) with… (4dd8e64, c173f38, 67dd3f4, 1037ffa, 82f5ca8, 96ff530)
 - [x] F-26.5 After commit: "Committed <sha> · not pushed yet", the reply to be sent ("Fixed in <sha>. <one… (54c8066, 13eec68, e94623d, ffac200, cf191d4, 94df086, 8021927)
 - [x] F-26.6 After push: "Pushed · Replied to <name> and resolved the thread." and a link to the new pipeline. (42874c9, 45a02cd, 15e1e76, 8ab44dd)
 - [x] F-26.7 Question threads: reply text area, Draft with Claude (fills a proposed answer), Send reply (immediate).… (b66a020, 3059186, a4640f2, 765cf72, 39d8eea, 093eda4)

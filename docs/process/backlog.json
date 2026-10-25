@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-25T16:44:09.894Z",
+  "updated": "2026-10-25T17:01:35.722Z",
   "items": [
     {
       "id": "F-17.3",
@@ -174,9 +174,9 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "partial",
+      "status": "done",
       "attempts": 1,
-      "note": "Merged c432b9a after the owner allowed the accepted test-dispute commit 96ff530. Left: the after-Accept prefill (message from Claude's explanation after Fix with Claude, decision 9) once Fix with Claude is wired on S-10 (F-25.1 partial), and the real-app check: Fix in Rider on a real checkout, Commit with the fixup switch on and off, git log 'fixup! <subject>' with the message as body, other staged files stay staged, a rejecting hook shows its output.",
+      "note": "Merged c432b9a; the after-Accept prefill (Claude's explanation as the commit message, decision 9) came with F-25.1 (de27c5a). Left: the real-app check: Fix in Rider on a real checkout, Commit with the fixup switch on and off, git log 'fixup! <subject>' with the message as body, other staged files stay staged, a rejecting hook shows its output; Fix with Claude on an S-10 change thread then Accept prefills the commit message.",
       "lockSha": "0776829",
       "tests": [
         "src-tauri/tests/it/fixup_commit.rs",
