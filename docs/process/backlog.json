@@ -1,6 +1,6 @@
 {
   "milestone": "M7",
-  "updated": "2026-10-25T16:13:46.717Z",
+  "updated": "2026-10-25T16:44:09.894Z",
   "items": [
     {
       "id": "F-17.3",
@@ -24,9 +24,9 @@
       "kind": "mixed",
       "split": true,
       "deps": [],
-      "status": "partial",
-      "attempts": 1,
-      "note": "S-10 author-mode threads part waits for F-26.x (AuthorScreen is a stub); fix_allowed already covers own MR on its source branch; onFix not wired yet (F-25.2/F-25.3)",
+      "status": "done",
+      "attempts": 2,
+      "note": "Resumed: the author-mode screen (F-26.x) it waited for is built. Left: S-10 author-mode threads offer Fix with Claude (onFix wired to F-25.2/F-25.3); the S-01 self-review notes part was built in the first attempt.",
       "lockSha": "2d712cb",
       "tests": [
         "src-tauri/src/fix/eligibility_tests.rs",
